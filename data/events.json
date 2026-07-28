@@ -1,0 +1,55 @@
+{
+  "events": [
+    {
+      "id": "event_light_rain_01",
+      "title": "光雨渗透",
+      "description": "地表光雨渗入圣所通风系统，导致一间存储室的录入设备受损。需要消耗15能源进行修复，否则该存储室的录入速度将降低50%。",
+      "trigger": { "type": "random", "weekMin": 3, "weekMax": 8, "probability": 0.3 },
+      "choices": [
+        { "text": "消耗15能源修复", "effect": { "energy": -15 }, "result": "设备已修复。存储室恢复正常运作。" },
+        { "text": "暂时忽略", "effect": { "environment": -10 }, "result": "环境稳定度下降了。设备损坏加剧。" }
+      ]
+    },
+    {
+      "id": "event_power_surge_01",
+      "title": "能源波动",
+      "description": "地热发电机输出不稳定，本周能源产出减少20点。",
+      "trigger": { "type": "random", "weekMin": 4, "weekMax": 10, "probability": 0.25 },
+      "choices": [
+        { "text": "接受损失", "effect": { "energy": -20 }, "result": "能源储备下降了。必须更谨慎地分配。" },
+        { "text": "超负荷运行发电机（损失环境稳定）", "effect": { "environment": -15 }, "result": "勉强维持了能源输出，但环境控制系统受到影响。" }
+      ]
+    },
+    {
+      "id": "event_exploration_find_01",
+      "title": "地表勘探发现",
+      "description": "米莎在地表勘探时发现了一批被遗忘的存储介质——含硅光学硬盘。可以补充25点存储介质储备。",
+      "trigger": { "type": "random", "weekMin": 2, "weekMax": 6, "probability": 0.35 },
+      "choices": [
+        { "text": "回收存储介质", "effect": { "media": 25 }, "result": "成功回收了25点存储介质。" },
+        { "text": "优先录入当前条目", "effect": {}, "result": "决定先完成手头的归档工作。" }
+      ]
+    },
+    {
+      "id": "event_guardian_conflict_01",
+      "title": "守护者分歧",
+      "description": "芬恩和埃塞尔因为归档优先级发生争执。芬恩坚持要保存更多历史记录，埃塞尔认为宗教文献同样重要。",
+      "trigger": { "type": "random", "weekMin": 5, "weekMax": 12, "probability": 0.2 },
+      "choices": [
+        { "text": "支持芬恩（历史优先）", "effect": { "energy": -5 }, "result": "芬恩感到被理解，但埃塞尔有些失落。" },
+        { "text": "支持埃塞尔（宗教优先）", "effect": { "energy": -5 }, "result": "埃塞尔感到欣慰，但芬恩有些不满。" },
+        { "text": "各退一步", "effect": { "energy": -10 }, "result": "双方都做出了一些妥协。气氛缓和了。" }
+      ]
+    },
+    {
+      "id": "event_equipment_failure_01",
+      "title": "环境控制故障",
+      "description": "圣所环境控制系统出现故障，温度开始缓慢上升。需要洛恩进行维修。",
+      "trigger": { "type": "random", "weekMin": 6, "weekMax": 15, "probability": 0.2 },
+      "choices": [
+        { "text": "洛恩维修（消耗1周时间）", "effect": { "time": 1 }, "result": "洛恩成功修复了故障。圣所环境恢复正常。" },
+        { "text": "降低功率运行", "effect": { "environment": -20 }, "result": "环境稳定度大幅下降，但节省了时间。" }
+      ]
+    }
+  ]
+}

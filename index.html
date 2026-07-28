@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记忆圣所 | Memory Sanctuary</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 顶部状态栏 -->
+        <header id="top-bar">
+            <div class="title">
+                <span class="title-cn">记忆圣所</span>
+                <span class="title-en">MEMORY SANCTUARY</span>
+            </div>
+            <div id="resource-panel">
+                <div class="resource" id="res-energy">
+                    <span class="res-icon">◈</span>
+                    <span class="res-label">能源</span>
+                    <span class="res-value" id="energy-value">100</span>
+                </div>
+                <div class="resource" id="res-media">
+                    <span class="res-icon">◇</span>
+                    <span class="res-label">存储介质</span>
+                    <span class="res-value" id="media-value">50</span>
+                </div>
+                <div class="resource" id="res-environment">
+                    <span class="res-icon">○</span>
+                    <span class="res-label">环境稳定</span>
+                    <span class="res-value" id="environment-value">95</span>
+                </div>
+                <button id="theme-toggle" title="切换主题">◐</button>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <main id="main-content">
+            <!-- 左侧：圣所主厅 Canvas -->
+            <section id="sanctuary-panel">
+                <canvas id="sanctuary-canvas" width="600" height="400"></canvas>
+                <div id="sanctuary-caption">圣所主厅</div>
+            </section>
+
+            <!-- 右侧：操作面板 -->
+            <section id="action-panel">
+                <!-- 事件通知 -->
+                <div id="event-panel" class="hidden">
+                    <div id="event-banner">
+                        <div class="event-title" id="event-title"></div>
+                        <div class="event-desc" id="event-desc"></div>
+                        <div class="event-choices" id="event-choices"></div>
+                    </div>
+                </div>
+
+                <!-- 守护者面板 -->
+                <div id="guardian-panel">
+                    <h2 class="panel-title">守护者</h2>
+                    <div class="guardian-display">
+                        <div class="guardian-avatar" id="guardian-avatar">🦅</div>
+                        <div class="guardian-info">
+                            <div class="guardian-name" id="guardian-name">缇卡</div>
+                            <div class="guardian-role" id="guardian-role">首席歌者</div>
+                            <div class="guardian-dialogue" id="guardian-dialogue">……我准备好了。让我们开始吧。</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 存储室状态 -->
+                <div id="vault-status" class="panel">
+                    <h2 class="panel-title">存储室</h2>
+                    <div id="vault-tabs"></div>
+                    <div id="vault-list"></div>
+                </div>
+
+                <!-- 待归档条目 -->
+                <div id="archive-entries" class="panel">
+                    <h2 class="panel-title">待归档条目</h2>
+                    <div id="entry-list"></div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 底部日志 -->
+        <footer id="log-panel">
+            <div id="log-content">
+                <p class="log-entry system">系统启动。圣所主厅已激活。</p>
+                <p class="log-entry guardian">缇卡：「……我准备好了。让我们开始吧。」</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 归档完成弹窗 -->
+    <div id="modal-overlay" class="hidden">
+        <div id="modal">
+            <h2 id="modal-title">归档完成</h2>
+            <p id="modal-content"></p>
+            <button id="modal-close">确认</button>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/canvas.js"></script>
+</body>
+</html>

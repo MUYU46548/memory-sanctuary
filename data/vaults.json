@@ -1,0 +1,43 @@
+{
+  "vaults": [
+    {
+      "id": 1,
+      "name": "语言与语法",
+      "theme": "language",
+      "capacity": 100,
+      "used": 0,
+      "priority": "high",
+      "color": "#1a2a4a",
+      "accentColor": "#4a6a9a",
+      "ambientSound": "vault_language",
+      "archives": [],
+      "description": "存储萨拉达斯文明的全部语言遗产——词典、语法、声调分析、口述记录。"
+    },
+    {
+      "id": 2,
+      "name": "历史编年",
+      "theme": "history",
+      "capacity": 120,
+      "used": 0,
+      "priority": "high",
+      "color": "#3a2a1a",
+      "accentColor": "#8a6a3a",
+      "ambientSound": "vault_history",
+      "archives": [],
+      "description": "从树栖时期到太空时代的完整时间线，包含法律、科技、重大事件。"
+    },
+    {
+      "id": 3,
+      "name": "灾难纪实",
+      "theme": "disaster",
+      "capacity": 150,
+      "used": 0,
+      "priority": "medium",
+      "color": "#3a1a1a",
+      "accentColor": "#8a3a3a",
+      "ambientSound": "vault_disaster",
+      "archives": [],
+      "description": "记录'突触震动'灾难的全过程——光雨、生态崩溃、文明瓦解。"
+    }
+  ]
+}

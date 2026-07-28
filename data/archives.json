@@ -1,0 +1,196 @@
+{
+  "archives": [
+    {
+      "id": "arch_001",
+      "title": "《翼神升天颂》",
+      "vault": 1,
+      "type": "text",
+      "dataCost": 15,
+      "energyCost": 8,
+      "description": "萨拉达斯文明最完整的祷文之一，描述翼神脱离大地、飞向星辰的旅程。",
+      "content": "天空的羽毛已然脱落，歌声沉入黄沙。\n若星辰之上仍有倾听者——\n请带走我们的名字。\n我们曾存在。\n我们曾仰望。\n我们曾渴望触碰你们。",
+      "guardianReactions": {
+        "tika": "这段祷文我唱了无数遍……每一次，都能感受到先祖仰望星空时的那份渴望。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_002",
+      "title": "四种萨拉达斯语言基础词典",
+      "vault": 1,
+      "type": "text",
+      "dataCost": 20,
+      "energyCost": 12,
+      "description": "缇卡主持编撰的语言学档案，涵盖四种萨拉达斯语言的声调-频率复合系统。",
+      "content": "第一声部：大地之音（低频，用于仪式）\n第二声部：风之语（中频，日常交流）\n第三声部：星辰咏叹（高频，哲学与科学）\n第四声部：翼神之歌（复合频率，仅用于神圣场合）\n\n每种语言通过声调的高低组合传递不同层次的含义……",
+      "guardianReactions": {
+        "tika": "编撰这部词典时，我常常忘记自己是在记录一种正在消失的东西。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "tika_dictation"
+    },
+    {
+      "id": "arch_003",
+      "title": "声调-频率复合系统分析图",
+      "vault": 1,
+      "type": "text",
+      "dataCost": 10,
+      "energyCost": 6,
+      "description": "详细的声波分析图表，展示萨拉达斯语言中声调与情感含义的对应关系。",
+      "content": "[图示] 频率(Hz) × 情感维度矩阵\n\n低频 + 长衰减 → 悲伤、回忆\n高频 + 短脉冲 → 喜悦、警觉\n双频叠加 → 矛盾、犹豫\n三频共振 → 神圣、超越\n\n这套系统让萨拉达斯语言能够同时传递语义和情感……",
+      "guardianReactions": {
+        "tika": "芬恩总说我过度解读了声调中的情感——但他每次听到那段仪式录音时，眼眶都是红的。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": 12,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_004",
+      "title": "《共享公约》全文",
+      "vault": 2,
+      "type": "text",
+      "dataCost": 18,
+      "energyCost": 10,
+      "description": "萨拉达斯文明的法律基石，规定个体与群体之间的权利与义务边界。",
+      "content": "第一条：每个声音都是独特的频率，不得被覆盖或消音。\n第二条：知识的流动如同风中的羽毛，任何个体不得据为私有。\n第三条：争端通过声波协商解决，由长老会监听并裁定。\n……\n第十二条：当文明面临终结，所有记录应被汇聚，送往星辰。",
+      "guardianReactions": {
+        "finn": "这份公约的措辞经过了三十七次修订。每一次修改都是一次妥协，一次平衡。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_005",
+      "title": "树栖时期口述史",
+      "vault": 2,
+      "type": "text",
+      "dataCost": 14,
+      "energyCost": 9,
+      "description": "萨拉达斯人从树栖时代向地面定居过渡的口述历史记录。",
+      "content": "「我们的祖先住在树冠之上，以藤蔓为桥，以枝叶为屋。\n那时风是唯一的信使，每一片叶子的颤动都有含义。\n后来果实越来越少，我们不得不下到地面——\n那是第一次失去，但绝不是最后一次。」",
+      "guardianReactions": {
+        "misha": "每次听到这段录音，我都会想起森林消失前的最后一批果实。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "tika_dictation"
+    },
+    {
+      "id": "arch_006",
+      "title": "太空电梯设计图注记",
+      "vault": 2,
+      "type": "text",
+      "dataCost": 22,
+      "energyCost": 14,
+      "description": "洛恩参与设计的太空电梯项目笔记，包含失败原因分析。",
+      "content": "碳纳米管缆绳在海拔3000米处出现共振断裂。\n我们尝试了七种阻尼方案，全部失败。\n光障不仅仅是技术问题——它是物理法则设下的墙。\n也许我们的后代会找到绕过它的方法。",
+      "guardianReactions": {
+        "lorn": "……那是我职业生涯的终点。但我不后悔尝试过。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": 20,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_007",
+      "title": "光雨初降目击者证言",
+      "vault": 3,
+      "type": "text",
+      "dataCost": 12,
+      "energyCost": 7,
+      "description": "灾难初期目击者对光雨现象的详细描述。",
+      "content": "天空裂开了，但不是下雨——是光。\n一种温暖的、金色的光，像羽毛一样飘落。\n但触碰到光的一切都在……消失。\n不是死亡，是消失。\n就好像从未存在过。",
+      "guardianReactions": {
+        "misha": "我当时就在外面。那些光……美丽得让人忘记逃跑。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_008",
+      "title": "《大地之羽的凋零》节选",
+      "vault": 3,
+      "type": "text",
+      "dataCost": 16,
+      "energyCost": 10,
+      "description": "一部记录生态崩溃的长诗，描述森林、海洋、大气层的逐步瓦解。",
+      "content": "第一羽落，森林沉默。\n第二羽落，海洋沸腾。\n第三羽落，大气燃烧。\n第四羽落——\n大地本身开始脱落，\n如同垂死的鸟\n褪去最后的羽毛。",
+      "guardianReactions": {
+        "ethel": "诗人写下这首诗时，第三羽尚未落下。她是在预言，也是在哀悼。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_009",
+      "title": "圣所建造会议记录",
+      "vault": 3,
+      "type": "text",
+      "dataCost": 20,
+      "energyCost": 12,
+      "description": "决定建造记忆圣所的高层会议完整记录，包含争论与妥协。",
+      "content": "——我们无法拯救所有人。\n——但我们可以记住他们。\n——记忆有什么用？后世不会存在。\n——也许不会。但如果有呢？如果有谁找到了这个圣所呢？\n——……那就给他们一个选择。让他们决定保存什么。",
+      "guardianReactions": {
+        "finn": "那场会议持续了三天。最后所有人都沉默了，然后投票通过。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_010",
+      "title": "守护者芬恩的私人日志",
+      "vault": 3,
+      "type": "text",
+      "dataCost": 10,
+      "energyCost": 6,
+      "description": "芬恩在圣所中的私人记录，展现他内心的挣扎与执着。",
+      "content": "今天又有一条记录因为资源不足而无法保存。\n我告诉自己这是必要的牺牲。\n但每放弃一条记录，我就觉得——\n我们离'完整'又远了一步。\n也许'完整'从来就是不可能的。\n但我还是想试试。",
+      "guardianReactions": {
+        "finn": "……"
+      },
+      "relatedArchives": [],
+      "expiresAfter": 24,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_011",
+      "title": "升天之仪决策备忘录",
+      "vault": 3,
+      "type": "text",
+      "dataCost": 14,
+      "energyCost": 9,
+      "description": "关于是否发射祈愿瓶进入深空的关键决策文件。",
+      "content": "——发射意味着消耗我们15%的储备能源。\n——不发射意味着文明最后的希望会随星球一起毁灭。\n——那不是一场赌博。那是……唯一的赌注。",
+      "guardianReactions": {
+        "ethel": "我在投票时投了赞成。不是因为信仰，是因为……我不想让这一切毫无意义。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_012",
+      "title": "最后的祈愿瓶铭文",
+      "vault": 3,
+      "type": "text",
+      "dataCost": 8,
+      "energyCost": 5,
+      "description": "刻在祈愿瓶探测器上的简短铭文，是文明最后的自我介绍。",
+      "content": "我们曾存在，我们曾仰望，我们曾渴望触碰你们。",
+      "guardianReactions": {
+        "tika": "……这是我写下的最短的诗，也是最长的。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    }
+  ]
+}
