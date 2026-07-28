@@ -7,12 +7,36 @@
     <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
-    <div id="game-container">
+    <!-- 标题画面 -->
+    <div id="title-screen">
+        <div id="title-content">
+            <div id="title-logo">
+                <div class="title-cn">记忆圣所</div>
+                <div class="title-en">MEMORY SANCTUARY</div>
+                <div class="title-sub">终来之刻，何物当存？</div>
+            </div>
+            <div id="title-menu">
+                <button class="title-btn" id="title-new">新建游戏</button>
+                <button class="title-btn" id="title-load">读取存档</button>
+                <button class="title-btn" id="title-help">帮助</button>
+                <button class="title-btn" id="title-about">关于</button>
+            </div>
+            <div id="title-ngplus"></div>
+        </div>
+    </div>
+
+    <!-- 游戏容器 -->
+    <div id="game-container" class="hidden">
         <!-- 顶部状态栏 -->
         <header id="top-bar">
             <div class="title">
                 <span class="title-cn">记忆圣所</span>
                 <span class="title-en">MEMORY SANCTUARY</span>
+            </div>
+            <div id="week-display">
+                <span class="week-label">第</span>
+                <span class="week-value" id="week-value">1</span>
+                <span class="week-label">周</span>
             </div>
             <div id="resource-panel">
                 <div class="resource" id="res-energy">
@@ -109,6 +133,15 @@
 
         <!-- 底部功能栏 -->
         <footer id="func-bar">
+            <button id="title-btn" title="返回标题">
+                <span>标题</span>
+            </button>
+            <button id="save-btn" title="存档">
+                <span>存档</span>
+            </button>
+            <button id="load-btn" title="读档">
+                <span>读档</span>
+            </button>
             <button id="help-btn" title="帮助">
                 <span>帮助</span>
             </button>
@@ -133,6 +166,18 @@
         <div id="tutorial-tip">
             <div id="tutorial-text"></div>
             <button id="tutorial-next">下一步</button>
+        </div>
+    </div>
+
+    <!-- 存档界面 -->
+    <div id="save-overlay" class="hidden">
+        <div id="save-panel">
+            <div id="save-panel-header">
+                <h2 id="save-panel-title">记忆圣所 · 存档</h2>
+                <button id="save-close">✕</button>
+            </div>
+            <div id="save-slots"></div>
+            <div id="save-info"></div>
         </div>
     </div>
 

@@ -20,9 +20,21 @@ function initUI() {
 
 function renderAll() {
     renderResources();
+    renderWeekDisplay();
     renderVaultTabs();
     renderVaultStatus();
     renderArchiveEntries();
+}
+
+// ==========================================
+// 周数显示
+// ==========================================
+
+function renderWeekDisplay() {
+    const weekEl = document.getElementById('week-value');
+    if (weekEl && MemorySanctuary.state) {
+        weekEl.textContent = MemorySanctuary.state.week;
+    }
 }
 
 // ==========================================

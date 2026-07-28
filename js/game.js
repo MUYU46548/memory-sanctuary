@@ -841,3 +841,508 @@ function showAboutModal() {
 
     if (closeBtn) closeBtn.onclick = () => overlay.classList.add('hidden');
 }
+
+// ==========================================
+// 存档系统
+// ==========================================
+
+const SAVE_KEY_PREFIX = 'memory-sanctuary-save-slot-';
+const SAVE_SLOT_COUNT = 3;
+const NG_PLUS_KEY = 'memory-sanctuary-ngplus';
+const CURRENT_SLOT_KEY = 'memory-sanctuary-current-slot';
+
+function saveGame(slot) {
+    if (slot < 1 || slot > SAVE_SLOT_COUNT) return false;
+
+    const ngData = getNGPlusData();
+
+    const saveData = {
+        version: 1,
+        slot: slot,
+        savedAt: Date.now(),
+        playthrough: ngData.playthroughCount,
+        state: {
+            resources: { ...MemorySanctuary.state.resources },
+            week: MemorySanctuary.state.week,
+            chapter: MemorySanctuary.state.chapter,
+            completedArchives: [...MemorySanctuary.state.completedArchives],
+            vaultUsage: { ...MemorySanctuary.state.vaultUsage },
+            narrativeFlags: [...MemorySanctuary.state.narrativeFlags],
+            activeEvents: [],
+            activeEventIds: [...MemorySanctuary.state.activeEventIds]
+        },
+        currentVaultId: MemorySanctuary.currentVaultId
+    };
+
+    try {
+        localStorage.setItem(SAVE_KEY_PREFIX + slot, JSON.stringify(saveData));
+        localStorage.setItem(CURRENT_SLOT_KEY, String(slot));
+        addLog(`游戏已保存至存档槽 ${slot}。`, 'system');
+        return true;
+    } catch (e) {
+        console.error('[存档] 保存失败:', e);
+        addLog('存档失败：存储空间不足。', 'system');
+        return false;
+    }
+}
+
+function loadGame(slot) {
+    if (slot < 1 || slot > SAVE_SLOT_COUNT) return false;
+
+    const raw = localStorage.getItem(SAVE_KEY_PREFIX + slot);
+    if (!raw) return false;
+
+    try {
+        const saveData = JSON.parse(raw);
+
+        MemorySanctuary.state.resources = { ...saveData.state.resources };
+        MemorySanctuary.state.week = saveData.state.week;
+        MemorySanctuary.state.chapter = saveData.state.chapter;
+        MemorySanctuary.state.completedArchives = [...saveData.state.completedArchives];
+        MemorySanctuary.state.vaultUsage = { ...saveData.state.vaultUsage };
+        MemorySanctuary.state.narrativeFlags = [...(saveData.state.narrativeFlags || [])];
+        MemorySanctuary.state.activeEvents = [];
+        MemorySanctuary.state.activeEventIds = [...(saveData.state.activeEventIds || [])];
+
+        MemorySanctuary.currentVaultId = saveData.currentVaultId || 1;
+        MemorySanctuary.activeEvent = null;
+
+        localStorage.setItem(CURRENT_SLOT_KEY, String(slot));
+
+        renderAll();
+        if (typeof initCanvas === 'function') initCanvas();
+
+        const guardian = MemorySanctuary.data.guardians[0];
+        if (guardian) showGuardianDialogue(guardian.id, 'idle');
+
+        addLog(`已从存档槽 ${slot} 读取游戏。`, 'system');
+        return true;
+    } catch (e) {
+        console.error('[存档] 读取失败:', e);
+        addLog('读档失败：存档数据已损坏。', 'system');
+        return false;
+    }
+}
+
+function getSaveSlotInfo(slot) {
+    const raw = localStorage.getItem(SAVE_KEY_PREFIX + slot);
+    if (!raw) return null;
+
+    try {
+        const data = JSON.parse(raw);
+        return {
+            slot: data.slot,
+            savedAt: data.savedAt,
+            week: data.state.week,
+            chapter: data.state.chapter,
+            archivedCount: data.state.completedArchives.length,
+            currentVaultId: data.currentVaultId,
+            playthrough: data.playthrough || 1
+        };
+    } catch (e) {
+        return null;
+    }
+}
+
+function getAllSaveSlots() {
+    const slots = [];
+    for (let i = 1; i <= SAVE_SLOT_COUNT; i++) {
+        slots.push(getSaveSlotInfo(i));
+    }
+    return slots;
+}
+
+function deleteSaveSlot(slot) {
+    localStorage.removeItem(SAVE_KEY_PREFIX + slot);
+}
+
+function hasAnySaves() {
+    for (let i = 1; i <= SAVE_SLOT_COUNT; i++) {
+        if (localStorage.getItem(SAVE_KEY_PREFIX + i)) return true;
+    }
+    return false;
+}
+
+function getCurrentSlot() {
+    return parseInt(localStorage.getItem(CURRENT_SLOT_KEY) || '0');
+}
+
+// ==========================================
+// 多周目继承
+// ==========================================
+
+function getNGPlusData() {
+    const raw = localStorage.getItem(NG_PLUS_KEY);
+    if (!raw) {
+        return {
+            playthroughCount: 0,
+            totalArchivesSaved: 0,
+            bonuses: []
+        };
+    }
+    try {
+        return JSON.parse(raw);
+    } catch (e) {
+        return {
+            playthroughCount: 0,
+            totalArchivesSaved: 0,
+            bonuses: []
+        };
+    }
+}
+
+function saveNGPlusData(data) {
+    localStorage.setItem(NG_PLUS_KEY, JSON.stringify(data));
+}
+
+function startNewGamePlus() {
+    const ngData = getNGPlusData();
+    ngData.playthroughCount++;
+    ngData.bonuses = calculateNGPlusBonuses(ngData.playthroughCount);
+    saveNGPlusData(ngData);
+    return ngData;
+}
+
+function calculateNGPlusBonuses(playthrough) {
+    const bonuses = [];
+    if (playthrough >= 2) bonuses.push({ type: 'resource', resource: 'energy', value: 20, label: '起始能源+20' });
+    if (playthrough >= 2) bonuses.push({ type: 'resource', resource: 'media', value: 15, label: '起始介质+15' });
+    if (playthrough >= 3) bonuses.push({ type: 'resource', resource: 'energy', value: 30, label: '起始能源+30' });
+    if (playthrough >= 3) bonuses.push({ type: 'resource', resource: 'media', value: 25, label: '起始介质+25' });
+    if (playthrough >= 4) bonuses.push({ type: 'resource', resource: 'environment', value: 10, label: '起始环境+10' });
+    if (playthrough >= 5) bonuses.push({ type: 'resource', resource: 'energy', value: 50, label: '起始能源+50' });
+    return bonuses;
+}
+
+function applyNGPlusBonuses() {
+    const ngData = getNGPlusData();
+    if (!ngData.bonuses || ngData.bonuses.length === 0) return;
+
+    ngData.bonuses.forEach(bonus => {
+        if (bonus.type === 'resource') {
+            MemorySanctuary.state.resources[bonus.resource] = Math.min(
+                100,
+                MemorySanctuary.state.resources[bonus.resource] + bonus.value
+            );
+        }
+    });
+}
+
+// ==========================================
+// 新游戏
+// ==========================================
+
+function startNewGame(slot, isNGPlus) {
+    if (isNGPlus) {
+        startNewGamePlus();
+    }
+
+    initGameState();
+
+    if (isNGPlus) {
+        applyNGPlusBonuses();
+    }
+
+    const logContent = document.getElementById('log-content');
+    if (logContent) logContent.innerHTML = '';
+
+    localStorage.setItem(CURRENT_SLOT_KEY, String(slot));
+
+    renderAll();
+    if (typeof initCanvas === 'function') initCanvas();
+
+    showGuardianDialogue('tika', 'idle');
+
+    saveGame(slot);
+
+    const ngData = getNGPlusData();
+    if (isNGPlus && ngData.playthroughCount > 1) {
+        addLog(`第 ${ngData.playthroughCount} 周目开始。继承奖励已应用。`, 'system');
+    } else {
+        addLog('新游戏开始。愿你的选择得到善待。', 'system');
+    }
+}
+
+// ==========================================
+// 存档界面
+// ==========================================
+
+function openSaveScreen(mode) {
+    const overlay = document.getElementById('save-overlay');
+    const title = document.getElementById('save-panel-title');
+    if (!overlay) return;
+
+    if (title) {
+        if (mode === 'load') {
+            title.textContent = '记忆圣所 · 读档';
+        } else if (mode === 'new') {
+            title.textContent = '记忆圣所 · 新建游戏';
+        } else {
+            title.textContent = '记忆圣所 · 存档';
+        }
+    }
+
+    renderSaveSlots(mode);
+    overlay.classList.remove('hidden');
+}
+
+function closeSaveScreen() {
+    const overlay = document.getElementById('save-overlay');
+    if (overlay) overlay.classList.add('hidden');
+}
+
+function renderSaveSlots(mode) {
+    const container = document.getElementById('save-slots');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const slots = getAllSaveSlots();
+    const currentSlot = getCurrentSlot();
+
+    slots.forEach((info, index) => {
+        const slotNum = index + 1;
+        const card = document.createElement('div');
+        card.className = 'save-slot-card';
+
+        if (info) {
+            const date = new Date(info.savedAt);
+            const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+            card.innerHTML = `
+                <div class="save-slot-header">
+                    <span class="save-slot-number">存档 ${slotNum}</span>
+                    ${slotNum === currentSlot ? '<span class="save-slot-current">当前</span>' : ''}
+                    <span class="save-slot-playthrough">第${info.playthrough}周目</span>
+                </div>
+                <div class="save-slot-info">
+                    <div class="save-slot-week">第 ${info.week}周 · 第 ${info.chapter}章</div>
+                    <div class="save-slot-archived">已归档: ${info.archivedCount} 条</div>
+                    <div class="save-slot-date">${dateStr}</div>
+                </div>
+                <div class="save-slot-actions">
+                    <button class="save-slot-btn load" data-slot="${slotNum}">读取</button>
+                    ${mode === 'save' ? `<button class="save-slot-btn overwrite" data-slot="${slotNum}">覆盖</button>` : ''}
+                    <button class="save-slot-btn delete" data-slot="${slotNum}">删除</button>
+                </div>
+            `;
+        } else {
+            card.innerHTML = `
+                <div class="save-slot-header">
+                    <span class="save-slot-number">存档 ${slotNum}</span>
+                </div>
+                <div class="save-slot-info">
+                    <div class="save-slot-empty">空槽位</div>
+                </div>
+                <div class="save-slot-actions">
+                    <button class="save-slot-btn new" data-slot="${slotNum}">新游戏</button>
+                </div>
+            `;
+        }
+
+        container.appendChild(card);
+    });
+
+    container.querySelectorAll('.save-slot-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const slot = parseInt(e.target.dataset.slot);
+            const action = e.target.classList.contains('load') ? 'load' :
+                          e.target.classList.contains('overwrite') ? 'overwrite' :
+                          e.target.classList.contains('delete') ? 'delete' :
+                          e.target.classList.contains('new') ? 'new' : null;
+
+            handleSaveAction(slot, action, mode);
+        });
+    });
+}
+
+function handleSaveAction(slot, action, mode) {
+    const titleScreen = document.getElementById('title-screen');
+    const gameContainer = document.getElementById('game-container');
+    
+    switch (action) {
+        case 'load':
+            closeSaveScreen();
+            // Always ensure title is hidden and game container visible
+            if (titleScreen) titleScreen.classList.add('hidden');
+            if (gameContainer) gameContainer.classList.remove('hidden');
+            loadGame(slot);
+            break;
+        case 'overwrite':
+            if (confirm(`确定要覆盖存档槽 ${slot} 吗？`)) {
+                if (saveGame(slot)) {
+                    closeSaveScreen();
+                }
+            }
+            break;
+        case 'delete':
+            if (confirm(`确定要删除存档槽 ${slot} 吗？`)) {
+                deleteSaveSlot(slot);
+                renderSaveSlots(mode);
+            }
+            break;
+        case 'new': {
+            const ngData = getNGPlusData();
+            const isNGPlus = ngData.playthroughCount > 0;
+            
+            closeSaveScreen();
+            if (titleScreen) titleScreen.classList.add('hidden');
+            if (gameContainer) gameContainer.classList.remove('hidden');
+            startNewGame(slot, isNGPlus);
+            break;
+        }
+    }
+}
+
+function initSaveSystem() {
+    const saveBtn = document.getElementById('save-btn');
+    const loadBtn = document.getElementById('load-btn');
+    const saveCloseBtn = document.getElementById('save-close');
+
+    // Save button: open slot selection panel
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            openSaveScreen('save');
+        });
+    }
+
+    // Load button: open slot selection panel
+    if (loadBtn) {
+        loadBtn.addEventListener('click', () => {
+            openSaveScreen('load');
+        });
+    }
+
+    if (saveCloseBtn) {
+        saveCloseBtn.addEventListener('click', closeSaveScreen);
+    }
+
+    const overlay = document.getElementById('save-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeSaveScreen();
+        });
+    }
+}
+
+// Start game after loading from title screen
+function startGameAfterLoad(slot) {
+    const titleScreen = document.getElementById('title-screen');
+    const gameContainer = document.getElementById('game-container');
+    
+    titleScreen.classList.add('hidden');
+    gameContainer.classList.remove('hidden');
+    
+    loadGame(slot);
+    
+    // Show tutorial for first-time players
+    const savedTutorial = localStorage.getItem('memory-sanctuary-tutorial');
+    if (!savedTutorial) {
+        setTimeout(() => {
+            if (typeof initTutorial === 'function') initTutorial();
+        }, 500);
+    }
+}
+
+// ==========================================
+// 封印圣所 / 游戏完成
+// ==========================================
+
+function canSealSanctuary() {
+    if (!MemorySanctuary.state) return false;
+    return MemorySanctuary.state.week >= 10;
+}
+
+function sealSanctuary() {
+    const archivedCount = MemorySanctuary.state.completedArchives.length;
+    const totalCount = MemorySanctuary.data.archives.length;
+    const ngData = getNGPlusData();
+
+    // Update NG+ data
+    ngData.totalArchivesSaved = (ngData.totalArchivesSaved || 0) + archivedCount;
+    if (!ngData.bestRun || archivedCount > ngData.bestRun.count) {
+        ngData.bestRun = { count: archivedCount, week: MemorySanctuary.state.week };
+    }
+    saveNGPlusData(ngData);
+
+    // Show completion modal
+    showSealModal(archivedCount, totalCount);
+}
+
+function showSealModal(archivedCount, totalCount) {
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    const closeBtn = document.getElementById('modal-close');
+
+    if (!overlay || !title || !content) return;
+
+    title.textContent = '圣所已封印';
+
+    let modalContent = `你选择在此刻封印记忆圣所。\n\n`;
+    modalContent += `最终统计：\n`;
+    modalContent += `• 运行周数：${MemorySanctuary.state.week} 周\n`;
+    modalContent += `• 归档条目：${archivedCount} / ${totalCount}\n`;
+    modalContent += `• 存储室利用率：${Math.round((archivedCount / totalCount) * 100)}%\n\n`;
+
+    const ngData = getNGPlusData();
+    if (ngData.playthroughCount > 0) {
+        modalContent += `多周目进度：\n`;
+        modalContent += `• 已完成周目：${ngData.playthroughCount}\n`;
+        modalContent += `• 累计归档：${ngData.totalArchivesSaved} 条\n`;
+        if (ngData.bestRun) {
+            modalContent += `• 最佳记录：${ngData.bestRun.count} 条（第${ngData.bestRun.week}周）\n`;
+        }
+    }
+
+    modalContent += `\n你的选择决定了后世「看到」怎样的萨拉达斯文明。\n`;
+    modalContent += `「——终来之刻，何物当存？」`;
+
+    content.textContent = modalContent;
+    overlay.classList.remove('hidden');
+
+    if (closeBtn) {
+        closeBtn.textContent = '继续游戏';
+        closeBtn.onclick = () => {
+            overlay.classList.add('hidden');
+            closeBtn.textContent = '确认';
+        };
+    }
+}
+
+function renderSealButton() {
+    const container = document.getElementById('save-info');
+    if (!container) return;
+
+    // Only show seal button if game is active (state exists)
+    if (!MemorySanctuary.state) {
+        container.innerHTML = '';
+        return;
+    }
+
+    const canSeal = canSealSanctuary();
+    const archivedCount = MemorySanctuary.state.completedArchives.length;
+
+    if (!canSeal) {
+        const weeksLeft = 10 - MemorySanctuary.state.week;
+        container.innerHTML = `圣所需运行至少 10 周方可封印。还需 ${weeksLeft} 周。`;
+        return;
+    }
+
+    container.innerHTML = '';
+    const sealBtn = document.createElement('button');
+    sealBtn.id = 'seal-btn';
+    sealBtn.textContent = `封印圣所（已归档 ${archivedCount} 条）`;
+    sealBtn.addEventListener('click', () => {
+        if (confirm('确定封印圣所吗？这将结束当前周目并解锁多周目奖励。')) {
+            sealSanctuary();
+        }
+    });
+    container.appendChild(sealBtn);
+}
+
+// Override renderSaveSlots to also render the seal button
+const _origRenderSaveSlots = renderSaveSlots;
+renderSaveSlots = function(mode) {
+    _origRenderSaveSlots(mode);
+    renderSealButton();
+};
