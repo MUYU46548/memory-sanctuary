@@ -25,8 +25,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof initCanvas === 'function') initCanvas();
         if (typeof initUI === 'function') initUI();
         if (typeof initEventSystem === 'function') initEventSystem();
+        if (typeof initLogSystem === 'function') initLogSystem();
+        if (typeof initGuardianInteraction === 'function') initGuardianInteraction();
+        if (typeof initTutorialListener === 'function') initTutorialListener();
+        if (typeof initFuncBar === 'function') initFuncBar();
         
         renderAll();
+        
+        // 延迟启动新手引导
+        setTimeout(() => {
+            if (typeof initTutorial === 'function') initTutorial();
+        }, 500);
         
         // 初始守护者对话
         showGuardianDialogue('tika', 'idle');

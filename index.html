@@ -64,6 +64,11 @@
                             <div class="guardian-dialogue" id="guardian-dialogue">……我准备好了。让我们开始吧。</div>
                         </div>
                     </div>
+                    <!-- 守护者互动菜单 -->
+                    <div id="guardian-menu" class="hidden">
+                        <button class="guardian-menu-item" id="guardian-talk">💬 交谈</button>
+                        <button class="guardian-menu-item" id="guardian-recommend">📌 推荐归档</button>
+                    </div>
                 </div>
 
                 <!-- 存储室状态 -->
@@ -82,11 +87,34 @@
         </main>
 
         <!-- 底部日志 -->
-        <footer id="log-panel">
+        <footer id="log-bar">
+            <button id="log-toggle" title="展开/收起日志">
+                <span id="log-icon">📜</span>
+                <span id="log-label">日志</span>
+                <span id="log-unread" class="hidden">0</span>
+            </button>
+        </footer>
+
+        <!-- 日志展开面板 -->
+        <div id="log-panel" class="hidden">
+            <div id="log-panel-header">
+                <span>系统日志</span>
+                <button id="log-close">✕</button>
+            </div>
             <div id="log-content">
                 <p class="log-entry system">系统启动。圣所主厅已激活。</p>
                 <p class="log-entry guardian">缇卡：「……我准备好了。让我们开始吧。」</p>
             </div>
+        </div>
+
+        <!-- 底部功能栏 -->
+        <footer id="func-bar">
+            <button id="help-btn" title="帮助">
+                <span>帮助</span>
+            </button>
+            <button id="about-btn" title="关于">
+                <span>关于</span>
+            </button>
         </footer>
     </div>
 
@@ -96,6 +124,15 @@
             <h2 id="modal-title">归档完成</h2>
             <p id="modal-content"></p>
             <button id="modal-close">确认</button>
+        </div>
+    </div>
+
+    <!-- 新手引导遮罩 -->
+    <div id="tutorial-overlay" class="hidden">
+        <div id="tutorial-highlight"></div>
+        <div id="tutorial-tip">
+            <div id="tutorial-text"></div>
+            <button id="tutorial-next">下一步</button>
         </div>
     </div>
 

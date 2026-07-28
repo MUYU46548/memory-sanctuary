@@ -101,6 +101,14 @@ body {
 }
 
 /* ============================================
+   通用工具
+   ============================================ */
+
+.hidden {
+    display: none !important;
+}
+
+/* ============================================
    自定义滚动条
    ============================================ */
 
@@ -299,28 +307,30 @@ body {
    ============================================ */
 
 #vault-tabs {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
     gap: 4px;
     margin-bottom: 12px;
-    padding: 2px;
+    padding: 4px;
     background: var(--bg-deep);
     border-radius: 6px;
     border: 1px solid var(--border-subtle);
 }
 
 .vault-tab {
-    flex: 1;
-    padding: 8px 12px;
+    padding: 6px 8px;
     background: transparent;
     border: 1px solid transparent;
     border-radius: 4px;
     color: var(--text-secondary);
     font-family: var(--font-cn);
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     cursor: pointer;
     transition: all 0.2s ease;
     text-align: center;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .vault-tab:hover {
@@ -538,6 +548,130 @@ body {
     border-left: 2px solid var(--amber-dim);
 }
 
+/* 守护者互动菜单 */
+#guardian-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+    animation: fadeIn 0.2s ease-out;
+}
+
+#guardian-menu.hidden {
+    display: none;
+}
+
+.guardian-menu-item {
+    padding: 8px 12px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-family: var(--font-cn);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.guardian-menu-item:hover {
+    border-color: var(--amber-primary);
+    color: var(--amber-primary);
+    background: var(--bg-panel-hover);
+}
+
+/* 推荐条目高亮 */
+button.archive-btn.recommended {
+    border-color: var(--success);
+    color: var(--success);
+    animation: recommendPulse 1.5s ease-in-out infinite;
+    box-shadow: 0 0 12px rgba(58, 138, 90, 0.3);
+}
+
+@keyframes recommendPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(58, 138, 90, 0.2); }
+    50% { box-shadow: 0 0 20px rgba(58, 138, 90, 0.4); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================
+   新手引导
+   ============================================ */
+
+#tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#tutorial-overlay.hidden {
+    display: none;
+}
+
+#tutorial-highlight {
+    position: absolute;
+    border: 2px solid var(--amber-primary);
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(212, 160, 74, 0.3);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 9001;
+}
+
+#tutorial-highlight.hidden {
+    display: none;
+}
+
+.tutorial-tip {
+    position: fixed;
+    max-width: 320px;
+    background: var(--bg-panel);
+    border: 1px solid var(--amber-primary);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    z-index: 9002;
+    animation: fadeIn 0.3s ease-out;
+}
+
+#tutorial-text {
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    line-height: 1.7;
+    white-space: pre-line;
+    margin-bottom: 16px;
+}
+
+#tutorial-next {
+    width: 100%;
+    padding: 10px 20px;
+    background: var(--amber-primary);
+    border: none;
+    border-radius: 4px;
+    color: var(--bg-deep);
+    font-family: var(--font-cn);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+#tutorial-next:hover {
+    background: var(--amber-glow);
+}
+
 /* ============================================
    事件通知
    ============================================ */
@@ -595,15 +729,159 @@ body {
    底部日志
    ============================================ */
 
-#log-panel {
-    height: 80px;
-    padding: 12px 24px;
+#log-bar {
+    height: 44px;
+    padding: 0 24px;
     background: var(--bg-panel);
     border-top: 1px solid var(--border-subtle);
-    overflow-y: auto;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+#log-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+#log-toggle:hover {
+    border-color: var(--amber-primary);
+    color: var(--amber-primary);
+    background: var(--bg-panel-hover);
+}
+
+#log-icon {
+    font-size: 1rem;
+}
+
+#log-label {
+    font-family: var(--font-cn);
+}
+
+#log-unread {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: var(--danger);
+    color: var(--text-primary);
+    font-size: 0.6rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    animation: unreadPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes unreadPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+/* 日志展开面板 */
+#log-panel {
+    position: fixed;
+    bottom: 44px;
+    left: 0;
+    right: 0;
+    max-height: 300px;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-strong);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -8px 32px var(--shadow-color);
+    animation: slideUp 0.25s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+#log-panel.hidden {
+    display: none;
+}
+
+#log-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+
+#log-panel-header span {
+    font-family: var(--font-cn);
+    font-size: 0.85rem;
+    color: var(--amber-primary);
+    letter-spacing: 0.1em;
+}
+
+#log-close {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s ease;
+}
+
+#log-close:hover {
+    color: var(--danger);
+}
+
+/* ============================================
+   底部功能栏
+   ============================================ */
+
+#func-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 10px 24px;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+}
+
+#func-bar button {
+    padding: 6px 20px;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    color: var(--text-dim);
+    font-family: var(--font-cn);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#func-bar button:hover {
+    border-color: var(--amber-primary);
+    color: var(--amber-primary);
+    background: var(--bg-panel-hover);
 }
 
 #log-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 24px;
     display: flex;
     flex-direction: column;
     gap: 4px;

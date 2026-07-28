@@ -7,10 +7,11 @@
       "type": "text",
       "dataCost": 15,
       "energyCost": 8,
-      "description": "萨拉达斯文明最完整的祷文之一，描述翼神脱离大地、飞向星辰的旅程。",
-      "content": "天空的羽毛已然脱落，歌声沉入黄沙。\n若星辰之上仍有倾听者——\n请带走我们的名字。\n我们曾存在。\n我们曾仰望。\n我们曾渴望触碰你们。",
+      "description": "萨拉达斯文明最完整的祷文之一。",
+      "content": "天空的羽毛已然脱落，歌声沉入黄沙。\n若星辰之上仍有倾听者——\n请带走我们的名字。",
       "guardianReactions": {
-        "tika": "这段祷文我唱了无数遍……每一次，都能感受到先祖仰望星空时的那份渴望。"
+        "tika": "这段记忆……我能感受到其中的情感。",
+        "lorn": "工程的力量就在这里。"
       },
       "relatedArchives": [],
       "expiresAfter": null,
@@ -18,47 +19,49 @@
     },
     {
       "id": "arch_002",
-      "title": "四种萨拉达斯语言基础词典",
+      "title": "萨拉达斯语系词源考",
       "vault": 1,
-      "type": "text",
-      "dataCost": 20,
-      "energyCost": 12,
-      "description": "缇卡主持编撰的语言学档案，涵盖四种萨拉达斯语言的声调-频率复合系统。",
-      "content": "第一声部：大地之音（低频，用于仪式）\n第二声部：风之语（中频，日常交流）\n第三声部：星辰咏叹（高频，哲学与科学）\n第四声部：翼神之歌（复合频率，仅用于神圣场合）\n\n每种语言通过声调的高低组合传递不同层次的含义……",
+      "type": "document",
+      "dataCost": 12,
+      "energyCost": 6,
+      "description": "对萨拉达斯语核心词汇起源的梳理。",
+      "content": "「光」(nar) 与「死」(nar-eth) 共享同一词根。",
       "guardianReactions": {
-        "tika": "编撰这部词典时，我常常忘记自己是在记录一种正在消失的东西。"
+        "tika": "我会把它唱给星星听。",
+        "finn": "这是真相的一部分。"
       },
       "relatedArchives": [],
       "expiresAfter": null,
-      "discoveryMethod": "tika_dictation"
+      "discoveryMethod": "surface_exploration"
     },
     {
       "id": "arch_003",
-      "title": "声调-频率复合系统分析图",
+      "title": "儿童启蒙歌谣集",
       "vault": 1,
-      "type": "text",
+      "type": "audio",
       "dataCost": 10,
-      "energyCost": 6,
-      "description": "详细的声波分析图表，展示萨拉达斯语言中声调与情感含义的对应关系。",
-      "content": "[图示] 频率(Hz) × 情感维度矩阵\n\n低频 + 长衰减 → 悲伤、回忆\n高频 + 短脉冲 → 喜悦、警觉\n双频叠加 → 矛盾、犹豫\n三频共振 → 神圣、超越\n\n这套系统让萨拉达斯语言能够同时传递语义和情感……",
+      "energyCost": 5,
+      "description": "母亲教给孩子们的歌谣。",
+      "content": "「星星是天空的沙子/时间是流动的光/当你闭上眼睛/风会带你回家」",
       "guardianReactions": {
-        "tika": "芬恩总说我过度解读了声调中的情感——但他每次听到那段仪式录音时，眼眶都是红的。"
+        "tika": "这段记忆……我能感受到其中的情感。"
       },
       "relatedArchives": [],
-      "expiresAfter": 12,
+      "expiresAfter": null,
       "discoveryMethod": "surface_exploration"
     },
     {
       "id": "arch_004",
-      "title": "《共享公约》全文",
-      "vault": 2,
-      "type": "text",
+      "title": "最后的语法书",
+      "vault": 1,
+      "type": "document",
       "dataCost": 18,
-      "energyCost": 10,
-      "description": "萨拉达斯文明的法律基石，规定个体与群体之间的权利与义务边界。",
-      "content": "第一条：每个声音都是独特的频率，不得被覆盖或消音。\n第二条：知识的流动如同风中的羽毛，任何个体不得据为私有。\n第三条：争端通过声波协商解决，由长老会监听并裁定。\n……\n第十二条：当文明面临终结，所有记录应被汇聚，送往星辰。",
+      "energyCost": 9,
+      "description": "语言学家维恩编写的完整语法手册。",
+      "content": "时态有三种：过去（已死的光），现在（正在消逝的光），未来（尚未诞生的光）。",
       "guardianReactions": {
-        "finn": "这份公约的措辞经过了三十七次修订。每一次修改都是一次妥协，一次平衡。"
+        "tika": "这段记忆……我能感受到其中的情感。",
+        "misha": "这是生命的记录。"
       },
       "relatedArchives": [],
       "expiresAfter": null,
@@ -66,47 +69,48 @@
     },
     {
       "id": "arch_005",
-      "title": "树栖时期口述史",
-      "vault": 2,
-      "type": "text",
-      "dataCost": 14,
-      "energyCost": 9,
-      "description": "萨拉达斯人从树栖时代向地面定居过渡的口述历史记录。",
-      "content": "「我们的祖先住在树冠之上，以藤蔓为桥，以枝叶为屋。\n那时风是唯一的信使，每一片叶子的颤动都有含义。\n后来果实越来越少，我们不得不下到地面——\n那是第一次失去，但绝不是最后一次。」",
+      "title": "禁忌词汇表",
+      "vault": 1,
+      "type": "document",
+      "dataCost": 8,
+      "energyCost": 4,
+      "description": "被禁止使用的词汇清单。",
+      "content": "「希望」(hopel) — 在末日预言公布后被列为禁忌。",
       "guardianReactions": {
-        "misha": "每次听到这段录音，我都会想起森林消失前的最后一批果实。"
+        "tika": "这是我们的根。"
       },
       "relatedArchives": [],
       "expiresAfter": null,
-      "discoveryMethod": "tika_dictation"
+      "discoveryMethod": "surface_exploration"
     },
     {
       "id": "arch_006",
-      "title": "太空电梯设计图注记",
-      "vault": 2,
-      "type": "text",
-      "dataCost": 22,
-      "energyCost": 14,
-      "description": "洛恩参与设计的太空电梯项目笔记，包含失败原因分析。",
-      "content": "碳纳米管缆绳在海拔3000米处出现共振断裂。\n我们尝试了七种阻尼方案，全部失败。\n光障不仅仅是技术问题——它是物理法则设下的墙。\n也许我们的后代会找到绕过它的方法。",
+      "title": "翻译者的笔记",
+      "vault": 1,
+      "type": "document",
+      "dataCost": 14,
+      "energyCost": 7,
+      "description": "试图将萨拉达斯语翻译为「星语」的手稿。",
+      "content": "星语中没有「再见」这个词。最接近的表达是「光会再次经过」。",
       "guardianReactions": {
-        "lorn": "……那是我职业生涯的终点。但我不后悔尝试过。"
+        "tika": "这是我们的根。",
+        "ethel": "这是信仰的见证。"
       },
       "relatedArchives": [],
-      "expiresAfter": 20,
+      "expiresAfter": null,
       "discoveryMethod": "surface_exploration"
     },
     {
       "id": "arch_007",
-      "title": "光雨初降目击者证言",
-      "vault": 3,
-      "type": "text",
-      "dataCost": 12,
-      "energyCost": 7,
-      "description": "灾难初期目击者对光雨现象的详细描述。",
-      "content": "天空裂开了，但不是下雨——是光。\n一种温暖的、金色的光，像羽毛一样飘落。\n但触碰到光的一切都在……消失。\n不是死亡，是消失。\n就好像从未存在过。",
+      "title": "城邦建立记",
+      "vault": 2,
+      "type": "document",
+      "dataCost": 16,
+      "energyCost": 8,
+      "description": "第一座城邦「穹顶之下」的建立记录。",
+      "content": "我们挖开大地，在岩石中建造家园。不是因为勇敢，而是因为天空已经不再安全。",
       "guardianReactions": {
-        "misha": "我当时就在外面。那些光……美丽得让人忘记逃跑。"
+        "tika": "让我把它记在心底。"
       },
       "relatedArchives": [],
       "expiresAfter": null,
@@ -114,15 +118,15 @@
     },
     {
       "id": "arch_008",
-      "title": "《大地之羽的凋零》节选",
-      "vault": 3,
-      "type": "text",
-      "dataCost": 16,
+      "title": "大饥荒年代",
+      "vault": 2,
+      "type": "document",
+      "dataCost": 20,
       "energyCost": 10,
-      "description": "一部记录生态崩溃的长诗，描述森林、海洋、大气层的逐步瓦解。",
-      "content": "第一羽落，森林沉默。\n第二羽落，海洋沸腾。\n第三羽落，大气燃烧。\n第四羽落——\n大地本身开始脱落，\n如同垂死的鸟\n褪去最后的羽毛。",
+      "description": "持续三十年的生态崩溃导致的大饥荒。",
+      "content": "那一年，我们学会了吃石头——不是真的吃，而是从石头中提取仅存的矿物质。",
       "guardianReactions": {
-        "ethel": "诗人写下这首诗时，第三羽尚未落下。她是在预言，也是在哀悼。"
+        "tika": "这段记忆……我能感受到其中的情感。"
       },
       "relatedArchives": [],
       "expiresAfter": null,
@@ -130,15 +134,15 @@
     },
     {
       "id": "arch_009",
-      "title": "圣所建造会议记录",
-      "vault": 3,
+      "title": "封印战争",
+      "vault": 2,
       "type": "text",
-      "dataCost": 20,
-      "energyCost": 12,
-      "description": "决定建造记忆圣所的高层会议完整记录，包含争论与妥协。",
-      "content": "——我们无法拯救所有人。\n——但我们可以记住他们。\n——记忆有什么用？后世不会存在。\n——也许不会。但如果有呢？如果有谁找到了这个圣所呢？\n——……那就给他们一个选择。让他们决定保存什么。",
+      "dataCost": 22,
+      "energyCost": 11,
+      "description": "关于是否封存文明遗产的激烈争论。",
+      "content": "「让后人知道我们存在过！」与「让后人不必承受我们的痛苦！」——两种信念，一场战争。",
       "guardianReactions": {
-        "finn": "那场会议持续了三天。最后所有人都沉默了，然后投票通过。"
+        "tika": "我会把它唱给星星听。"
       },
       "relatedArchives": [],
       "expiresAfter": null,
@@ -146,31 +150,33 @@
     },
     {
       "id": "arch_010",
-      "title": "守护者芬恩的私人日志",
-      "vault": 3,
-      "type": "text",
-      "dataCost": 10,
-      "energyCost": 6,
-      "description": "芬恩在圣所中的私人记录，展现他内心的挣扎与执着。",
-      "content": "今天又有一条记录因为资源不足而无法保存。\n我告诉自己这是必要的牺牲。\n但每放弃一条记录，我就觉得——\n我们离'完整'又远了一步。\n也许'完整'从来就是不可能的。\n但我还是想试试。",
+      "title": "末日预言公布日",
+      "vault": 2,
+      "type": "document",
+      "dataCost": 25,
+      "energyCost": 12,
+      "description": "天文台宣布太阳将在五十年内熄灭的那一天。",
+      "content": "沉默。然后是哭声。然后是歌声。萨拉达斯人用歌声回应了死刑判决。",
       "guardianReactions": {
-        "finn": "……"
+        "tika": "先祖的智慧，不应被遗忘。",
+        "misha": "生态的平衡就藏在这些记忆里。"
       },
       "relatedArchives": [],
-      "expiresAfter": 24,
+      "expiresAfter": null,
       "discoveryMethod": "surface_exploration"
     },
     {
       "id": "arch_011",
-      "title": "升天之仪决策备忘录",
-      "vault": 3,
-      "type": "text",
-      "dataCost": 14,
+      "title": "最后一位国王的遗诏",
+      "vault": 2,
+      "type": "document",
+      "dataCost": 18,
       "energyCost": 9,
-      "description": "关于是否发射祈愿瓶进入深空的关键决策文件。",
-      "content": "——发射意味着消耗我们15%的储备能源。\n——不发射意味着文明最后的希望会随星球一起毁灭。\n——那不是一场赌博。那是……唯一的赌注。",
+      "description": "城邦末代统治者留下的最后命令。",
+      "content": "「我不是在命令你们，我是在请求你们。请求你们记住我们。」",
       "guardianReactions": {
-        "ethel": "我在投票时投了赞成。不是因为信仰，是因为……我不想让这一切毫无意义。"
+        "tika": "这段记忆……我能感受到其中的情感。",
+        "finn": "我会把它编入编年史。"
       },
       "relatedArchives": [],
       "expiresAfter": null,
@@ -178,15 +184,845 @@
     },
     {
       "id": "arch_012",
-      "title": "最后的祈愿瓶铭文",
-      "vault": 3,
-      "type": "text",
-      "dataCost": 8,
-      "energyCost": 5,
-      "description": "刻在祈愿瓶探测器上的简短铭文，是文明最后的自我介绍。",
-      "content": "我们曾存在，我们曾仰望，我们曾渴望触碰你们。",
+      "title": "封存仪式记录",
+      "vault": 2,
+      "type": "document",
+      "dataCost": 30,
+      "energyCost": 15,
+      "description": "圣所封存那一天的完整记录。",
+      "content": "我们锁上了最后一道门。不是因为恐惧，是因为爱。",
       "guardianReactions": {
-        "tika": "……这是我写下的最短的诗，也是最长的。"
+        "tika": "先祖的智慧，不应被遗忘。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_013",
+      "title": "光雨初降目击报告",
+      "vault": 3,
+      "type": "document",
+      "dataCost": 14,
+      "energyCost": 7,
+      "description": "第一次观测到「光雨」现象的科学记录。",
+      "content": "天空开始下坠。不是雨，是光。光穿过大气层，像针一样刺入地面。",
+      "guardianReactions": {
+        "misha": "自然教会了我们很多。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_014",
+      "title": "地裂事件全记录",
+      "vault": 3,
+      "type": "document",
+      "dataCost": 20,
+      "energyCost": 10,
+      "description": "大陆板块断裂的详细记录。",
+      "content": "大地张开了嘴。裂缝中涌出的不是岩浆，是光。",
+      "guardianReactions": {
+        "misha": "这是我们的生存之道。",
+        "ethel": "灵魂需要归宿。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_015",
+      "title": "大气消散日志",
+      "vault": 3,
+      "type": "document",
+      "dataCost": 18,
+      "energyCost": 9,
+      "description": "空气成分逐渐稀薄的监测数据。",
+      "content": "今天呼吸需要用力了。明天会更用力。后天……也许没有后天了。",
+      "guardianReactions": {
+        "misha": "这是我们的生存之道。",
+        "lorn": "知识就是力量。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_016",
+      "title": "最后一批撤离者",
+      "vault": 3,
+      "type": "document",
+      "dataCost": 16,
+      "energyCost": 8,
+      "description": "未能进入圣所的地表居民的最后通讯。",
+      "content": "「我们进不去了。门已经封了。请告诉我们，我们的名字会被记住吗？」",
+      "guardianReactions": {
+        "misha": "这是生命的记录。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_017",
+      "title": "封存后的寂静",
+      "vault": 3,
+      "type": "document",
+      "dataCost": 12,
+      "energyCost": 6,
+      "description": "圣所完全封闭后，外部传感器的最后读数。",
+      "content": "零。零。零。零。零。零。零。零。零。零。",
+      "guardianReactions": {
+        "misha": "自然教会了我们很多。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_018",
+      "title": "灾难编年史",
+      "vault": 3,
+      "type": "document",
+      "dataCost": 24,
+      "energyCost": 12,
+      "description": "从第一次光雨到最终封存的完整时间线。",
+      "content": "第一天，天空裂开。第一百天，大地裂开。第一千天，我们的心裂开。",
+      "guardianReactions": {
+        "misha": "生态的平衡就藏在这些记忆里。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_019",
+      "title": "穹顶壁画全录",
+      "vault": 4,
+      "type": "image",
+      "dataCost": 20,
+      "energyCost": 10,
+      "description": "圣所穹顶上的壁画完整拓印。",
+      "content": "壁画上，无数只手伸向星空。每只手中都握着一样东西——种子、工具、书本、婴儿。",
+      "guardianReactions": {
+        "ethel": "这是信仰的见证。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_020",
+      "title": "最后的交响曲",
+      "vault": 4,
+      "type": "audio",
+      "dataCost": 25,
+      "energyCost": 12,
+      "description": "封存前夜，全城演奏的最后一支乐曲。",
+      "content": "没有歌词。只有声音。笛声代表风，鼓声代表心跳，弦声代表光。",
+      "guardianReactions": {
+        "ethel": "祈祷会传达到星空。",
+        "misha": "这是生命的记录。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_021",
+      "title": "舞者日记",
+      "vault": 4,
+      "type": "document",
+      "dataCost": 12,
+      "energyCost": 6,
+      "description": "一位舞者的私人日记，记录舞蹈与情感。",
+      "content": "「当我旋转时，我感觉自己变成了风。风不会消失，它只是去了别的地方。」",
+      "guardianReactions": {
+        "ethel": "仪式让我们完整。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_022",
+      "title": "雕塑家笔记",
+      "vault": 4,
+      "type": "document",
+      "dataCost": 14,
+      "energyCost": 7,
+      "description": "关于如何把「时间」雕成实体的思考。",
+      "content": "我雕了一个人，双手捧着一块正在碎裂的石头。那就是时间。",
+      "guardianReactions": {
+        "ethel": "仪式让我们完整。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_023",
+      "title": "颜色配方集",
+      "vault": 4,
+      "type": "document",
+      "dataCost": 10,
+      "energyCost": 5,
+      "description": "颜料制作工艺的完整记录。",
+      "content": "蓝色来自天空的最后一滴眼泪。红色来自大地的血液。金色来自……我们不说。",
+      "guardianReactions": {
+        "ethel": "灵魂需要归宿。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_024",
+      "title": "《永恒之书》",
+      "vault": 5,
+      "type": "text",
+      "dataCost": 22,
+      "energyCost": 11,
+      "description": "萨拉达斯哲学的核心经典。",
+      "content": "「存在是光的回声。死亡是回声的消散。但消散不是终结——回声从未真正消失。」",
+      "guardianReactions": {
+        "tika": "我会把它唱给星星听。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_025",
+      "title": "来世信仰考",
+      "vault": 5,
+      "type": "document",
+      "dataCost": 16,
+      "energyCost": 8,
+      "description": "关于萨拉达斯人对死后世界的想象。",
+      "content": "他们相信死后会变成一颗星星。所以每当有人去世，他们就说：「天上又多了一颗星。」",
+      "guardianReactions": {
+        "tika": "我会把它唱给星星听。",
+        "ethel": "仪式让我们完整。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_026",
+      "title": "仪式流程手册",
+      "vault": 5,
+      "type": "document",
+      "dataCost": 18,
+      "energyCost": 9,
+      "description": "所有宗教仪式的详细步骤。",
+      "content": "仪式有三步：沉默（倾听），歌唱（回应），熄灭（放手）。",
+      "guardianReactions": {
+        "tika": "这是我们的根。",
+        "lorn": "技术是我们的遗产。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_027",
+      "title": "末日前夜的祈祷",
+      "vault": 5,
+      "type": "text",
+      "dataCost": 20,
+      "energyCost": 10,
+      "description": "封存前夜，全体守护者共同念诵的祷文。",
+      "content": "「我们不知道谁会读到这些文字。但我们会假设他们存在。」",
+      "guardianReactions": {
+        "tika": "我会把它唱给星星听。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_028",
+      "title": "哲学家的最后问题",
+      "vault": 5,
+      "type": "document",
+      "dataCost": 15,
+      "energyCost": 7,
+      "description": "一位哲学家在末日前的最后思考。",
+      "content": "「如果没有人记住我们，我们真的存在过吗？」——他把这个问题刻在了圣所的大门上。",
+      "guardianReactions": {
+        "tika": "先祖的智慧，不应被遗忘。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_029",
+      "title": "天文观测全记录",
+      "vault": 6,
+      "type": "document",
+      "dataCost": 24,
+      "energyCost": 12,
+      "description": "数百年的天文观测数据汇总。",
+      "content": "第1024号记录：太阳亮度下降0.003%。第16384号记录：我们决定封存。",
+      "guardianReactions": {
+        "finn": "历史会记住这一刻。",
+        "lorn": "工程的力量就在这里。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_030",
+      "title": "数学原理手稿",
+      "vault": 6,
+      "type": "document",
+      "dataCost": 20,
+      "energyCost": 10,
+      "description": "萨拉达斯数学体系的基础证明。",
+      "content": "他们发明了一种新的几何学——「光几何」，专门研究光在弯曲空间中的路径。",
+      "guardianReactions": {
+        "finn": "事实需要被保存。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_031",
+      "title": "能源系统设计图",
+      "vault": 6,
+      "type": "blueprint",
+      "dataCost": 28,
+      "energyCost": 14,
+      "description": "圣所核心能源系统的完整图纸。",
+      "content": "设计图上写着：「本系统的设计寿命为十万年。希望到时候有人知道怎么关掉它。」",
+      "guardianReactions": {
+        "finn": "事实需要被保存。",
+        "misha": "这是生命的记录。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_032",
+      "title": "材料科学笔记",
+      "vault": 6,
+      "type": "document",
+      "dataCost": 16,
+      "energyCost": 8,
+      "description": "关于圣所建筑材料的特性研究。",
+      "content": "这种石头会吸收光，然后在黑暗中慢慢释放。所以圣所永远不会真正黑暗。",
+      "guardianReactions": {
+        "finn": "这是真相的一部分。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_033",
+      "title": "最后的实验报告",
+      "vault": 6,
+      "type": "document",
+      "dataCost": 22,
+      "energyCost": 11,
+      "description": "末日前的最后一次科学实验记录。",
+      "content": "实验目的：证明光可以被储存。实验结果：可以，但储存的光会在一万年后慢慢消散。",
+      "guardianReactions": {
+        "finn": "这是真相的一部分。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_034",
+      "title": "萨拉达斯动物志",
+      "vault": 7,
+      "type": "document",
+      "dataCost": 18,
+      "energyCost": 9,
+      "description": "记录星球上所有已知动物的百科全书。",
+      "content": "「光蝶」：翅膀由凝固的光构成。在末日之前，它们成群结队地飞过天空。",
+      "guardianReactions": {
+        "misha": "这是我们的生存之道。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_035",
+      "title": "植物图鉴",
+      "vault": 7,
+      "type": "image",
+      "dataCost": 16,
+      "energyCost": 8,
+      "description": "所有已知植物的绘画记录。",
+      "content": "「石花」：只在完全黑暗中开放，靠吸收石头中的矿物质存活。花期为一百年。",
+      "guardianReactions": {
+        "misha": "这是生命的记录。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_036",
+      "title": "气候变迁记录",
+      "vault": 7,
+      "type": "document",
+      "dataCost": 20,
+      "energyCost": 10,
+      "description": "数千年的气候变化数据。",
+      "content": "第一千年的平均气温：适宜。第四千年的平均气温：我们不再测量了。",
+      "guardianReactions": {
+        "misha": "这是生命的记录。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_037",
+      "title": "生态链分析",
+      "vault": 7,
+      "type": "document",
+      "dataCost": 14,
+      "energyCost": 7,
+      "description": "萨拉达斯星球生态系统的完整分析。",
+      "content": "我们以为自己是生态链的顶端。其实我们只是其中一环——而这一环正在断裂。",
+      "guardianReactions": {
+        "misha": "自然教会了我们很多。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_038",
+      "title": "最后的种子库",
+      "vault": 7,
+      "type": "document",
+      "dataCost": 22,
+      "energyCost": 11,
+      "description": "封存前收集的所有植物种子清单。",
+      "content": "十万颗种子。每一颗都是一个未来。我们把这些未来放在了最深的存储室里。",
+      "guardianReactions": {
+        "misha": "自然教会了我们很多。",
+        "finn": "事实需要被保存。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_039",
+      "title": "城邦法典",
+      "vault": 8,
+      "type": "document",
+      "dataCost": 20,
+      "energyCost": 10,
+      "description": "萨拉达斯城邦的完整法律条文。",
+      "content": "第一条：每个人都有权仰望星空。第二条：每个人都有权记住过去。",
+      "guardianReactions": {
+        "finn": "这是真相的一部分。",
+        "ethel": "这是我们的精神遗产。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_040",
+      "title": "议会最后决议",
+      "vault": 8,
+      "type": "document",
+      "dataCost": 24,
+      "energyCost": 12,
+      "description": "城邦议会最后一次会议的完整记录。",
+      "content": "议题：是否封存文明。最终决议：封存。",
+      "guardianReactions": {
+        "finn": "事实需要被保存。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_041",
+      "title": "契约文书范本",
+      "vault": 8,
+      "type": "document",
+      "dataCost": 12,
+      "energyCost": 6,
+      "description": "各种契约的标准格式。",
+      "content": "「我在此将我的一切——我的记忆、我的名字、我的光——交给圣所保管。」",
+      "guardianReactions": {
+        "finn": "这是真相的一部分。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_042",
+      "title": "审判记录",
+      "vault": 8,
+      "type": "document",
+      "dataCost": 16,
+      "energyCost": 8,
+      "description": "末日前的最后一次审判。",
+      "content": "被告：希望。罪名：让人忘记当下。判决：无罪。",
+      "guardianReactions": {
+        "finn": "历史会记住这一刻。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_043",
+      "title": "权利宣言",
+      "vault": 8,
+      "type": "document",
+      "dataCost": 18,
+      "energyCost": 9,
+      "description": "萨拉达斯人的基本权利清单。",
+      "content": "我们有权利记住。我们有权利被记住。我们有权利选择记住什么。",
+      "guardianReactions": {
+        "finn": "历史会记住这一刻。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_044",
+      "title": "一位母亲的日记",
+      "vault": 9,
+      "type": "document",
+      "dataCost": 10,
+      "energyCost": 5,
+      "description": "一位普通母亲在末日前的私人日记。",
+      "content": "「今天孩子问我，为什么天空是红色的。我告诉她，那是夕阳。但夕阳已经三十年没有变化了。」",
+      "guardianReactions": {
+        "ethel": "这是我们的精神遗产。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_045",
+      "title": "食谱集",
+      "vault": 9,
+      "type": "document",
+      "dataCost": 8,
+      "energyCost": 4,
+      "description": "萨拉达斯人的传统菜肴做法。",
+      "content": "「光粥」：将发光的水藻煮沸，加入石花粉末。味道：像星星。",
+      "guardianReactions": {
+        "ethel": "仪式让我们完整。",
+        "lorn": "工程的力量就在这里。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_046",
+      "title": "儿童玩具清单",
+      "vault": 9,
+      "type": "document",
+      "dataCost": 6,
+      "energyCost": 3,
+      "description": "孩子们玩过的各种玩具的记录。",
+      "content": "「星星罐」：一个密封的玻璃罐，里面装着发光的水藻。摇一摇，就会像星星一样闪烁。",
+      "guardianReactions": {
+        "ethel": "祈祷会传达到星空。",
+        "misha": "这是我们的生存之道。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_047",
+      "title": "家书集",
+      "vault": 9,
+      "type": "document",
+      "dataCost": 14,
+      "energyCost": 7,
+      "description": "写给无法进入圣所的亲人的信。",
+      "content": "「亲爱的，我们进不去了。但请记住，我们在门这边。门永远不会真正关上。」",
+      "guardianReactions": {
+        "ethel": "这是信仰的见证。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_048",
+      "title": "平民生活影像",
+      "vault": 9,
+      "type": "image",
+      "dataCost": 12,
+      "energyCost": 6,
+      "description": "记录普通人日常生活的绘画。",
+      "content": "画中，一家人围坐在一起，分享一碗光粥。那是末日前的最后一个夜晚。",
+      "guardianReactions": {
+        "ethel": "灵魂需要归宿。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_049",
+      "title": "圣所建筑全图",
+      "vault": 10,
+      "type": "blueprint",
+      "dataCost": 26,
+      "energyCost": 13,
+      "description": "记忆圣所的完整建筑设计图纸。",
+      "content": "设计者注：「本建筑的设计寿命为十万年。墙壁厚度：十米。」",
+      "guardianReactions": {
+        "lorn": "这是理性的证明。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_050",
+      "title": "地下城市设计",
+      "vault": 10,
+      "type": "blueprint",
+      "dataCost": 22,
+      "energyCost": 11,
+      "description": "萨拉达斯地下城市的规划图。",
+      "content": "城市分为三层：上层居住，中层生产，下层……封存。",
+      "guardianReactions": {
+        "lorn": "知识就是力量。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_051",
+      "title": "穹顶结构分析",
+      "vault": 10,
+      "type": "document",
+      "dataCost": 18,
+      "energyCost": 9,
+      "description": "圣所穹顶的力学结构分析。",
+      "content": "穹顶由1220块石头组成，每一块都经过精确计算。没有用任何粘合剂。",
+      "guardianReactions": {
+        "lorn": "工程的力量就在这里。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_052",
+      "title": "水利工程记录",
+      "vault": 10,
+      "type": "document",
+      "dataCost": 16,
+      "energyCost": 8,
+      "description": "地下水循环系统的设计与维护。",
+      "content": "水从穹顶渗入，经过层层过滤，汇聚到中央水池。这个系统已经运行了三千年。",
+      "guardianReactions": {
+        "lorn": "工程的力量就在这里。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_053",
+      "title": "建筑师的遗书",
+      "vault": 10,
+      "type": "document",
+      "dataCost": 14,
+      "energyCost": 7,
+      "description": "圣所首席建筑师在末日前的最后文字。",
+      "content": "「我把我的作品留在了这里。它不是最伟大的建筑，但它是我们最后的建筑。」",
+      "guardianReactions": {
+        "lorn": "知识就是力量。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_054",
+      "title": "草药学大全",
+      "vault": 11,
+      "type": "document",
+      "dataCost": 16,
+      "energyCost": 8,
+      "description": "所有已知药用植物的特性与用法。",
+      "content": "「光苔」：生长在圣所墙壁上，可以治愈失眠。副作用：会做关于星星的梦。",
+      "guardianReactions": {
+        "misha": "这是我们的生存之道。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_055",
+      "title": "解剖记录",
+      "vault": 11,
+      "type": "document",
+      "dataCost": 20,
+      "energyCost": 10,
+      "description": "萨拉达斯人身体结构的详细研究。",
+      "content": "他们有三颗心脏：一颗用于血液循环，一颗用于光循环，一颗用于……我们还在研究。",
+      "guardianReactions": {
+        "misha": "自然教会了我们很多。",
+        "lorn": "这是理性的证明。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_056",
+      "title": "生育与繁衍",
+      "vault": 11,
+      "type": "document",
+      "dataCost": 18,
+      "energyCost": 9,
+      "description": "关于萨拉达斯人繁殖的研究。",
+      "content": "一个孩子需要三颗「种子」才能诞生：父亲的光，母亲的光，和大地的光。",
+      "guardianReactions": {
+        "misha": "这是生命的记录。",
+        "tika": "这段记忆……我能感受到其中的情感。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_057",
+      "title": "疾病与治疗",
+      "vault": 11,
+      "type": "document",
+      "dataCost": 14,
+      "energyCost": 7,
+      "description": "各种疾病的症状与治疗方法。",
+      "content": "「光蚀病」：因长期暴露在光雨中而导致的记忆丧失。治疗方法：无。",
+      "guardianReactions": {
+        "misha": "大地会记住一切。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_058",
+      "title": "最后的医疗报告",
+      "vault": 11,
+      "type": "document",
+      "dataCost": 12,
+      "energyCost": 6,
+      "description": "封存前的最后一次健康检查。",
+      "content": "所有守护者的身体状况：良好。心理状况：我们正在尽力。",
+      "guardianReactions": {
+        "misha": "这是我们的生存之道。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_059",
+      "title": "最后一份星图",
+      "vault": 12,
+      "type": "image",
+      "dataCost": 25,
+      "energyCost": 12,
+      "description": "萨拉达斯天文台绘制的最终星图。",
+      "content": "星图上有一行小字：「这是我们的天空。如果你们看到不同的星空，说明你们已经到达了那里。」",
+      "guardianReactions": {
+        "lorn": "工程的力量就在这里。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_060",
+      "title": "历法系统",
+      "vault": 12,
+      "type": "document",
+      "dataCost": 14,
+      "energyCost": 7,
+      "description": "萨拉达斯人的时间计算方式。",
+      "content": "他们用光的一明一暗作为基本单位，称为「闪」。一百闪为一「日」。",
+      "guardianReactions": {
+        "lorn": "知识就是力量。",
+        "ethel": "这是信仰的见证。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_061",
+      "title": "轨道计算手稿",
+      "vault": 12,
+      "type": "document",
+      "dataCost": 22,
+      "energyCost": 11,
+      "description": "对太阳轨道衰变的计算。",
+      "content": "计算结果：太阳将在47.3年后完全熄灭。误差范围：±2年。",
+      "guardianReactions": {
+        "lorn": "知识就是力量。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_062",
+      "title": "星座神话集",
+      "vault": 12,
+      "type": "text",
+      "dataCost": 16,
+      "energyCost": 8,
+      "description": "每个星座背后的神话故事。",
+      "content": "「歌者座」：传说中的一位歌者，她的歌声能让星星闪烁。",
+      "guardianReactions": {
+        "lorn": "工程的力量就在这里。"
+      },
+      "relatedArchives": [],
+      "expiresAfter": null,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_063",
+      "title": "天文台日志",
+      "vault": 12,
+      "type": "document",
+      "dataCost": 18,
+      "energyCost": 9,
+      "description": "天文台工作人员的最后记录。",
+      "content": "「今天是我们最后一次观测天空。明天，我们将把望远镜封存。」",
+      "guardianReactions": {
+        "lorn": "我们可以重建。"
       },
       "relatedArchives": [],
       "expiresAfter": null,
