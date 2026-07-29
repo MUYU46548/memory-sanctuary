@@ -8,7 +8,8 @@ window.MemorySanctuary = {
         archives: [],
         vaults: [],
         guardians: [],
-        events: []
+        events: [],
+        explorations: []
     },
     currentVaultId: 1,
     activeEvent: null
@@ -31,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof initTutorialListener === 'function') initTutorialListener();
         if (typeof initFuncBar === 'function') initFuncBar();
         if (typeof initSkipTurn === 'function') initSkipTurn();
+        if (typeof initProjects === 'function') initProjects();
         if (typeof initStuckBanner === 'function') initStuckBanner();
         if (typeof initCivilizationAtlas === 'function') initCivilizationAtlas();
         if (typeof initSaveSystem === 'function') initSaveSystem();
@@ -45,19 +47,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 async function loadGameData() {
-    const [archivesRes, vaultsRes, guardiansRes, eventsRes] = await Promise.all([
-        fetch('data/archives.json'),
-        fetch('data/vaults.json'),
-        fetch('data/guardians.json'),
-        fetch('data/events.json')
-    ]);
-    
+    const archivesRes = await fetch('data/archives.json');
+    const vaultsRes = await fetch('data/vaults.json');
+    const guardiansRes = await fetch('data/guardians.json');
+    const eventsRes = await fetch('data/events.json');
+    const explorationsRes = await fetch('data/explorations.json');
+    const projectsRes = await fetch('data/projects.json');
+
     MemorySanctuary.data.archives = (await archivesRes.json()).archives;
     MemorySanctuary.data.vaults = (await vaultsRes.json()).vaults;
     MemorySanctuary.data.guardians = (await guardiansRes.json()).guardians;
-    MemorySanctuary.data.events = (await eventsRes.json()).events;
-    
-    console.log(`[数据] ${MemorySanctuary.data.archives.length}条目, ${MemorySanctuary.data.vaults.length}存储室, ${MemorySanctuary.data.guardians.length}守护者, ${MemorySanctuary.data.events.length}事件`);
+    const eventsData = await eventsRes.json();
+    MemorySanctuary.data.events = eventsData.events;
+    MemorySanctuary.data.scheduledEvents = eventsData.scheduledEvents || [];
+    MemorySanctuary.data.explorations = (await explorationsRes.json()).explorations || [];
+    MemorySanctuary.data.projects = (await projectsRes.json()).projects || [];
+
+    console.log(`[数据] ${MemorySanctuary.data.archives.length}条目, ${MemorySanctuary.data.vaults.length}存储室, ${MemorySanctuary.data.guardians.length}守护者, ${MemorySanctuary.data.events.length}随机事件, ${MemorySanctuary.data.scheduledEvents.length}调度事件, ${MemorySanctuary.data.explorations.length}勘探点, ${MemorySanctuary.data.projects.length}项目`);
 }
 
 function initGameState() {
@@ -73,7 +79,11 @@ function initGameState() {
         deterioration: { energy: false, media: false, environment: false },
         gameOver: false,
         guardianMoods: {},
-        scheduledEvents: []
+        scheduledEvents: [],
+        unlockedBonuses: [],
+        exploration: { deployedUntil: 0, cooldownUntil: 0 },
+        activeProjects: [],
+        completedProjects: []
     };
     
     MemorySanctuary.data.vaults.forEach(vault => {

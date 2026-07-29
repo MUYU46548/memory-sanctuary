@@ -1,0 +1,37 @@
+{
+  "projects": [
+    {
+      "id": "proj_generator",
+      "name": "修复备用发电机",
+      "description": "洛恩建议修复地表备用发电机。安装后每回合额外 +2 能源，持续 3 周。",
+      "cost": { "energy": 15, "media": 10 },
+      "duration": 3,
+      "effect": { "type": "resourceBoost", "resource": "energy", "amount": 2 },
+      "availableAfter": 10,
+      "repeatable": false,
+      "guardianBonus": { "guardian": "lorn", "mood": 3, "durationBonus": 2 }
+    },
+    {
+      "id": "proj_cooling",
+      "name": "修复冷却系统",
+      "description": "埃塞尔提议重启圣所冷却系统，降低介质衰减速度 50%，持续 4 周。",
+      "cost": { "energy": 20, "media": 5 },
+      "duration": 4,
+      "effect": { "type": "decayReduction", "resource": "media", "percent": 0.5 },
+      "availableAfter": 10,
+      "repeatable": true,
+      "guardianBonus": { "guardian": "ethel", "mood": 3, "extraEffect": "environmentBoost" }
+    },
+    {
+      "id": "proj_satellite",
+      "name": "重启卫星天线",
+      "description": "芬恩想要修复卫星天线，解锁2条来自其他圣所的加密记录。",
+      "cost": { "energy": 25, "media": 15 },
+      "duration": 2,
+      "effect": { "type": "unlockArchives", "archiveIds": ["arch_emergency_004", "arch_emergency_005"] },
+      "availableAfter": 12,
+      "repeatable": false,
+      "guardianBonus": { "guardian": "finn", "mood": 4, "extraArchives": true }
+    }
+  ]
+}

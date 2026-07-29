@@ -145,6 +145,9 @@ function onTimeAdvanced(weeks) {
         MemorySanctuary.state.resources.environment - decay.environment * weeks
     );
 
+    // 应用持续效果（如：每回合额外能源）
+    applySustainedBonuses();
+
     // 检查过期条目（仅记录消失，警告移至聚合面板）
     MemorySanctuary.data.archives.forEach(entry => {
         if (entry.expiresAfter && !isArchiveCompleted(entry.id) && !entry.expired) {
@@ -160,6 +163,9 @@ function onTimeAdvanced(weeks) {
     // 检查圣所衰竭状态
     if (typeof checkSanctuaryDeterioration === 'function') checkSanctuaryDeterioration();
     
+    // 处理调度事件（新增）
+    if (typeof processScheduledEvents === 'function') processScheduledEvents();
+    
     // 守护者主动事件
     if (typeof checkGuardianInitiative === 'function') checkGuardianInitiative();
     
@@ -171,6 +177,70 @@ function onTimeAdvanced(weeks) {
     
     // 检查周数上限
     if (typeof checkWeekLimit === 'function') checkWeekLimit();
+}
+
+// ==========================================
+// 持续效果系统（来自调度事件奖励）
+// ==========================================
+
+function applySustainedBonuses() {
+    const state = MemorySanctuary.state;
+    if (!state.unlockedBonuses) return;
+    
+    // 应用持续效果
+    state.unlockedBonuses.forEach(bonus => {
+        if (bonus === 'energy_per_turn_3') {
+            state.resources.energy = Math.min(100, state.resources.energy + 3);
+        } else if (bonus === 'energy_per_turn_2') {
+            state.resources.energy = Math.min(100, state.resources.energy + 2);
+        }
+    });
+}
+
+// ==========================================
+// 调度事件系统
+// ==========================================
+
+function processScheduledEvents() {
+    const state = MemorySanctuary.state;
+    if (!state.scheduledEvents || state.scheduledEvents.length === 0) return;
+    
+    const currentWeek = state.week;
+    const triggeredEvents = [];
+    const remainingEvents = [];
+    
+    // 找出本周需要触发的事件
+    for (const scheduled of state.scheduledEvents) {
+        if (currentWeek >= scheduled.week) {
+            triggeredEvents.push(scheduled);
+        } else {
+            remainingEvents.push(scheduled);
+        }
+    }
+    
+    // 更新调度列表（移除已触发的）
+    state.scheduledEvents = remainingEvents;
+    
+    // 触发事件
+    for (const scheduled of triggeredEvents) {
+        triggerScheduledEvent(scheduled.eventId);
+    }
+}
+
+function triggerScheduledEvent(eventId) {
+    const scheduledEvents = MemorySanctuary.data.scheduledEvents || [];
+    const event = scheduledEvents.find(e => e.id === eventId);
+    
+    if (!event) {
+        console.warn(`[调度事件] 找不到事件 ${eventId}`);
+        return;
+    }
+    
+    // 使用与随机事件相同的触发机制
+    MemorySanctuary.activeEvent = event;
+    MemorySanctuary.state.activeEventIds.push(event.id);
+    addLog(`📅 ${event.title}`, 'event');
+    renderEvent(event);
 }
 
 // ==========================================
@@ -429,7 +499,21 @@ function applyEventFeedback(choiceIndex) {
         if (!MemorySanctuary.state.scheduledEvents) {
             MemorySanctuary.state.scheduledEvents = [];
         }
-        MemorySanctuary.state.scheduledEvents.push(choice.feedback.futureEvent);
+        // 计算绝对周数（当前周 + 延迟周数）
+        const targetWeek = MemorySanctuary.state.week + choice.feedback.futureEvent.week;
+        MemorySanctuary.state.scheduledEvents.push({
+            week: targetWeek,
+            eventId: choice.feedback.futureEvent.eventId
+        });
+    }
+    
+    // 解锁持续效果
+    if (choice.feedback.unlockBonus) {
+        if (!MemorySanctuary.state.unlockedBonuses) {
+            MemorySanctuary.state.unlockedBonuses = [];
+        }
+        MemorySanctuary.state.unlockedBonuses.push(choice.feedback.unlockBonus);
+        addLog(`🔓 解锁持续效果：${choice.feedback.unlockBonus}`, 'success');
     }
     
     // 显示反馈
@@ -666,20 +750,91 @@ function getGuardianName(id) {
 
 function showGuardianDialogue(guardianId, type) {
     const guardian = getGuardianById(guardianId);
-    if (!guardian || !guardian.dialogues[type]) return;
+    if (!guardian) return;
     
-    const dialogues = guardian.dialogues[type];
+    let dialogues;
+    // Use mood-based dialogue for idle type
+    if (type === 'idle' && guardian.moodDialogues) {
+        dialogues = getMoodDialogue(guardianId);
+    } else if (guardian.dialogues[type]) {
+        dialogues = guardian.dialogues[type];
+    } else {
+        return;
+    }
+    
     const randomDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
     
     const nameEl = document.getElementById('guardian-name');
     const roleEl = document.getElementById('guardian-role');
     const dialogueEl = document.getElementById('guardian-dialogue');
     const avatarEl = document.getElementById('guardian-avatar');
+    const moodEl = document.getElementById('guardian-mood');
+    const panelEl = document.getElementById('guardian-panel');
     
     if (nameEl) nameEl.textContent = guardian.name;
     if (roleEl) roleEl.textContent = guardian.role;
     if (dialogueEl) dialogueEl.textContent = randomDialogue;
     if (avatarEl) avatarEl.textContent = guardian.avatar;
+    if (moodEl) {
+        moodEl.textContent = getMoodIndicator(guardianId);
+        // 更新面板边框颜色
+        const tier = getMoodTier(guardianId);
+        moodEl.className = 'guardian-mood mood-' + tier;
+    }
+    if (panelEl) {
+        // 移除旧的好感度类
+        panelEl.classList.remove('mood-hostile', 'mood-cold', 'mood-neutral', 'mood-friendly', 'mood-intimate');
+        panelEl.classList.add('mood-' + getMoodTier(guardianId));
+    }
+}
+
+// ==========================================
+// 守护者好感度系统
+// ==========================================
+
+function getMoodLevel(guardianId) {
+    if (!MemorySanctuary.state.guardianMoods) return 0;
+    return MemorySanctuary.state.guardianMoods[guardianId] || 0;
+}
+
+function getMoodTier(guardianId) {
+    const mood = getMoodLevel(guardianId);
+    if (mood <= -3) return 'hostile';
+    if (mood < 0) return 'cold';
+    if (mood <= 2) return 'neutral';
+    if (mood <= 4) return 'friendly';
+    return 'intimate';
+}
+
+function getMoodIndicator(guardianId) {
+    const mood = getMoodLevel(guardianId);
+    if (mood <= -3) return '💔';
+    if (mood < 0) return '💙';
+    if (mood <= 2) return '🤍';
+    if (mood <= 4) return '💛';
+    return '❤️';
+}
+
+function getMoodDialogue(guardianId) {
+    const guardian = getGuardianById(guardianId);
+    if (!guardian || !guardian.moodDialogues) {
+        return guardian?.dialogues?.idle || ['……'];
+    }
+    const tier = getMoodTier(guardianId);
+    
+    // Finale dialogues: week >= 15 and mood tier is friendly or intimate
+    if (MemorySanctuary.state.week >= 15 && tier !== 'hostile' && tier !== 'cold' && tier !== 'neutral') {
+        if (guardian.finaleDialogues && guardian.finaleDialogues[tier]) {
+            return guardian.finaleDialogues[tier];
+        }
+    }
+    
+    return guardian.moodDialogues[tier] || guardian.dialogues.idle || ['……'];
+}
+
+function getMoodColorClass(guardianId) {
+    const tier = getMoodTier(guardianId);
+    return 'mood-' + tier;
 }
 
 // ==========================================
@@ -773,8 +928,17 @@ function guardianRecommendArchive() {
         return;
     }
     
-    // 推荐成本最低的条目
-    const recommended = unarchived.sort((a, b) => (a.energyCost + a.dataCost) - (b.energyCost + b.dataCost))[0];
+    // 好感度 >=3 时，优先推荐叙事价值高的条目（成本高的）
+    // 否则推荐成本最低的
+    const mood = getMoodLevel(guardianId);
+    let recommended;
+    if (mood >= 3) {
+        // 高好感度：推荐最"珍贵"的条目（成本最高）
+        recommended = unarchived.sort((a, b) => (b.energyCost + b.dataCost) - (a.energyCost + a.dataCost))[0];
+    } else {
+        // 默认：推荐成本最低的
+        recommended = unarchived.sort((a, b) => (a.energyCost + a.dataCost) - (b.energyCost + b.dataCost))[0];
+    }
     
     // 高亮推荐条目
     highlightRecommendedEntry(recommended.id);
@@ -824,7 +988,20 @@ function checkGuardianInitiative() {
     
     // 每5-8周可能触发一次守护者主动事件
     if (MemorySanctuary.state.week % 6 !== 0) return;
-    if (Math.random() > 0.35) return;
+    
+    // 好感度 >=2 时，触发概率从 35% 提升至 50%
+    const state = MemorySanctuary.state;
+    let triggerChance = 0.35;
+    
+    // 检查是否有高好感度的守护者
+    if (state.guardianMoods) {
+        const hasHighMood = Object.values(state.guardianMoods).some(mood => mood >= 2);
+        if (hasHighMood) {
+            triggerChance = 0.50;
+        }
+    }
+    
+    if (Math.random() > triggerChance) return;
     
     const guardianEvents = [
         {
@@ -1287,6 +1464,7 @@ function initTutorialListener() {
 function initFuncBar() {
     const helpBtn = document.getElementById('help-btn');
     const aboutBtn = document.getElementById('about-btn');
+    const exploreBtn = document.getElementById('explore-btn');
 
     // 帮助按钮：重新播放新手引导
     if (helpBtn) {
@@ -1304,7 +1482,323 @@ function initFuncBar() {
             showAboutModal();
         });
     }
+
+    // 勘探按钮
+    if (exploreBtn) {
+        exploreBtn.addEventListener('click', () => {
+            if (!MemorySanctuary.state) return;
+            const now = MemorySanctuary.state.week;
+            const exp = MemorySanctuary.state.exploration;
+            if (exp.deployedUntil > now) {
+                addLog('system', `一支勘探队已在地表作业，预计第 ${exp.deployedUntil} 周返回。`);
+                return;
+            }
+            openExplorePanel();
+        });
+    }
+
+    // 项目按钮
+    const projectBtn = document.getElementById('project-btn');
+    if (projectBtn) {
+        projectBtn.addEventListener('click', () => {
+            if (!MemorySanctuary.state) return;
+            if (MemorySanctuary.state.week < 10) {
+                addLog('system', '圣所维护项目尚未解锁。');
+                return;
+            }
+            openProjectPanel();
+        });
+    }
 }
+
+// ============================================================
+// 地表勘探系统
+// ============================================================
+
+function openExplorePanel() {
+    const overlay = document.getElementById('explore-overlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        renderExploreList();
+    }
+}
+
+function openProjectPanel() {
+    const overlay = document.getElementById('project-overlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        renderProjectList();
+    }
+}
+
+function closeProjectPanel() {
+    const overlay = document.getElementById('project-overlay');
+    if (overlay) {
+        overlay.classList.add('hidden');
+    }
+}
+
+function renderExploreList() {
+    const listEl = document.getElementById('explore-list');
+    if (!listEl) return;
+    const data = MemorySanctuary.data;
+    if (!data || !data.explorations) return;
+
+    const now = MemorySanctuary.state.week;
+    const exp = MemorySanctuary.state.exploration;
+    const isDeployed = exp.deployedUntil > now;
+
+    listEl.innerHTML = '';
+
+    data.explorations.forEach((expData) => {
+        const item = document.createElement('div');
+        item.className = 'explore-item';
+        if (isDeployed) item.classList.add('disabled');
+
+        const difficultyStars = '◆'.repeat(expData.difficulty) + '◇'.repeat(3 - expData.difficulty);
+
+        item.innerHTML = `
+            <div class="explore-item-header">
+                <div class="explore-item-name">${expData.name}</div>
+                <div class="explore-item-difficulty">${difficultyStars}</div>
+            </div>
+            <div class="explore-item-desc">${expData.description}</div>
+            <div class="explore-item-meta">
+                <span>耗时 ${expData.duration} 周</span>
+                <div class="explore-item-skills">
+                    ${expData.requiredSkills.length > 0
+                        ? expData.requiredSkills.map(s => `<span class="skill-tag">${skillName(s)}</span>`).join('')
+                        : '<span class="skill-tag matched">无要求</span>'}
+                </div>
+            </div>
+        `;
+
+        if (!isDeployed) {
+            item.addEventListener('click', () => selectExploration(expData, item));
+        }
+
+        listEl.appendChild(item);
+    });
+}
+
+function skillName(skill) {
+    const names = {
+        ecology: '生态',
+        survival: '生存',
+        engineering: '工程',
+        medicine: '医学',
+        documentation: '档案',
+        religion: '宗教',
+        philosophy: '哲学',
+        energy: '能源',
+        maintenance: '维护',
+        exploration: '勘探'
+    };
+    return names[skill] || skill;
+}
+
+let selectedExplorationId = null;
+let selectedGuardians = new Set();
+
+function selectExploration(expData, element) {
+    selectedExplorationId = expData.id;
+    selectedGuardians.clear();
+
+    document.querySelectorAll('.explore-item').forEach(el => el.style.borderColor = '');
+    element.style.borderColor = 'var(--explore-green, #5aa86e)';
+
+    const dispatchEl = document.getElementById('explore-dispatch');
+    dispatchEl.classList.remove('hidden');
+
+    document.getElementById('dispatch-title').textContent = `派遣至：${expData.name}`;
+    document.getElementById('dispatch-desc').textContent = expData.description;
+
+    renderDispatchGuardians(expData);
+    renderOutcomeBars(expData);
+    document.getElementById('dispatch-btn').disabled = false;
+}
+
+function renderDispatchGuardians(expData) {
+    const container = document.getElementById('dispatch-guardians');
+    container.innerHTML = '';
+
+    const guardians = MemorySanctuary.data.guardians;
+    guardians.forEach(g => {
+        const div = document.createElement('div');
+        div.className = 'dispatch-guardian';
+        div.innerHTML = `<span>${g.avatar}</span><span>${g.name}</span>`;
+        div.addEventListener('click', () => {
+            if (selectedGuardians.has(g.id)) {
+                selectedGuardians.delete(g.id);
+                div.classList.remove('selected');
+            } else {
+                selectedGuardians.add(g.id);
+                div.classList.add('selected');
+            }
+            renderOutcomeBars(expData);
+        });
+        container.appendChild(div);
+    });
+}
+
+function renderOutcomeBars(expData) {
+    const container = document.getElementById('dispatch-outcomes');
+    container.innerHTML = '';
+
+    expData.outcomes.forEach(o => {
+        const prob = calculateOutcomeProbability(o, expData);
+        const bar = document.createElement('div');
+        bar.className = 'outcome-bar';
+
+        const label = document.createElement('span');
+        label.className = 'outcome-label';
+        label.textContent = o.type === 'resource' ? (o.resource === 'energy' ? '能源' : o.resource === 'media' ? '介质' : '环境') : o.type === 'narrative' ? '叙事' : '风险';
+
+        const fill = document.createElement('span');
+        fill.className = 'outcome-fill' + (o.type === 'risk' ? ' risk' : '');
+        fill.style.width = (prob * 100) + '%';
+
+        bar.appendChild(label);
+        bar.appendChild(fill);
+        container.appendChild(bar);
+    });
+}
+
+function calculateOutcomeProbability(outcome, expData) {
+    let prob = outcome.probability;
+    const matchedSkills = countMatchedSkills(expData);
+    if (outcome.type === 'risk') {
+        prob = Math.max(0.02, prob - matchedSkills * 0.04);
+    } else if (outcome.type === 'resource') {
+        prob = Math.min(0.6, prob + matchedSkills * 0.05);
+    }
+    return Math.round(prob * 100) / 100;
+}
+
+function countMatchedSkills(expData) {
+    if (!expData.requiredSkills || expData.requiredSkills.length === 0) return 0;
+    let count = 0;
+    selectedGuardians.forEach(gid => {
+        const g = MemorySanctuary.data.guardians.find(g => g.id === gid);
+        if (g && g.skills) {
+            expData.requiredSkills.forEach(s => {
+                if (g.skills.includes(s)) count++;
+            });
+        }
+    });
+    return count;
+}
+
+function executeExploration() {
+    const data = MemorySanctuary.data;
+    const expData = data.explorations.find(e => e.id === selectedExplorationId);
+    if (!expData) return;
+
+    const now = MemorySanctuary.state.week;
+    MemorySanctuary.state.exploration.deployedUntil = now + expData.duration;
+
+    const roll = Math.random();
+    let cumulative = 0;
+    let chosen = expData.outcomes[0];
+    for (const o of expData.outcomes) {
+        const prob = calculateOutcomeProbability(o, expData);
+        cumulative += prob;
+        if (roll <= cumulative) {
+            chosen = o;
+            break;
+        }
+    }
+
+    // Apply effects after time advance
+    const checkReturn = () => {
+        if (MemorySanctuary.state.week >= MemorySanctuary.state.exploration.deployedUntil) {
+            applyExplorationResult(chosen, expData);
+        } else {
+            setTimeout(checkReturn, 100);
+        }
+    };
+    setTimeout(checkReturn, 100);
+
+    document.getElementById('dispatch-btn').disabled = true;
+
+    const guardianNames = Array.from(selectedGuardians).map(gid => {
+        const g = MemorySanctuary.data.guardians.find(g => g.id === gid);
+        return g ? g.name : '';
+    }).filter(n => n).join('、');
+
+    addLog('system', `派出勘探队前往 ${expData.name}。成员：${guardianNames || '无'}。预计 ${expData.duration} 周后返回。`);
+
+    document.getElementById('explore-overlay').classList.add('hidden');
+    advanceTime(expData.duration);
+}
+
+function applyExplorationResult(outcome, expData) {
+    const overlay = document.getElementById('explore-overlay');
+    const resultEl = document.getElementById('explore-result');
+    if (overlay) overlay.classList.remove('hidden');
+    resultEl.classList.remove('hidden');
+
+    document.getElementById('result-header').textContent = `${expData.name} — 勘探返回`;
+
+    const effects = [];
+    if (outcome.type === 'resource') {
+        const resName = outcome.resource === 'energy' ? '能源' : outcome.resource === 'media' ? '介质' : '环境';
+        effects.push({ name: `${resName} +${outcome.amount}`, positive: outcome.amount > 0 });
+        if (outcome.resource === 'energy') adjustResource('energy', outcome.amount);
+        if (outcome.resource === 'media') adjustResource('media', outcome.amount);
+        if (outcome.resource === 'environment') adjustResource('environment', outcome.amount);
+    } else if (outcome.type === 'risk') {
+        const resName = outcome.resource === 'energy' ? '能源' : outcome.resource === 'media' ? '介质' : '环境';
+        effects.push({ name: `${resName} ${outcome.amount}`, positive: false });
+        if (outcome.resource === 'energy') adjustResource('energy', outcome.amount);
+        if (outcome.resource === 'media') adjustResource('media', outcome.amount);
+        if (outcome.resource === 'environment') adjustResource('environment', outcome.amount);
+    }
+
+    document.getElementById('result-text').textContent = outcome.message;
+
+    const effectsContainer = document.getElementById('result-effects');
+    effectsContainer.innerHTML = '';
+    effects.forEach(e => {
+        const div = document.createElement('div');
+        div.className = 'result-effect ' + (e.positive ? 'positive' : 'negative');
+        div.textContent = e.name;
+        effectsContainer.appendChild(div);
+    });
+
+    selectedGuardians.forEach(gid => {
+        adjustGuardianMood(gid, 1);
+    });
+
+    addLog('system', `勘探队从 ${expData.name} 返回。${outcome.message}`);
+    renderAll();
+}
+
+// 结果面板关闭
+document.addEventListener('DOMContentLoaded', () => {
+    const resultClose = document.getElementById('result-close-btn');
+    if (resultClose) {
+        resultClose.addEventListener('click', () => {
+            document.getElementById('explore-result').classList.add('hidden');
+            document.getElementById('explore-dispatch').classList.add('hidden');
+            renderExploreList();
+        });
+    }
+    const exploreClose = document.getElementById('explore-close');
+    if (exploreClose) {
+        exploreClose.addEventListener('click', () => {
+            document.getElementById('explore-overlay').classList.add('hidden');
+        });
+    }
+    const projectClose = document.getElementById('project-close');
+    if (projectClose) {
+        projectClose.addEventListener('click', closeProjectPanel);
+    }
+    const dispatchBtn = document.getElementById('dispatch-btn');
+    if (dispatchBtn) {
+        dispatchBtn.addEventListener('click', executeExploration);
+    }
+});
 
 function showAboutModal() {
     const overlay = document.getElementById('modal-overlay');
@@ -1363,7 +1857,13 @@ function saveGame(slot) {
             narrativeFlags: [...MemorySanctuary.state.narrativeFlags],
             deterioration: { ...MemorySanctuary.state.deterioration },
             activeEvents: [],
-            activeEventIds: [...MemorySanctuary.state.activeEventIds]
+            activeEventIds: [...MemorySanctuary.state.activeEventIds],
+            guardianMoods: { ...MemorySanctuary.state.guardianMoods },
+            scheduledEvents: [...MemorySanctuary.state.scheduledEvents],
+            unlockedBonuses: [...MemorySanctuary.state.unlockedBonuses],
+            exploration: { ...MemorySanctuary.state.exploration },
+            activeProjects: [...MemorySanctuary.state.activeProjects],
+            completedProjects: [...MemorySanctuary.state.completedProjects]
         },
         currentVaultId: MemorySanctuary.currentVaultId
     };
@@ -1389,6 +1889,9 @@ function loadGame(slot) {
     try {
         const saveData = JSON.parse(raw);
 
+        // Initialize fresh state before loading
+        initGameState();
+
         MemorySanctuary.state.resources = { ...saveData.state.resources };
         MemorySanctuary.state.week = saveData.state.week;
         MemorySanctuary.state.chapter = saveData.state.chapter;
@@ -1398,6 +1901,12 @@ function loadGame(slot) {
         MemorySanctuary.state.deterioration = { ...saveData.state.deterioration } || { energy: false, media: false, environment: false };
         MemorySanctuary.state.activeEvents = [];
         MemorySanctuary.state.activeEventIds = [...(saveData.state.activeEventIds || [])];
+        MemorySanctuary.state.guardianMoods = { ...(saveData.state.guardianMoods || {}) };
+        MemorySanctuary.state.scheduledEvents = [...(saveData.state.scheduledEvents || [])];
+        MemorySanctuary.state.unlockedBonuses = [...(saveData.state.unlockedBonuses || [])];
+        MemorySanctuary.state.exploration = { ...(saveData.state.exploration || { deployedUntil: 0, cooldownUntil: 0 }) };
+        MemorySanctuary.state.activeProjects = [...(saveData.state.activeProjects || [])];
+        MemorySanctuary.state.completedProjects = [...(saveData.state.completedProjects || [])];
 
         MemorySanctuary.currentVaultId = saveData.currentVaultId || 1;
         MemorySanctuary.activeEvent = null;
@@ -1506,6 +2015,17 @@ function calculateNGPlusBonuses(playthrough) {
     if (playthrough >= 3) bonuses.push({ type: 'resource', resource: 'media', value: 25, label: '起始介质+25' });
     if (playthrough >= 4) bonuses.push({ type: 'resource', resource: 'environment', value: 10, label: '起始环境+10' });
     if (playthrough >= 5) bonuses.push({ type: 'resource', resource: 'energy', value: 50, label: '起始能源+50' });
+    
+    // Add mood bonuses from previous run
+    const ngData = getNGPlusData();
+    if (ngData.bonuses) {
+        ngData.bonuses.forEach(b => {
+            if (b.type === 'mood_bonus') {
+                bonuses.push({ type: 'resource', resource: 'energy', value: 10, label: '守护者信任+10能源' });
+            }
+        });
+    }
+    
     return bonuses;
 }
 
@@ -2160,6 +2680,17 @@ function sealSanctuary() {
     if (!ngData.bestRun || archivedCount > ngData.bestRun.count) {
         ngData.bestRun = { count: archivedCount, week: MemorySanctuary.state.week };
     }
+    
+    // Check if all guardians have high moods (bonus)
+    const state = MemorySanctuary.state;
+    const allGuardiansHappy = Object.keys(state.guardianMoods || {}).length >= 3 &&
+        Object.values(state.guardianMoods).filter(mood => mood >= 3).length >= 3;
+    
+    if (allGuardiansHappy) {
+        ngData.bonuses.push({ type: 'mood_bonus', label: '守护者信任 +10能源' });
+        addLog('💖 守护者们的信任带来了额外奖励！', 'success');
+    }
+    
     saveNGPlusData(ngData);
 
     // Check for hidden endings first
@@ -2170,6 +2701,9 @@ function sealSanctuary() {
 
     // Show completion modal with portrait
     showSealModal(archivedCount, totalCount);
+    
+    // Apply NG+ count
+    startNewGamePlus();
 }
 
 function showSealModal(archivedCount, totalCount) {
@@ -2201,6 +2735,26 @@ function showSealModal(archivedCount, totalCount) {
         modalContent += `• 累计归档：${ngData.totalArchivesSaved} 条\n`;
         if (ngData.bestRun) {
             modalContent += `• 最佳记录：${ngData.bestRun.count} 条（第${ngData.bestRun.week}周）\n`;
+        }
+    }
+    
+    // 守护者关系总结
+    const state = MemorySanctuary.state;
+    if (state.guardianMoods && Object.keys(state.guardianMoods).length > 0) {
+        modalContent += `\n守护者关系：\n`;
+        for (const [guardianId, mood] of Object.entries(state.guardianMoods)) {
+            const guardian = getGuardianById(guardianId);
+            if (guardian) {
+                const tier = getMoodTier(guardianId);
+                const tierNames = {
+                    'hostile': '疏离',
+                    'cold': '冷淡',
+                    'neutral': '平和',
+                    'friendly': '友好',
+                    'intimate': '亲密'
+                };
+                modalContent += `• ${guardian.name}：${tierNames[tier]}（${getMoodIndicator(guardianId)}）\n`;
+            }
         }
     }
     
@@ -2255,4 +2809,173 @@ const _origRenderSaveSlots = renderSaveSlots;
 renderSaveSlots = function(mode) {
     _origRenderSaveSlots(mode);
     renderSealButton();
+};
+
+// ==========================================
+// 圣所维护项目系统
+// ==========================================
+
+function initProjects() {
+    if (!MemorySanctuary.state) return;
+    if (!MemorySanctuary.state.activeProjects) MemorySanctuary.state.activeProjects = [];
+    if (!MemorySanctuary.state.completedProjects) MemorySanctuary.state.completedProjects = [];
+}
+
+function getProjectById(projectId) {
+    if (!MemorySanctuary.data.projects) return null;
+    return MemorySanctuary.data.projects.find(p => p.id === projectId) || null;
+}
+
+function canStartProject(project) {
+    if (!project) return false;
+    const state = MemorySanctuary.state;
+    const week = state.week;
+
+    // Check if available
+    if (project.availableAfter && week < project.availableAfter) return false;
+
+    // Check if already active
+    if (state.activeProjects.some(p => p.id === project.id)) return false;
+
+    // Check if already completed (and not repeatable)
+    if (!project.repeatable && state.completedProjects.includes(project.id)) return false;
+
+    // Check if we have enough resources
+    if (project.cost) {
+        if (project.cost.energy && state.resources.energy < project.cost.energy) return false;
+        if (project.cost.media && state.resources.media < project.cost.media) return false;
+        if (project.cost.environment && state.resources.environment < project.cost.environment) return false;
+    }
+
+    return true;
+}
+
+function startProject(projectId) {
+    const project = getProjectById(projectId);
+    if (!project || !canStartProject(project)) return false;
+
+    const state = MemorySanctuary.state;
+
+    // Deduct cost
+    if (project.cost) {
+        if (project.cost.energy) state.resources.energy -= project.cost.energy;
+        if (project.cost.media) state.resources.media -= project.cost.media;
+        if (project.cost.environment) state.resources.environment -= project.cost.environment;
+    }
+
+    // Add to active projects
+    state.activeProjects.push({
+        id: project.id,
+        remainingWeeks: project.duration,
+        effect: project.effect
+    });
+
+    addLog(`开始项目：${project.name}`, 'system');
+    renderAll();
+    return true;
+}
+
+function processActiveProjects() {
+    const state = MemorySanctuary.state;
+    if (!state.activeProjects || state.activeProjects.length === 0) return;
+
+    const stillActive = [];
+
+    for (const active of state.activeProjects) {
+        const project = getProjectById(active.id);
+        if (!project) continue;
+
+        active.remainingWeeks--;
+
+        if (active.remainingWeeks <= 0) {
+            // Project completed
+            state.completedProjects.push(active.id);
+            applyProjectEffect(project, true);
+            addLog(`项目完成：${project.name}`, 'success');
+        } else {
+            // Project still active, apply ongoing effect
+            applyProjectEffect(project, false);
+            stillActive.push(active);
+        }
+    }
+
+    state.activeProjects = stillActive;
+}
+
+function applyProjectEffect(project, isCompletion) {
+    const state = MemorySanctuary.state;
+    const effect = project.effect;
+    if (!effect) return;
+
+    switch (effect.type) {
+        case 'resourceBoost':
+            // Applied each turn via onTimeAdvanced
+            break;
+        case 'decayReduction':
+            // Applied in getWeeklyDecay
+            break;
+        case 'unlockArchives':
+            if (isCompletion && effect.archiveIds) {
+                effect.archiveIds.forEach(archiveId => {
+                    const archive = getArchiveById(archiveId);
+                    if (archive) {
+                        // Make sure it's available
+                        archive.availableAfter = Math.min(archive.availableAfter || 999, state.week);
+                    }
+                });
+            }
+            break;
+    }
+
+    // Guardian bonus
+    if (project.guardianBonus) {
+        const guardianId = project.guardianBonus.guardian;
+        const requiredMood = project.guardianBonus.mood;
+        const currentMood = getMoodLevel(guardianId);
+
+        if (currentMood >= requiredMood) {
+            // Apply bonus
+            if (project.guardianBonus.durationBonus) {
+                // Extend duration by adding to remaining weeks
+                const active = state.activeProjects.find(p => p.id === project.id);
+                if (active) {
+                    active.remainingWeeks += project.guardianBonus.durationBonus;
+                }
+            }
+            if (project.guardianBonus.extraEffect === 'environmentBoost') {
+                state.resources.environment = Math.min(100, state.resources.environment + 3);
+            }
+        }
+    }
+}
+
+// ==========================================
+// 终局事件强制触发
+// ==========================================
+
+function processFinaleEvents() {
+    const state = MemorySanctuary.state;
+    const week = state.week;
+    const finaleEvents = MemorySanctuary.data.events.filter(e => e.type === 'finale');
+
+    for (const event of finaleEvents) {
+        if (week >= event.trigger.weekMin && week <= event.trigger.weekMax) {
+            // Force trigger - skip probability check
+            if (!state.activeEventIds.includes(event.id)) {
+                triggerEvent(event);
+            }
+        }
+    }
+}
+
+// ==========================================
+// Hook into onTimeAdvanced
+// ==========================================
+
+// Override the original onTimeAdvanced to also process projects and finale events
+const _originalOnTimeAdvanced = onTimeAdvanced;
+onTimeAdvanced = function(weeks) {
+    _originalOnTimeAdvanced(weeks);
+    processActiveProjects();
+    processFinaleEvents();
 };

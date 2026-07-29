@@ -24,6 +24,53 @@ function renderAll() {
     renderVaultTabs();
     renderVaultStatus();
     renderArchiveEntries();
+    renderGuardianMood();
+    renderExplorationButton();
+    updateProjectButton();
+}
+
+// ============================================================
+// 勘探按钮状态
+// ============================================================
+
+function renderExplorationButton() {
+    const btn = document.getElementById('explore-btn');
+    if (!btn || !MemorySanctuary.state) return;
+    const now = MemorySanctuary.state.week;
+    const exp = MemorySanctuary.state.exploration;
+    if (exp.deployedUntil > now) {
+        btn.disabled = true;
+        btn.title = `勘探队已出发，第 ${exp.deployedUntil} 周返回`;
+    } else {
+        btn.disabled = false;
+        btn.title = '地表勘探';
+    }
+}
+
+// ==========================================
+// 守护者好感度显示
+// ==========================================
+
+function renderGuardianMood() {
+    const moodEl = document.getElementById('guardian-mood');
+    const panelEl = document.getElementById('guardian-panel');
+    const nameEl = document.getElementById('guardian-name');
+    
+    if (!moodEl || !nameEl) return;
+    
+    // 从当前守护者姓名获取ID
+    const name = nameEl.textContent;
+    const guardian = MemorySanctuary.data.guardians.find(g => g.name === name);
+    if (!guardian) return;
+    
+    const guardianId = guardian.id;
+    moodEl.textContent = getMoodIndicator(guardianId);
+    moodEl.className = 'guardian-mood mood-' + getMoodTier(guardianId);
+    
+    if (panelEl) {
+        panelEl.classList.remove('mood-hostile', 'mood-cold', 'mood-neutral', 'mood-friendly', 'mood-intimate');
+        panelEl.classList.add('mood-' + getMoodTier(guardianId));
+    }
 }
 
 // ==========================================
@@ -187,12 +234,15 @@ function renderArchiveEntries() {
     }
     
     entries.forEach(entry => {
+        // Filter out entries not yet available
+        if (entry.availableAfter && MemorySanctuary.state.week < entry.availableAfter) return;
+
         const isCompleted = isArchiveCompleted(entry.id);
         const isExpired = entry.expired;
         const canArchive = !isCompleted && !isExpired && hasResources(entry.energyCost, entry.dataCost);
         
         const item = document.createElement('div');
-        item.className = `entry-item ${isCompleted ? 'archived' : ''} ${isExpired ? 'expired' : ''}`;
+        item.className = `entry-item ${isCompleted ? 'archived' : ''} ${isExpired ? 'expired' : ''} ${entry.emergency ? 'emergency' : ''}`;
         
         const chainIndicator = (typeof getChainIndicator === 'function') ? getChainIndicator(entry) : '';
         
@@ -239,4 +289,113 @@ function renderArchiveEntries() {
             }
         });
     });
+}
+
+// ==========================================
+// 圣所项目 UI
+// ==========================================
+
+function updateProjectButton() {
+    const btn = document.getElementById('project-btn');
+    if (!btn || !MemorySanctuary.state) return;
+    const week = MemorySanctuary.state.week;
+    const hasAvailableProjects = MemorySanctuary.data.projects && 
+        MemorySanctuary.data.projects.some(p => canStartProject(p));
+    
+    if (week >= 10 && hasAvailableProjects) {
+        btn.disabled = false;
+        btn.title = '圣所维护项目（可开始）';
+        btn.classList.add('ready');
+    } else if (week >= 10 && MemorySanctuary.state.activeProjects && MemorySanctuary.state.activeProjects.length > 0) {
+        btn.disabled = false;
+        btn.title = '圣所维护项目（进行中）';
+        btn.classList.remove('ready');
+    } else {
+        btn.disabled = true;
+        btn.title = '圣所维护项目（未解锁）';
+        btn.classList.remove('ready');
+    }
+}
+
+function renderProjectList() {
+    const container = document.getElementById('project-list');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const projects = MemorySanctuary.data.projects || [];
+    const state = MemorySanctuary.state;
+    const week = state.week;
+
+    if (projects.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-dim); font-size: 0.8rem;">无可用的维护项目</p>';
+        return;
+    }
+
+    projects.forEach(project => {
+        const isActive = state.activeProjects.some(p => p.id === project.id);
+        const isCompleted = state.completedProjects.includes(project.id);
+        const canStart = canStartProject(project);
+        const isLocked = week < project.availableAfter;
+
+        const item = document.createElement('div');
+        item.className = `project-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''} ${canStart ? 'can-start' : ''} ${isLocked ? 'locked' : ''}`;
+
+        const costHtml = project.cost ? `<div class="project-cost">${project.cost.energy ? `<span>◈ ${project.cost.energy}</span>` : ''}${project.cost.media ? `<span>◇ ${project.cost.media}</span>` : ''}</div>` : '';
+        const effectHtml = `<div class="project-effect">${getProjectEffectText(project)}</div>`;
+
+        let buttonHtml = '';
+        if (isLocked) {
+            buttonHtml = `<button class="project-btn" disabled>第${project.availableAfter}周解锁</button>`;
+        } else if (isActive) {
+            const active = state.activeProjects.find(p => p.id === project.id);
+            buttonHtml = `<button class="project-btn" disabled>进行中 (${active.remainingWeeks}周)</button>`;
+        } else if (isCompleted && !project.repeatable) {
+            buttonHtml = `<button class="project-btn" disabled>已完成</button>`;
+        } else if (canStart) {
+            buttonHtml = `<button class="project-btn" data-project-id="${project.id}">开始项目</button>`;
+        } else {
+            buttonHtml = `<button class="project-btn" disabled>资源不足</button>`;
+        }
+
+        item.innerHTML = `
+            <div class="project-name">${project.name}</div>
+            <div class="project-desc">${project.description}</div>
+            ${costHtml}
+            ${effectHtml}
+            <div class="project-duration">耗时：${project.duration}周</div>
+            ${buttonHtml}
+        `;
+
+        container.appendChild(item);
+    });
+
+    // Bind start buttons
+    container.querySelectorAll('.project-btn:not([disabled])').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const projectId = e.target.dataset.projectId;
+            if (startProject(projectId)) {
+                renderProjectList();
+            }
+        });
+    });
+}
+
+function getProjectEffectText(project) {
+    if (!project.effect) return '';
+    const e = project.effect;
+    switch (e.type) {
+        case 'resourceBoost':
+            return `每回合 +${e.amount} ${getResourceName(e.resource)}`;
+        case 'decayReduction':
+            return `${getResourceName(e.resource)} 衰减降低 ${Math.round(e.percent * 100)}%`;
+        case 'unlockArchives':
+            return `解锁 ${e.archiveIds.length} 条加密记录`;
+        default:
+            return '';
+    }
+}
+
+function getResourceName(resource) {
+    const names = { energy: '能源', media: '介质', environment: '环境' };
+    return names[resource] || resource;
 }

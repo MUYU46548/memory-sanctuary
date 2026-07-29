@@ -1150,6 +1150,101 @@
       ],
       "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_emergency_001",
+      "title": "「最后的广播」",
+      "vault": 1,
+      "type": "audio",
+      "dataCost": 20,
+      "energyCost": 12,
+      "description": "第8周时从地表接收到的最后一段广播信号。",
+      "content": "……如果有人听到……这里是第七区……我们撑不住了……请记住我们……",
+      "guardianReactions": {
+        "tika": "……我听过这个声音。她是最后一个广播员。",
+        "finn": "这是第七区覆灭前的最后记录。"
+      },
+      "relatedArchives": ["arch_emergency_002"],
+      "availableAfter": 8,
+      "expiresAfter": 12,
+      "emergency": true,
+      "discoveryMethod": "event"
+    },
+    {
+      "id": "arch_emergency_002",
+      "title": "「地热能状况报告」",
+      "vault": 2,
+      "type": "document",
+      "dataCost": 18,
+      "energyCost": 10,
+      "description": "一份关于圣所地热能源的紧急评估报告。",
+      "content": "地热井压力持续下降。按当前速率，圣所最多再运行 20 周。建议立即降低能源消耗或寻找替代能源。",
+      "guardianReactions": {
+        "lorn": "这份报告……我一直在回避这个事实。",
+        "misha": "我们应该更节约能源。"
+      },
+      "relatedArchives": ["arch_emergency_001"],
+      "availableAfter": 8,
+      "expiresAfter": 12,
+      "emergency": true,
+      "discoveryMethod": "event"
+    },
+    {
+      "id": "arch_emergency_003",
+      "title": "「地表辐射读数」",
+      "vault": 3,
+      "type": "data",
+      "dataCost": 22,
+      "energyCost": 14,
+      "description": "米莎的地表辐射监测数据，显示辐射水平正在缓慢上升。",
+      "content": "辐射水平：+12%（与上周对比）。按此趋势，地表将在 15 周内完全不可生存。建议加快归档速度。",
+      "guardianReactions": {
+        "misha": "……我每天都在记录。数字不会说谎。",
+        "ethel": "这是神对我们的考验吗？"
+      },
+      "relatedArchives": ["arch_emergency_002"],
+      "availableAfter": 8,
+      "expiresAfter": 12,
+      "emergency": true,
+      "discoveryMethod": "surface_exploration"
+    },
+    {
+      "id": "arch_emergency_004",
+      "title": "「加密记录：第一圣所」",
+      "vault": 1,
+      "type": "document",
+      "dataCost": 25,
+      "energyCost": 15,
+      "description": "来自另一个圣所的加密记录，通过卫星天线接收。",
+      "content": "致所有仍在运行的圣所：我们是第一圣所。我们的任务即将完成。愿你们的归档被后世发现。愿文明延续。",
+      "guardianReactions": {
+        "finn": "……他们做到了。他们真的做到了。",
+        "tika": "我们不是孤独的。"
+      },
+      "relatedArchives": ["arch_emergency_005"],
+      "availableAfter": 12,
+      "expiresAfter": 12,
+      "emergency": true,
+      "discoveryMethod": "project"
+    },
+    {
+      "id": "arch_emergency_005",
+      "title": "「加密记录：第九圣所」",
+      "vault": 2,
+      "type": "document",
+      "dataCost": 25,
+      "energyCost": 15,
+      "description": "来自第九圣所的加密记录，内容令人心碎。",
+      "content": "……我们是最后一个了。其他圣所都已沉默。但我们不后悔。我们保存了文明的火种。如果有人找到这个——请记住我们。",
+      "guardianReactions": {
+        "ethel": "……他们到最后一刻都没有放弃。",
+        "lorn": "这就是我们的命运吗？"
+      },
+      "relatedArchives": ["arch_emergency_004"],
+      "availableAfter": 12,
+      "expiresAfter": 12,
+      "emergency": true,
+      "discoveryMethod": "project"
     }
   ]
 }

@@ -86,7 +86,10 @@
                     <div class="guardian-display">
                         <div class="guardian-avatar" id="guardian-avatar">🦅</div>
                         <div class="guardian-info">
-                            <div class="guardian-name" id="guardian-name">缇卡</div>
+                            <div class="guardian-name-row">
+                                <div class="guardian-name" id="guardian-name">缇卡</div>
+                                <div class="guardian-mood" id="guardian-mood">🤍</div>
+                            </div>
                             <div class="guardian-role" id="guardian-role">首席歌者</div>
                             <div class="guardian-dialogue" id="guardian-dialogue">……我准备好了。让我们开始吧。</div>
                         </div>
@@ -145,6 +148,12 @@
             <button id="atlas-btn" title="文明图谱">
                 <span>图谱</span>
             </button>
+            <button id="explore-btn" title="地表勘探" disabled>
+                <span>勘探</span>
+            </button>
+            <button id="project-btn" title="圣所项目" disabled>
+                <span>项目</span>
+            </button>
             <button id="save-btn" title="存档">
                 <span>存档</span>
             </button>
@@ -199,6 +208,41 @@
             </div>
             <canvas id="atlas-canvas" width="500" height="400"></canvas>
             <div id="atlas-info"></div>
+        </div>
+    </div>
+
+    <!-- 地表勘探界面 -->
+    <div id="explore-overlay" class="hidden">
+        <div id="explore-panel">
+            <div id="explore-panel-header">
+                <h2>地表勘探</h2>
+                <button id="explore-close">✕</button>
+            </div>
+            <div id="explore-list"></div>
+            <div id="explore-dispatch" class="hidden">
+                <div id="dispatch-title"></div>
+                <div id="dispatch-desc"></div>
+                <div id="dispatch-guardians"></div>
+                <div id="dispatch-outcomes"></div>
+                <button id="dispatch-btn" disabled>派遣勘探队</button>
+            </div>
+            <div id="explore-result" class="hidden">
+                <div id="result-header"></div>
+                <div id="result-text"></div>
+                <div id="result-effects"></div>
+                <button id="result-close-btn">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 圣所项目面板 -->
+    <div id="project-overlay" class="hidden">
+        <div id="project-panel">
+            <div id="project-panel-header">
+                <h2>圣所维护项目</h2>
+                <button id="project-close">✕</button>
+            </div>
+            <div id="project-list"></div>
         </div>
     </div>
 
