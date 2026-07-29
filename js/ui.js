@@ -35,6 +35,22 @@ function renderWeekDisplay() {
     if (weekEl && MemorySanctuary.state) {
         weekEl.textContent = MemorySanctuary.state.week;
     }
+    
+    // Update week progress bar
+    const progressEl = document.getElementById('week-progress');
+    if (progressEl && MemorySanctuary.state) {
+        const percent = Math.min(100, (MemorySanctuary.state.week / MAX_WEEK) * 100);
+        progressEl.style.width = percent + '%';
+        
+        // Change color based on urgency
+        if (percent >= 90) {
+            progressEl.style.background = 'var(--danger)';
+        } else if (percent >= 70) {
+            progressEl.style.background = 'var(--warning)';
+        } else {
+            progressEl.style.background = 'var(--amber-primary)';
+        }
+    }
 }
 
 // ==========================================
@@ -55,6 +71,16 @@ function renderResources() {
     updateResourceColor('res-energy', resources.energy, 100);
     updateResourceColor('res-media', resources.media, 60);
     updateResourceColor('res-environment', resources.environment, 100);
+    
+    // 圣所衰竭视觉指示
+    const det = MemorySanctuary.state.deterioration;
+    const resEnergy = document.getElementById('res-energy');
+    const resMedia = document.getElementById('res-media');
+    const resEnv = document.getElementById('res-environment');
+    
+    if (resEnergy) resEnergy.classList.toggle('deterioration', det && det.energy);
+    if (resMedia) resMedia.classList.toggle('deterioration', det && det.media);
+    if (resEnv) resEnv.classList.toggle('deterioration', det && det.environment);
 }
 
 function updateResourceColor(elementId, value, max) {
@@ -143,19 +169,42 @@ function renderArchiveEntries() {
         return;
     }
     
+    // Show expiring soon aggregation at top
+    const expiringSoon = entries.filter(e => {
+        if (e.expired || isArchiveCompleted(e.id) || !e.expiresAfter) return false;
+        const remaining = e.expiresAfter - MemorySanctuary.state.week;
+        return remaining <= 3 && remaining > 0;
+    });
+    
+    if (expiringSoon.length > 0) {
+        const expiringDiv = document.createElement('div');
+        expiringDiv.className = 'expiring-soon-panel';
+        expiringDiv.innerHTML = `
+            <div class="expiring-soon-header">⚠ 即将过期</div>
+            ${expiringSoon.map(e => `<div class="expiring-soon-item">「${e.title}」— ${e.expiresAfter - MemorySanctuary.state.week}周后消失</div>`).join('')}
+        `;
+        container.appendChild(expiringDiv);
+    }
+    
     entries.forEach(entry => {
         const isCompleted = isArchiveCompleted(entry.id);
         const isExpired = entry.expired;
         const canArchive = !isCompleted && !isExpired && hasResources(entry.energyCost, entry.dataCost);
         
         const item = document.createElement('div');
-        item.className = `entry-item ${isCompleted ? 'archived' : ''} ${isExpired ? 'archived' : ''}`;
+        item.className = `entry-item ${isCompleted ? 'archived' : ''} ${isExpired ? 'expired' : ''}`;
+        
+        const chainIndicator = (typeof getChainIndicator === 'function') ? getChainIndicator(entry) : '';
+        
+        // Calculate remaining weeks
+        const remaining = entry.expiresAfter ? entry.expiresAfter - MemorySanctuary.state.week : null;
+        const isExpiringSoon = remaining !== null && remaining <= 3 && remaining > 0;
         
         const costHtml = `
             <div class="entry-cost">
                 <span class="cost-energy">◈ ${entry.energyCost}</span>
                 <span class="cost-data">◇ ${entry.dataCost}</span>
-                ${entry.expiresAfter ? `<span style="color: var(--danger)">⏱ ${entry.expiresAfter - MemorySanctuary.state.week}周</span>` : ''}
+                ${remaining !== null ? `<span style="color: ${isExpiringSoon ? 'var(--danger)' : 'var(--text-dim)'}">⏱ ${remaining}周</span>` : ''}
             </div>
         `;
         
@@ -171,7 +220,7 @@ function renderArchiveEntries() {
         }
         
         item.innerHTML = `
-            <div class="entry-title">${entry.title}</div>
+            <div class="entry-title">${entry.title}${chainIndicator}${isExpiringSoon ? ' <span style="color:var(--danger);font-size:0.7rem">⚠ 即将消失</span>' : ''}</div>
             <div class="entry-desc">${entry.description}</div>
             ${costHtml}
             ${buttonHtml}
@@ -183,7 +232,11 @@ function renderArchiveEntries() {
     container.querySelectorAll('.archive-btn:not([disabled])').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const archiveId = e.target.dataset.archiveId;
-            archiveEntry(archiveId);
+            if (typeof confirmArchive === 'function') {
+                confirmArchive(archiveId);
+            } else {
+                archiveEntry(archiveId);
+            }
         });
     });
 }

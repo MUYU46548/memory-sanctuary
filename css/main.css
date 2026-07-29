@@ -1018,6 +1018,109 @@ button.archive-btn.recommended {
     background: var(--bg-panel-hover);
 }
 
+#func-bar button#skip-btn {
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+#func-bar button#skip-btn:hover {
+    background: var(--warning);
+    color: var(--bg-deep);
+}
+
+#func-bar button#atlas-btn {
+    border-color: var(--amber-primary);
+    color: var(--amber-primary);
+}
+
+#func-bar button#atlas-btn:hover {
+    background: var(--amber-primary);
+    color: var(--bg-deep);
+}
+
+/* 文明图谱 */
+#atlas-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+#atlas-overlay.hidden {
+    display: none;
+}
+
+#atlas-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--amber-primary);
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 560px;
+    width: 90%;
+    box-shadow: 0 0 60px rgba(212, 160, 74, 0.2);
+}
+
+#atlas-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+#atlas-panel-header h2 {
+    font-family: var(--font-cn);
+    font-size: 1.1rem;
+    color: var(--amber-primary);
+    letter-spacing: 0.1em;
+}
+
+#atlas-close {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: color 0.2s ease;
+}
+
+#atlas-close:hover {
+    color: var(--danger);
+}
+
+#atlas-canvas {
+    display: block;
+    margin: 0 auto;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    background: var(--bg-deep);
+}
+
+#atlas-info {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+}
+
+/* 圣所衰竭状态指示 */
+.resource.deterioration {
+    border-color: var(--danger);
+    box-shadow: 0 0 8px rgba(138, 58, 42, 0.3);
+    animation: deterioratePulse 2s ease-in-out infinite;
+}
+
+@keyframes deterioratePulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(138, 58, 42, 0.2); }
+    50% { box-shadow: 0 0 12px rgba(138, 58, 42, 0.4); }
+}
+
 #log-content {
     flex: 1;
     overflow-y: auto;
@@ -1347,6 +1450,160 @@ button.archive-btn.recommended {
     background: var(--amber-primary);
     color: var(--bg-deep);
     box-shadow: 0 0 20px rgba(212, 160, 74, 0.3);
+}
+
+/* 周数进度条 */
+#week-progress-container {
+    width: 60px;
+    height: 4px;
+    background: var(--border-subtle);
+    border-radius: 2px;
+    margin-left: 8px;
+    overflow: hidden;
+}
+
+#week-progress {
+    height: 100%;
+    background: var(--amber-primary);
+    border-radius: 2px;
+    transition: width 0.3s ease, background 0.3s ease;
+}
+
+/* 归档确认弹窗 */
+#modal-confirm-container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-top: 16px;
+}
+
+#modal-confirm-btn {
+    padding: 10px 24px;
+    background: var(--amber-primary);
+    border: none;
+    border-radius: 4px;
+    color: var(--bg-deep);
+    font-family: var(--font-cn);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+#modal-confirm-btn:hover {
+    background: var(--amber-glow);
+}
+
+#skip-confirm-checkbox {
+    cursor: pointer;
+}
+
+/* 困局提醒横幅 */
+.stuck-banner {
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--border-subtle);
+    animation: slideDown 0.3s ease-out;
+}
+
+.stuck-banner.hidden {
+    display: none;
+}
+
+.stuck-banner.warning {
+    background: rgba(212, 160, 74, 0.15);
+    color: var(--warning);
+    border-color: var(--warning);
+}
+
+.stuck-banner.success {
+    background: rgba(58, 138, 90, 0.15);
+    color: var(--success);
+    border-color: var(--success);
+}
+
+.stuck-banner a {
+    color: var(--amber-primary);
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.stuck-banner a:hover {
+    color: var(--amber-glow);
+}
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* 存储室标签完整显示 */
+.vault-tab {
+    padding: 8px 6px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-family: var(--font-cn);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    white-space: normal;
+    overflow: visible;
+    word-break: break-all;
+    line-height: 1.3;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 过期条目增强视觉 */
+.entry-item.expired {
+    opacity: 0.4;
+    background: rgba(138, 58, 42, 0.05);
+    border-color: rgba(138, 58, 42, 0.3);
+}
+
+.entry-item.expired .entry-title {
+    text-decoration: line-through;
+    text-decoration-color: var(--danger);
+    text-decoration-thickness: 2px;
+}
+
+.entry-item.archived .entry-title {
+    text-decoration: line-through;
+    opacity: 0.5;
+}
+
+/* 即将过期聚合面板 */
+.expiring-soon-panel {
+    background: rgba(138, 58, 42, 0.1);
+    border: 1px solid rgba(138, 58, 42, 0.3);
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    animation: pulseWarning 2s ease-in-out infinite;
+}
+
+.expiring-soon-header {
+    color: var(--danger);
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.expiring-soon-item {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    padding: 2px 0;
+}
+
+@keyframes pulseWarning {
+    0%, 100% { border-color: rgba(138, 58, 42, 0.3); }
+    50% { border-color: rgba(138, 58, 42, 0.6); }
 }
 
 /* ============================================

@@ -13,8 +13,10 @@
         "tika": "这段记忆……我能感受到其中的情感。",
         "lorn": "工程的力量就在这里。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_024"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -30,8 +32,10 @@
         "tika": "我会把它唱给星星听。",
         "finn": "这是真相的一部分。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_004"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -46,8 +50,10 @@
       "guardianReactions": {
         "tika": "这段记忆……我能感受到其中的情感。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_046"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -63,8 +69,10 @@
         "tika": "这段记忆……我能感受到其中的情感。",
         "misha": "这是生命的记录。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_006"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -80,7 +88,7 @@
         "tika": "这是我们的根。"
       },
       "relatedArchives": [],
-      "expiresAfter": null,
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -96,8 +104,10 @@
         "tika": "这是我们的根。",
         "ethel": "这是信仰的见证。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_001"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -112,8 +122,10 @@
       "guardianReactions": {
         "tika": "让我把它记在心底。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_008"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -128,8 +140,10 @@
       "guardianReactions": {
         "tika": "这段记忆……我能感受到其中的情感。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_009"
+      ],
+      "expiresAfter": 5,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -144,8 +158,10 @@
       "guardianReactions": {
         "tika": "我会把它唱给星星听。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_010"
+      ],
+      "expiresAfter": 5,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -161,8 +177,10 @@
         "tika": "先祖的智慧，不应被遗忘。",
         "misha": "生态的平衡就藏在这些记忆里。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_009"
+      ],
+      "expiresAfter": 5,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -178,8 +196,10 @@
         "tika": "这段记忆……我能感受到其中的情感。",
         "finn": "我会把它编入编年史。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_012"
+      ],
+      "expiresAfter": 5,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -195,7 +215,7 @@
         "tika": "先祖的智慧，不应被遗忘。"
       },
       "relatedArchives": [],
-      "expiresAfter": null,
+      "expiresAfter": 5,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -210,8 +230,10 @@
       "guardianReactions": {
         "misha": "自然教会了我们很多。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_014"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -227,8 +249,10 @@
         "misha": "这是我们的生存之道。",
         "ethel": "灵魂需要归宿。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_015"
+      ],
+      "expiresAfter": 4,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -244,8 +268,10 @@
         "misha": "这是我们的生存之道。",
         "lorn": "知识就是力量。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_016"
+      ],
+      "expiresAfter": 4,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -260,8 +286,10 @@
       "guardianReactions": {
         "misha": "这是生命的记录。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_017"
+      ],
+      "expiresAfter": 4,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -276,8 +304,10 @@
       "guardianReactions": {
         "misha": "自然教会了我们很多。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_018"
+      ],
+      "expiresAfter": 4,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -292,8 +322,10 @@
       "guardianReactions": {
         "misha": "生态的平衡就藏在这些记忆里。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_013"
+      ],
+      "expiresAfter": 4,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -308,8 +340,10 @@
       "guardianReactions": {
         "ethel": "这是信仰的见证。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_020"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -325,8 +359,11 @@
         "ethel": "祈祷会传达到星空。",
         "misha": "这是生命的记录。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_021",
+        "arch_022"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -341,8 +378,10 @@
       "guardianReactions": {
         "ethel": "仪式让我们完整。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_026"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -357,8 +396,10 @@
       "guardianReactions": {
         "ethel": "仪式让我们完整。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_023"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -373,8 +414,10 @@
       "guardianReactions": {
         "ethel": "灵魂需要归宿。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_019"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -389,8 +432,10 @@
       "guardianReactions": {
         "tika": "我会把它唱给星星听。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_025"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -406,8 +451,10 @@
         "tika": "我会把它唱给星星听。",
         "ethel": "仪式让我们完整。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_027"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -423,8 +470,10 @@
         "tika": "这是我们的根。",
         "lorn": "技术是我们的遗产。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_027"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -439,8 +488,10 @@
       "guardianReactions": {
         "tika": "我会把它唱给星星听。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_012"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -455,8 +506,10 @@
       "guardianReactions": {
         "tika": "先祖的智慧，不应被遗忘。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_027"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -472,8 +525,10 @@
         "finn": "历史会记住这一刻。",
         "lorn": "工程的力量就在这里。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_063"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -488,8 +543,10 @@
       "guardianReactions": {
         "finn": "事实需要被保存。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_031"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -505,8 +562,10 @@
         "finn": "事实需要被保存。",
         "misha": "这是生命的记录。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_032"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -521,8 +580,10 @@
       "guardianReactions": {
         "finn": "这是真相的一部分。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_033"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -537,8 +598,10 @@
       "guardianReactions": {
         "finn": "这是真相的一部分。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_029"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -553,8 +616,10 @@
       "guardianReactions": {
         "misha": "这是我们的生存之道。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_035"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -569,8 +634,10 @@
       "guardianReactions": {
         "misha": "这是生命的记录。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_038"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -585,8 +652,10 @@
       "guardianReactions": {
         "misha": "这是生命的记录。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_037"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -601,8 +670,10 @@
       "guardianReactions": {
         "misha": "自然教会了我们很多。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_034"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -618,8 +689,10 @@
         "misha": "自然教会了我们很多。",
         "finn": "事实需要被保存。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_036"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -635,8 +708,10 @@
         "finn": "这是真相的一部分。",
         "ethel": "这是我们的精神遗产。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_040"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -651,8 +726,10 @@
       "guardianReactions": {
         "finn": "事实需要被保存。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_041"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -667,8 +744,10 @@
       "guardianReactions": {
         "finn": "这是真相的一部分。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_042"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -683,8 +762,10 @@
       "guardianReactions": {
         "finn": "历史会记住这一刻。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_043"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -699,8 +780,10 @@
       "guardianReactions": {
         "finn": "历史会记住这一刻。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_039"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -715,8 +798,10 @@
       "guardianReactions": {
         "ethel": "这是我们的精神遗产。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_045"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -732,8 +817,10 @@
         "ethel": "仪式让我们完整。",
         "lorn": "工程的力量就在这里。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_048"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -749,8 +836,10 @@
         "ethel": "祈祷会传达到星空。",
         "misha": "这是我们的生存之道。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_047"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -765,8 +854,10 @@
       "guardianReactions": {
         "ethel": "这是信仰的见证。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_044"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -781,8 +872,10 @@
       "guardianReactions": {
         "ethel": "灵魂需要归宿。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_003"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -797,8 +890,10 @@
       "guardianReactions": {
         "lorn": "这是理性的证明。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_050"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -813,8 +908,10 @@
       "guardianReactions": {
         "lorn": "知识就是力量。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_051"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -829,8 +926,10 @@
       "guardianReactions": {
         "lorn": "工程的力量就在这里。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_052"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -845,8 +944,10 @@
       "guardianReactions": {
         "lorn": "工程的力量就在这里。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_053"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -861,8 +962,10 @@
       "guardianReactions": {
         "lorn": "知识就是力量。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_049"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -877,8 +980,10 @@
       "guardianReactions": {
         "misha": "这是我们的生存之道。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_055"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -894,8 +999,10 @@
         "misha": "自然教会了我们很多。",
         "lorn": "这是理性的证明。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_056"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -911,8 +1018,10 @@
         "misha": "这是生命的记录。",
         "tika": "这段记忆……我能感受到其中的情感。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_057"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -927,8 +1036,10 @@
       "guardianReactions": {
         "misha": "大地会记住一切。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_058"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -943,8 +1054,10 @@
       "guardianReactions": {
         "misha": "这是我们的生存之道。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_054"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -959,8 +1072,10 @@
       "guardianReactions": {
         "lorn": "工程的力量就在这里。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_062"
+      ],
+      "expiresAfter": 8,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -976,8 +1091,10 @@
         "lorn": "知识就是力量。",
         "ethel": "这是信仰的见证。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_061"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -992,8 +1109,10 @@
       "guardianReactions": {
         "lorn": "知识就是力量。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_062"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -1008,8 +1127,10 @@
       "guardianReactions": {
         "lorn": "工程的力量就在这里。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_063"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     },
     {
@@ -1024,8 +1145,10 @@
       "guardianReactions": {
         "lorn": "我们可以重建。"
       },
-      "relatedArchives": [],
-      "expiresAfter": null,
+      "relatedArchives": [
+        "arch_059"
+      ],
+      "expiresAfter": 6,
       "discoveryMethod": "surface_exploration"
     }
   ]

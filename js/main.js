@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof initGuardianInteraction === 'function') initGuardianInteraction();
         if (typeof initTutorialListener === 'function') initTutorialListener();
         if (typeof initFuncBar === 'function') initFuncBar();
+        if (typeof initSkipTurn === 'function') initSkipTurn();
+        if (typeof initStuckBanner === 'function') initStuckBanner();
+        if (typeof initCivilizationAtlas === 'function') initCivilizationAtlas();
         if (typeof initSaveSystem === 'function') initSaveSystem();
         
         // Show title screen after game systems are ready
@@ -66,7 +69,11 @@ function initGameState() {
         vaultUsage: {},
         narrativeFlags: ['intro_complete'],
         activeEvents: [],
-        activeEventIds: []
+        activeEventIds: [],
+        deterioration: { energy: false, media: false, environment: false },
+        gameOver: false,
+        guardianMoods: {},
+        scheduledEvents: []
     };
     
     MemorySanctuary.data.vaults.forEach(vault => {

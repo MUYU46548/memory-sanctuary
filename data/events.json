@@ -6,8 +6,8 @@
       "description": "地表光雨渗入圣所通风系统，导致一间存储室的录入设备受损。需要消耗15能源进行修复，否则该存储室的录入速度将降低50%。",
       "trigger": { "type": "random", "weekMin": 3, "weekMax": 8, "probability": 0.3 },
       "choices": [
-        { "text": "消耗15能源修复", "effect": { "energy": -15 }, "result": "设备已修复。存储室恢复正常运作。" },
-        { "text": "暂时忽略", "effect": { "environment": -10 }, "result": "环境稳定度下降了。设备损坏加剧。" }
+        { "text": "消耗15能源修复", "effect": { "energy": -15 }, "result": "设备已修复。存储室恢复正常运作。", "feedback": { "narrativeFlag": "repaired_light_rain", "guardianMood": { "lorn": 1 }, "message": "洛恩对你的决断表示赞赏。" } },
+        { "text": "暂时忽略", "effect": { "environment": -10 }, "result": "环境稳定度下降了。设备损坏加剧。", "feedback": { "narrativeFlag": "ignored_light_rain", "guardianMood": { "lorn": -1 }, "message": "洛恩叹了口气，但没有说什么。" } }
       ]
     },
     {
@@ -16,8 +16,8 @@
       "description": "地热发电机输出不稳定，本周能源产出减少20点。",
       "trigger": { "type": "random", "weekMin": 4, "weekMax": 10, "probability": 0.25 },
       "choices": [
-        { "text": "接受损失", "effect": { "energy": -20 }, "result": "能源储备下降了。必须更谨慎地分配。" },
-        { "text": "超负荷运行发电机（损失环境稳定）", "effect": { "environment": -15 }, "result": "勉强维持了能源输出，但环境控制系统受到影响。" }
+        { "text": "接受损失", "effect": { "energy": -20 }, "result": "能源储备下降了。必须更谨慎地分配。", "feedback": { "narrativeFlag": "accepted_power_loss", "message": "你选择了保守策略。圣所暂时安全。" } },
+        { "text": "超负荷运行发电机（损失环境稳定）", "effect": { "environment": -15 }, "result": "勉强维持了能源输出，但环境控制系统受到影响。", "feedback": { "narrativeFlag": "overloaded_generator", "guardianMood": { "misha": -1 }, "message": "米莎担忧地看着环境读数。" } }
       ]
     },
     {
@@ -26,8 +26,8 @@
       "description": "米莎在地表勘探时发现了一批被遗忘的存储介质——含硅光学硬盘。可以补充25点存储介质储备。",
       "trigger": { "type": "random", "weekMin": 2, "weekMax": 6, "probability": 0.35 },
       "choices": [
-        { "text": "回收存储介质", "effect": { "media": 25 }, "result": "成功回收了25点存储介质。" },
-        { "text": "优先录入当前条目", "effect": {}, "result": "决定先完成手头的归档工作。" }
+        { "text": "回收存储介质", "effect": { "media": 25 }, "result": "成功回收了25点存储介质。", "feedback": { "narrativeFlag": "recovered_media", "guardianMood": { "misha": 1 }, "message": "米莎带着战利品归来，眼中闪烁着希望。" } },
+        { "text": "优先录入当前条目", "effect": {}, "result": "决定先完成手头的归档工作。", "feedback": { "narrativeFlag": "focused_on_archive", "message": "你选择专注于手头的工作。" } }
       ]
     },
     {
@@ -36,9 +36,40 @@
       "description": "芬恩和埃塞尔因为归档优先级发生争执。芬恩坚持要保存更多历史记录，埃塞尔认为宗教文献同样重要。",
       "trigger": { "type": "random", "weekMin": 5, "weekMax": 12, "probability": 0.2 },
       "choices": [
-        { "text": "支持芬恩（历史优先）", "effect": { "energy": -5 }, "result": "芬恩感到被理解，但埃塞尔有些失落。" },
-        { "text": "支持埃塞尔（宗教优先）", "effect": { "energy": -5 }, "result": "埃塞尔感到欣慰，但芬恩有些不满。" },
-        { "text": "各退一步", "effect": { "energy": -10 }, "result": "双方都做出了一些妥协。气氛缓和了。" }
+        { "text": "支持芬恩（历史优先）", "effect": { "energy": -5 }, "result": "芬恩感到被理解，但埃塞尔有些失落。", "feedback": { "narrativeFlag": "sided_with_finn", "guardianMood": { "finn": 1, "ethel": -1 }, "message": "芬恩点头致意，埃塞尔沉默不语。" } },
+        { "text": "支持埃塞尔（宗教优先）", "effect": { "energy": -5 }, "result": "埃塞尔感到欣慰，但芬恩有些不满。", "feedback": { "narrativeFlag": "sided_with_ethel", "guardianMood": { "ethel": 1, "finn": -1 }, "message": "埃塞尔微微一笑，芬恩转身离开。" } },
+        { "text": "各退一步", "effect": { "energy": -10 }, "result": "双方都做出了一些妥协。气氛缓和了。", "feedback": { "narrativeFlag": "compromised", "guardianMood": { "finn": 1, "ethel": 1 }, "message": "紧张的气氛消散了。团队合作更加紧密。" } }
+      ]
+    },
+    {
+      "id": "event_surface_exploration_01",
+      "title": "地表勘探补给",
+      "description": "洛恩带队进行了一次短暂的地表勘探，在废弃的补给站中找到了可用的能源罐和光学存储盘。",
+      "trigger": { "type": "random", "weekMin": 3, "weekMax": 12, "probability": 0.25 },
+      "choices": [
+        { "text": "回收能源罐（+15能源）", "effect": { "energy": 15 }, "result": "成功回收了15点能源储备。", "feedback": { "narrativeFlag": "collected_energy", "guardianMood": { "lorn": 1 }, "message": "洛恩满意地报告了回收成果。" } },
+        { "text": "回收光学盘（+12介质）", "effect": { "media": 12 }, "result": "成功回收了12点存储介质。", "feedback": { "narrativeFlag": "collected_media", "guardianMood": { "lorn": 1 }, "message": "这些介质可以用来保存更多记忆。" } },
+        { "text": "全部回收（消耗1周）", "effect": { "energy": 10, "media": 8, "time": 1 }, "result": "花费额外时间，回收了两种资源。", "feedback": { "narrativeFlag": "collected_all", "guardianMood": { "lorn": 2 }, "message": "洛恩不辞辛劳，带回了双份补给。" } }
+      ]
+    },
+    {
+      "id": "event_guardian_donation_01",
+      "title": "守护者的珍藏",
+      "description": "埃塞尔拿出了一批私人收藏的晶体存储介质——这是她当年从地表带出的最后一批物资。",
+      "trigger": { "type": "random", "weekMin": 5, "weekMax": 15, "probability": 0.15 },
+      "choices": [
+        { "text": "接受馈赠（+20介质）", "effect": { "media": 20 }, "result": "埃塞尔微笑着将晶体放入录入系统。有些记忆，值得分享。", "feedback": { "narrativeFlag": "accepted_gift", "guardianMood": { "ethel": 2 }, "message": "埃塞尔的眼中闪烁着泪光。这些晶体承载着她最珍贵的回忆。" } },
+        { "text": "婉拒（她留着吧）", "effect": { "environment": 5 }, "result": "埃塞尔的善意温暖了圣所的氛围。", "feedback": { "narrativeFlag": "declined_gift", "guardianMood": { "ethel": 1 }, "message": "埃塞尔感激地点点头。你的尊重让她感到温暖。" } }
+      ]
+    },
+    {
+      "id": "event_geothermal_surge_01",
+      "title": "地热涌动",
+      "description": "圣所下方的地热井突然活跃，能源产出激增。但高温也对环境控制系统造成压力。",
+      "trigger": { "type": "random", "weekMin": 4, "weekMax": 10, "probability": 0.2 },
+      "choices": [
+        { "text": "全力收集（+25能源，-10环境）", "effect": { "energy": 25, "environment": -10 }, "result": "大量能源被收集，但高温让环境控制系统超负荷。", "feedback": { "narrativeFlag": "maxed_energy", "guardianMood": { "lorn": 1, "misha": -1 }, "message": "能源储备增加，但环境控制系统发出了警报。" } },
+        { "text": "适度收集（+12能源）", "effect": { "energy": 12 }, "result": "安全地收集了部分能源。", "feedback": { "narrativeFlag": "balanced_collection", "guardianMood": { "lorn": 1, "misha": 1 }, "message": "平衡的选择。圣所稳定地运转着。" } }
       ]
     },
     {
@@ -47,8 +78,8 @@
       "description": "圣所环境控制系统出现故障，温度开始缓慢上升。需要洛恩进行维修。",
       "trigger": { "type": "random", "weekMin": 6, "weekMax": 15, "probability": 0.2 },
       "choices": [
-        { "text": "洛恩维修（消耗1周时间）", "effect": { "time": 1 }, "result": "洛恩成功修复了故障。圣所环境恢复正常。" },
-        { "text": "降低功率运行", "effect": { "environment": -20 }, "result": "环境稳定度大幅下降，但节省了时间。" }
+        { "text": "洛恩维修（消耗1周时间）", "effect": { "time": 1 }, "result": "洛恩成功修复了故障。圣所环境恢复正常。", "feedback": { "narrativeFlag": "repaired_climate", "guardianMood": { "lorn": 2 }, "message": "洛恩用精湛的技艺修复了系统。圣所重归平静。" } },
+        { "text": "降低功率运行", "effect": { "environment": -20 }, "result": "环境稳定度大幅下降，但节省了时间。", "feedback": { "narrativeFlag": "reduced_climate", "guardianMood": { "lorn": -1, "misha": -1 }, "message": "温度在上升。每个人都能感受到不适。" } }
       ]
     }
   ]

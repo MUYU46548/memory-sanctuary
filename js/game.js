@@ -10,7 +10,11 @@
 function consumeResources(energy, media) {
     const state = MemorySanctuary.state;
     
-    if (state.resources.energy < energy) {
+    // 圣所衰竭：能源枯竭时消耗加倍
+    const energyMultiplier = (state.deterioration && state.deterioration.energy) ? 2 : 1;
+    const actualEnergy = energy * energyMultiplier;
+    
+    if (state.resources.energy < actualEnergy) {
         addLog('能源不足，无法执行录入操作。', 'system');
         return false;
     }
@@ -19,14 +23,15 @@ function consumeResources(energy, media) {
         return false;
     }
     
-    state.resources.energy -= energy;
+    state.resources.energy -= actualEnergy;
     state.resources.media -= media;
     return true;
 }
 
 function hasResources(energy, media) {
     const state = MemorySanctuary.state;
-    return state.resources.energy >= energy && state.resources.media >= media;
+    const energyMultiplier = (state.deterioration && state.deterioration.energy) ? 2 : 1;
+    return state.resources.energy >= energy * energyMultiplier && state.resources.media >= media;
 }
 
 function getResourceStatus() {
@@ -67,6 +72,12 @@ function archiveEntry(archiveId) {
         return false;
     }
     
+    // 圣所衰竭：介质耗尽时无法录入
+    if (MemorySanctuary.state.deterioration && MemorySanctuary.state.deterioration.media) {
+        addLog('存储介质耗尽，无法录入新条目。请补充介质后再试。', 'system');
+        return false;
+    }
+    
     if (!hasResources(entry.energyCost, entry.dataCost)) {
         addLog(`资源不足，无法归档 "${entry.title}"。`, 'system');
         return false;
@@ -101,6 +112,9 @@ function archiveEntry(archiveId) {
     
     showArchiveCompleteModal(entry);
     
+    // 检查叙事线索链
+    if (typeof checkNarrativeChains === 'function') checkNarrativeChains(archiveId);
+    
     // 归档后可能触发事件
     if (typeof checkRandomEvent === 'function') checkRandomEvent();
     
@@ -119,27 +133,503 @@ function advanceTime(weeks) {
 }
 
 function onTimeAdvanced(weeks) {
-    // 检查过期条目
+    // 资源自然衰减（生存压力核心）
+    const decay = getWeeklyDecay();
+    MemorySanctuary.state.resources.energy = Math.max(0,
+        MemorySanctuary.state.resources.energy - decay.energy * weeks
+    );
+    MemorySanctuary.state.resources.media = Math.max(0,
+        MemorySanctuary.state.resources.media - decay.media * weeks
+    );
+    MemorySanctuary.state.resources.environment = Math.max(0,
+        MemorySanctuary.state.resources.environment - decay.environment * weeks
+    );
+
+    // 检查过期条目（仅记录消失，警告移至聚合面板）
     MemorySanctuary.data.archives.forEach(entry => {
         if (entry.expiresAfter && !isArchiveCompleted(entry.id) && !entry.expired) {
-            const remaining = entry.expiresAfter - MemorySanctuary.state.week;
+            const effectiveExpiry = getEffectiveExpiryWeeks(entry);
+            const remaining = effectiveExpiry - MemorySanctuary.state.week;
             if (remaining <= 0) {
                 addLog(`条目 "${entry.title}" 已永久消失。`, 'system');
                 entry.expired = true;
-            } else if (remaining <= 4) {
-                addLog(`警告："${entry.title}" 即将在 ${remaining} 周后消失。`, 'system');
             }
         }
     });
-    
-    // 环境稳定度自然下降
-    const envDecay = weeks * 0.5;
-    MemorySanctuary.state.resources.environment = Math.max(0, 
-        MemorySanctuary.state.resources.environment - envDecay
-    );
+
+    // 检查圣所衰竭状态
+    if (typeof checkSanctuaryDeterioration === 'function') checkSanctuaryDeterioration();
     
     // 守护者主动事件
     if (typeof checkGuardianInitiative === 'function') checkGuardianInitiative();
+    
+    // 更新困局检测
+    if (typeof checkStuckState === 'function') checkStuckState();
+    
+    // 检查失败条件
+    if (typeof checkFailureCondition === 'function') checkFailureCondition();
+    
+    // 检查周数上限
+    if (typeof checkWeekLimit === 'function') checkWeekLimit();
+}
+
+// ==========================================
+// 资源自然衰减 & 圣所衰竭系统
+// ==========================================
+
+function getWeeklyDecay() {
+    const state = MemorySanctuary.state;
+    let multiplier = 1;
+    
+    // 当两种资源已归零时，剩余资源加速衰减
+    const res = state.resources;
+    let zeroCount = 0;
+    if (res.energy <= 0) zeroCount++;
+    if (res.media <= 0) zeroCount++;
+    if (res.environment <= 0) zeroCount++;
+    
+    if (zeroCount >= 2) {
+        multiplier = 2; // 已衰竭两种资源，剩余资源加速衰减
+    }
+    
+    return { energy: 3 * multiplier, media: 2 * multiplier, environment: 1.5 * multiplier };
+}
+
+function getEffectiveExpiryWeeks(entry) {
+    // 环境归零时过期速度翻倍
+    if (MemorySanctuary.state.resources.environment <= 0) {
+        return Math.ceil(entry.expiresAfter / 2);
+    }
+    return entry.expiresAfter;
+}
+
+function checkSanctuaryDeterioration() {
+    const res = MemorySanctuary.state.resources;
+    const state = MemorySanctuary.state;
+    
+    if (!state.deterioration) {
+        state.deterioration = { energy: false, media: false, environment: false };
+    }
+    const det = state.deterioration;
+    
+    // 能源归零 → 归档消耗加倍
+    if (res.energy <= 0 && !det.energy) {
+        det.energy = true;
+        addLog('⚠️ 圣所衰竭：能源枯竭，录入能耗加倍。', 'system');
+    } else if (res.energy > 0 && det.energy) {
+        det.energy = false;
+        addLog('能源已恢复，录入效率恢复正常。', 'system');
+    }
+    
+    // 介质归零 → 无法录入
+    if (res.media <= 0 && !det.media) {
+        det.media = true;
+        addLog('⚠️ 圣所衰竭：存储介质耗尽，无法录入新条目。', 'system');
+    } else if (res.media > 0 && det.media) {
+        det.media = false;
+        addLog('存储介质已补充，录入系统恢复。', 'system');
+    }
+    
+    // 环境归零 → 过期加速
+    if (res.environment <= 0 && !det.environment) {
+        det.environment = true;
+        addLog('⚠️ 圣所衰竭：环境失控，条目过期速度翻倍。', 'system');
+    } else if (res.environment > 0 && det.environment) {
+        det.environment = false;
+        addLog('环境控制系统恢复，条目保存条件改善。', 'system');
+    }
+}
+
+// ==========================================
+// 困局检测 & 横幅提醒
+// ==========================================
+
+function checkStuckState() {
+    const state = MemorySanctuary.state;
+    const archives = MemorySanctuary.data.archives;
+    
+    // Ensure banner exists
+    let banner = document.getElementById('stuck-banner');
+    if (!banner) {
+        initStuckBanner();
+        banner = document.getElementById('stuck-banner');
+    }
+    if (!banner) return;
+    
+    // Count actionable entries (not completed, not expired, has resources)
+    const actionable = archives.filter(a => 
+        !isArchiveCompleted(a.id) && !a.expired && hasResources(a.energyCost, a.dataCost)
+    ).length;
+    
+    // Count entries that could be archived if we had resources
+    const potential = archives.filter(a => 
+        !isArchiveCompleted(a.id) && !a.expired
+    ).length;
+    
+    // Check if player is stuck (no actionable entries, but potential exists)
+    const isStuck = actionable === 0 && potential > 0;
+    
+    // Check if all entries are done
+    const allDone = potential === 0;
+    
+    // Show/hide banner
+    if (allDone) {
+        banner.innerHTML = `<span>🎉 所有条目已处理完毕！可以封印圣所了。</span>`;
+        banner.className = 'stuck-banner success';
+    } else if (isStuck) {
+        const lowEnergy = state.resources.energy <= 0;
+        const lowMedia = state.resources.media <= 0;
+        let reason = '';
+        if (lowEnergy && lowMedia) reason = '能源与介质均已耗尽';
+        else if (lowEnergy) reason = '能源已耗尽';
+        else if (lowMedia) reason = '介质已耗尽';
+        else reason = '资源不足以归档任何条目';
+        
+        banner.innerHTML = `
+            <span>⚠️ ${reason}。</span>
+            <span>可选择<a href="#" id="stuck-skip">跳过回合</a>恢复资源，或<a href="#" id="stuck-seal">封印圣所</a>结束游戏。</span>
+        `;
+        banner.className = 'stuck-banner warning';
+        
+        // Add event listeners
+        setTimeout(() => {
+            const skipLink = document.getElementById('stuck-skip');
+            const sealLink = document.getElementById('stuck-seal');
+            if (skipLink) skipLink.onclick = (e) => { e.preventDefault(); skipTurn(); };
+            if (sealLink) sealLink.onclick = (e) => { e.preventDefault(); if (canSealSanctuary()) sealSanctuary(); };
+        }, 50);
+    } else {
+        banner.className = 'stuck-banner hidden';
+    }
+}
+
+function initStuckBanner() {
+    // Create stuck banner if it doesn't exist
+    let banner = document.getElementById('stuck-banner');
+    if (!banner && MemorySanctuary.state) {
+        banner = document.createElement('div');
+        banner.id = 'stuck-banner';
+        banner.className = 'stuck-banner hidden';
+        
+        // Insert after top bar
+        const topBar = document.getElementById('top-bar');
+        if (topBar && topBar.parentNode) {
+            topBar.parentNode.insertBefore(banner, topBar.nextSibling);
+        }
+    }
+}
+
+// ==========================================
+// 失败条件 & 周数上限
+// ==========================================
+
+const MAX_WEEK = 20;
+
+function checkFailureCondition() {
+    if (MemorySanctuary.state.gameOver) return;
+    
+    const res = MemorySanctuary.state.resources;
+    
+    // 失败条件：三种资源全部归零
+    if (res.energy <= 0 && res.media <= 0 && res.environment <= 0) {
+        triggerGameOver('collapse');
+    }
+}
+
+function checkWeekLimit() {
+    if (MemorySanctuary.state.gameOver) return;
+    
+    // 周数上限：超过MAX_WEEK周自动终局
+    if (MemorySanctuary.state.week >= MAX_WEEK) {
+        triggerGameOver('timeup');
+    }
+}
+
+function triggerGameOver(reason) {
+    MemorySanctuary.state.gameOver = true;
+    
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    const closeBtn = document.getElementById('modal-close');
+    
+    if (!overlay || !title || !content) return;
+    
+    let titleText = '圣所已崩溃';
+    let contentText = '';
+    
+    if (reason === 'collapse') {
+        contentText = '能源、介质与环境稳定度全部归零。\n\n圣所的系统一个接一个地停止了运转。最后的灯光熄灭，空气变得沉默。\n\n你未能保存萨拉达斯的遗产。后世将永远不知道这里曾存在过一个文明。\n\n「我们曾存在，但没有人记得。」';
+    } else if (reason === 'timeup') {
+        titleText = '时间已至';
+        contentText = `圣所已运行 ${MAX_WEEK} 周。地热能源即将耗尽，地表环境已完全不可生存。\n\n你必须在此刻做出最终抉择——封印圣所，让后世有机会发现你保存的记忆。\n\n这是终结，也是开始。`;
+    }
+    
+    const archivedCount = MemorySanctuary.state.completedArchives.length;
+    const totalCount = MemorySanctuary.data.archives.length;
+    contentText += `\n\n最终统计：\n`;
+    contentText += `• 运行周数：${MemorySanctuary.state.week} 周\n`;
+    contentText += `• 归档条目：${archivedCount} / ${totalCount}\n`;
+    contentText += `• 文明完整度：${Math.round((archivedCount / totalCount) * 100)}%\n`;
+    
+    if (reason === 'timeup') {
+        contentText += `\n点击「封印圣所」结束游戏并保存记录。`;
+    } else {
+        contentText += `\n点击「返回标题」重新开始。`;
+    }
+    
+    title.textContent = titleText;
+    content.textContent = contentText;
+    overlay.classList.remove('hidden');
+    
+    if (closeBtn) {
+        if (reason === 'timeup') {
+            closeBtn.textContent = '封印圣所';
+            closeBtn.onclick = () => {
+                overlay.classList.add('hidden');
+                sealSanctuary();
+            };
+        } else {
+            closeBtn.textContent = '返回标题';
+            closeBtn.onclick = () => {
+                overlay.classList.add('hidden');
+                showTitleScreen();
+            };
+        }
+    }
+}
+
+// ==========================================
+// 事件结果反馈（长期影响）
+// ==========================================
+
+function applyEventFeedback(choiceIndex) {
+    const event = MemorySanctuary.activeEvent;
+    if (!event) return;
+    
+    const choice = event.choices[choiceIndex];
+    if (!choice.feedback) return;
+    
+    // 应用长期效果
+    if (choice.feedback.narrativeFlag) {
+        MemorySanctuary.state.narrativeFlags.push(choice.feedback.narrativeFlag);
+    }
+    
+    if (choice.feedback.guardianMood) {
+        if (!MemorySanctuary.state.guardianMoods) {
+            MemorySanctuary.state.guardianMoods = {};
+        }
+        for (const [guardianId, delta] of Object.entries(choice.feedback.guardianMood)) {
+            MemorySanctuary.state.guardianMoods[guardianId] = 
+                (MemorySanctuary.state.guardianMoods[guardianId] || 0) + delta;
+        }
+    }
+    
+    if (choice.feedback.futureEvent) {
+        if (!MemorySanctuary.state.scheduledEvents) {
+            MemorySanctuary.state.scheduledEvents = [];
+        }
+        MemorySanctuary.state.scheduledEvents.push(choice.feedback.futureEvent);
+    }
+    
+    // 显示反馈
+    if (choice.feedback.message) {
+        addLog(`📜 ${choice.feedback.message}`, 'event');
+    }
+}
+
+// ==========================================
+// 归档确认弹窗
+// ==========================================
+
+function confirmArchive(archiveId) {
+    // 检查是否启用了"不再提示"
+    if (localStorage.getItem('memory-sanctuary-skip-confirm') === 'true') {
+        archiveEntry(archiveId);
+        return;
+    }
+    
+    const entry = getArchiveById(archiveId);
+    if (!entry) return;
+    
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    const closeBtn = document.getElementById('modal-close');
+    
+    if (!overlay || !title || !content) return;
+    
+    title.textContent = '确认归档';
+    
+    let contentText = `确定要归档「${entry.title}」吗？\n\n`;
+    contentText += `消耗：◈ ${entry.energyCost} 能源，◇ ${entry.dataCost} 介质\n`;
+    contentText += `存储室：${MemorySanctuary.data.vaults.find(v => v.id === entry.vault)?.name || ''}\n`;
+    
+    if (entry.relatedArchives && entry.relatedArchives.length > 0) {
+        const relatedNames = entry.relatedArchives
+            .map(id => getArchiveById(id)?.title)
+            .filter(Boolean)
+            .map(t => `「${t}」`)
+            .join('、');
+        if (relatedNames) {
+            contentText += `\n🔗 归档此条目将揭示与 ${relatedNames} 的关联。`;
+        }
+    }
+    
+    contentText += `\n\n归档后将推进1周时间。`;
+    
+    content.textContent = contentText;
+    overlay.classList.remove('hidden');
+    
+    // 创建确认按钮容器
+    const existingConfirm = document.getElementById('modal-confirm-container');
+    if (existingConfirm) existingConfirm.remove();
+    
+    const confirmContainer = document.createElement('div');
+    confirmContainer.id = 'modal-confirm-container';
+    confirmContainer.style.display = 'flex';
+    confirmContainer.style.gap = '12px';
+    confirmContainer.style.alignItems = 'center';
+    confirmContainer.style.marginTop = '16px';
+    
+    // "不再提示"复选框
+    const skipLabel = document.createElement('label');
+    skipLabel.style.display = 'flex';
+    skipLabel.style.alignItems = 'center';
+    skipLabel.style.gap = '6px';
+    skipLabel.style.fontSize = '0.75rem';
+    skipLabel.style.color = 'var(--text-dim)';
+    skipLabel.style.cursor = 'pointer';
+    
+    const skipCheckbox = document.createElement('input');
+    skipCheckbox.type = 'checkbox';
+    skipCheckbox.id = 'skip-confirm-checkbox';
+    skipCheckbox.style.cursor = 'pointer';
+    
+    skipLabel.appendChild(skipCheckbox);
+    skipLabel.appendChild(document.createTextNode('不再提示'));
+    
+    // 确认按钮
+    const confirmBtn = document.createElement('button');
+    confirmBtn.id = 'modal-confirm-btn';
+    confirmBtn.textContent = '确认归档';
+    confirmBtn.style.padding = '10px 24px';
+    confirmBtn.style.background = 'var(--amber-primary)';
+    confirmBtn.style.border = 'none';
+    confirmBtn.style.borderRadius = '4px';
+    confirmBtn.style.color = 'var(--bg-deep)';
+    confirmBtn.style.fontFamily = 'var(--font-cn)';
+    confirmBtn.style.fontSize = '0.9rem';
+    confirmBtn.style.cursor = 'pointer';
+    
+    confirmBtn.onclick = () => {
+        if (skipCheckbox.checked) {
+            localStorage.setItem('memory-sanctuary-skip-confirm', 'true');
+        }
+        closeConfirmModal(archiveId, true);
+    };
+    
+    confirmContainer.appendChild(skipLabel);
+    confirmContainer.appendChild(confirmBtn);
+    
+    // 修改关闭按钮为"取消"
+    if (closeBtn) {
+        closeBtn.textContent = '取消';
+        closeBtn.onclick = () => {
+            closeConfirmModal(archiveId, false);
+        };
+    }
+    
+    content.appendChild(confirmContainer);
+}
+
+function closeConfirmModal(archiveId, confirmed) {
+    const overlay = document.getElementById('modal-overlay');
+    const confirmContainer = document.getElementById('modal-confirm-container');
+    const closeBtn = document.getElementById('modal-close');
+    
+    if (overlay) overlay.classList.add('hidden');
+    if (confirmContainer) confirmContainer.remove();
+    
+    // 重置关闭按钮为"确定"
+    if (closeBtn) {
+        closeBtn.textContent = '确定';
+    }
+    
+    if (confirmed && archiveId) {
+        archiveEntry(archiveId);
+    }
+}
+
+// ==========================================
+// 跳过回合（横幅提醒版）
+// ==========================================
+
+function skipTurn() {
+    if (MemorySanctuary.activeEvent) {
+        showSkipBlockedBanner();
+        return false;
+    }
+    
+    // 游戏结束后不能跳过
+    if (MemorySanctuary.state.gameOver) {
+        return false;
+    }
+    
+    // 达到周数上限后不能跳过
+    if (MemorySanctuary.state.week >= MAX_WEEK) {
+        checkWeekLimit();
+        return false;
+    }
+    
+    addLog('你决定跳过这一回合，让圣所进入低功耗维护模式。', 'system');
+    
+    // 恢复少量资源
+    const state = MemorySanctuary.state;
+    state.resources.energy = Math.min(100, state.resources.energy + 8);
+    state.resources.media = Math.min(100, state.resources.media + 4);
+    state.resources.environment = Math.min(100, state.resources.environment + 3);
+    
+    addLog('维护完成：能源+8，介质+4，环境+3。', 'success');
+    
+    // 推进时间（触发衰减检查）
+    advanceTime(1);
+    
+    // 守护者可能对此有反应
+    const guardians = MemorySanctuary.data.guardians;
+    const randomGuardian = guardians[Math.floor(Math.random() * guardians.length)];
+    const skipDialogues = [
+        '短暂的休憩……也许这是明智的。',
+        '时间紧迫，但喘息也是必要的。',
+        '让我们继续吧。',
+        '休息是为了走得更远。',
+        '愿这一刻的停顿不是遗憾。'
+    ];
+    const dialogue = skipDialogues[Math.floor(Math.random() * skipDialogues.length)];
+    addLog(`${randomGuardian.name}：「${dialogue}」`, 'guardian');
+    
+    renderAll();
+    return true;
+}
+
+function showSkipBlockedBanner() {
+    const banner = document.getElementById('stuck-banner');
+    if (banner) {
+        banner.innerHTML = `<span>⚠️ 当前有未处理的突发事件，无法跳过。请先处理事件。</span>`;
+        banner.className = 'stuck-banner warning';
+        setTimeout(() => {
+            if (typeof checkStuckState === 'function') checkStuckState();
+        }, 3000);
+    }
+}
+
+function initSkipTurn() {
+    const skipBtn = document.getElementById('skip-btn');
+    if (skipBtn) {
+        skipBtn.addEventListener('click', () => {
+            skipTurn();
+        });
+    }
 }
 
 // ==========================================
@@ -533,6 +1023,9 @@ function resolveEvent(choiceIndex) {
     
     addLog(`选择：${choice.text} —— ${choice.result}`, 'event');
     
+    // 应用事件反馈（长期影响）
+    if (typeof applyEventFeedback === 'function') applyEventFeedback(choiceIndex);
+    
     // 隐藏事件面板
     const panel = document.getElementById('event-panel');
     if (panel) panel.classList.add('hidden');
@@ -868,6 +1361,7 @@ function saveGame(slot) {
             completedArchives: [...MemorySanctuary.state.completedArchives],
             vaultUsage: { ...MemorySanctuary.state.vaultUsage },
             narrativeFlags: [...MemorySanctuary.state.narrativeFlags],
+            deterioration: { ...MemorySanctuary.state.deterioration },
             activeEvents: [],
             activeEventIds: [...MemorySanctuary.state.activeEventIds]
         },
@@ -901,6 +1395,7 @@ function loadGame(slot) {
         MemorySanctuary.state.completedArchives = [...saveData.state.completedArchives];
         MemorySanctuary.state.vaultUsage = { ...saveData.state.vaultUsage };
         MemorySanctuary.state.narrativeFlags = [...(saveData.state.narrativeFlags || [])];
+        MemorySanctuary.state.deterioration = { ...saveData.state.deterioration } || { energy: false, media: false, environment: false };
         MemorySanctuary.state.activeEvents = [];
         MemorySanctuary.state.activeEventIds = [...(saveData.state.activeEventIds || [])];
 
@@ -1244,8 +1739,411 @@ function startGameAfterLoad(slot) {
 }
 
 // ==========================================
-// 封印圣所 / 游戏完成
+// 叙事线索链系统
 // ==========================================
+
+function checkNarrativeChains(archiveId) {
+    const entry = getArchiveById(archiveId);
+    if (!entry || !entry.relatedArchives || entry.relatedArchives.length === 0) return;
+    
+    const unlocked = [];
+    for (const relatedId of entry.relatedArchives) {
+        const related = getArchiveById(relatedId);
+        if (related && !isArchiveCompleted(relatedId) && !related.expired) {
+            unlocked.push(related);
+        }
+    }
+    
+    if (unlocked.length > 0) {
+        const names = unlocked.map(e => `「${e.title}」`).join('、');
+        addLog(`🔗 线索揭示：归档此条目揭示了与 ${names} 的关联。`, 'guardian');
+    }
+}
+
+function getChainIndicator(entry) {
+    if (!entry.relatedArchives || entry.relatedArchives.length === 0) return '';
+    const completed = entry.relatedArchives.filter(id => isArchiveCompleted(id)).length;
+    if (completed === 0) return ' 🔗';
+    if (completed === entry.relatedArchives.length) return ' ✅';
+    return ` 🔗${completed}/${entry.relatedArchives.length}`;
+}
+
+// ==========================================
+// 文明图谱系统
+// ==========================================
+
+function initCivilizationAtlas() {
+    const atlasBtn = document.getElementById('atlas-btn');
+    const atlasClose = document.getElementById('atlas-close');
+    const atlasOverlay = document.getElementById('atlas-overlay');
+    
+    if (atlasBtn) {
+        atlasBtn.addEventListener('click', () => {
+            toggleAtlas();
+        });
+    }
+    
+    if (atlasClose) {
+        atlasClose.addEventListener('click', () => {
+            if (atlasOverlay) atlasOverlay.classList.add('hidden');
+        });
+    }
+    
+    if (atlasOverlay) {
+        atlasOverlay.addEventListener('click', (e) => {
+            if (e.target === atlasOverlay) {
+                atlasOverlay.classList.add('hidden');
+            }
+        });
+    }
+}
+
+function toggleAtlas() {
+    const overlay = document.getElementById('atlas-overlay');
+    if (!overlay) return;
+    
+    if (overlay.classList.contains('hidden')) {
+        overlay.classList.remove('hidden');
+        renderAtlas();
+    } else {
+        overlay.classList.add('hidden');
+    }
+}
+
+function renderAtlas() {
+    const canvas = document.getElementById('atlas-canvas');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Clear
+    ctx.clearRect(0, 0, width, height);
+    
+    // Get theme colors
+    const style = getComputedStyle(document.documentElement);
+    const accentColor = style.getPropertyValue('--amber-primary').trim() || '#d4a04a';
+    const textColor = style.getPropertyValue('--text-primary').trim() || '#e8e0d0';
+    const dimColor = style.getPropertyValue('--text-dim').trim() || '#5a5040';
+    const dangerColor = style.getPropertyValue('--danger').trim() || '#8a3a2a';
+    const successColor = style.getPropertyValue('--success').trim() || '#3a8a5a';
+    
+    // Calculate vault completion
+    const vaults = MemorySanctuary.data.vaults;
+    const completedArchives = MemorySanctuary.state.completedArchives;
+    
+    const vaultStats = vaults.map(vault => {
+        const total = MemorySanctuary.data.archives.filter(a => a.vault === vault.id).length;
+        const done = completedArchives.filter(id => {
+            const a = getArchiveById(id);
+            return a && a.vault === vault.id;
+        }).length;
+        return { ...vault, total, done, percent: total > 0 ? done / total : 0 };
+    });
+    
+    // Draw title
+    ctx.fillStyle = accentColor;
+    ctx.font = 'bold 18px "Noto Serif SC", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('萨拉达斯文明图谱', width / 2, 30);
+    
+    // Draw completion
+    const totalDone = completedArchives.length;
+    const totalCount = MemorySanctuary.data.archives.length;
+    const totalPercent = Math.round((totalDone / totalCount) * 100);
+    ctx.fillStyle = textColor;
+    ctx.font = '12px "Noto Sans SC", sans-serif';
+    ctx.fillText(`文明完整度: ${totalPercent}% (${totalDone}/${totalCount})`, width / 2, 50);
+    
+    // Draw vault nodes in a circle
+    const centerX = width / 2;
+    const centerY = height / 2 + 10;
+    const radius = Math.min(width, height) * 0.32;
+    
+    const nodePositions = [];
+    
+    vaults.forEach((vault, i) => {
+        const angle = (i / vaults.length) * Math.PI * 2 - Math.PI / 2;
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+        nodePositions.push({ x, y, vault });
+        
+        const stats = vaultStats[i];
+        const isComplete = stats.percent > 0;
+        const isFull = stats.percent >= 1;
+        
+        // Node circle
+        ctx.beginPath();
+        ctx.arc(x, y, 24, 0, Math.PI * 2);
+        ctx.fillStyle = isComplete ? vault.accentColor : 'transparent';
+        ctx.fill();
+        ctx.strokeStyle = isFull ? successColor : (isComplete ? vault.accentColor : dimColor);
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        // Progress arc
+        if (stats.percent > 0 && stats.percent < 1) {
+            ctx.beginPath();
+            ctx.arc(x, y, 24, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * stats.percent);
+            ctx.strokeStyle = successColor;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+        
+        // Vault name
+        ctx.fillStyle = textColor;
+        ctx.font = '10px "Noto Sans SC", sans-serif';
+        ctx.textAlign = 'center';
+        const shortName = vault.name.length > 6 ? vault.name.substring(0, 6) + '…' : vault.name;
+        ctx.fillText(shortName, x, y + 36);
+        
+        // Completion count
+        ctx.fillStyle = dimColor;
+        ctx.font = '9px "Courier New", monospace';
+        ctx.fillText(`${stats.done}/${stats.total}`, x, y + 46);
+    });
+    
+    // Draw chain connections
+    ctx.strokeStyle = dimColor;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    
+    MemorySanctuary.data.archives.forEach(archive => {
+        if (archive.relatedArchives && archive.relatedArchives.length > 0 && isArchiveCompleted(archive.id)) {
+            const srcPos = nodePositions.find(p => p.vault.id === archive.vault);
+            if (!srcPos) return;
+            
+            archive.relatedArchives.forEach(relatedId => {
+                const related = getArchiveById(relatedId);
+                if (related && isArchiveCompleted(relatedId)) {
+                    const dstPos = nodePositions.find(p => p.vault.id === related.vault);
+                    if (dstPos && srcPos !== dstPos) {
+                        ctx.beginPath();
+                        ctx.moveTo(srcPos.x, srcPos.y);
+                        ctx.lineTo(dstPos.x, dstPos.y);
+                        ctx.stroke();
+                    }
+                }
+            });
+        }
+    });
+    
+    ctx.setLineDash([]);
+    
+    // Draw center decoration
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 30, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(212, 160, 74, 0.1)';
+    ctx.fill();
+    ctx.strokeStyle = accentColor;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    
+    ctx.fillStyle = accentColor;
+    ctx.font = '20px "Noto Serif SC", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('萨', centerX, centerY + 7);
+}
+
+// ==========================================
+// 封印总结系统 — 文明画像
+// ==========================================
+
+function generateCivilizationPortrait() {
+    const archives = MemorySanctuary.data.archives;
+    const completed = MemorySanctuary.state.completedArchives;
+    const vaults = MemorySanctuary.data.vaults;
+    
+    // Count per vault
+    const vaultCounts = {};
+    vaults.forEach(v => vaultCounts[v.id] = 0);
+    completed.forEach(id => {
+        const a = getArchiveById(id);
+        if (a) vaultCounts[a.vault] = (vaultCounts[a.vault] || 0) + 1;
+    });
+    
+    // Find dominant vaults (>20% of their total)
+    const vaultTotals = {};
+    vaults.forEach(v => {
+        vaultTotals[v.id] = archives.filter(a => a.vault === v.id).length;
+    });
+    
+    const dominant = [];
+    for (const [vid, count] of Object.entries(vaultCounts)) {
+        const total = vaultTotals[vid] || 1;
+        if (count / total >= 0.5 && count >= 2) {
+            dominant.push({ id: parseInt(vid), count, total });
+        }
+    }
+    
+    // Sort by completion ratio
+    dominant.sort((a, b) => (b.count / b.total) - (a.count / a.total));
+    
+    // Generate title based on dominant vaults
+    const vaultNames = dominant.map(d => vaults.find(v => v.id === d.id)?.name || '');
+    
+    let title = '无名守护者';
+    let description = '你选择了沉默。后世将永远不知道萨拉达斯曾存在过。';
+    
+    const totalPercent = completed.length / archives.length;
+    
+    if (totalPercent >= 1) {
+        title = '永恒记忆';
+        description = '你保存了萨拉达斯文明的全部碎片。后世将看到一个完整的文明——它的语言、历史、灾难、艺术、信仰、科学、生态、法律、生活、建筑、医学与星空。这是你对时间的反抗。';
+    } else if (totalPercent >= 0.7) {
+        title = '文明守护者';
+        description = '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的萨拉达斯——它的歌声、它的挣扎、它的智慧、它的爱。';
+    } else if (totalPercent >= 0.4) {
+        // Check for specific combinations
+        const hasLanguage = vaultCounts[1] >= 3;
+        const hasHistory = vaultCounts[2] >= 3;
+        const hasDisaster = vaultCounts[3] >= 3;
+        const hasArt = vaultCounts[4] >= 3;
+        const hasPhilosophy = vaultCounts[5] >= 3;
+        const hasScience = vaultCounts[6] >= 3;
+        const hasEcology = vaultCounts[7] >= 3;
+        const hasLaw = vaultCounts[8] >= 3;
+        const hasDaily = vaultCounts[9] >= 3;
+        const hasArchitecture = vaultCounts[10] >= 3;
+        const hasMedicine = vaultCounts[11] >= 3;
+        const hasAstronomy = vaultCounts[12] >= 3;
+        
+        if (hasLanguage && hasArt) {
+            title = '歌与诗之声';
+            description = '你保存了萨拉达斯的语言与艺术。后世将听到它的歌声、看到它的色彩、感受它的舞蹈。这是一个用美回应末日的文明。';
+        } else if (hasHistory && hasLaw) {
+            title = '律法与秩序';
+            description = '你保存了萨拉达斯的历史与法律。后世将看到它的兴衰、它的制度、它的抉择。这是一个在混乱中坚守秩序的文明。';
+        } else if (hasScience && hasAstronomy) {
+            title = '追光者';
+            description = '你保存了萨拉达斯的科学与星象。后世将看到它的智慧、它的好奇、它的仰望。这是一个试图理解宇宙的文明。';
+        } else if (hasEcology && hasMedicine) {
+            title = '生命回响';
+            description = '你保存了萨拉达斯的生态与医学。后世将看到它的生命、它的脆弱、它的顽强。这是一个与星球共生的文明。';
+        } else if (hasDisaster && hasHistory) {
+            title = '灾难见证者';
+            description = '你保存了萨拉达斯的灾难与历史。后世将看到它的终结、它的痛苦、它的反抗。这是一个在末日面前记录一切的文明。';
+        } else if (hasDaily && hasPhilosophy) {
+            title = '爱与记忆';
+            description = '你保存了萨拉达斯的日常生活与哲学。后世将看到它的平凡、它的思考、它的温暖。这是一个用日常抵抗遗忘的文明。';
+        } else if (hasPhilosophy && hasArt) {
+            title = '星空之梦';
+            description = '你保存了萨拉达斯的哲学与艺术。后世将看到它的梦想、它的追问、它的美。这是一个仰望星空的文明。';
+        } else {
+            title = '碎片收集者';
+            description = `你保存了萨拉达斯的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。${vaultNames.slice(0, 2).join('、')}——这些是你在黑暗中选择守护的。`;
+        }
+    } else if (totalPercent >= 0.1) {
+        title = '微光守护者';
+        description = `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。${vaultNames.length > 0 ? '你特别守护了' + vaultNames[0] + '。' : ''}`;
+    } else {
+        title = '寂静圣所';
+        description = '你选择了沉默。圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。也许……遗忘也是一种选择。';
+    }
+    
+    return { title, description, totalPercent: Math.round(totalPercent * 100) };
+}
+
+// ==========================================
+// 隐藏结局系统
+// ==========================================
+
+function checkHiddenEndings() {
+    const completed = MemorySanctuary.state.completedArchives;
+    const archives = MemorySanctuary.data.archives;
+    const total = archives.length;
+    
+    // Helper: check if all archives in a set are completed
+    const allCompleted = (ids) => ids.every(id => completed.includes(id));
+    const countInVault = (vaultId) => completed.filter(id => {
+        const a = getArchiveById(id);
+        return a && a.vault === vaultId;
+    }).length;
+    
+    // Ending 1: 完全记忆 (100%)
+    if (completed.length === total) {
+        return {
+            id: 'complete_memory',
+            title: '🌟 永恒记忆',
+            description: '你保存了萨拉达斯文明的每一片碎片。\n\n后世将看到一个完整的文明——它的语言、历史、灾难、艺术、信仰、科学、生态、法律、生活、建筑、医学与星空。\n\n这是你对时间最彻底的反抗。\n\n「我们曾存在，我们曾仰望，我们曾渴望触碰你们。」'
+        };
+    }
+    
+    // Ending 2: 星空之歌 (翼神+永恒之书+星图+星座神话)
+    if (allCompleted(['arch_001', 'arch_024', 'arch_059', 'arch_062'])) {
+        return {
+            id: 'star_song',
+            title: '🎵 星空之歌',
+            description: '你保存了萨拉达斯最深邃的诗歌与星空。\n\n翼神的升天颂、永恒之书的哲思、最后的星图、星座的神话——这些碎片拼凑出一个仰望星空的文明。\n\n后世将听到萨拉达斯的歌声穿越万年，在星空中回响。\n\n「若星辰之上仍有倾听者——请带走我们的名字。」'
+        };
+    }
+    
+    // Ending 3: 灾难见证者 (6条灾难链全归档)
+    if (allCompleted(['arch_013', 'arch_014', 'arch_015', 'arch_016', 'arch_017', 'arch_018'])) {
+        return {
+            id: 'disaster_witness',
+            title: '👁️ 灾难见证者',
+            description: '你保存了萨拉达斯末日降临的全部记录。\n\n光雨、地裂、大气消散、撤离者的最后通讯、封存后的寂静、完整的编年史——你让后世看到了一个文明如何面对终结。\n\n这不是绝望的记录，而是勇气的证明。\n\n「我们选择被记住，即使这意味着记住痛苦。」'
+        };
+    }
+    
+    // Ending 4: 生命回响 (5条生态链全归档)
+    if (allCompleted(['arch_034', 'arch_035', 'arch_036', 'arch_037', 'arch_038'])) {
+        return {
+            id: 'life_echo',
+            title: '🌿 生命回响',
+            description: '你保存了萨拉达斯全部的生命记录。\n\n动物志、植物图鉴、气候变迁、生态链、最后的种子库——你让后世看到了一个与星球共生的文明。\n\n光蝶在凝固的光中飞舞，石花在黑暗中绽放。\n\n「生命不会真正消失，它只是去了别的地方。」'
+        };
+    }
+    
+    // Ending 5: 追光者 (5条科学链全归档)
+    if (allCompleted(['arch_029', 'arch_030', 'arch_031', 'arch_032', 'arch_033'])) {
+        return {
+            id: 'light_chaser',
+            title: '💡 追光者',
+            description: '你保存了萨拉达斯最辉煌的科学成就。\n\n天文观测、数学原理、能源系统、材料科学、最后的实验——你让后世看到了一个试图理解宇宙奥秘的文明。\n\n他们证明了光可以被储存，即使一万年后会消散。\n\n「知识就是力量。我们选择把力量留给未来。」'
+        };
+    }
+    
+    // Ending 6: 爱与记忆 (5条日常生活链全归档)
+    if (allCompleted(['arch_044', 'arch_045', 'arch_046', 'arch_047', 'arch_048'])) {
+        return {
+            id: 'love_and_memory',
+            title: '🏠 爱与记忆',
+            description: '你保存了萨拉达斯最温暖的生活碎片。\n\n母亲的日记、食谱、孩子的玩具、家书、平民的生活影像——你让后世看到了末日之下依然存在的爱与日常。\n\n这是对遗忘最温柔的反抗。\n\n「当我们记住爱，爱就不会消失。」'
+        };
+    }
+    
+    // Ending 7: 寂静圣所 (0条归档 - only if week >= 10 and sealed)
+    if (completed.length === 0 && MemorySanctuary.state.week >= 10) {
+        return {
+            id: 'silent_sanctuary',
+            title: '🖤 寂静圣所',
+            description: '你选择了沉默。\n\n圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。没有语言、没有历史、没有歌声、没有星空。\n\n也许遗忘也是一种慈悲——让文明不必承受被遗忘的痛苦。\n\n也许未来有一天，会有另一个文明发现这座空荡荡的圣所，然后问：「这里曾经住着谁？」\n\n但没有人会回答。'
+        };
+    }
+    
+    return null;
+}
+
+function showEndingModal(ending) {
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    const closeBtn = document.getElementById('modal-close');
+    
+    if (!overlay || !title || !content) return;
+    
+    title.textContent = `隐藏结局：${ending.title}`;
+    content.textContent = ending.description;
+    overlay.classList.remove('hidden');
+    
+    if (closeBtn) {
+        closeBtn.textContent = '确认';
+        closeBtn.onclick = () => overlay.classList.add('hidden');
+    }
+}
 
 function canSealSanctuary() {
     if (!MemorySanctuary.state) return false;
@@ -1264,7 +2162,13 @@ function sealSanctuary() {
     }
     saveNGPlusData(ngData);
 
-    // Show completion modal
+    // Check for hidden endings first
+    const ending = checkHiddenEndings();
+    if (ending) {
+        showEndingModal(ending);
+    }
+
+    // Show completion modal with portrait
     showSealModal(archivedCount, totalCount);
 }
 
@@ -1273,17 +2177,23 @@ function showSealModal(archivedCount, totalCount) {
     const title = document.getElementById('modal-title');
     const content = document.getElementById('modal-content');
     const closeBtn = document.getElementById('modal-close');
-
+    
     if (!overlay || !title || !content) return;
-
+    
     title.textContent = '圣所已封印';
-
+    
+    // Generate civilization portrait
+    const portrait = generateCivilizationPortrait();
+    
     let modalContent = `你选择在此刻封印记忆圣所。\n\n`;
+    modalContent += `【文明画像】\n`;
+    modalContent += `${portrait.title}\n`;
+    modalContent += `${portrait.description}\n\n`;
     modalContent += `最终统计：\n`;
     modalContent += `• 运行周数：${MemorySanctuary.state.week} 周\n`;
     modalContent += `• 归档条目：${archivedCount} / ${totalCount}\n`;
-    modalContent += `• 存储室利用率：${Math.round((archivedCount / totalCount) * 100)}%\n\n`;
-
+    modalContent += `• 文明完整度：${portrait.totalPercent}%\n\n`;
+    
     const ngData = getNGPlusData();
     if (ngData.playthroughCount > 0) {
         modalContent += `多周目进度：\n`;
@@ -1293,13 +2203,13 @@ function showSealModal(archivedCount, totalCount) {
             modalContent += `• 最佳记录：${ngData.bestRun.count} 条（第${ngData.bestRun.week}周）\n`;
         }
     }
-
+    
     modalContent += `\n你的选择决定了后世「看到」怎样的萨拉达斯文明。\n`;
     modalContent += `「——终来之刻，何物当存？」`;
-
+    
     content.textContent = modalContent;
     overlay.classList.remove('hidden');
-
+    
     if (closeBtn) {
         closeBtn.textContent = '继续游戏';
         closeBtn.onclick = () => {
