@@ -86,6 +86,17 @@ function animate() {
         particles = [];
         floatingSymbols = [];
         crackLines = [];
+        
+        // 场景切换音效
+        if (typeof AudioSystem !== 'undefined') {
+            const themeMap = {
+                1: 'language', 2: 'history', 3: 'disaster',
+                4: 'art', 5: 'philosophy', 6: 'science',
+                7: 'ecology', 8: 'law', 9: 'daily',
+                10: 'architecture', 11: 'medicine', 12: 'astronomy'
+            };
+            AudioSystem.playSceneSound(themeMap[targetScene] || 'language');
+        }
     }
     
     // 动态添加粒子
@@ -229,6 +240,9 @@ function drawSanctuary() {
 
     // 场景覆盖层（粒子、符号等）
     drawSceneOverlay(ctx, config, theme, scene);
+    
+    // 衰败视觉层
+    drawDecayOverlay(ctx, config, theme, scene);
 }
 
 function getThemeColor(theme, darkColor, lightColor) {
@@ -884,4 +898,100 @@ function drawSceneOverlay(ctx, config, theme, scene) {
     }
     
     ctx.restore();
+}
+
+// ==========================================
+// 衰败视觉层
+// ==========================================
+
+function drawDecayOverlay(ctx, config, theme, scene) {
+    // 获取游戏状态
+    if (!MemorySanctuary.state) return;
+    
+    const resources = MemorySanctuary.state.resources;
+    const energy = resources ? resources.energy : 100;
+    const media = resources ? resources.media : 60;
+    const environment = resources ? resources.environment : 95;
+    
+    const w = config.width;
+    const h = config.height;
+    
+    // 能源衰败：穹顶闪烁 + 整体偏红
+    if (energy <= 0) {
+        // 完全枯竭：强烈红色呼吸
+        const pulse = 0.1 + 0.05 * Math.sin(time * 0.1);
+        ctx.fillStyle = `rgba(138, 58, 58, ${pulse})`;
+        ctx.fillRect(0, 0, w, h);
+    } else if (energy < 30) {
+        // 能源不足：间歇性闪烁
+        const flicker = Math.sin(time * 0.15) > 0.7 ? 0.08 : 0.02;
+        ctx.fillStyle = `rgba(138, 58, 58, ${flicker})`;
+        ctx.fillRect(0, 0, w, h);
+    }
+    
+    // 介质衰败：雪花噪点
+    if (media <= 0) {
+        ctx.save();
+        ctx.globalAlpha = 0.15;
+        const dotCount = 30;
+        for (let i = 0; i < dotCount; i++) {
+            const x = (Math.sin(time * 0.05 + i * 1.3) * 0.5 + 0.5) * w;
+            const y = (Math.cos(time * 0.04 + i * 1.7) * 0.5 + 0.5) * h;
+            const size = Math.random() * 2 + 1;
+            ctx.fillStyle = theme === 'dark' ? '#ffffff' : '#000000';
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    } else if (media < 20) {
+        ctx.save();
+        ctx.globalAlpha = 0.08;
+        const dotCount = 10;
+        for (let i = 0; i < dotCount; i++) {
+            const x = (Math.sin(time * 0.03 + i * 2.1) * 0.5 + 0.5) * w;
+            const y = (Math.cos(time * 0.02 + i * 2.3) * 0.5 + 0.5) * h;
+            ctx.fillStyle = theme === 'dark' ? '#ffffff' : '#000000';
+            ctx.beginPath();
+            ctx.arc(x, y, 1, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+    
+    // 环境衰败：边缘暗角加重
+    if (environment <= 0) {
+        const vignetteGradient = ctx.createRadialGradient(
+            w / 2, h / 2, w * 0.15,
+            w / 2, h / 2, w * 0.55
+        );
+        vignetteGradient.addColorStop(0, 'transparent');
+        vignetteGradient.addColorStop(1, 'rgba(50, 0, 0, 0.6)');
+        ctx.fillStyle = vignetteGradient;
+        ctx.fillRect(0, 0, w, h);
+    } else if (environment < 30) {
+        const vignetteGradient = ctx.createRadialGradient(
+            w / 2, h / 2, w * 0.2,
+            w / 2, h / 2, w * 0.6
+        );
+        vignetteGradient.addColorStop(0, 'transparent');
+        vignetteGradient.addColorStop(1, 'rgba(80, 40, 0, 0.3)');
+        ctx.fillStyle = vignetteGradient;
+        ctx.fillRect(0, 0, w, h);
+    }
+    
+    // 三种资源全部危急：整体震颤效果
+    if (energy < 20 && media < 15 && environment < 20) {
+        const shake = Math.sin(time * 0.3) * 0.03;
+        ctx.fillStyle = `rgba(100, 0, 0, ${0.05 + shake})`;
+        ctx.fillRect(0, 0, w, h);
+    }
+    
+    // 终局倒计时：第16周起边缘泛红
+    if (MemorySanctuary.state.week >= 16) {
+        const intensity = Math.min(0.3, (MemorySanctuary.state.week - 15) * 0.1);
+        const weekPulse = intensity * (0.8 + 0.2 * Math.sin(time * 0.05));
+        ctx.fillStyle = `rgba(80, 20, 20, ${weekPulse})`;
+        ctx.fillRect(0, 0, w, h);
+    }
 }

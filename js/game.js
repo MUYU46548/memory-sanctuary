@@ -43,6 +43,14 @@ function getResourceStatus() {
     };
 }
 
+function adjustResource(resource, amount) {
+    const state = MemorySanctuary.state;
+    if (!state) return;
+    
+    const max = resource === 'media' ? 60 : 100;
+    state.resources[resource] = Math.max(0, Math.min(max, state.resources[resource] + amount));
+}
+
 // ==========================================
 // 归档流程
 // ==========================================
@@ -56,7 +64,7 @@ function getArchivesByVault(vaultId) {
 }
 
 function isArchiveCompleted(id) {
-    return MemorySanctuary.state.completedArchives.includes(id);
+    return MemorySanctuary.state.completedArchives.includes(String(id));
 }
 
 function archiveEntry(archiveId) {
@@ -69,6 +77,7 @@ function archiveEntry(archiveId) {
     
     if (isArchiveCompleted(archiveId)) {
         addLog(`条目 "${entry.title}" 已被归档。`, 'system');
+        renderAll();
         return false;
     }
     
@@ -103,6 +112,9 @@ function archiveEntry(archiveId) {
     
     addLog(`已完成归档："${entry.title}"`, 'success');
     
+    // 音效：归档成功风铃
+    if (typeof AudioSystem !== 'undefined') AudioSystem.playArchiveChime();
+    
     // 守护者反应
     const guardianId = Object.keys(entry.guardianReactions || {})[0];
     if (guardianId && entry.guardianReactions[guardianId]) {
@@ -110,7 +122,11 @@ function archiveEntry(archiveId) {
         showGuardianDialogue(guardianId, 'archive');
     }
     
-    showArchiveCompleteModal(entry);
+    // 归档后展示内容（根据设置决定是否显示）
+    const settings = (typeof getSettings === 'function') ? getSettings() : { showResult: true };
+    if (settings.showResult) {
+        showArchiveCompleteModal(entry);
+    }
     
     // 检查叙事线索链
     if (typeof checkNarrativeChains === 'function') checkNarrativeChains(archiveId);
@@ -148,6 +164,12 @@ function onTimeAdvanced(weeks) {
     // 应用持续效果（如：每回合额外能源）
     applySustainedBonuses();
 
+    // 更新drone音量和终局心跳
+    if (typeof AudioSystem !== 'undefined' && MemorySanctuary.state) {
+        AudioSystem.updateDroneByEnergy(MemorySanctuary.state.resources.energy);
+        AudioSystem.updateHeartbeat(MemorySanctuary.state.week);
+    }
+
     // 检查过期条目（仅记录消失，警告移至聚合面板）
     MemorySanctuary.data.archives.forEach(entry => {
         if (entry.expiresAfter && !isArchiveCompleted(entry.id) && !entry.expired) {
@@ -156,6 +178,7 @@ function onTimeAdvanced(weeks) {
             if (remaining <= 0) {
                 addLog(`条目 "${entry.title}" 已永久消失。`, 'system');
                 entry.expired = true;
+                if (typeof AudioSystem !== 'undefined') AudioSystem.playShatterSound();
             }
         }
     });
@@ -286,6 +309,7 @@ function checkSanctuaryDeterioration() {
     if (res.energy <= 0 && !det.energy) {
         det.energy = true;
         addLog('⚠️ 圣所衰竭：能源枯竭，录入能耗加倍。', 'system');
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playAlertTone();
     } else if (res.energy > 0 && det.energy) {
         det.energy = false;
         addLog('能源已恢复，录入效率恢复正常。', 'system');
@@ -295,6 +319,7 @@ function checkSanctuaryDeterioration() {
     if (res.media <= 0 && !det.media) {
         det.media = true;
         addLog('⚠️ 圣所衰竭：存储介质耗尽，无法录入新条目。', 'system');
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playAlertTone();
     } else if (res.media > 0 && det.media) {
         det.media = false;
         addLog('存储介质已补充，录入系统恢复。', 'system');
@@ -304,6 +329,7 @@ function checkSanctuaryDeterioration() {
     if (res.environment <= 0 && !det.environment) {
         det.environment = true;
         addLog('⚠️ 圣所衰竭：环境失控，条目过期速度翻倍。', 'system');
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playAlertTone();
     } else if (res.environment > 0 && det.environment) {
         det.environment = false;
         addLog('环境控制系统恢复，条目保存条件改善。', 'system');
@@ -527,8 +553,9 @@ function applyEventFeedback(choiceIndex) {
 // ==========================================
 
 function confirmArchive(archiveId) {
-    // 检查是否启用了"不再提示"
-    if (localStorage.getItem('memory-sanctuary-skip-confirm') === 'true') {
+    // 检查是否启用了"跳过归档确认"
+    const settings = (typeof getSettings === 'function') ? getSettings() : { skipConfirm: false, showResult: true };
+    if (settings.skipConfirm) {
         archiveEntry(archiveId);
         return;
     }
@@ -608,7 +635,12 @@ function confirmArchive(archiveId) {
     
     confirmBtn.onclick = () => {
         if (skipCheckbox.checked) {
-            localStorage.setItem('memory-sanctuary-skip-confirm', 'true');
+            // 保存到设置系统
+            if (typeof getSettings === 'function') {
+                const s = getSettings();
+                s.skipConfirm = true;
+                localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
+            }
         }
         closeConfirmModal(archiveId, true);
     };
@@ -635,9 +667,10 @@ function closeConfirmModal(archiveId, confirmed) {
     if (overlay) overlay.classList.add('hidden');
     if (confirmContainer) confirmContainer.remove();
     
-    // 重置关闭按钮为"确定"
+    // 重置关闭按钮为"确认"
     if (closeBtn) {
-        closeBtn.textContent = '确定';
+        closeBtn.textContent = '确认';
+        closeBtn.onclick = null;
     }
     
     if (confirmed && archiveId) {
@@ -835,6 +868,14 @@ function getMoodDialogue(guardianId) {
 function getMoodColorClass(guardianId) {
     const tier = getMoodTier(guardianId);
     return 'mood-' + tier;
+}
+
+function adjustGuardianMood(guardianId, delta) {
+    if (!MemorySanctuary.state.guardianMoods) {
+        MemorySanctuary.state.guardianMoods = {};
+    }
+    MemorySanctuary.state.guardianMoods[guardianId] = 
+        (MemorySanctuary.state.guardianMoods[guardianId] || 0) + delta;
 }
 
 // ==========================================
@@ -1770,7 +1811,7 @@ function applyExplorationResult(outcome, expData) {
         adjustGuardianMood(gid, 1);
     });
 
-    addLog('system', `勘探队从 ${expData.name} 返回。${outcome.message}`);
+    addLog(`勘探队从 ${expData.name} 返回。${outcome.message}`, 'system');
     renderAll();
 }
 

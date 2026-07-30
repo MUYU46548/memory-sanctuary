@@ -80,7 +80,13 @@ function renderGuardianMood() {
 function renderWeekDisplay() {
     const weekEl = document.getElementById('week-value');
     if (weekEl && MemorySanctuary.state) {
-        weekEl.textContent = MemorySanctuary.state.week;
+        const newWeek = String(MemorySanctuary.state.week);
+        if (weekEl.textContent !== newWeek) {
+            weekEl.textContent = newWeek;
+            weekEl.classList.remove('updated');
+            void weekEl.offsetWidth;
+            weekEl.classList.add('updated');
+        }
     }
     
     // Update week progress bar

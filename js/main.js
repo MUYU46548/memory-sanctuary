@@ -36,6 +36,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof initStuckBanner === 'function') initStuckBanner();
         if (typeof initCivilizationAtlas === 'function') initCivilizationAtlas();
         if (typeof initSaveSystem === 'function') initSaveSystem();
+        if (typeof initSettings === 'function') initSettings();
+        
+        // 音频系统延迟初始化（需要用户交互，在首次点击时触发）
+        if (typeof AudioSystem !== 'undefined') {
+            const initAudio = () => {
+                AudioSystem.init();
+                document.removeEventListener('click', initAudio);
+                document.removeEventListener('keydown', initAudio);
+            };
+            document.addEventListener('click', initAudio);
+            document.addEventListener('keydown', initAudio);
+        }
         
         // Show title screen after game systems are ready
         initTitleScreen();
@@ -104,6 +116,15 @@ function initTheme() {
             document.documentElement.setAttribute('data-theme', next);
             localStorage.setItem('memory-sanctuary-theme', next);
             toggle.textContent = next === 'dark' ? '◐' : '◑';
+        });
+    }
+    
+    // 静音切换
+    const muteToggle = document.getElementById('mute-toggle');
+    if (muteToggle && typeof AudioSystem !== 'undefined') {
+        muteToggle.addEventListener('click', () => {
+            const isMuted = AudioSystem.toggleMute();
+            muteToggle.textContent = isMuted ? '🔇' : '🔊';
         });
     }
 }
@@ -242,6 +263,97 @@ function initSaveData() {
             bonuses: []
         }));
     }
+    
+    // Initialize settings if not present
+    const settingsRaw = localStorage.getItem('memory-sanctuary-settings');
+    if (!settingsRaw) {
+        localStorage.setItem('memory-sanctuary-settings', JSON.stringify({
+            skipConfirm: false,
+            showResult: true
+        }));
+    }
+}
+
+// ==========================================
+// 设置系统
+// ==========================================
+
+function getSettings() {
+    const raw = localStorage.getItem('memory-sanctuary-settings');
+    if (!raw) return { skipConfirm: false, showResult: true };
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return { skipConfirm: false, showResult: true };
+    }
+}
+
+function initSettings() {
+    const titleSettingsBtn = document.getElementById('title-settings');
+    const inGameSettingsBtn = document.getElementById('settings-btn');
+    const overlay = document.getElementById('settings-overlay');
+    const closeBtn = document.getElementById('settings-close');
+    const skipConfirmCheckbox = document.getElementById('setting-skip-confirm');
+    const showResultCheckbox = document.getElementById('setting-show-result');
+    
+    // Load current settings into checkboxes
+    const settings = getSettings();
+    if (skipConfirmCheckbox) skipConfirmCheckbox.checked = settings.skipConfirm;
+    if (showResultCheckbox) showResultCheckbox.checked = settings.showResult;
+    
+    // Open settings from title screen
+    if (titleSettingsBtn) {
+        titleSettingsBtn.addEventListener('click', () => {
+            openSettingsPanel();
+        });
+    }
+    
+    // Open settings from in-game func bar
+    if (inGameSettingsBtn) {
+        inGameSettingsBtn.addEventListener('click', () => {
+            openSettingsPanel();
+        });
+    }
+    
+    // Close button
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            closeSettingsPanel();
+        });
+    }
+    
+    // Close on overlay click
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeSettingsPanel();
+        });
+    }
+    
+    // Save on checkbox change
+    if (skipConfirmCheckbox) {
+        skipConfirmCheckbox.addEventListener('change', () => {
+            const s = getSettings();
+            s.skipConfirm = skipConfirmCheckbox.checked;
+            localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
+        });
+    }
+    if (showResultCheckbox) {
+        showResultCheckbox.addEventListener('change', () => {
+            const s = getSettings();
+            s.showResult = showResultCheckbox.checked;
+            localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
+        });
+    }
+}
+
+function openSettingsPanel() {
+    const overlay = document.getElementById('settings-overlay');
+    if (overlay) overlay.classList.remove('hidden');
+}
+
+function closeSettingsPanel() {
+    const overlay = document.getElementById('settings-overlay');
+    if (overlay) overlay.classList.add('hidden');
 }
 
 // ==========================================
