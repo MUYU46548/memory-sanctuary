@@ -14,7 +14,11 @@ function initUI() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') closeModal();
     });
-    
+
+    // Initialize title screen panels (must be here because ui.js loads after main.js)
+    initAchievementsPanel();
+    initCodexPanel();
+
     console.log('[UI] 初始化完成');
 }
 
@@ -27,6 +31,35 @@ function renderAll() {
     renderGuardianMood();
     renderExplorationButton();
     updateProjectButton();
+    updateEmergencyButton();
+}
+
+// ============================================================
+// 应急协议按钮状态
+// ============================================================
+
+function updateEmergencyButton() {
+    const btn = document.getElementById('emergency-btn');
+    if (!btn || !MemorySanctuary.state) return;
+    const state = MemorySanctuary.state;
+    
+    // 应急协议在任意资源归零或低资源时可用
+    const res = state.resources;
+    const anyZero = res.energy <= 0 || res.media <= 0 || res.environment <= 0;
+    const anyCritical = res.energy < 20 || res.media < 15 || res.environment < 15;
+    
+    if (state.gameOver || state.week >= 20) {
+        btn.disabled = true;
+        btn.title = '终局已至';
+    } else if (anyZero || anyCritical) {
+        btn.disabled = false;
+        btn.title = '应急协议：牺牲环境换取能源';
+        btn.classList.add('emergency-ready');
+    } else {
+        btn.disabled = true;
+        btn.title = '应急协议（资源危急时解锁）';
+        btn.classList.remove('emergency-ready');
+    }
 }
 
 // ============================================================
@@ -131,30 +164,50 @@ function renderResources() {
     const resMedia = document.getElementById('res-media');
     const resEnv = document.getElementById('res-environment');
     
-    if (resEnergy) resEnergy.classList.toggle('deterioration', det && det.energy);
-    if (resMedia) resMedia.classList.toggle('deterioration', det && det.media);
-    if (resEnv) resEnv.classList.toggle('deterioration', det && det.environment);
+    if (resEnergy) {
+        if (det.energy) resEnergy.classList.add('deterioration');
+        else resEnergy.classList.remove('deterioration');
+    }
+    if (resMedia) {
+        if (det.media) resMedia.classList.add('deterioration');
+        else resMedia.classList.remove('deterioration');
+    }
+    if (resEnv) {
+        if (det.environment) resEnv.classList.add('deterioration');
+        else resEnv.classList.remove('deterioration');
+    }
+}
+
+function getResourceStatus() {
+    const state = MemorySanctuary.state;
+    if (!state) return { energy: 0, media: 0, environment: 0 };
+    
+    return {
+        energy: Math.max(0, state.resources.energy),
+        media: Math.max(0, state.resources.media),
+        environment: Math.max(0, state.resources.environment)
+    };
 }
 
 function updateResourceColor(elementId, value, max) {
     const el = document.getElementById(elementId);
     if (!el) return;
     
-    const ratio = value / max;
-    const valueEl = el.querySelector('.res-value');
-    if (!valueEl) return;
+    const percent = (value / max) * 100;
     
-    if (ratio < 0.2) {
-        valueEl.style.color = 'var(--danger)';
-    } else if (ratio < 0.5) {
-        valueEl.style.color = 'var(--warning)';
-    } else {
-        valueEl.style.color = 'var(--amber-glow)';
-    }
+    el.classList.remove('high', 'medium', 'low');
+    if (percent >= 60) el.classList.add('high');
+    else if (percent >= 30) el.classList.add('medium');
+    else el.classList.add('low');
+}
+
+function getResourceName(resource) {
+    const names = { energy: '能源', media: '介质', environment: '环境' };
+    return names[resource] || resource;
 }
 
 // ==========================================
-// 存储室标签
+// 存储室标签栏
 // ==========================================
 
 function renderVaultTabs() {
@@ -401,7 +454,312 @@ function getProjectEffectText(project) {
     }
 }
 
-function getResourceName(resource) {
-    const names = { energy: '能源', media: '介质', environment: '环境' };
-    return names[resource] || resource;
+// ==========================================
+// 成就系统 UI
+// ==========================================
+
+function initAchievementsPanel() {
+    const btn = document.getElementById('title-achievements');
+    if (btn) {
+        btn.addEventListener('click', () => openAchievementsPanel());
+    }
+    
+    const closeBtn = document.getElementById('achievements-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => closeAchievementsPanel());
+    }
+    
+    // Filter buttons
+    document.querySelectorAll('.ach-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.ach-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderAchievementsList(btn.dataset.filter);
+        });
+    });
+}
+
+function openAchievementsPanel() {
+    const panel = document.getElementById('achievements-panel');
+    if (!panel) return;
+    panel.classList.remove('hidden');
+    renderAchievementsList('all');
+    updateAchievementsProgress();
+}
+
+function closeAchievementsPanel() {
+    const panel = document.getElementById('achievements-panel');
+    if (panel) panel.classList.add('hidden');
+}
+
+function updateAchievementsProgress() {
+    const unlocked = getUnlockedAchievements();
+    const all = MemorySanctuary.data.achievements || [];
+    const progressEl = document.getElementById('achievements-progress');
+    if (progressEl) {
+        progressEl.textContent = `${unlocked.length} / ${all.length} 已解锁`;
+    }
+}
+
+function renderAchievementsList(filter) {
+    const container = document.getElementById('achievements-list');
+    if (!container) return;
+    
+    const allAchievements = MemorySanctuary.data.achievements || [];
+    const unlocked = getUnlockedAchievements();
+    
+    let filtered = allAchievements;
+    if (filter !== 'all') {
+        filtered = allAchievements.filter(a => a.category === filter);
+    }
+    
+    // Sort: unlocked first, then by category
+    filtered.sort((a, b) => {
+        const aUnlocked = unlocked.includes(a.id);
+        const bUnlocked = unlocked.includes(b.id);
+        if (aUnlocked !== bUnlocked) return bUnlocked - aUnlocked;
+        return a.category.localeCompare(b.category);
+    });
+    
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-dim); text-align: center; padding: 2rem;">暂无此类别成就</p>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    
+    for (const ach of filtered) {
+        const isUnlocked = unlocked.includes(ach.id);
+        const isHidden = ach.hidden && !isUnlocked;
+        
+        const item = document.createElement('div');
+        item.className = `achievement-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+        
+        const icon = isHidden ? '❓' : ach.icon;
+        const name = isHidden ? '???' : ach.name;
+        const desc = isHidden ? '隐藏成就，解锁后显示描述' : ach.description;
+        
+        item.innerHTML = `
+            <div class="ach-icon">${icon}</div>
+            <div class="ach-info">
+                <div class="ach-name">${name}</div>
+                <div class="ach-desc">${desc}</div>
+                <div class="ach-category">${getCategoryName(ach.category)}</div>
+            </div>
+            ${isUnlocked ? '<div class="ach-check">✓</div>' : ''}
+        `;
+        
+        container.appendChild(item);
+    }
+}
+
+function getCategoryName(cat) {
+    const names = {
+        milestone: '里程碑',
+        ending: '结局',
+        guardian: '守护者',
+        collection: '收集',
+        vault: '存储室',
+        playthrough: '周目',
+        challenge: '挑战',
+        meta: '元成就'
+    };
+    return names[cat] || cat;
+}
+
+function showAchievementToast(achievement) {
+    const toast = document.getElementById('achievement-toast');
+    if (!toast) return;
+    
+    const icon = toast.querySelector('.toast-icon');
+    const name = toast.querySelector('.toast-name');
+    const desc = toast.querySelector('.toast-desc');
+    
+    if (icon) icon.textContent = achievement.icon || '🏆';
+    if (name) name.textContent = achievement.name;
+    if (desc) desc.textContent = achievement.description;
+    
+    toast.classList.remove('hidden');
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('hidden');
+    }, 3000);
+}
+
+// ==========================================
+// 回顾面板 UI
+// ==========================================
+
+function initCodexPanel() {
+    const btn = document.getElementById('title-codex');
+    if (btn) {
+        btn.addEventListener('click', () => openCodexPanel());
+    }
+    
+    const closeBtn = document.getElementById('codex-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => closeCodexPanel());
+    }
+    
+    // Tab buttons
+    document.querySelectorAll('.codex-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.codex-tab').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            document.querySelectorAll('.codex-tab-content').forEach(c => c.classList.remove('active'));
+            const tabId = 'codex-' + btn.dataset.tab;
+            const tabContent = document.getElementById(tabId);
+            if (tabContent) tabContent.classList.add('active');
+        });
+    });
+}
+
+function openCodexPanel() {
+    const panel = document.getElementById('codex-panel');
+    if (!panel) return;
+    panel.classList.remove('hidden');
+    renderCodex();
+}
+
+function closeCodexPanel() {
+    const panel = document.getElementById('codex-panel');
+    if (panel) panel.classList.add('hidden');
+}
+
+function renderCodex() {
+    const ngData = getNGPlusData();
+    
+    // Update stats
+    const ptCount = document.getElementById('codex-playthrough-count');
+    if (ptCount) ptCount.textContent = ngData.playthroughCount;
+    
+    const totalArch = document.getElementById('codex-total-archives');
+    if (totalArch) totalArch.textContent = ngData.totalArchivesSaved;
+    
+    const bestRun = document.getElementById('codex-best-run');
+    if (bestRun) {
+        if (ngData.bestRun) {
+            bestRun.textContent = `${ngData.bestRun.count} 条（第${ngData.bestRun.week}周）`;
+        } else {
+            bestRun.textContent = '-';
+        }
+    }
+    
+    // Render endings tab
+    renderCodexEndings();
+    
+    // Render guardians tab
+    renderCodexGuardians();
+    
+    // Render entries tab
+    renderCodexEntries();
+}
+
+function renderCodexEndings() {
+    const container = document.getElementById('codex-endings-list');
+    if (!container) return;
+    
+    const endings = MemorySanctuary.data.endings || [];
+    const unlockedAchievements = getUnlockedAchievements();
+    
+    container.innerHTML = '';
+    
+    for (const ending of endings) {
+        const isUnlocked = unlockedAchievements.includes(ending.id);
+        
+        const item = document.createElement('div');
+        item.className = `codex-ending-item ${isUnlocked ? 'unlocked' : 'locked'}`;
+        
+        const iconMatch = ending.title.match(/^./);
+        const icon = isUnlocked ? (iconMatch ? iconMatch[0] : '📜') : '🔒';
+        const title = isUnlocked ? ending.title : '???';
+        const desc = isUnlocked ? ending.description : '未解锁 — 条件：' + (ending.condition?.description || '未知');
+        
+        item.innerHTML = `
+            <div class="codex-ending-icon">${icon}</div>
+            <div class="codex-ending-title">${title}</div>
+            <div class="codex-ending-desc">${desc.substring(0, 120)}${desc.length > 120 ? '...' : ''}</div>
+        `;
+        
+        container.appendChild(item);
+    }
+}
+
+function renderCodexGuardians() {
+    const container = document.getElementById('codex-guardians-list');
+    if (!container) return;
+    
+    const guardians = MemorySanctuary.data.guardians || [];
+    const ngData = getNGPlusData();
+    
+    container.innerHTML = '';
+    
+    for (const g of guardians) {
+        const isSeen = ngData.guardianFinalesSeen.includes(g.id);
+        
+        const item = document.createElement('div');
+        item.className = `codex-guardian-item ${isSeen ? 'unlocked' : 'locked'}`;
+        
+        item.innerHTML = `
+            <div class="codex-guardian-avatar">${g.avatar}</div>
+            <div class="codex-guardian-info">
+                <div class="codex-guardian-name">${g.name}</div>
+                <div class="codex-guardian-role">${g.role}</div>
+                <div class="codex-guardian-status">${isSeen ? '专属结局已解锁' : '未解锁 — 达到亲密关系'}</div>
+            </div>
+        `;
+        
+        container.appendChild(item);
+    }
+}
+
+function renderCodexEntries() {
+    const summaryEl = document.getElementById('codex-entries-summary');
+    const container = document.getElementById('codex-entries-list');
+    if (!container) return;
+    
+    const archives = MemorySanctuary.data.archives || [];
+    const ngData = getNGPlusData();
+    
+    // Calculate total unique archives seen
+    const totalArchives = archives.filter(a => !a.ngPlusExclusive).length;
+    const totalSeen = ngData.totalArchivesSaved;
+    
+    if (summaryEl) {
+        summaryEl.innerHTML = `
+            <div class="codex-entries-stat">
+                <span class="codex-entries-label">累计收集</span>
+                <span class="codex-entries-value">${totalSeen} / ${totalArchives}</span>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = '';
+    
+    // Group by vault
+    const vaults = MemorySanctuary.data.vaults || [];
+    for (const vault of vaults) {
+        const vaultArchives = archives.filter(a => a.vault === vault.id && !a.ngPlusExclusive);
+        if (vaultArchives.length === 0) continue;
+        
+        const vaultDiv = document.createElement('div');
+        vaultDiv.className = 'codex-entries-vault';
+        vaultDiv.innerHTML = `<div class="codex-entries-vault-title">${vault.name}</div>`;
+        
+        const grid = document.createElement('div');
+        grid.className = 'codex-entries-grid';
+        
+        for (const entry of vaultArchives) {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'codex-entry-item';
+            entryDiv.textContent = entry.title;
+            grid.appendChild(entryDiv);
+        }
+        
+        vaultDiv.appendChild(grid);
+        container.appendChild(vaultDiv);
+    }
 }

@@ -18,6 +18,8 @@
             <div id="title-menu">
                 <button class="title-btn" id="title-new">新建游戏</button>
                 <button class="title-btn" id="title-load">读取存档</button>
+                <button class="title-btn" id="title-achievements">🏆 成就</button>
+                <button class="title-btn" id="title-codex">📖 回顾</button>
                 <button class="title-btn" id="title-settings">⚙️ 设置</button>
                 <button class="title-btn" id="title-help">帮助</button>
                 <button class="title-btn" id="title-about">关于</button>
@@ -156,6 +158,9 @@
             <button id="project-btn" title="圣所项目" disabled>
                 <span>项目</span>
             </button>
+            <button id="emergency-btn" title="应急协议" disabled>
+                <span>应急</span>
+            </button>
             <button id="save-btn" title="存档">
                 <span>存档</span>
             </button>
@@ -223,7 +228,14 @@
                 <h2>地表勘探</h2>
                 <button id="explore-close">✕</button>
             </div>
-            <div id="explore-list"></div>
+            <div id="explore-tabs">
+                <button class="explore-tab active" data-tab="list">📍 地点</button>
+                <button class="explore-tab" data-tab="log">📋 日志</button>
+            </div>
+            <div id="explore-list-container">
+                <div id="explore-list"></div>
+            </div>
+            <div id="explore-log-container" class="hidden"></div>
             <div id="explore-dispatch" class="hidden">
                 <div id="dispatch-title"></div>
                 <div id="dispatch-desc"></div>
@@ -232,6 +244,7 @@
                 <button id="dispatch-btn" disabled>派遣勘探队</button>
             </div>
             <div id="explore-result" class="hidden">
+                <div id="result-icon"></div>
                 <div id="result-header"></div>
                 <div id="result-text"></div>
                 <div id="result-effects"></div>
@@ -239,6 +252,9 @@
             </div>
         </div>
     </div>
+
+    <!-- 勘探返回通知横幅 -->
+    <div id="explore-return-banner">🔭 勘探队已返回</div>
 
     <!-- 圣所项目面板 -->
     <div id="project-overlay" class="hidden">
@@ -274,6 +290,80 @@
                     <div class="settings-desc">归档完成后弹出窗口，展示条目详情与守护者反应。</div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 成就图鉴面板 -->
+    <div id="achievements-panel" class="hidden">
+        <div class="achievements-header">
+            <h2>🏆 成就图鉴</h2>
+            <button id="achievements-close">✕</button>
+        </div>
+        <div class="achievements-stats">
+            <span id="achievements-progress">0 / 0 已解锁</span>
+        </div>
+        <div class="achievements-filter">
+            <button class="ach-filter active" data-filter="all">全部</button>
+            <button class="ach-filter" data-filter="milestone">里程碑</button>
+            <button class="ach-filter" data-filter="ending">结局</button>
+            <button class="ach-filter" data-filter="guardian">守护者</button>
+            <button class="ach-filter" data-filter="collection">收集</button>
+            <button class="ach-filter" data-filter="vault">存储室</button>
+            <button class="ach-filter" data-filter="playthrough">周目</button>
+            <button class="ach-filter" data-filter="challenge">挑战</button>
+        </div>
+        <div id="achievements-list"></div>
+    </div>
+
+    <!-- 回顾面板 -->
+    <div id="codex-panel" class="hidden">
+        <div class="codex-header">
+            <h2>📖 圣所回顾</h2>
+            <button id="codex-close">✕</button>
+        </div>
+        <div class="codex-stats">
+            <div class="codex-stat">
+                <span class="codex-stat-label">已完成周目</span>
+                <span class="codex-stat-value" id="codex-playthrough-count">0</span>
+            </div>
+            <div class="codex-stat">
+                <span class="codex-stat-label">累计归档</span>
+                <span class="codex-stat-value" id="codex-total-archives">0</span>
+            </div>
+            <div class="codex-stat">
+                <span class="codex-stat-label">最佳记录</span>
+                <span class="codex-stat-value" id="codex-best-run">-</span>
+            </div>
+        </div>
+        <div class="codex-tabs">
+            <button class="codex-tab active" data-tab="endings">结局图鉴</button>
+            <button class="codex-tab" data-tab="guardians">守护者关系</button>
+            <button class="codex-tab" data-tab="entries">条目收集</button>
+        </div>
+        <div id="codex-content">
+            <!-- 结局图鉴 -->
+            <div id="codex-endings" class="codex-tab-content active">
+                <div class="codex-endings-grid" id="codex-endings-list"></div>
+            </div>
+            <!-- 守护者关系 -->
+            <div id="codex-guardians" class="codex-tab-content">
+                <div class="codex-guardians-grid" id="codex-guardians-list"></div>
+            </div>
+            <!-- 条目收集 -->
+            <div id="codex-entries" class="codex-tab-content">
+                <div class="codex-entries-summary" id="codex-entries-summary"></div>
+                <div class="codex-entries-grid" id="codex-entries-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 成就解锁 Toast -->
+    <div id="achievement-toast" class="hidden">
+        <div class="toast-icon"></div>
+        <div class="toast-content">
+            <div class="toast-label">成就解锁</div>
+            <div class="toast-name"></div>
+            <div class="toast-desc"></div>
         </div>
     </div>
 

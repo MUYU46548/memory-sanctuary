@@ -426,8 +426,13 @@ function checkFailureCondition() {
     
     const res = MemorySanctuary.state.resources;
     
-    // 失败条件：三种资源全部归零
-    if (res.energy <= 0 && res.media <= 0 && res.environment <= 0) {
+    // 失败条件：两种资源归零即崩溃
+    let zeroCount = 0;
+    if (res.energy <= 0) zeroCount++;
+    if (res.media <= 0) zeroCount++;
+    if (res.environment <= 0) zeroCount++;
+    
+    if (zeroCount >= 2) {
         triggerGameOver('collapse');
     }
 }
@@ -725,6 +730,22 @@ function skipTurn() {
     const dialogue = skipDialogues[Math.floor(Math.random() * skipDialogues.length)];
     addLog(`${randomGuardian.name}：「${dialogue}」`, 'guardian');
     
+    // 跳过代价：30%概率守护者好感度-1
+    if (Math.random() < 0.3) {
+        const unluckyGuardian = guardians[Math.floor(Math.random() * guardians.length)];
+        adjustGuardianMood(unluckyGuardian.id, -1);
+        const complainDialogues = [
+            '我们不应该浪费时间的……',
+            '这一刻本可以用来保存更多的记忆。',
+            '我理解你的选择，但我无法赞同。',
+            '圣所的时间是有限的……',
+            '希望这不是一次错误的决定。'
+        ];
+        const complain = complainDialogues[Math.floor(Math.random() * complainDialogues.length)];
+        addLog(`${unluckyGuardian.name}：「${complain}」`, 'guardian');
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playAlertTone();
+    }
+    
     renderAll();
     return true;
 }
@@ -854,6 +875,21 @@ function getMoodDialogue(guardianId) {
         return guardian?.dialogues?.idle || ['……'];
     }
     const tier = getMoodTier(guardianId);
+    
+    // NG+ dialogues: playthrough >= 2 and mood tier is friendly or intimate
+    const ngData = getNGPlusData();
+    if (ngData.playthroughCount >= 2 && tier !== 'hostile' && tier !== 'cold' && tier !== 'neutral') {
+        if (guardian.ngPlusDialogues) {
+            const pt = ngData.playthroughCount;
+            let key = 'playthrough_5';
+            if (pt <= 2) key = 'playthrough_2';
+            else if (pt === 3) key = 'playthrough_3';
+            else if (pt === 4) key = 'playthrough_4';
+            if (guardian.ngPlusDialogues[key]) {
+                return [guardian.ngPlusDialogues[key]];
+            }
+        }
+    }
     
     // Finale dialogues: week >= 15 and mood tier is friendly or intimate
     if (MemorySanctuary.state.week >= 15 && tier !== 'hostile' && tier !== 'cold' && tier !== 'neutral') {
@@ -1136,6 +1172,7 @@ function triggerGuardianInitiative(event) {
         
         panel.classList.add('hidden');
         renderAll();
+        if (typeof checkStuckState === 'function') checkStuckState();
     });
     
     // 婉拒按钮
@@ -1173,8 +1210,18 @@ function checkRandomEvent() {
     if (MemorySanctuary.activeEvent) return; // 已有活跃事件
     
     const week = MemorySanctuary.state.week;
+    const ngData = getNGPlusData();
+    
     const availableEvents = MemorySanctuary.data.events.filter(e => {
         if (MemorySanctuary.state.activeEventIds.includes(e.id)) return false;
+        
+        // NG+ events filtering
+        if (e.trigger.type === 'ng_plus') {
+            if (ngData.playthroughCount < e.trigger.playthroughMin) return false;
+        } else if (e.trigger.type === 'guardian_personal') {
+            if (ngData.playthroughCount < 2) return false;
+        }
+        
         return week >= e.trigger.weekMin && week <= e.trigger.weekMax;
     });
     
@@ -1182,6 +1229,32 @@ function checkRandomEvent() {
         if (Math.random() < event.trigger.probability) {
             triggerEvent(event);
             break;
+        }
+    }
+}
+
+// Check for NG+ personal events that should trigger automatically
+function checkNGPlusPersonalEvents() {
+    if (!MemorySanctuary.state) return;
+    const ngData = getNGPlusData();
+    if (ngData.playthroughCount < 2) return;
+    
+    const week = MemorySanctuary.state.week;
+    const guardians = ['tika', 'finn', 'misha', 'lorn', 'ethel'];
+    
+    for (const gid of guardians) {
+        const eventId = 'ng_plus_' + gid + '_request';
+        if (MemorySanctuary.state.activeEventIds.includes(eventId)) continue;
+        
+        // Check if this guardian's personal event should trigger
+        const event = MemorySanctuary.data.events.find(e => e.id === eventId);
+        if (!event) continue;
+        if (week < event.trigger.weekMin || week > event.trigger.weekMax) continue;
+        
+        // 20% chance per week to trigger
+        if (Math.random() < 0.2) {
+            triggerEvent(event);
+            return;
         }
     }
 }
@@ -1241,16 +1314,25 @@ function resolveEvent(choiceIndex) {
     
     addLog(`选择：${choice.text} —— ${choice.result}`, 'event');
     
-    // 应用事件反馈（长期影响）
+    // Handle unlockEntry feedback
+    if (choice.feedback && choice.feedback.unlockEntry) {
+        unlockNGPlusEntry(choice.feedback.unlockEntry);
+        const unlockedEntry = getArchiveById(choice.feedback.unlockEntry);
+        if (unlockedEntry) {
+            addLog(`解锁新条目：「${unlockedEntry.title}」`, 'success');
+        }
+    }
+    
+    // Apply event feedback (long-term effects)
     if (typeof applyEventFeedback === 'function') applyEventFeedback(choiceIndex);
     
-    // 隐藏事件面板
+    // Hide event panel
     const panel = document.getElementById('event-panel');
     if (panel) panel.classList.add('hidden');
     
     MemorySanctuary.activeEvent = null;
     
-    // 随机守护者回应
+    // Random guardian response
     const guardiansWithDialogue = MemorySanctuary.data.guardians.filter(g => g.dialogues.event);
     if (guardiansWithDialogue.length > 0) {
         const randomGuardian = guardiansWithDialogue[Math.floor(Math.random() * guardiansWithDialogue.length)];
@@ -1258,6 +1340,7 @@ function resolveEvent(choiceIndex) {
     }
     
     renderAll();
+    if (typeof checkStuckState === 'function') checkStuckState();
 }
 
 // ==========================================
@@ -1531,7 +1614,7 @@ function initFuncBar() {
             const now = MemorySanctuary.state.week;
             const exp = MemorySanctuary.state.exploration;
             if (exp.deployedUntil > now) {
-                addLog('system', `一支勘探队已在地表作业，预计第 ${exp.deployedUntil} 周返回。`);
+                addLog(`一支勘探队已在地表作业，预计第 ${exp.deployedUntil} 周返回。`, 'system');
                 return;
             }
             openExplorePanel();
@@ -1544,10 +1627,19 @@ function initFuncBar() {
         projectBtn.addEventListener('click', () => {
             if (!MemorySanctuary.state) return;
             if (MemorySanctuary.state.week < 10) {
-                addLog('system', '圣所维护项目尚未解锁。');
+                addLog('圣所维护项目尚未解锁。', 'system');
                 return;
             }
             openProjectPanel();
+        });
+    }
+
+    // 应急协议按钮
+    const emergencyBtn = document.getElementById('emergency-btn');
+    if (emergencyBtn) {
+        emergencyBtn.addEventListener('click', () => {
+            if (!MemorySanctuary.state) return;
+            openEmergencyProtocol();
         });
     }
 }
@@ -1555,6 +1647,38 @@ function initFuncBar() {
 // ============================================================
 // 地表勘探系统
 // ============================================================
+
+function isGuardianFatigued(guardianId) {
+    const exp = MemorySanctuary.state.exploration;
+    if (!exp.fatigue) return false;
+    const until = exp.fatigue[guardianId];
+    return until && until > MemorySanctuary.state.week;
+}
+
+function isExplorationCompleted(expId) {
+    const exp = MemorySanctuary.state.exploration;
+    if (!exp.completedExplorations) return false;
+    const data = MemorySanctuary.data.explorations.find(e => e.id === expId);
+    const maxAttempts = data ? (data.maxAttempts || 1) : 1;
+    return (exp.completedExplorations[expId] || 0) >= maxAttempts;
+}
+
+function getExplorationAttempts(expId) {
+    const exp = MemorySanctuary.state.exploration;
+    if (!exp.completedExplorations) return 0;
+    return exp.completedExplorations[expId] || 0;
+}
+
+function showExploreReturnBanner() {
+    const banner = document.getElementById('explore-return-banner');
+    if (!banner) return;
+    banner.classList.add('visible');
+    banner.addEventListener('click', () => {
+        banner.classList.remove('visible');
+        openExplorePanel();
+    });
+    setTimeout(() => banner.classList.remove('visible'), 6000);
+}
 
 function openExplorePanel() {
     const overlay = document.getElementById('explore-overlay');
@@ -1568,7 +1692,10 @@ function openProjectPanel() {
     const overlay = document.getElementById('project-overlay');
     if (overlay) {
         overlay.classList.remove('hidden');
+        // Force transition reflow
+        overlay.offsetHeight;
         renderProjectList();
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playMechanicalEngage();
     }
 }
 
@@ -1596,11 +1723,18 @@ function renderExploreList() {
         item.className = 'explore-item';
         if (isDeployed) item.classList.add('disabled');
 
+        const completed = isExplorationCompleted(expData.id);
+        if (completed) item.classList.add('completed');
+
         const difficultyStars = '◆'.repeat(expData.difficulty) + '◇'.repeat(3 - expData.difficulty);
+
+        const completedBadge = completed ? '<span class="explore-item-completed-badge"> ✓ 已完成</span>' : '';
+        const lastResult = exp.explorationLog && exp.explorationLog.find(l => l.id === expData.id);
+        const lastResultText = lastResult ? `<div class="explore-item-last-result">上次：${lastResult.resultText}</div>` : '';
 
         item.innerHTML = `
             <div class="explore-item-header">
-                <div class="explore-item-name">${expData.name}</div>
+                <div class="explore-item-name">${expData.name}${completedBadge}</div>
                 <div class="explore-item-difficulty">${difficultyStars}</div>
             </div>
             <div class="explore-item-desc">${expData.description}</div>
@@ -1612,9 +1746,10 @@ function renderExploreList() {
                         : '<span class="skill-tag matched">无要求</span>'}
                 </div>
             </div>
+            ${lastResultText}
         `;
 
-        if (!isDeployed) {
+        if (!isDeployed && !completed) {
             item.addEventListener('click', () => selectExploration(expData, item));
         }
 
@@ -1664,20 +1799,28 @@ function renderDispatchGuardians(expData) {
     container.innerHTML = '';
 
     const guardians = MemorySanctuary.data.guardians;
+    const now = MemorySanctuary.state.week;
     guardians.forEach(g => {
         const div = document.createElement('div');
         div.className = 'dispatch-guardian';
         div.innerHTML = `<span>${g.avatar}</span><span>${g.name}</span>`;
-        div.addEventListener('click', () => {
-            if (selectedGuardians.has(g.id)) {
-                selectedGuardians.delete(g.id);
-                div.classList.remove('selected');
-            } else {
-                selectedGuardians.add(g.id);
-                div.classList.add('selected');
-            }
-            renderOutcomeBars(expData);
-        });
+
+        if (isGuardianFatigued(g.id)) {
+            div.classList.add('fatigued');
+            div.title = '该守护者本周疲劳，无法派遣';
+        } else {
+            div.addEventListener('click', () => {
+                if (selectedGuardians.has(g.id)) {
+                    selectedGuardians.delete(g.id);
+                    div.classList.remove('selected');
+                } else {
+                    selectedGuardians.add(g.id);
+                    div.classList.add('selected');
+                }
+                renderOutcomeBars(expData);
+            });
+        }
+
         container.appendChild(div);
     });
 }
@@ -1760,14 +1903,19 @@ function executeExploration() {
     };
     setTimeout(checkReturn, 100);
 
-    document.getElementById('dispatch-btn').disabled = true;
+    const dispatchBtn = document.getElementById('dispatch-btn');
+    dispatchBtn.disabled = true;
+    dispatchBtn.classList.add('deploying');
+    setTimeout(() => dispatchBtn.classList.remove('deploying'), 600);
+
+    if (typeof AudioSystem !== 'undefined') AudioSystem.playExploreDeploy();
 
     const guardianNames = Array.from(selectedGuardians).map(gid => {
         const g = MemorySanctuary.data.guardians.find(g => g.id === gid);
         return g ? g.name : '';
     }).filter(n => n).join('、');
 
-    addLog('system', `派出勘探队前往 ${expData.name}。成员：${guardianNames || '无'}。预计 ${expData.duration} 周后返回。`);
+    addLog(`派出勘探队前往 ${expData.name}。成员：${guardianNames || '无'}。预计 ${expData.duration} 周后返回。`, 'system');
 
     document.getElementById('explore-overlay').classList.add('hidden');
     advanceTime(expData.duration);
@@ -1778,6 +1926,16 @@ function applyExplorationResult(outcome, expData) {
     const resultEl = document.getElementById('explore-result');
     if (overlay) overlay.classList.remove('hidden');
     resultEl.classList.remove('hidden');
+
+    // Determine result type for styling
+    const resultType = outcome.type === 'resource' ? 'resource' : outcome.type === 'narrative' ? 'narrative' : 'risk';
+    resultEl.className = 'result-' + resultType;
+
+    // Set icon based on result type
+    const iconEl = document.getElementById('result-icon');
+    if (iconEl) {
+        iconEl.textContent = outcome.type === 'resource' ? '◈' : outcome.type === 'narrative' ? '✦' : '⚠';
+    }
 
     document.getElementById('result-header').textContent = `${expData.name} — 勘探返回`;
 
@@ -1807,12 +1965,77 @@ function applyExplorationResult(outcome, expData) {
         effectsContainer.appendChild(div);
     });
 
+    // Play result sound
+    if (typeof AudioSystem !== 'undefined') {
+        if (outcome.type === 'resource') AudioSystem.playExploreReturnResource();
+        else if (outcome.type === 'narrative') AudioSystem.playExploreReturnNarrative();
+        else AudioSystem.playExploreReturnRisk();
+    }
+
+    // Track completion
+    if (!MemorySanctuary.state.exploration.completedExplorations) {
+        MemorySanctuary.state.exploration.completedExplorations = {};
+    }
+    MemorySanctuary.state.exploration.completedExplorations[expData.id] = 
+        (MemorySanctuary.state.exploration.completedExplorations[expData.id] || 0) + 1;
+
+    // Add to exploration log
+    if (!MemorySanctuary.state.exploration.explorationLog) {
+        MemorySanctuary.state.exploration.explorationLog = [];
+    }
+    MemorySanctuary.state.exploration.explorationLog.push({
+        id: expData.id,
+        name: expData.name,
+        week: MemorySanctuary.state.week,
+        resultType: outcome.type,
+        resultText: outcome.message,
+        members: Array.from(selectedGuardians)
+    });
+
+    // Guardian mood +1 for all dispatched
     selectedGuardians.forEach(gid => {
         adjustGuardianMood(gid, 1);
     });
 
+    // Layer 4: Risk consequences — fatigue + potential mood penalty
+    if (outcome.type === 'risk') {
+        selectedGuardians.forEach(gid => {
+            // Fatigue: cannot deploy for 2 weeks
+            if (!MemorySanctuary.state.exploration.fatigue) {
+                MemorySanctuary.state.exploration.fatigue = {};
+            }
+            MemorySanctuary.state.exploration.fatigue[gid] = MemorySanctuary.state.week + 2;
+
+            // 50% chance of mood penalty
+            if (Math.random() < 0.5) {
+                adjustGuardianMood(gid, -1);
+            }
+        });
+    }
+
+    // Layer 3: Narrative reveals clue
+    if (outcome.type === 'narrative' && outcome.revealsClue) {
+        addLog(`这次发现让你想起了某份档案……也许应该回去检查一下。`, 'system');
+    }
+
+    // Layer 3: Guardian special dialogue
+    if (expData.guardianSpecials) {
+        selectedGuardians.forEach(gid => {
+            const g = MemorySanctuary.data.guardians.find(g => g.id === gid);
+            if (g && g.explorationDialogues && expData.guardianSpecials[g.id]) {
+                const dialogueKey = expData.guardianSpecials[g.id];
+                if (g.explorationDialogues[dialogueKey]) {
+                    setTimeout(() => {
+                        addLog(`${g.name}：「${g.explorationDialogues[dialogueKey]}」`, 'guardian');
+                    }, 500);
+                }
+            }
+        });
+    }
+
     addLog(`勘探队从 ${expData.name} 返回。${outcome.message}`, 'system');
     renderAll();
+    if (typeof checkStuckState === 'function') checkStuckState();
 }
 
 // 结果面板关闭
@@ -1839,7 +2062,130 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dispatchBtn) {
         dispatchBtn.addEventListener('click', executeExploration);
     }
+    
+    // Tab switching
+    document.querySelectorAll('.explore-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.explore-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            const tabName = tab.dataset.tab;
+            const listContainer = document.getElementById('explore-list-container');
+            const logContainer = document.getElementById('explore-log-container');
+            if (tabName === 'list') {
+                listContainer.classList.remove('hidden');
+                logContainer.classList.add('hidden');
+            } else {
+                listContainer.classList.add('hidden');
+                logContainer.classList.remove('hidden');
+                renderExploreLog();
+            }
+        });
+    });
 });
+
+function renderExploreLog() {
+    const container = document.getElementById('explore-log-container');
+    if (!container) return;
+    const logs = MemorySanctuary.state.exploration.explorationLog || [];
+    
+    if (logs.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-dim); font-size: 0.7rem; text-align: center; padding: 20px;">暂无勘探记录</div>';
+        return;
+    }
+    
+    container.innerHTML = '';
+    const typeLabels = { resource: '◈ 资源', narrative: '✦ 叙事', risk: '⚠ 风险' };
+    
+    logs.slice().reverse().forEach(log => {
+        const div = document.createElement('div');
+        div.className = 'explore-log-entry';
+        div.innerHTML = `
+            <div class="explore-log-entry-header">
+                <span class="explore-log-entry-name">${log.name} <span style="color: var(--text-dim); font-weight: normal;">${typeLabels[log.resultType] || ''}</span></span>
+                <span class="explore-log-entry-week">第 ${log.week} 周</span>
+            </div>
+            <div class="explore-log-entry-text">${log.resultText}</div>
+            <div class="explore-log-entry-members">成员：${log.members.map(gid => {
+                const g = MemorySanctuary.data.guardians.find(g => g.id === gid);
+                return g ? `${g.avatar} ${g.name}` : '';
+            }).join('、') || '无'}</div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+// ==========================================
+// 应急协议
+// ==========================================
+
+function openEmergencyProtocol() {
+    const state = MemorySanctuary.state;
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    const closeBtn = document.getElementById('modal-close');
+
+    if (!overlay || !title || !content) return;
+
+    title.textContent = '⚡ 应急协议：能源转化';
+
+    const energyCost = 15; // 环境代价
+    const energyGain = 25; // 能源收益
+
+    let contentText = `圣所的储备即将耗尽。你可以激活应急协议，强制从环境稳定系统中提取能源。\n\n`;
+    contentText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    contentText += `代价：环境稳定度 -${energyCost}\n`;
+    contentText += `收益：能源 +${energyGain}\n`;
+    contentText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+    const canActivate = state.resources.environment > energyCost;
+
+    if (!canActivate) {
+        contentText += `当前环境稳定度不足以激活协议。需要至少 ${energyCost} 点环境稳定度。\n\n`;
+        contentText += `圣所的状况已至极境。你只能祈求奇迹，或选择封印。`;
+    } else {
+        contentText += `「榨取圣所最后的庇护之力，换取保存文明的希望。\n`;
+        contentText += `——守护者不会赞成这种选择，但圣所的命运在你手中。」`;
+    }
+
+    content.textContent = contentText;
+    overlay.classList.remove('hidden');
+
+    if (closeBtn) {
+        if (canActivate) {
+            closeBtn.textContent = '激活协议';
+            closeBtn.onclick = () => {
+                state.resources.environment -= energyCost;
+                state.resources.energy = Math.min(100, state.resources.energy + energyGain);
+                
+                addLog(`⚡ 应急协议激活：环境稳定度 -${energyCost}，能源 +${energyGain}。`, 'system');
+                addLog('圣所发出一声沉闷的呻吟。空气变得稀薄，温度在下降。', 'system');
+                
+                if (typeof AudioSystem !== 'undefined') AudioSystem.playMechanicalEngage();
+                
+                // 守护者反应
+                const guardians = MemorySanctuary.data.guardians;
+                const unluckyGuardian = guardians[Math.floor(Math.random() * guardians.length)];
+                const reactions = [
+                    `……你在赌。但愿你是对的。`,
+                    `这代价……但愿是值得的。`,
+                    `圣所承受了这一切。为了文明。`,
+                    `环境系统在尖叫。但我能理解你的选择。`,
+                    `愿后世的眼睛能看见你所做的一切。`
+                ];
+                const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+                addLog(`${unluckyGuardian.name}：「${reaction}」`, 'guardian');
+                
+                overlay.classList.add('hidden');
+                renderAll();
+                if (typeof checkStuckState === 'function') checkStuckState();
+            };
+        } else {
+            closeBtn.textContent = '关闭';
+            closeBtn.onclick = () => overlay.classList.add('hidden');
+        }
+    }
+}
 
 function showAboutModal() {
     const overlay = document.getElementById('modal-overlay');
@@ -1849,7 +2195,7 @@ function showAboutModal() {
 
     if (!overlay || !title || !content) return;
 
-    title.textContent = '关于 记忆圣所';
+    title.textContent = '关于 · 记忆圣所';
 
     let aboutContent = '记忆圣所 (Nar-Sil-Veth)\n';
     aboutContent += '终来之刻，何物当存？\n\n';
@@ -1945,7 +2291,7 @@ function loadGame(slot) {
         MemorySanctuary.state.guardianMoods = { ...(saveData.state.guardianMoods || {}) };
         MemorySanctuary.state.scheduledEvents = [...(saveData.state.scheduledEvents || [])];
         MemorySanctuary.state.unlockedBonuses = [...(saveData.state.unlockedBonuses || [])];
-        MemorySanctuary.state.exploration = { ...(saveData.state.exploration || { deployedUntil: 0, cooldownUntil: 0 }) };
+        MemorySanctuary.state.exploration = { ...(saveData.state.exploration || { deployedUntil: 0, cooldownUntil: 0, completedExplorations: {}, fatigue: {}, explorationLog: [] }) };
         MemorySanctuary.state.activeProjects = [...(saveData.state.activeProjects || [])];
         MemorySanctuary.state.completedProjects = [...(saveData.state.completedProjects || [])];
 
@@ -1955,6 +2301,7 @@ function loadGame(slot) {
         localStorage.setItem(CURRENT_SLOT_KEY, String(slot));
 
         renderAll();
+        if (typeof checkStuckState === 'function') checkStuckState();
         if (typeof initCanvas === 'function') initCanvas();
 
         const guardian = MemorySanctuary.data.guardians[0];
@@ -2022,16 +2369,27 @@ function getNGPlusData() {
         return {
             playthroughCount: 0,
             totalArchivesSaved: 0,
-            bonuses: []
+            bonuses: [],
+            unlockedEntries: [],
+            guardianFinalesSeen: [],
+            guardianHistory: []
         };
     }
     try {
-        return JSON.parse(raw);
+        const data = JSON.parse(raw);
+        // Ensure new fields exist
+        if (!data.unlockedEntries) data.unlockedEntries = [];
+        if (!data.guardianFinalesSeen) data.guardianFinalesSeen = [];
+        if (!data.guardianHistory) data.guardianHistory = [];
+        return data;
     } catch (e) {
         return {
             playthroughCount: 0,
             totalArchivesSaved: 0,
-            bonuses: []
+            bonuses: [],
+            unlockedEntries: [],
+            guardianFinalesSeen: [],
+            guardianHistory: []
         };
     }
 }
@@ -2082,6 +2440,154 @@ function applyNGPlusBonuses() {
             );
         }
     });
+}
+
+// Check if an archive entry is available based on NG+ conditions
+function isArchiveAvailable(entry) {
+    if (!entry.ngPlusExclusive) return true;
+    const ngData = getNGPlusData();
+    
+    // Check unlockCondition
+    if (entry.unlockCondition) {
+        // Playthrough-based unlock
+        if (entry.unlockCondition.playthrough) {
+            if (ngData.playthroughCount < entry.unlockCondition.playthrough) return false;
+        }
+        // Guardian-based unlock (from ending)
+        if (entry.unlockCondition.guardian && entry.unlockCondition.moodTier) {
+            // Only available if we've seen this guardian's finale in a previous run
+            if (!ngData.guardianFinalesSeen.includes(entry.unlockCondition.guardian)) return false;
+        }
+    }
+    
+    // Check if already unlocked in NG+ data
+    if (ngData.unlockedEntries && ngData.unlockedEntries.includes(entry.id)) return true;
+    
+    return true;
+}
+
+// Unlock an NG+ entry (called when conditions are met)
+function unlockNGPlusEntry(entryId) {
+    const ngData = getNGPlusData();
+    if (!ngData.unlockedEntries) ngData.unlockedEntries = [];
+    if (!ngData.unlockedEntries.includes(entryId)) {
+        ngData.unlockedEntries.push(entryId);
+        saveNGPlusData(ngData);
+    }
+}
+
+// Record that a guardian finale was seen
+function recordGuardianFinale(guardianId) {
+    const ngData = getNGPlusData();
+    if (!ngData.guardianFinalesSeen) ngData.guardianFinalesSeen = [];
+    if (!ngData.guardianFinalesSeen.includes(guardianId)) {
+        ngData.guardianFinalesSeen.push(guardianId);
+        saveNGPlusData(ngData);
+    }
+}
+
+// ==========================================
+// 成就系统
+// ==========================================
+
+const ACHIEVEMENTS_KEY = 'memory-sanctuary-achievements';
+
+function getUnlockedAchievements() {
+    const raw = localStorage.getItem(ACHIEVEMENTS_KEY);
+    if (!raw) return [];
+    try {
+        return JSON.parse(raw);
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveUnlockedAchievements(unlocked) {
+    localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(unlocked));
+}
+
+function unlockAchievement(achievementId) {
+    const unlocked = getUnlockedAchievements();
+    if (unlocked.includes(achievementId)) return false;
+    unlocked.push(achievementId);
+    saveUnlockedAchievements(unlocked);
+    
+    // Show toast notification
+    const achievement = (MemorySanctuary.data.achievements || []).find(a => a.id === achievementId);
+    if (achievement && typeof showAchievementToast === 'function') {
+        showAchievementToast(achievement);
+    }
+    return true;
+}
+
+function checkAchievements(context) {
+    const state = MemorySanctuary.state;
+    if (!state) return;
+    const ngData = getNGPlusData();
+    const unlocked = getUnlockedAchievements();
+    const allAchievements = MemorySanctuary.data.achievements || [];
+    
+    for (const ach of allAchievements) {
+        if (unlocked.includes(ach.id)) continue;
+        
+        const c = ach.condition;
+        let earned = false;
+        
+        switch (c.type) {
+            case 'archives_count':
+                if (state.completedArchives.length >= c.value) earned = true;
+                break;
+            case 'playthrough':
+                if (ngData.playthroughCount >= c.value) earned = true;
+                break;
+            case 'vault_complete':
+                if (getVaultCompletion(c.value).ratio >= 1.0) earned = true;
+                break;
+            case 'all_vaults_percent':
+                const allMeet = MemorySanctuary.data.vaults.every(v => getVaultCompletion(v.id).ratio >= c.value);
+                if (allMeet) earned = true;
+                break;
+            case 'all_guardians_mood': {
+                const tiers = { hostile: 0, cold: 1, neutral: 2, friendly: 3, intimate: 4 };
+                const targetTier = tiers[c.value] || 3;
+                const guardianIds = ['tika', 'finn', 'misha', 'lorn', 'ethel'];
+                const allMeet2 = guardianIds.every(gid => tiers[getMoodTier(gid)] >= targetTier);
+                if (allMeet2) earned = true;
+                break;
+            }
+        }
+        
+        if (earned) unlockAchievement(ach.id);
+    }
+}
+
+// Check achievements after sealing
+function checkSealAchievements(endingId, week) {
+    unlockAchievement('first_seal');
+    
+    if (endingId) {
+        unlockAchievement(endingId);
+        if (endingId.startsWith('guardian_finale_')) {
+            const gid = endingId.replace('guardian_finale_', '');
+            unlockAchievement('guardian_' + gid + '_love');
+        }
+    }
+    
+    if (week <= 12) unlockAchievement('seal_early');
+    if (week >= 20) unlockAchievement('seal_late');
+    
+    // Check all guardian finales
+    const ngData = getNGPlusData();
+    if (ngData.guardianFinalesSeen.length >= 5) unlockAchievement('all_guardian_finales');
+    
+    // Check all base endings
+    const baseEndings = ['complete_memory', 'finale_song_of_doom', 'finale_roots_of_civilization', 
+        'finale_children_of_stardust', 'finale_fire_of_life', 'finale_eternal_question',
+        'finale_chronicle_of_doom', 'finale_voice_of_home', 'finale_silent_sanctuary'];
+    const allBase = baseEndings.every(e => getUnlockedAchievements().includes(e));
+    if (allBase) unlockAchievement('all_endings_base');
+    
+    checkAchievements({ type: 'seal' });
 }
 
 // ==========================================
@@ -2607,103 +3113,149 @@ function generateCivilizationPortrait() {
 }
 
 // ==========================================
-// 隐藏结局系统
+// 隐藏结局系统（数据驱动）
 // ==========================================
 
-function checkHiddenEndings() {
+function getVaultCompletion(vaultId) {
+    const archives = MemorySanctuary.data.archives.filter(a => a.vault === vaultId && !a.ngPlusExclusive);
     const completed = MemorySanctuary.state.completedArchives;
-    const archives = MemorySanctuary.data.archives;
+    const done = archives.filter(a => completed.includes(a.id)).length;
+    return { done, total: archives.length, ratio: archives.length > 0 ? done / archives.length : 0 };
+}
+
+function checkEndingCondition(condition) {
+    if (condition.allVaults && condition.minVaultCompletion) {
+        const vaults = MemorySanctuary.data.vaults;
+        return vaults.every(v => getVaultCompletion(v.id).ratio >= condition.minVaultCompletion);
+    }
+    if (condition.vaults && condition.minCompletion) {
+        return condition.vaults.every(vid => getVaultCompletion(vid).ratio >= condition.minCompletion);
+    }
+    if (condition.minPercent !== undefined && condition.maxPercent !== undefined) {
+        const total = MemorySanctuary.data.archives.filter(a => !a.ngPlusExclusive).length;
+        const pct = total > 0 ? MemorySanctuary.state.completedArchives.length / total : 0;
+        return pct >= condition.minPercent && pct <= condition.maxPercent;
+    }
+    if (condition.type === 'zero_completion') {
+        return MemorySanctuary.state.completedArchives.filter(id => {
+            const a = getArchiveById(id);
+            return a && !a.ngPlusExclusive;
+        }).length === 0 && MemorySanctuary.state.week >= (condition.weekMin || 10);
+    }
+    return false;
+}
+
+function checkGuardianFinale(guardianId) {
+    const tier = getMoodTier(guardianId);
+    if (tier !== 'intimate') return null;
+    const guardian = getGuardianById(guardianId);
+    if (!guardian || !guardian.endingDialogues) return null;
+    const tierNames = { hostile: '疏离', cold: '冷淡', neutral: '平和', friendly: '友好', intimate: '亲密' };
+    const moodIndicator = getMoodIndicator(guardianId);
+    return {
+        id: 'guardian_finale_' + guardianId,
+        title: guardian.name + '的专属结局',
+        description: guardian.endingDialogues.ending.join('\n\n') + '\n\n【与' + guardian.name + '的关系：' + tierNames[tier] + ' ' + moodIndicator + '】',
+        unlockEntry: guardian.endingDialogues.unlockEntry || null
+    };
+}
+
+function checkHiddenEndings() {
+    const state = MemorySanctuary.state;
+    const data = MemorySanctuary.data;
+    const completed = state.completedArchives;
+    const archives = data.archives.filter(a => !a.ngPlusExclusive);
     const total = archives.length;
-    
-    // Helper: check if all archives in a set are completed
-    const allCompleted = (ids) => ids.every(id => completed.includes(id));
-    const countInVault = (vaultId) => completed.filter(id => {
-        const a = getArchiveById(id);
-        return a && a.vault === vaultId;
-    }).length;
-    
-    // Ending 1: 完全记忆 (100%)
-    if (completed.length === total) {
+
+    // 0. 守护者个人线结局（最高优先级，但全收集优先）
+    const guardianEndings = [];
+    for (const gid of ['tika', 'finn', 'misha', 'lorn', 'ethel']) {
+        const ge = checkGuardianFinale(gid);
+        if (ge) guardianEndings.push(ge);
+    }
+
+    // 1. 全收集结局（100%）
+    const allDone = archives.every(a => completed.includes(a.id));
+    if (allDone && total > 0) {
+        const ending = (data.endings || []).find(e => e.id === 'complete_memory');
         return {
             id: 'complete_memory',
-            title: '🌟 永恒记忆',
-            description: '你保存了萨拉达斯文明的每一片碎片。\n\n后世将看到一个完整的文明——它的语言、历史、灾难、艺术、信仰、科学、生态、法律、生活、建筑、医学与星空。\n\n这是你对时间最彻底的反抗。\n\n「我们曾存在，我们曾仰望，我们曾渴望触碰你们。」'
+            title: ending ? ending.title : '🌟 永恒记忆',
+            description: ending ? ending.description : '你保存了萨拉达斯文明的每一片碎片。',
+            priority: 100,
+            allGuardiansHappy: guardianEndings.length >= 3
         };
     }
-    
-    // Ending 2: 星空之歌 (翼神+永恒之书+星图+星座神话)
-    if (allCompleted(['arch_001', 'arch_024', 'arch_059', 'arch_062'])) {
-        return {
-            id: 'star_song',
-            title: '🎵 星空之歌',
-            description: '你保存了萨拉达斯最深邃的诗歌与星空。\n\n翼神的升天颂、永恒之书的哲思、最后的星图、星座的神话——这些碎片拼凑出一个仰望星空的文明。\n\n后世将听到萨拉达斯的歌声穿越万年，在星空中回响。\n\n「若星辰之上仍有倾听者——请带走我们的名字。」'
-        };
+
+    // 2. 守护者个人线结局
+    if (guardianEndings.length > 0) {
+        // 返回最高优先级的守护者结局
+        return { ...guardianEndings[0], priority: 90 };
     }
-    
-    // Ending 3: 灾难见证者 (6条灾难链全归档)
-    if (allCompleted(['arch_013', 'arch_014', 'arch_015', 'arch_016', 'arch_017', 'arch_018'])) {
-        return {
-            id: 'disaster_witness',
-            title: '👁️ 灾难见证者',
-            description: '你保存了萨拉达斯末日降临的全部记录。\n\n光雨、地裂、大气消散、撤离者的最后通讯、封存后的寂静、完整的编年史——你让后世看到了一个文明如何面对终结。\n\n这不是绝望的记录，而是勇气的证明。\n\n「我们选择被记住，即使这意味着记住痛苦。」'
-        };
+
+    // 3. Vault组合结局 & 百分比结局（按priority排序）
+    const sortedEndings = [...(data.endings || [])].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+    for (const ending of sortedEndings) {
+        if (ending.id === 'complete_memory') continue;
+        if (ending.type === 'guardian_finale') continue;
+        if (checkEndingCondition(ending.condition)) {
+            return { id: ending.id, title: ending.title, description: ending.description, priority: ending.priority };
+        }
     }
-    
-    // Ending 4: 生命回响 (5条生态链全归档)
-    if (allCompleted(['arch_034', 'arch_035', 'arch_036', 'arch_037', 'arch_038'])) {
-        return {
-            id: 'life_echo',
-            title: '🌿 生命回响',
-            description: '你保存了萨拉达斯全部的生命记录。\n\n动物志、植物图鉴、气候变迁、生态链、最后的种子库——你让后世看到了一个与星球共生的文明。\n\n光蝶在凝固的光中飞舞，石花在黑暗中绽放。\n\n「生命不会真正消失，它只是去了别的地方。」'
-        };
-    }
-    
-    // Ending 5: 追光者 (5条科学链全归档)
-    if (allCompleted(['arch_029', 'arch_030', 'arch_031', 'arch_032', 'arch_033'])) {
-        return {
-            id: 'light_chaser',
-            title: '💡 追光者',
-            description: '你保存了萨拉达斯最辉煌的科学成就。\n\n天文观测、数学原理、能源系统、材料科学、最后的实验——你让后世看到了一个试图理解宇宙奥秘的文明。\n\n他们证明了光可以被储存，即使一万年后会消散。\n\n「知识就是力量。我们选择把力量留给未来。」'
-        };
-    }
-    
-    // Ending 6: 爱与记忆 (5条日常生活链全归档)
-    if (allCompleted(['arch_044', 'arch_045', 'arch_046', 'arch_047', 'arch_048'])) {
-        return {
-            id: 'love_and_memory',
-            title: '🏠 爱与记忆',
-            description: '你保存了萨拉达斯最温暖的生活碎片。\n\n母亲的日记、食谱、孩子的玩具、家书、平民的生活影像——你让后世看到了末日之下依然存在的爱与日常。\n\n这是对遗忘最温柔的反抗。\n\n「当我们记住爱，爱就不会消失。」'
-        };
-    }
-    
-    // Ending 7: 寂静圣所 (0条归档 - only if week >= 10 and sealed)
-    if (completed.length === 0 && MemorySanctuary.state.week >= 10) {
-        return {
-            id: 'silent_sanctuary',
-            title: '🖤 寂静圣所',
-            description: '你选择了沉默。\n\n圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。没有语言、没有历史、没有歌声、没有星空。\n\n也许遗忘也是一种慈悲——让文明不必承受被遗忘的痛苦。\n\n也许未来有一天，会有另一个文明发现这座空荡荡的圣所，然后问：「这里曾经住着谁？」\n\n但没有人会回答。'
-        };
-    }
-    
+
+    // 4. 兜底：基于完成度的普通结局
+    const pct = total > 0 ? completed.length / total : 0;
+    if (pct >= 0.7) return { id: 'guardian_of_remnants', title: '文明守护者', description: '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的萨拉达斯。', priority: 50 };
+    if (pct >= 0.4) return { id: 'fragment_keeper', title: '碎片收集者', description: `你保存了萨拉达斯的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。`, priority: 50 };
+    if (pct >= 0.1) return { id: 'whisper_keeper', title: '微光守护者', description: `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。`, priority: 30 };
+    if (state.week >= 10) return { id: 'silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。也许……遗忘也是一种选择。', priority: 10 };
+
     return null;
 }
 
-function showEndingModal(ending) {
-    const overlay = document.getElementById('modal-overlay');
-    const title = document.getElementById('modal-title');
-    const content = document.getElementById('modal-content');
-    const closeBtn = document.getElementById('modal-close');
-    
-    if (!overlay || !title || !content) return;
-    
-    title.textContent = `隐藏结局：${ending.title}`;
-    content.textContent = ending.description;
-    overlay.classList.remove('hidden');
-    
-    if (closeBtn) {
-        closeBtn.textContent = '确认';
-        closeBtn.onclick = () => overlay.classList.add('hidden');
+function getEndingModalData(ending) {
+    const portrait = generateCivilizationPortrait();
+    const state = MemorySanctuary.state;
+    const ngData = getNGPlusData();
+
+    let modalContent = `你选择在此刻封印记忆圣所。\n\n`;
+    modalContent += `【文明画像】\n${portrait.title}\n${portrait.description}\n\n`;
+    modalContent += `最终统计：\n`;
+    modalContent += `• 运行周数：${state.week} 周\n`;
+    modalContent += `• 归档条目：${state.completedArchives.length} / ${MemorySanctuary.data.archives.filter(a => !a.ngPlusExclusive).length}\n`;
+    modalContent += `• 文明完整度：${portrait.totalPercent}%\n\n`;
+
+    if (ending) {
+        modalContent += `【结局】\n${ending.title}\n${ending.description}\n\n`;
     }
+
+    if (ngData.playthroughCount > 0) {
+        modalContent += `多周目进度：\n`;
+        modalContent += `• 已完成周目：${ngData.playthroughCount}\n`;
+        modalContent += `• 累计归档：${ngData.totalArchivesSaved} 条\n`;
+        if (ngData.bestRun) {
+            modalContent += `• 最佳记录：${ngData.bestRun.count} 条（第${ngData.bestRun.week}周）\n`;
+        }
+        modalContent += `\n`;
+    }
+
+    // 守护者关系总结
+    if (state.guardianMoods && Object.keys(state.guardianMoods).length > 0) {
+        modalContent += `守护者关系：\n`;
+        const tierNames = { hostile: '疏离', cold: '冷淡', neutral: '平和', friendly: '友好', intimate: '亲密' };
+        for (const [guardianId, mood] of Object.entries(state.guardianMoods)) {
+            const guardian = getGuardianById(guardianId);
+            if (guardian) {
+                const tier = getMoodTier(guardianId);
+                modalContent += `• ${guardian.name}：${tierNames[tier]}（${getMoodIndicator(guardianId)}）\n`;
+            }
+        }
+    }
+
+    modalContent += `\n你的选择决定了后世「看到」怎样的萨拉达斯文明。\n`;
+    modalContent += `「——终来之刻，何物当存？」`;
+
+    return modalContent;
 }
 
 function canSealSanctuary() {
@@ -2732,22 +3284,56 @@ function sealSanctuary() {
         addLog('💖 守护者们的信任带来了额外奖励！', 'success');
     }
     
+    // Record guardian finales seen
+    for (const gid of ['tika', 'finn', 'misha', 'lorn', 'ethel']) {
+        if (getMoodTier(gid) === 'intimate') {
+            recordGuardianFinale(gid);
+        }
+    }
+    
+    // Record guardian moods for history
+    const currentMoods = {};
+    for (const gid of ['tika', 'finn', 'misha', 'lorn', 'ethel']) {
+        currentMoods[gid] = {
+            tier: getMoodTier(gid),
+            mood: getMoodLevel(gid),
+            indicator: getMoodIndicator(gid)
+        };
+    }
+    ngData.guardianHistory.push({
+        playthrough: ngData.playthroughCount + 1,
+        week: state.week,
+        moods: currentMoods
+    });
+    
     saveNGPlusData(ngData);
 
     // Check for hidden endings first
     const ending = checkHiddenEndings();
-    if (ending) {
-        showEndingModal(ending);
+    
+    // Show unlock message for guardian endings
+    if (ending && ending.id && ending.id.startsWith('guardian_finale_')) {
+        const gid = ending.id.replace('guardian_finale_', '');
+        const guardian = getGuardianById(gid);
+        if (guardian) {
+            addLog(`💕 解锁${guardian.name}的专属结局！`, 'success');
+        }
     }
-
-    // Show completion modal with portrait
-    showSealModal(archivedCount, totalCount);
+    
+    // Check seal achievements
+    if (typeof checkSealAchievements === 'function') {
+        checkSealAchievements(ending ? ending.id : null, state.week);
+    }
+    
+    // Show completion modal with portrait (includes ending info)
+    const modalContent = getEndingModalData(ending);
+    showSealModalWithContent(modalContent, ending);
     
     // Apply NG+ count
     startNewGamePlus();
 }
 
-function showSealModal(archivedCount, totalCount) {
+function showSealModalWithContent(modalContent, ending) {
     const overlay = document.getElementById('modal-overlay');
     const title = document.getElementById('modal-title');
     const content = document.getElementById('modal-content');
@@ -2756,52 +3342,6 @@ function showSealModal(archivedCount, totalCount) {
     if (!overlay || !title || !content) return;
     
     title.textContent = '圣所已封印';
-    
-    // Generate civilization portrait
-    const portrait = generateCivilizationPortrait();
-    
-    let modalContent = `你选择在此刻封印记忆圣所。\n\n`;
-    modalContent += `【文明画像】\n`;
-    modalContent += `${portrait.title}\n`;
-    modalContent += `${portrait.description}\n\n`;
-    modalContent += `最终统计：\n`;
-    modalContent += `• 运行周数：${MemorySanctuary.state.week} 周\n`;
-    modalContent += `• 归档条目：${archivedCount} / ${totalCount}\n`;
-    modalContent += `• 文明完整度：${portrait.totalPercent}%\n\n`;
-    
-    const ngData = getNGPlusData();
-    if (ngData.playthroughCount > 0) {
-        modalContent += `多周目进度：\n`;
-        modalContent += `• 已完成周目：${ngData.playthroughCount}\n`;
-        modalContent += `• 累计归档：${ngData.totalArchivesSaved} 条\n`;
-        if (ngData.bestRun) {
-            modalContent += `• 最佳记录：${ngData.bestRun.count} 条（第${ngData.bestRun.week}周）\n`;
-        }
-    }
-    
-    // 守护者关系总结
-    const state = MemorySanctuary.state;
-    if (state.guardianMoods && Object.keys(state.guardianMoods).length > 0) {
-        modalContent += `\n守护者关系：\n`;
-        for (const [guardianId, mood] of Object.entries(state.guardianMoods)) {
-            const guardian = getGuardianById(guardianId);
-            if (guardian) {
-                const tier = getMoodTier(guardianId);
-                const tierNames = {
-                    'hostile': '疏离',
-                    'cold': '冷淡',
-                    'neutral': '平和',
-                    'friendly': '友好',
-                    'intimate': '亲密'
-                };
-                modalContent += `• ${guardian.name}：${tierNames[tier]}（${getMoodIndicator(guardianId)}）\n`;
-            }
-        }
-    }
-    
-    modalContent += `\n你的选择决定了后世「看到」怎样的萨拉达斯文明。\n`;
-    modalContent += `「——终来之刻，何物当存？」`;
-    
     content.textContent = modalContent;
     overlay.classList.remove('hidden');
     
@@ -2813,6 +3353,8 @@ function showSealModal(archivedCount, totalCount) {
         };
     }
 }
+
+
 
 function renderSealButton() {
     const container = document.getElementById('save-info');
@@ -2913,6 +3455,7 @@ function startProject(projectId) {
 
     addLog(`开始项目：${project.name}`, 'system');
     renderAll();
+    if (typeof checkStuckState === 'function') checkStuckState();
     return true;
 }
 
@@ -3019,4 +3562,5 @@ onTimeAdvanced = function(weeks) {
     _originalOnTimeAdvanced(weeks);
     processActiveProjects();
     processFinaleEvents();
+    if (weeks > 0 && typeof checkNGPlusPersonalEvents === 'function') checkNGPlusPersonalEvents();
 };

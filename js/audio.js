@@ -132,6 +132,214 @@ window.AudioSystem = (() => {
         osc.stop(now + 0.7);
     }
 
+    // 播放勘探出发音效
+    function playExploreDeploy() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        
+        // 低频启动嗡鸣
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(60, now);
+        osc.frequency.linearRampToValueAtTime(100, now + 0.2);
+        osc.frequency.linearRampToValueAtTime(80, now + 0.4);
+        
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.linearRampToValueAtTime(0.12, now + 0.2);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+        
+        osc.connect(gain);
+        gain.connect(masterGain);
+        
+        osc.start(now);
+        osc.stop(now + 0.55);
+        
+        // 金属撞击
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        
+        osc2.type = 'square';
+        osc2.frequency.setValueAtTime(200, now + 0.1);
+        osc2.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+        
+        gain2.gain.setValueAtTime(0, now);
+        gain2.gain.linearRampToValueAtTime(0.06, now + 0.1);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        
+        osc2.connect(gain2);
+        gain2.connect(masterGain);
+        
+        osc2.start(now + 0.1);
+        osc2.stop(now + 0.4);
+    }
+
+    // 播放勘探返回音效（资源获取 - 上升音阶）
+    function playExploreReturnResource() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        const frequencies = [523, 659, 784]; // C5, E5, G5 大三和弦
+        
+        frequencies.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            
+            gain.gain.setValueAtTime(0, now + i * 0.08);
+            gain.gain.linearRampToValueAtTime(0.07, now + i * 0.08 + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.5);
+            
+            osc.connect(gain);
+            gain.connect(masterGain);
+            
+            osc.start(now + i * 0.08);
+            osc.stop(now + i * 0.08 + 0.6);
+        });
+    }
+
+    // 播放勘探返回音效（叙事发现 - 低频脉冲 + 人声质感）
+    function playExploreReturnNarrative() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        
+        // 低频脉冲
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        
+        osc1.type = 'sine';
+        osc1.frequency.value = 120;
+        
+        gain1.gain.setValueAtTime(0.1, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        
+        osc1.connect(gain1);
+        gain1.connect(masterGain);
+        
+        osc1.start(now);
+        osc1.stop(now + 0.45);
+        
+        // 人声质感（调制泛音）
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        const lfo = ctx.createOscillator();
+        const lfoGain = ctx.createGain();
+        
+        osc2.type = 'sine';
+        osc2.frequency.value = 220;
+        
+        lfo.frequency.value = 5;
+        lfoGain.gain.value = 15;
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc2.frequency);
+        
+        gain2.gain.setValueAtTime(0, now + 0.1);
+        gain2.gain.linearRampToValueAtTime(0.05, now + 0.2);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+        
+        osc2.connect(gain2);
+        gain2.connect(masterGain);
+        
+        lfo.start(now);
+        osc2.start(now + 0.1);
+        osc2.stop(now + 0.65);
+        lfo.stop(now + 0.65);
+    }
+
+    // 播放勘探返回音效（风险 - 下行滑音 + 撞击低音）
+    function playExploreReturnRisk() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        
+        // 下行滑音
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(300, now);
+        osc1.frequency.exponentialRampToValueAtTime(80, now + 0.3);
+        
+        gain1.gain.setValueAtTime(0.1, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        
+        osc1.connect(gain1);
+        gain1.connect(masterGain);
+        
+        osc1.start(now);
+        osc1.stop(now + 0.4);
+        
+        // 撞击低音
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        
+        osc2.type = 'sine';
+        osc2.frequency.value = 50;
+        
+        gain2.gain.setValueAtTime(0.2, now + 0.15);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        
+        osc2.connect(gain2);
+        gain2.connect(masterGain);
+        
+        osc2.start(now + 0.15);
+        osc2.stop(now + 0.35);
+    }
+
+    // 播放机械启动音（项目面板/应急协议）
+    function playMechanicalEngage() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        
+        // 低频机械嗡鸣
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(80, now);
+        osc.frequency.linearRampToValueAtTime(120, now + 0.15);
+        osc.frequency.linearRampToValueAtTime(60, now + 0.3);
+        
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.linearRampToValueAtTime(0.1, now + 0.15);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        
+        osc.connect(gain);
+        gain.connect(masterGain);
+        
+        osc.start(now);
+        osc.stop(now + 0.45);
+        
+        // 金属撞击泛音
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        
+        osc2.type = 'square';
+        osc2.frequency.setValueAtTime(300, now + 0.05);
+        osc2.frequency.exponentialRampToValueAtTime(100, now + 0.2);
+        
+        gain2.gain.setValueAtTime(0, now);
+        gain2.gain.linearRampToValueAtTime(0.06, now + 0.05);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        
+        osc2.connect(gain2);
+        gain2.connect(masterGain);
+        
+        osc2.start(now + 0.05);
+        osc2.stop(now + 0.3);
+    }
+
     // 播放玻璃碎裂（条目过期）
     function playShatterSound() {
         if (!ctx || isMuted) return;
@@ -298,6 +506,11 @@ window.AudioSystem = (() => {
         playArchiveChime,
         playAlertTone,
         playShatterSound,
+        playMechanicalEngage,
+        playExploreDeploy,
+        playExploreReturnResource,
+        playExploreReturnNarrative,
+        playExploreReturnRisk,
         playSceneSound,
         updateDroneByEnergy,
         updateHeartbeat,

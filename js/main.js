@@ -74,6 +74,20 @@ async function loadGameData() {
     MemorySanctuary.data.scheduledEvents = eventsData.scheduledEvents || [];
     MemorySanctuary.data.explorations = (await explorationsRes.json()).explorations || [];
     MemorySanctuary.data.projects = (await projectsRes.json()).projects || [];
+    try {
+        const endingsRes = await fetch('data/endings.json');
+        MemorySanctuary.data.endings = (await endingsRes.json()).endings || [];
+    } catch (e) {
+        console.warn('[数据] endings.json 加载失败，使用内置结局');
+        MemorySanctuary.data.endings = [];
+    }
+    try {
+        const achievementsRes = await fetch('data/achievements.json');
+        MemorySanctuary.data.achievements = (await achievementsRes.json()).achievements || [];
+    } catch (e) {
+        console.warn('[数据] achievements.json 加载失败');
+        MemorySanctuary.data.achievements = [];
+    }
 
     console.log(`[数据] ${MemorySanctuary.data.archives.length}条目, ${MemorySanctuary.data.vaults.length}存储室, ${MemorySanctuary.data.guardians.length}守护者, ${MemorySanctuary.data.events.length}随机事件, ${MemorySanctuary.data.scheduledEvents.length}调度事件, ${MemorySanctuary.data.explorations.length}勘探点, ${MemorySanctuary.data.projects.length}项目`);
 }
@@ -93,7 +107,7 @@ function initGameState() {
         guardianMoods: {},
         scheduledEvents: [],
         unlockedBonuses: [],
-        exploration: { deployedUntil: 0, cooldownUntil: 0 },
+        exploration: { deployedUntil: 0, cooldownUntil: 0, completedExplorations: {}, fatigue: {}, explorationLog: [] },
         activeProjects: [],
         completedProjects: []
     };
@@ -101,6 +115,13 @@ function initGameState() {
     MemorySanctuary.data.vaults.forEach(vault => {
         MemorySanctuary.state.vaultUsage[vault.id] = 0;
     });
+    
+    // 重置归档条目的过期状态（NG+ 新游戏必须清除上一局的持久化标记）
+    if (MemorySanctuary.data.archives) {
+        MemorySanctuary.data.archives.forEach(entry => {
+            entry.expired = false;
+        });
+    }
 }
 
 function initTheme() {
@@ -378,6 +399,7 @@ function startNewGame(slot, isNGPlus) {
 
     renderAll();
     if (typeof initCanvas === 'function') initCanvas();
+    if (typeof checkStuckState === 'function') checkStuckState();
 
     showGuardianDialogue('tika', 'idle');
 

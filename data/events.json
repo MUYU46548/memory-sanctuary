@@ -221,7 +221,100 @@
       "trigger": { "type": "finale", "weekMin": 20, "weekMax": 20 },
       "type": "finale",
       "choices": [
-        { "text": "封印圣所", "effect": {}, "result": "你启动了封印程序。圣所开始缓缓沉入地底。守护者们站在你身边，目送这一切。", "feedback": { "narrativeFlag": "finale_seal", "guardianMood": { "tika": 1, "finn": 1, "misha": 1, "lorn": 1, "ethel": 1 }, "message": "这是终结，也是开始。" } }
+        { "text": "封印圣所", "effect": {}, "result": "你启动了封印程序。所开始缓缓沉入地底。守护者们站在你身边，目送这一切。", "feedback": { "narrativeFlag": "finale_seal", "guardianMood": { "tika": 1, "finn": 1, "misha": 1, "lorn": 1, "ethel": 1 }, "message": "这是终结，也是开始。" } }
+      ]
+    },
+    {
+      "id": "ng_plus_tika_request",
+      "title": "缇卡的请求",
+      "description": "缇卡找到你，眼中带着一丝犹豫。'我想为你唱一首歌。不是给圣所，是给你。'",
+      "trigger": { "type": "ng_plus", "playthroughMin": 2, "weekMin": 3, "weekMax": 8 },
+      "type": "guardian_personal",
+      "guardianId": "tika",
+      "choices": [
+        { "text": "倾听她的歌", "effect": { "environment": 5 }, "result": "缇卡的歌声在圣所中回荡。那是一首关于光、关于爱、关于失去的歌。", "feedback": { "guardianMood": { "tika": 2 }, "message": "缇卡感到被理解。", "unlockEntry": "arch_ng_tika_lullaby" } },
+        { "text": "现在不是时候", "effect": {}, "result": "缇卡点点头，回到了她的位置。'下次吧。'", "feedback": {} }
+      ]
+    },
+    {
+      "id": "ng_plus_finn_request",
+      "title": "芬恩的请求",
+      "description": "芬恩拿着一本厚厚的编年史找到你。'我想让你看看这个。这是我们的故事。'",
+      "trigger": { "type": "ng_plus", "playthroughMin": 2, "weekMin": 3, "weekMax": 8 },
+      "type": "guardian_personal",
+      "guardianId": "finn",
+      "choices": [
+        { "text": "阅读编年史", "effect": { "media": 5 }, "result": "芬恩的编年史记录了你们在一起的每一周。最后一页写着：'这是我最好的搭档。'", "feedback": { "guardianMood": { "finn": 2 }, "message": "芬恩感到被理解。", "unlockEntry": "arch_ng_finn_chronicle" } },
+        { "text": "以后再看", "effect": {}, "result": "芬恩把编年史放在桌上。'随时都可以看。'", "feedback": {} }
+      ]
+    },
+    {
+      "id": "ng_plus_misha_request",
+      "title": "米莎的请求",
+      "description": "米莎拿着一个密封的容器找到你。'这是最后一颗种子。我想把它封存在圣所核心。'",
+      "trigger": { "type": "ng_plus", "playthroughMin": 2, "weekMin": 3, "weekMax": 8 },
+      "type": "guardian_personal",
+      "guardianId": "misha",
+      "choices": [
+        { "text": "帮她封存", "effect": { "energy": -5 }, "result": "你们一起将种子封存在圣所核心。米莎说：'如果有一天世界重新变绿，它会第一个告诉你。'", "feedback": { "guardianMood": { "misha": 2 }, "message": "米莎感到被支持。", "unlockEntry": "arch_ng_seed_vault" } },
+        { "text": "让她自己处理", "effect": {}, "result": "米莎点点头，独自走向圣所核心。", "feedback": {} }
+      ]
+    },
+    {
+      "id": "ng_plus_lorn_request",
+      "title": "洛恩的请求",
+      "description": "洛恩拿着一套复杂的图纸找到你。'我设计了一个新的能源系统。需要你的批准。'",
+      "trigger": { "type": "ng_plus", "playthroughMin": 2, "weekMin": 3, "weekMax": 8 },
+      "type": "guardian_personal",
+      "guardianId": "lorn",
+      "choices": [
+        { "text": "批准方案", "effect": { "media": -10 }, "result": "洛恩的新系统安装完成。圣所的能源效率提升了20%。", "feedback": { "guardianMood": { "lorn": 2 }, "message": "洛恩感到被信任。", "unlockEntry": "arch_ng_lorn_engine" } },
+        { "text": "暂时搁置", "effect": {}, "result": "洛恩把图纸收好。'等你有兴趣的时候再说。'", "feedback": {} }
+      ]
+    },
+    {
+      "id": "ng_plus_ethel_request",
+      "title": "埃塞尔的请求",
+      "description": "埃塞尔拿着一本旧日记找到你。'这是我母亲的日记。我想把她的故事告诉你。'",
+      "trigger": { "type": "ng_plus", "playthroughMin": 2, "weekMin": 3, "weekMax": 8 },
+      "type": "guardian_personal",
+      "guardianId": "ethel",
+      "choices": [
+        { "text": "倾听她的故事", "effect": { "environment": 5 }, "result": "埃塞尔讲述了她母亲的一生——一个在末日中依然热爱生活的人。你感到心中有什么被触动了。", "feedback": { "guardianMood": { "ethel": 2 }, "message": "埃塞尔的信任更加深厚。", "unlockEntry": "arch_ng_ethel_prayer" } },
+        { "text": "礼貌婉拒", "effect": {}, "result": "埃塞尔微笑着说：'没关系。也许下次。'", "feedback": {} }
+      ]
+    },
+    {
+      "id": "ng_plus_memory_echo",
+      "title": "记忆回响",
+      "description": "圣所的墙壁突然发出微弱的光芒。上周目的记忆以回响的形式浮现——那些被归档的条目在低语。",
+      "trigger": { "type": "ng_plus", "playthroughMin": 2, "weekMin": 5, "weekMax": 10 },
+      "type": "ng_plus_event",
+      "choices": [
+        { "text": "倾听回响", "effect": { "energy": 10 }, "result": "你听到了上周目的声音。那些记忆并没有消失，它们只是换了一种方式存在。", "feedback": { "message": "记忆回响带来了额外的能源。" } },
+        { "text": "忽略回响", "effect": {}, "result": "你选择专注于当前的工作。回响渐渐消散。", "feedback": {} }
+      ]
+    },
+    {
+      "id": "ng_plus_sanctuary_memory",
+      "title": "圣所的回忆",
+      "description": "圣所的墙壁上浮现出古老的文字。这是圣所本身的记忆——它记得每一个曾经在这里工作的人。",
+      "trigger": { "type": "ng_plus", "playthroughMin": 3, "weekMin": 4, "weekMax": 12 },
+      "type": "ng_plus_event",
+      "choices": [
+        { "text": "阅读文字", "effect": { "media": 15 }, "result": "你读到了圣所建造者的日记。他们不知道圣所能否撑过十万年，但他们知道，如果不建，就真的什么都没了。", "feedback": { "message": "圣所的回忆带来了额外的介质。" } },
+        { "text": "继续工作", "effect": {}, "result": "你选择专注于当前的工作。文字渐渐消散。", "feedback": {} }
+      ]
+    },
+    {
+      "id": "ng_plus_time_rift",
+      "title": "时间的裂缝",
+      "description": "圣所中出现了一道奇异的光芒。你看到了另一个时间线的自己——一个做出了不同选择的自己。",
+      "trigger": { "type": "ng_plus", "playthroughMin": 4, "weekMin": 6, "weekMax": 15 },
+      "type": "ng_plus_event",
+      "choices": [
+        { "text": "触碰裂缝", "effect": { "energy": 20, "environment": -10 }, "result": "你触碰了裂缝。两个时间线的记忆在你脑海中交汇。你看到了另一种可能——但你知道，这才是你的选择。", "feedback": { "message": "时间的裂缝带来了能源，但也扰乱了环境。" } },
+        { "text": "远离裂缝", "effect": {}, "result": "你选择不触碰裂缝。有些事情，不知道更好。", "feedback": {} }
       ]
     }
   ]

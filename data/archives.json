@@ -1245,6 +1245,281 @@
       "expiresAfter": 12,
       "emergency": true,
       "discoveryMethod": "project"
+    },
+    {
+      "id": "arch_ng_tika_lullaby",
+      "title": "缇卡的摇篮曲",
+      "vault": 4,
+      "type": "audio",
+      "dataCost": 0,
+      "energyCost": 0,
+      "description": "缇卡在圣所封印前夜唱出的歌声，被编码进晶体。",
+      "content": "没有歌词。只有旋律。旋律中有风、有光、有星辰、有一个文明最后的温柔。",
+      "guardianReactions": {
+        "tika": "……这是我为后世唱的。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "guardian": "tika", "moodTier": "intimate" },
+      "discoveryMethod": "ending_reward"
+    },
+    {
+      "id": "arch_ng_finn_chronicle",
+      "title": "芬恩的编年史",
+      "vault": 2,
+      "type": "document",
+      "dataCost": 0,
+      "energyCost": 0,
+      "description": "芬恩在末日中写下的编年史，记录了守护者与玩家的故事。",
+      "content": "「我已经把你写进了编年史。不是作为守护者，而是作为我的挚友。」",
+      "guardianReactions": {
+        "finn": "这是真相的一部分。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "guardian": "finn", "moodTier": "intimate" },
+      "discoveryMethod": "ending_reward"
+    },
+    {
+      "id": "arch_ng_seed_vault",
+      "title": "种子库",
+      "vault": 7,
+      "type": "document",
+      "dataCost": 0,
+      "energyCost": 0,
+      "description": "米莎封存在圣所核心的那颗种子。",
+      "content": "十万颗种子中的一颗。米莎说，如果有一天世界重新变绿，它会第一个告诉你。",
+      "guardianReactions": {
+        "misha": "这是生命的记录。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "guardian": "misha", "moodTier": "intimate" },
+      "discoveryMethod": "ending_reward"
+    },
+    {
+      "id": "arch_ng_lorn_engine",
+      "title": "洛恩的引擎",
+      "vault": 6,
+      "type": "blueprint",
+      "dataCost": 0,
+      "energyCost": 0,
+      "description": "洛恩改造的能源系统设计图，让圣所维持千年运转。",
+      "content": "设计图上写着：「本系统的设计寿命为十万年。希望到时候有人知道怎么关掉它。」",
+      "guardianReactions": {
+        "lorn": "工程的力量就在这里。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "guardian": "lorn", "moodTier": "intimate" },
+      "discoveryMethod": "ending_reward"
+    },
+    {
+      "id": "arch_ng_ethel_prayer",
+      "title": "埃塞尔的祷文",
+      "vault": 5,
+      "type": "audio",
+      "dataCost": 0,
+      "energyCost": 0,
+      "description": "埃塞尔不再向神祈祷，而是向未来祈祷。",
+      "content": "「我已经不向神祈祷了。我向你祈祷。」",
+      "guardianReactions": {
+        "ethel": "愿星辰善待它。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "guardian": "ethel", "moodTier": "intimate" },
+      "discoveryMethod": "ending_reward"
+    },
+    {
+      "id": "arch_ng_secret_tika",
+      "title": "守护者的秘密：缇卡",
+      "vault": 4,
+      "type": "document",
+      "dataCost": 10,
+      "energyCost": 5,
+      "description": "缇卡从未告诉任何人的秘密——她曾经有一个女儿。",
+      "content": "「我的女儿叫光。她在光雨中消失了。我唱歌，是因为我想让她知道，妈妈还在唱。」",
+      "guardianReactions": {
+        "tika": "……谢谢你愿意听。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "playthrough": 2 },
+      "availableAfter": 5,
+      "expiresAfter": 15,
+      "discoveryMethod": "ng_plus"
+    },
+    {
+      "id": "arch_ng_secret_finn",
+      "title": "守护者的秘密：芬恩",
+      "vault": 2,
+      "type": "document",
+      "dataCost": 10,
+      "energyCost": 5,
+      "description": "芬恩从未告诉任何人的秘密——他曾经销毁了一份历史记录。",
+      "content": "「我销毁了一份记录。因为它会伤害活着的人。我违背了编年史官的信条……但我不后悔。」",
+      "guardianReactions": {
+        "finn": "历史会评价。但我做了我的选择。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "playthrough": 2 },
+      "availableAfter": 5,
+      "expiresAfter": 15,
+      "discoveryMethod": "ng_plus"
+    },
+    {
+      "id": "arch_ng_secret_misha",
+      "title": "守护者的秘密：米莎",
+      "vault": 7,
+      "type": "document",
+      "dataCost": 10,
+      "energyCost": 5,
+      "description": "米莎从未告诉任何人的秘密——她其实不想当守护者。",
+      "content": "「我想当的是园丁。我想种花。但末日来了，花也死了。所以我来这里，保存花的记忆。」",
+      "guardianReactions": {
+        "misha": "……如果有一天世界重新变绿，我想第一个告诉你。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "playthrough": 2 },
+      "availableAfter": 5,
+      "expiresAfter": 15,
+      "discoveryMethod": "ng_plus"
+    },
+    {
+      "id": "arch_ng_secret_lorn",
+      "title": "守护者的秘密：洛恩",
+      "vault": 6,
+      "type": "document",
+      "dataCost": 10,
+      "energyCost": 5,
+      "description": "洛恩从未告诉任何人的秘密——他其实害怕机器。",
+      "content": "「我修了一辈子机器。但有时候……我觉得机器在看我。我觉得它们有意志。」",
+      "guardianReactions": {
+        "lorn": "……系统正常。别碰任何东西。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "playthrough": 2 },
+      "availableAfter": 5,
+      "expiresAfter": 15,
+      "discoveryMethod": "ng_plus"
+    },
+    {
+      "id": "arch_ng_secret_ethel",
+      "title": "守护者的秘密：埃塞尔",
+      "vault": 5,
+      "type": "document",
+      "dataCost": 10,
+      "energyCost": 5,
+      "description": "埃塞尔从未告诉任何人的秘密——她其实不信神。",
+      "content": "「我祈祷了一辈子。但有一天，我突然发现……我只是在对自己说话。」",
+      "guardianReactions": {
+        "ethel": "……愿星辰原谅你。因为我不会。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "playthrough": 2 },
+      "availableAfter": 5,
+      "expiresAfter": 15,
+      "discoveryMethod": "ng_plus"
+    },
+    {
+      "id": "arch_ng_sanctuary_past_01",
+      "title": "圣所的过去：建造者",
+      "vault": 10,
+      "type": "document",
+      "dataCost": 12,
+      "energyCost": 6,
+      "description": "圣所建造者的日记，记录了建造过程中的挣扎。",
+      "content": "「我们不知道圣所能否撑过十万年。但我们知道，如果不建，就真的什么都没了。」",
+      "guardianReactions": {
+        "lorn": "工程的力量就在这里。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "playthrough": 3 },
+      "availableAfter": 3,
+      "expiresAfter": 12,
+      "discoveryMethod": "ng_plus"
+    },
+    {
+      "id": "arch_ng_sanctuary_past_02",
+      "title": "圣所的过去：第一位守护者",
+      "vault": 2,
+      "type": "document",
+      "dataCost": 12,
+      "energyCost": 6,
+      "description": "第一位守护者的日记，记录了圣所刚刚封存时的孤独。",
+      "content": "「门封了。外面的一切都消失了。我一个人在圣所里，听着自己的心跳。」",
+      "guardianReactions": {
+        "finn": "历史会记住这一刻。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "playthrough": 3 },
+      "availableAfter": 3,
+      "expiresAfter": 12,
+      "discoveryMethod": "ng_plus"
+    },
+    {
+      "id": "arch_ng_doom_truth_01",
+      "title": "末日的真相：光雨的起源",
+      "vault": 3,
+      "type": "document",
+      "dataCost": 15,
+      "energyCost": 8,
+      "description": "一份被隐藏的报告，揭示了光雨的真正起源。",
+      "content": "「光雨不是自然现象。是我们自己造成的。我们试图储存光……但光不想被储存。」",
+      "guardianReactions": {
+        "misha": "……我每天都在记录。数字不会说谎。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "playthrough": 4 },
+      "availableAfter": 5,
+      "expiresAfter": 15,
+      "discoveryMethod": "ng_plus"
+    },
+    {
+      "id": "arch_ng_doom_truth_02",
+      "title": "末日的真相：被掩盖的预言",
+      "vault": 5,
+      "type": "document",
+      "dataCost": 15,
+      "energyCost": 8,
+      "description": "一份被掩盖的预言，预言了末日的真正原因。",
+      "content": "「预言说：当文明开始储存光，光就会变成雨。我们以为我们在拯救文明……其实我们在加速它的终结。」",
+      "guardianReactions": {
+        "ethel": "……我已经不知道该向谁祈祷了。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "playthrough": 4 },
+      "availableAfter": 5,
+      "expiresAfter": 15,
+      "discoveryMethod": "ng_plus"
+    },
+    {
+      "id": "arch_ng_time_end_01",
+      "title": "时间的尽头：封印之后",
+      "vault": 12,
+      "type": "document",
+      "dataCost": 18,
+      "energyCost": 9,
+      "description": "一份来自未来的记录，描述了圣所封印后的世界。",
+      "content": "「圣所沉入地底。一万年后，地表重新变绿。但没有人记得萨拉达斯了。」",
+      "guardianReactions": {
+        "tika": "……声音是文明的灵魂。只要还有人在歌唱，文明就不会真正消失。"
+      },
+      "relatedArchives": [],
+      "ngPlusExclusive": true,
+      "unlockCondition": { "playthrough": 5 },
+      "availableAfter": 3,
+      "expiresAfter": 20,
+      "discoveryMethod": "ng_plus"
     }
   ]
 }
