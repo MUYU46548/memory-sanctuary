@@ -6,7 +6,7 @@
  * - 基础层：低频drone（始终存在，音量随能源降低而升高）
  * - 事件层：归档成功→清脆风铃；资源归零→低沉警示；条目过期→玻璃碎裂
  * - 场景层：切换存储室时播放特征音效
- * - 终局层：第18-20周逐渐加入心跳声，频率随week增加
+ * - 终局层：第36-48周逐渐加入心跳声，频率随week增加
  */
 
 window.AudioSystem = (() => {
@@ -421,7 +421,7 @@ window.AudioSystem = (() => {
     function startHeartbeat(week) {
         if (!ctx || isMuted || heartbeatInterval) return;
         
-        const interval = Math.max(500, 1200 - (week - 18) * 200);
+        const interval = Math.max(500, 1200 - (week - 36) * 50);
         
         heartbeatInterval = setInterval(() => {
             if (!ctx || isMuted) {
@@ -469,7 +469,7 @@ window.AudioSystem = (() => {
 
     // 更新终局心跳速度
     function updateHeartbeat(week) {
-        if (week >= 18) {
+        if (week >= 36) {
             startHeartbeat(week);
         } else {
             stopHeartbeat();

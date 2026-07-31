@@ -1510,6 +1510,19 @@ button.archive-btn.recommended {
     margin-left: 4px;
 }
 
+.explore-item-locked-badge {
+    color: var(--text-dim);
+    font-size: 0.6rem;
+    margin-left: 4px;
+    font-style: italic;
+}
+
+.explore-item.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--bg-panel);
+}
+
 .explore-item-last-result {
     color: var(--text-dim);
     font-size: 0.6rem;

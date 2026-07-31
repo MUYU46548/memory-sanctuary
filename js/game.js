@@ -419,7 +419,7 @@ function initStuckBanner() {
 // 失败条件 & 周数上限
 // ==========================================
 
-const MAX_WEEK = 20;
+const MAX_WEEK = 48;
 
 function checkFailureCondition() {
     if (MemorySanctuary.state.gameOver) return;
@@ -440,7 +440,7 @@ function checkFailureCondition() {
 function checkWeekLimit() {
     if (MemorySanctuary.state.gameOver) return;
     
-    // 周数上限：超过MAX_WEEK周自动终局
+    // 周数上限：达到MAX_WEEK周自动终局
     if (MemorySanctuary.state.week >= MAX_WEEK) {
         triggerGameOver('timeup');
     }
@@ -891,8 +891,8 @@ function getMoodDialogue(guardianId) {
         }
     }
     
-    // Finale dialogues: week >= 15 and mood tier is friendly or intimate
-    if (MemorySanctuary.state.week >= 15 && tier !== 'hostile' && tier !== 'cold' && tier !== 'neutral') {
+    // Finale dialogues: week >= 30 and mood tier is friendly or intimate
+    if (MemorySanctuary.state.week >= 30 && tier !== 'hostile' && tier !== 'cold' && tier !== 'neutral') {
         if (guardian.finaleDialogues && guardian.finaleDialogues[tier]) {
             return guardian.finaleDialogues[tier];
         }
@@ -1626,7 +1626,7 @@ function initFuncBar() {
     if (projectBtn) {
         projectBtn.addEventListener('click', () => {
             if (!MemorySanctuary.state) return;
-            if (MemorySanctuary.state.week < 10) {
+            if (MemorySanctuary.state.week < 20) {
                 addLog('圣所维护项目尚未解锁。', 'system');
                 return;
             }
@@ -1726,15 +1726,20 @@ function renderExploreList() {
         const completed = isExplorationCompleted(expData.id);
         if (completed) item.classList.add('completed');
 
+        // Check if exploration is available this week
+        const available = !expData.availableAfter || now >= expData.availableAfter;
+        if (!available) item.classList.add('locked');
+
         const difficultyStars = '◆'.repeat(expData.difficulty) + '◇'.repeat(3 - expData.difficulty);
 
         const completedBadge = completed ? '<span class="explore-item-completed-badge"> ✓ 已完成</span>' : '';
+        const lockedBadge = !available ? `<span class="explore-item-locked-badge"> 🔒 第${expData.availableAfter}周解锁</span>` : '';
         const lastResult = exp.explorationLog && exp.explorationLog.find(l => l.id === expData.id);
         const lastResultText = lastResult ? `<div class="explore-item-last-result">上次：${lastResult.resultText}</div>` : '';
 
         item.innerHTML = `
             <div class="explore-item-header">
-                <div class="explore-item-name">${expData.name}${completedBadge}</div>
+                <div class="explore-item-name">${expData.name}${completedBadge}${lockedBadge}</div>
                 <div class="explore-item-difficulty">${difficultyStars}</div>
             </div>
             <div class="explore-item-desc">${expData.description}</div>
@@ -1749,7 +1754,7 @@ function renderExploreList() {
             ${lastResultText}
         `;
 
-        if (!isDeployed && !completed) {
+        if (!isDeployed && !completed && available) {
             item.addEventListener('click', () => selectExploration(expData, item));
         }
 
@@ -2574,7 +2579,7 @@ function checkSealAchievements(endingId, week) {
     }
     
     if (week <= 12) unlockAchievement('seal_early');
-    if (week >= 20) unlockAchievement('seal_late');
+    if (week >= 40) unlockAchievement('seal_late');
     
     // Check all guardian finales
     const ngData = getNGPlusData();
@@ -3208,7 +3213,7 @@ function checkHiddenEndings() {
     if (pct >= 0.7) return { id: 'guardian_of_remnants', title: '文明守护者', description: '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的萨拉达斯。', priority: 50 };
     if (pct >= 0.4) return { id: 'fragment_keeper', title: '碎片收集者', description: `你保存了萨拉达斯的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。`, priority: 50 };
     if (pct >= 0.1) return { id: 'whisper_keeper', title: '微光守护者', description: `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。`, priority: 30 };
-    if (state.week >= 10) return { id: 'silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。也许……遗忘也是一种选择。', priority: 10 };
+    if (state.week >= 20) return { id: 'silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。也许……遗忘也是一种选择。', priority: 10 };
 
     return null;
 }
@@ -3260,7 +3265,7 @@ function getEndingModalData(ending) {
 
 function canSealSanctuary() {
     if (!MemorySanctuary.state) return false;
-    return MemorySanctuary.state.week >= 10;
+    return MemorySanctuary.state.week >= 20;
 }
 
 function sealSanctuary() {
@@ -3370,8 +3375,8 @@ function renderSealButton() {
     const archivedCount = MemorySanctuary.state.completedArchives.length;
 
     if (!canSeal) {
-        const weeksLeft = 10 - MemorySanctuary.state.week;
-        container.innerHTML = `圣所需运行至少 10 周方可封印。还需 ${weeksLeft} 周。`;
+        const weeksLeft = 20 - MemorySanctuary.state.week;
+        container.innerHTML = `圣所需运行至少 20 周方可封印。还需 ${weeksLeft} 周。`;
         return;
     }
 

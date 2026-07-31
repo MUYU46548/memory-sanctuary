@@ -48,7 +48,7 @@ function updateEmergencyButton() {
     const anyZero = res.energy <= 0 || res.media <= 0 || res.environment <= 0;
     const anyCritical = res.energy < 20 || res.media < 15 || res.environment < 15;
     
-    if (state.gameOver || state.week >= 20) {
+    if (state.gameOver || state.week >= 48) {
         btn.disabled = true;
         btn.title = '终局已至';
     } else if (anyZero || anyCritical) {
@@ -129,9 +129,9 @@ function renderWeekDisplay() {
         progressEl.style.width = percent + '%';
         
         // Change color based on urgency
-        if (percent >= 90) {
+        if (percent >= 80) {
             progressEl.style.background = 'var(--danger)';
-        } else if (percent >= 70) {
+        } else if (percent >= 60) {
             progressEl.style.background = 'var(--warning)';
         } else {
             progressEl.style.background = 'var(--amber-primary)';
@@ -361,11 +361,11 @@ function updateProjectButton() {
     const hasAvailableProjects = MemorySanctuary.data.projects && 
         MemorySanctuary.data.projects.some(p => canStartProject(p));
     
-    if (week >= 10 && hasAvailableProjects) {
+    if (week >= 20 && hasAvailableProjects) {
         btn.disabled = false;
         btn.title = '圣所维护项目（可开始）';
         btn.classList.add('ready');
-    } else if (week >= 10 && MemorySanctuary.state.activeProjects && MemorySanctuary.state.activeProjects.length > 0) {
+    } else if (week >= 20 && MemorySanctuary.state.activeProjects && MemorySanctuary.state.activeProjects.length > 0) {
         btn.disabled = false;
         btn.title = '圣所维护项目（进行中）';
         btn.classList.remove('ready');

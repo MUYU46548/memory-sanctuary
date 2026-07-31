@@ -260,7 +260,7 @@ function showTitleHelpModal() {
     helpContent += '• 与守护者互动获取建议，应对突发事件\n';
     helpContent += '• 点击底部「存档」保存进度，「读档」恢复进度\n\n';
     helpContent += '【进阶系统】\n';
-    helpContent += '• 封印圣所（10 周后）可触发多周目奖励\n';
+    helpContent += '• 封印圣所（20 周后）可触发多周目奖励\n';
     helpContent += '• 奖励随周目递增，鼓励重复游玩探索不同选择\n\n';
     helpContent += '「——终来之刻，何物当存？」';
 

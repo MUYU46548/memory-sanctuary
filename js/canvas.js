@@ -987,9 +987,9 @@ function drawDecayOverlay(ctx, config, theme, scene) {
         ctx.fillRect(0, 0, w, h);
     }
     
-    // 终局倒计时：第16周起边缘泛红
-    if (MemorySanctuary.state.week >= 16) {
-        const intensity = Math.min(0.3, (MemorySanctuary.state.week - 15) * 0.1);
+    // 终局倒计时：第32周起边缘泛红
+    if (MemorySanctuary.state.week >= 32) {
+        const intensity = Math.min(0.3, (MemorySanctuary.state.week - 31) * 0.04);
         const weekPulse = intensity * (0.8 + 0.2 * Math.sin(time * 0.05));
         ctx.fillStyle = `rgba(80, 20, 20, ${weekPulse})`;
         ctx.fillRect(0, 0, w, h);

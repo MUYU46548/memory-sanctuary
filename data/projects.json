@@ -4,34 +4,167 @@
       "id": "proj_generator",
       "name": "修复备用发电机",
       "description": "洛恩建议修复地表备用发电机。安装后每回合额外 +2 能源，持续 3 周。",
-      "cost": { "energy": 15, "media": 10 },
-      "duration": 3,
-      "effect": { "type": "resourceBoost", "resource": "energy", "amount": 2 },
-      "availableAfter": 10,
+      "cost": {
+        "energy": 15,
+        "media": 10
+      },
+      "duration": 4,
+      "effect": {
+        "type": "resourceBoost",
+        "resource": "energy",
+        "amount": 2
+      },
+      "availableAfter": 20,
       "repeatable": false,
-      "guardianBonus": { "guardian": "lorn", "mood": 3, "durationBonus": 2 }
+      "guardianBonus": {
+        "guardian": "lorn",
+        "mood": 3,
+        "durationBonus": 2
+      }
     },
     {
       "id": "proj_cooling",
       "name": "修复冷却系统",
       "description": "埃塞尔提议重启圣所冷却系统，降低介质衰减速度 50%，持续 4 周。",
-      "cost": { "energy": 20, "media": 5 },
-      "duration": 4,
-      "effect": { "type": "decayReduction", "resource": "media", "percent": 0.5 },
-      "availableAfter": 10,
+      "cost": {
+        "energy": 20,
+        "media": 5
+      },
+      "duration": 5,
+      "effect": {
+        "type": "decayReduction",
+        "resource": "media",
+        "percent": 0.5
+      },
+      "availableAfter": 20,
       "repeatable": true,
-      "guardianBonus": { "guardian": "ethel", "mood": 3, "extraEffect": "environmentBoost" }
+      "guardianBonus": {
+        "guardian": "ethel",
+        "mood": 3,
+        "extraEffect": "environmentBoost"
+      }
     },
     {
       "id": "proj_satellite",
       "name": "重启卫星天线",
       "description": "芬恩想要修复卫星天线，解锁2条来自其他圣所的加密记录。",
-      "cost": { "energy": 25, "media": 15 },
-      "duration": 2,
-      "effect": { "type": "unlockArchives", "archiveIds": ["arch_emergency_004", "arch_emergency_005"] },
-      "availableAfter": 12,
+      "cost": {
+        "energy": 25,
+        "media": 15
+      },
+      "duration": 3,
+      "effect": {
+        "type": "unlockArchives",
+        "archiveIds": [
+          "arch_emergency_004",
+          "arch_emergency_005"
+        ]
+      },
+      "availableAfter": 24,
       "repeatable": false,
-      "guardianBonus": { "guardian": "finn", "mood": 4, "extraArchives": true }
+      "guardianBonus": {
+        "guardian": "finn",
+        "mood": 4,
+        "extraArchives": true
+      }
+    },
+    {
+      "id": "proj_water_filter",
+      "name": "修复水循环系统",
+      "description": "米莎提议修复圣所的水循环系统，降低环境衰减速度50%，持续5周。",
+      "cost": {
+        "energy": 15,
+        "media": 8
+      },
+      "duration": 5,
+      "effect": {
+        "type": "decayReduction",
+        "resource": "environment",
+        "percent": 0.5
+      },
+      "availableAfter": 16,
+      "repeatable": false,
+      "guardianBonus": {
+        "guardian": "misha",
+        "mood": 3,
+        "extraEffect": "environmentBoost"
+      }
+    },
+    {
+      "id": "proj_medical_lab",
+      "name": "建立医疗实验室",
+      "description": "芬恩建议建立医疗实验室，解锁3条医学条目，持续4周。",
+      "cost": {
+        "energy": 20,
+        "media": 15
+      },
+      "duration": 4,
+      "effect": {
+        "type": "unlockArchives",
+        "archiveIds": [
+          "arch_v2_021",
+          "arch_v2_022",
+          "arch_v2_023"
+        ]
+      },
+      "availableAfter": 28,
+      "repeatable": false,
+      "guardianBonus": {
+        "guardian": "finn",
+        "mood": 3,
+        "extraArchives": true
+      }
+    },
+    {
+      "id": "proj_communication",
+      "name": "修复通讯阵列",
+      "description": "洛恩想要修复通讯阵列，解锁2条来自其他圣所的加密记录，持续3周。",
+      "cost": {
+        "energy": 25,
+        "media": 20
+      },
+      "duration": 3,
+      "effect": {
+        "type": "unlockArchives",
+        "archiveIds": [
+          "arch_v2_032",
+          "arch_v2_033"
+        ]
+      },
+      "availableAfter": 36,
+      "repeatable": false,
+      "guardianBonus": {
+        "guardian": "lorn",
+        "mood": 3,
+        "durationBonus": 2
+      }
+    },
+    {
+      "id": "proj_final_seal",
+      "name": "最终封印准备",
+      "description": "准备最终的封印程序，解锁5条最终归档条目，持续4周。",
+      "cost": {
+        "energy": 30,
+        "media": 25
+      },
+      "duration": 4,
+      "effect": {
+        "type": "unlockArchives",
+        "archiveIds": [
+          "arch_v2_041",
+          "arch_v2_042",
+          "arch_v2_043",
+          "arch_v2_044",
+          "arch_v2_045"
+        ]
+      },
+      "availableAfter": 44,
+      "repeatable": false,
+      "guardianBonus": {
+        "guardian": "tika",
+        "mood": 4,
+        "extraEffect": "finaleBoost"
+      }
     }
   ]
 }
