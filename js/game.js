@@ -143,6 +143,13 @@ function archiveEntry(archiveId) {
 // ==========================================
 
 function advanceTime(weeks) {
+    // 确保时间不会超过MAX_WEEK（在允许的范围内截断）
+    const targetWeek = MemorySanctuary.state.week + weeks;
+    if (targetWeek > MAX_WEEK) {
+        weeks = Math.max(0, MAX_WEEK - MemorySanctuary.state.week);
+    }
+    if (weeks <= 0) return; // 已经到达上限，不再推进
+    
     MemorySanctuary.state.week += weeks;
     MemorySanctuary.state.chapter = Math.ceil(MemorySanctuary.state.week / 4);
     onTimeAdvanced(weeks);
@@ -194,6 +201,9 @@ function onTimeAdvanced(weeks) {
     
     // 更新困局检测
     if (typeof checkStuckState === 'function') checkStuckState();
+    
+    // 检查章节过渡完成
+    if (typeof checkChapterCompletion === 'function') checkChapterCompletion();
     
     // 检查失败条件
     if (typeof checkFailureCondition === 'function') checkFailureCondition();
@@ -285,7 +295,7 @@ function getWeeklyDecay() {
         multiplier = 2; // 已衰竭两种资源，剩余资源加速衰减
     }
     
-    return { energy: 3 * multiplier, media: 2 * multiplier, environment: 1.5 * multiplier };
+    return { energy: 1.5 * multiplier, media: 0.8 * multiplier, environment: 0.5 * multiplier };
 }
 
 function getEffectiveExpiryWeeks(entry) {
@@ -706,13 +716,13 @@ function skipTurn() {
     
     addLog('你决定跳过这一回合，让圣所进入低功耗维护模式。', 'system');
     
-    // 恢复少量资源
+    // 恢复资源
     const state = MemorySanctuary.state;
-    state.resources.energy = Math.min(100, state.resources.energy + 8);
-    state.resources.media = Math.min(100, state.resources.media + 4);
-    state.resources.environment = Math.min(100, state.resources.environment + 3);
+    state.resources.energy = Math.min(100, state.resources.energy + 18);
+    state.resources.media = Math.min(100, state.resources.media + 12);
+    state.resources.environment = Math.min(100, state.resources.environment + 8);
     
-    addLog('维护完成：能源+8，介质+4，环境+3。', 'success');
+    addLog('维护完成：能源+18，介质+12，环境+8。', 'success');
     
     // 推进时间（触发衰减检查）
     advanceTime(1);
@@ -898,6 +908,20 @@ function getMoodDialogue(guardianId) {
         }
     }
     
+    // Memory dialogues: cross-playthrough recognition
+    if (ngData.playthroughCount >= 2 && guardian.memoryDialogues) {
+        // Week 1 of new playthrough
+        if (MemorySanctuary.state.week === 1) {
+            if (ngData.playthroughCount >= 5 && guardian.memoryDialogues.week1_playthrough5) {
+                return [guardian.memoryDialogues.week1_playthrough5];
+            } else if (ngData.playthroughCount >= 3 && guardian.memoryDialogues.week1_playthrough3) {
+                return [guardian.memoryDialogues.week1_playthrough3];
+            } else if (guardian.memoryDialogues.week1_playthrough2) {
+                return [guardian.memoryDialogues.week1_playthrough2];
+            }
+        }
+    }
+
     return guardian.moodDialogues[tier] || guardian.dialogues.idle || ['……'];
 }
 
@@ -1212,6 +1236,38 @@ function checkRandomEvent() {
     const week = MemorySanctuary.state.week;
     const ngData = getNGPlusData();
     
+    // 先处理章节过渡事件
+    const chapterTransitionEvents = MemorySanctuary.data.events.filter(e => {
+        if (e.trigger.type !== 'chapter_transition') return false;
+        if (MemorySanctuary.state.activeEventIds.includes(e.id)) return false;
+        const currentChapter = Math.ceil(week / 4);
+        return currentChapter >= e.trigger.chapterMin && currentChapter <= e.trigger.chapterMax;
+    });
+    
+    if (chapterTransitionEvents.length > 0) {
+        triggerEvent(chapterTransitionEvents[0]);
+        return;
+    }
+    
+    // 先处理周期性事件（如地表残响）
+    const periodicEvents = MemorySanctuary.data.events.filter(e => {
+        if (e.trigger.type !== 'periodic') return false;
+        if (MemorySanctuary.state.activeEventIds.includes(e.id)) return false;
+        // 检查是否到达触发周（每N周触发一次）
+        if (e.trigger.weekInterval) {
+            return week >= e.trigger.weekMin && 
+                   week <= e.trigger.weekMax && 
+                   (week - e.trigger.weekMin) % e.trigger.weekInterval === 0;
+        }
+        return false;
+    });
+    
+    // 周期性事件优先触发（100%概率）
+    if (periodicEvents.length > 0) {
+        triggerEvent(periodicEvents[0]);
+        return;
+    }
+    
     const availableEvents = MemorySanctuary.data.events.filter(e => {
         if (MemorySanctuary.state.activeEventIds.includes(e.id)) return false;
         
@@ -1321,6 +1377,11 @@ function resolveEvent(choiceIndex) {
         if (unlockedEntry) {
             addLog(`解锁新条目：「${unlockedEntry.title}」`, 'success');
         }
+    }
+    
+    // Handle triggerEnding feedback (for true ending)
+    if (choice.feedback && choice.feedback.triggerEnding) {
+        MemorySanctuary.state.pendingEnding = choice.feedback.triggerEnding;
     }
     
     // Apply event feedback (long-term effects)
@@ -2560,6 +2621,20 @@ function checkAchievements(context) {
                 if (allMeet2) earned = true;
                 break;
             }
+            case 'playthroughs':
+                if (ngData.playthroughCount >= c.value) earned = true;
+                break;
+            case 'ending':
+                // Checked in checkSealAchievements via endingId param
+                break;
+            case 'chapter':
+                if (state.chapter >= c.value) earned = true;
+                break;
+            case 'unlock_ng_entries': {
+                const unlockedCount = (ngData.unlockedEntries || []).length;
+                if (unlockedCount >= c.value) earned = true;
+                break;
+            }
         }
         
         if (earned) unlockAchievement(ach.id);
@@ -2838,6 +2913,23 @@ function getChainIndicator(entry) {
     if (completed === 0) return ' 🔗';
     if (completed === entry.relatedArchives.length) return ' ✅';
     return ` 🔗${completed}/${entry.relatedArchives.length}`;
+}
+
+// ==========================================
+// 章节过渡追踪
+// ==========================================
+
+function checkChapterCompletion() {
+    const state = MemorySanctuary.state;
+    if (!state.chaptersCompleted) state.chaptersCompleted = [];
+    
+    const currentChapter = state.chapter;
+    
+    // Check if all 12 chapters have been reached
+    if (currentChapter >= 12 && !state.chaptersCompleted.includes(12)) {
+        state.chaptersCompleted.push(12);
+        if (typeof unlockAchievement === 'function') unlockAchievement('chapter_complete_12');
+    }
 }
 
 // ==========================================
@@ -3171,8 +3263,20 @@ function checkHiddenEndings() {
     const completed = state.completedArchives;
     const archives = data.archives.filter(a => !a.ngPlusExclusive);
     const total = archives.length;
+    const ngData = getNGPlusData();
 
-    // 0. 守护者个人线结局（最高优先级，但全收集优先）
+    // 0. True ending (highest priority, requires playthrough 5+ and special trigger)
+    if (ngData.playthroughCount >= 5 && state.pendingEnding === 'true_ending') {
+        const ending = (data.endings || []).find(e => e.id === 'true_ending');
+        return {
+            id: 'true_ending',
+            title: ending ? ending.title : '✨ 超越时间',
+            description: ending ? ending.description : '你打破了循环。',
+            priority: 200
+        };
+    }
+
+    // 1. 守护者个人线结局（最高优先级，但全收集优先）
     const guardianEndings = [];
     for (const gid of ['tika', 'finn', 'misha', 'lorn', 'ethel']) {
         const ge = checkGuardianFinale(gid);

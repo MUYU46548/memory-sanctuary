@@ -940,21 +940,574 @@
           }
         }
       ]
-    }
-  ],
-  "scheduledEvents": [
+    },
     {
-      "id": "scheduled_lorn_gratitude",
-      "title": "洛恩的感谢",
-      "description": "洛恩在检修间隙找到你，递上一杯热茶。他说，自从那次修复之后，发电机运行得更顺畅了。",
+      "id": "event_surface_echo",
+      "title": "地表残响",
+      "description": "圣所传感器捕获到地表残响信号——可能是风，可能是废墟崩塌。传感器将其转化为可用资源。",
       "trigger": {
-        "type": "scheduled"
+        "type": "periodic",
+        "weekInterval": 4,
+        "weekMin": 1,
+        "weekMax": 48
       },
       "choices": [
         {
-          "text": "和他聊聊",
+          "text": "收集残响资源",
+          "effect": {
+            "energy": 10,
+            "media": 15
+          },
+          "result": "成功将地表残响转化为可用资源。圣所储备得到补充。",
+          "feedback": {
+            "message": "地表仍在回响。圣所将每一丝波动都转化为文明存续的燃料。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chapter_transition_02",
+      "title": "裂痕初现",
+      "description": "圣所的墙壁上出现了细微的裂纹。洛恩说这只是正常沉降，但他的眼神出卖了他。这一夜，守护者们在主厅中围坐，第一次认真地讨论一个问题——圣所究竟还能撑多久？",
+      "trigger": {
+        "type": "chapter_transition",
+        "chapterMin": 2,
+        "chapterMax": 2
+      },
+      "choices": [
+        {
+          "text": "鼓励大家继续努力",
+          "effect": {
+            "energy": -3
+          },
+          "result": "守护者们相视而笑。裂痕还在，但心中的火焰未灭。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": 1,
+              "tika": 1
+            },
+            "message": "守护者们感到被鼓舞。"
+          }
+        },
+        {
+          "text": "沉默不语",
           "effect": {},
-          "result": "你们聊了很久关于圣所的未来。洛恩的眼神比平时柔和了许多。",
+          "result": "寂静笼罩主厅。裂痕是真相，无需言语。",
+          "feedback": {
+            "message": "沉默也是一种回答。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chapter_transition_03",
+      "title": "地表恶化",
+      "description": "勘探队从地表带回消息：东面的森林已经完全枯萎，空气中弥漫着刺鼻的气味。芬恩记录数据的手微微发抖——这不是他们熟悉的那个世界了。",
+      "trigger": {
+        "type": "chapter_transition",
+        "chapterMin": 3,
+        "chapterMax": 3
+      },
+      "choices": [
+        {
+          "text": "加快归档速度",
+          "effect": {
+            "media": -5
+          },
+          "result": "你们开始昼夜不停地工作。每一秒都可能是最后的机会。",
+          "feedback": {
+            "guardianMood": {
+              "finn": 1
+            },
+            "message": "芬恩为你的决断感到欣慰。"
+          }
+        },
+        {
+          "text": "先修复勘探设备",
+          "effect": {
+            "energy": -8
+          },
+          "result": "设备修复后，你们能更清楚地了解地表状况——是好是坏。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": 1
+            },
+            "message": "洛恩欣赏你的务实。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chapter_transition_04",
+      "title": "裂痕加深",
+      "description": "站在主厅中央，你环顾四周。十二间存储室中，有三间已经接近满员。你开始思考一个沉重的问题：这些被保存的条目，真的能代表萨拉达斯文明的全貌吗？还是只是冰山一角？",
+      "trigger": {
+        "type": "chapter_transition",
+        "chapterMin": 4,
+        "chapterMax": 4
+      },
+      "choices": [
+        {
+          "text": "相信现在的选择",
+          "effect": {},
+          "result": "没有人能保存一切。此刻的选择，就是最好的选择。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 1
+            },
+            "message": "缇卡轻声说：'相信你的直觉。'"
+          }
+        },
+        {
+          "text": "担忧遗漏了什么",
+          "effect": {
+            "environment": -3
+          },
+          "result": "不安在心中挥之不去。但时间不会因此停下。",
+          "feedback": {
+            "message": "担忧是清醒者的代价。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chapter_transition_05",
+      "title": "衰退加速",
+      "description": "洛恩急匆匆地找到你，手中拿着一份读数报告。'能源衰减速度比预期快了15%。如果这个趋势持续下去……'他没有说完，但你知道他想说什么。",
+      "trigger": {
+        "type": "chapter_transition",
+        "chapterMin": 5,
+        "chapterMax": 5
+      },
+      "choices": [
+        {
+          "text": "启动应急储备",
+          "effect": {
+            "energy": 10,
+            "media": -5
+          },
+          "result": "储备能源被释放，暂时缓解了危机。但这只是权宜之计。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": 1
+            },
+            "message": "洛恩松了一口气。"
+          }
+        },
+        {
+          "text": "缩减非必要消耗",
+          "effect": {
+            "environment": -5
+          },
+          "result": "你们关闭了部分照明和温控系统。圣所暗了下来，但还在运转。",
+          "feedback": {
+            "message": "节俭是生存之道。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chapter_transition_06",
+      "title": "灰绿之海",
+      "description": "米莎从地表返回，眼中含泪。她手中的采样瓶里，是一种诡异的灰绿色液体。'海洋……死了。所有的浮游生物，所有的鱼，全部死了。'她的声音颤抖，'这就是终点吗？'",
+      "trigger": {
+        "type": "chapter_transition",
+        "chapterMin": 6,
+        "chapterMax": 6
+      },
+      "choices": [
+        {
+          "text": "安慰她",
+          "effect": {
+            "energy": -3
+          },
+          "result": "你轻轻握住米莎的手。她靠在你的肩上，泪水浸湿了你的衣袖。",
+          "feedback": {
+            "guardianMood": {
+              "misha": 2
+            },
+            "message": "米莎感到被理解。"
+          }
+        },
+        {
+          "text": "记录这一刻",
+          "effect": {
+            "media": -8
+          },
+          "result": "你将米莎的泪水与灰绿之海的数据一起归档。这是文明最后的见证。",
+          "feedback": {
+            "guardianMood": {
+              "misha": -1
+            },
+            "message": "米莎沉默地离开了。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chapter_transition_07",
+      "title": "沉默降临",
+      "description": "地表通讯站已经连续三周没有发出信号。曾经偶尔还能捕捉到的广播，如今只剩下静电噪音。圣所被彻底隔绝在世界之外——或者说，世界已经不复存在。",
+      "trigger": {
+        "type": "chapter_transition",
+        "chapterMin": 7,
+        "chapterMax": 7
+      },
+      "choices": [
+        {
+          "text": "继续尝试联系",
+          "effect": {
+            "energy": -5
+          },
+          "result": "你每天定时打开接收器，听着静电噪音。这是与过去唯一的联系。",
+          "feedback": {
+            "guardianMood": {
+              "finn": 1
+            },
+            "message": "芬恩说：'沉默也是一种答案。'"
+          }
+        },
+        {
+          "text": "接受现实",
+          "effect": {},
+          "result": "你关闭了接收器。从今以后，圣所就是整个世界。",
+          "feedback": {
+            "message": "放手需要另一种勇气。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chapter_transition_08",
+      "title": "病变蔓延",
+      "description": "埃塞尔在晨间检查时发现，自己的指尖出现了淡淡的灰色斑点。羽毛病变的早期症状。她没有告诉任何人，但你看到了她藏起的手。",
+      "trigger": {
+        "type": "chapter_transition",
+        "chapterMin": 8,
+        "chapterMax": 8
+      },
+      "choices": [
+        {
+          "text": "带她去找医疗室",
+          "effect": {
+            "energy": -5
+          },
+          "result": "埃塞尔抗拒了一下，但最终接受了检查。'谢谢你。'她轻声说。",
+          "feedback": {
+            "guardianMood": {
+              "ethel": 2
+            },
+            "message": "埃塞尔感到被关怀。"
+          }
+        },
+        {
+          "text": "尊重她的选择",
+          "effect": {
+            "environment": -3
+          },
+          "result": "你假装没有看到。有些尊严，比生命更重要。",
+          "feedback": {
+            "guardianMood": {
+              "ethel": 1
+            },
+            "message": "埃塞尔对你点了点头。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chapter_transition_09",
+      "title": "秩序崩塌",
+      "description": "芬恩和洛恩发生了激烈的争吵。芬恩认为应该优先保存历史文献，洛恩坚持工程数据更重要。这是守护者之间第一次出现真正的分歧。",
+      "trigger": {
+        "type": "chapter_transition",
+        "chapterMin": 9,
+        "chapterMax": 9
+      },
+      "choices": [
+        {
+          "text": "支持芬恩",
+          "effect": {
+            "media": -5
+          },
+          "result": "芬恩感激地看着你。洛恩沉默地离开了主厅。",
+          "feedback": {
+            "guardianMood": {
+              "finn": 2,
+              "lorn": -1
+            },
+            "message": "团队裂痕出现了。"
+          }
+        },
+        {
+          "text": "支持洛恩",
+          "effect": {
+            "energy": -5
+          },
+          "result": "洛恩点点头。芬恩叹了口气，但没有反驳。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": 2,
+              "finn": -1
+            },
+            "message": "团队裂痕出现了。"
+          }
+        },
+        {
+          "text": "调解分歧",
+          "effect": {
+            "energy": -3,
+            "media": -3
+          },
+          "result": "你花了一整夜与他们分别谈话。虽然没有完全化解，但至少恢复了合作。",
+          "feedback": {
+            "guardianMood": {
+              "finn": 1,
+              "lorn": 1
+            },
+            "message": "你尽力了。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chapter_transition_10",
+      "title": "告别准备",
+      "description": "缇卡在整理物品时，发现了一本旧相册。里面是灾难发生前的萨拉达斯——蓝天、绿树、孩子们的笑脸。她一页一页地翻着，泪水无声地滑落。",
+      "trigger": {
+        "type": "chapter_transition",
+        "chapterMin": 10,
+        "chapterMax": 10
+      },
+      "choices": [
+        {
+          "text": "一起翻看相册",
+          "effect": {
+            "energy": -3
+          },
+          "result": "你们围坐在一起，看着旧世界的影像。那些再也回不去的日子。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 2,
+              "misha": 1
+            },
+            "message": "悲伤化作了力量。"
+          }
+        },
+        {
+          "text": "让她独自面对",
+          "effect": {},
+          "result": "有些告别，只能独自完成。",
+          "feedback": {
+            "guardianMood": {
+              "tika": -1
+            },
+            "message": "缇卡独自承受着一切。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chapter_transition_11",
+      "title": "最终倒计时",
+      "description": "圣所进入低功耗模式。大部分照明关闭，只保留核心系统的能源供应。穹顶上的声波环缓慢地脉动着，像是文明的心跳正在减弱。",
+      "trigger": {
+        "type": "chapter_transition",
+        "chapterMin": 11,
+        "chapterMax": 11
+      },
+      "choices": [
+        {
+          "text": "做最后的冲刺",
+          "effect": {
+            "energy": -10,
+            "media": -10
+          },
+          "result": "你们开始疯狂地归档。每一秒都弥足珍贵。",
+          "feedback": {
+            "guardianMood": {
+              "finn": 1,
+              "lorn": 1,
+              "misha": 1
+            },
+            "message": "守护者们与你并肩作战。"
+          }
+        },
+        {
+          "text": "珍惜最后的时光",
+          "effect": {},
+          "result": "你们围坐在主厅中，回忆过去的点点滴滴。这本身就是一种保存。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 2,
+              "ethel": 2
+            },
+            "message": "最后的温暖。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chapter_transition_12",
+      "title": "终章",
+      "description": "这是最后的时刻。圣所的封印程序已经准备就绪。你站在主厅中央，看着这些陪伴你走过这段旅程的守护者。无论结果如何，你们已经尽力了。",
+      "trigger": {
+        "type": "chapter_transition",
+        "chapterMin": 12,
+        "chapterMax": 12
+      },
+      "choices": [
+        {
+          "text": "准备封印",
+          "effect": {},
+          "result": "封印程序启动。圣所缓缓沉入黑暗。但记忆永存。",
+          "feedback": {
+            "message": "这是终结，也是开始。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ng_plus_ghost_signal",
+      "title": "幽灵信号",
+      "description": "圣所的接收器突然捕捉到一个信号——来自一个已经被确认毁灭的圣所。信号内容只有一句话，反复重复：'我们在这里。我们还在。'",
+      "trigger": {
+        "type": "ng_plus",
+        "playthroughMin": 3,
+        "weekMin": 10,
+        "weekMax": 20,
+        "probability": 0.15
+      },
+      "type": "ng_plus_event",
+      "choices": [
+        {
+          "text": "尝试回复",
+          "effect": {
+            "energy": -10
+          },
+          "result": "你发送了回复。信号沉默了很久，然后消失了。但你知道，在某个地方，有人听到了。",
+          "feedback": {
+            "guardianMood": {
+              "finn": 1,
+              "tika": 1
+            },
+            "message": "希望是危险的，但也是必要的。",
+            "unlockEntry": "arch_ng_sanctuary_7_transmission"
+          }
+        },
+        {
+          "text": "记录信号后关闭接收器",
+          "effect": {
+            "media": -5
+          },
+          "result": "你将信号归档，然后关闭了接收器。有些门，不必打开。",
+          "feedback": {
+            "message": "你选择了沉默。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ng_plus_time_loop",
+      "title": "时间循环",
+      "description": "芬恩找到你，眼中带着一种奇怪的神情。'我做了一个梦。在梦里，我们经历了完全相同的一切。同样的选择，同样的结局。'他停顿了一下，'但这次，我想做一些不同的事。'",
+      "trigger": {
+        "type": "ng_plus",
+        "playthroughMin": 4,
+        "weekMin": 15,
+        "weekMax": 25,
+        "probability": 0.12
+      },
+      "type": "ng_plus_event",
+      "guardianId": "finn",
+      "choices": [
+        {
+          "text": "支持他的想法",
+          "effect": {
+            "energy": -5,
+            "media": -5
+          },
+          "result": "芬恩开始尝试不同的归档策略。也许这一次，结局会不一样。",
+          "feedback": {
+            "guardianMood": {
+              "finn": 3
+            },
+            "message": "芬恩感到被理解。",
+            "unlockEntry": "arch_ng_finn_loop_theory"
+          }
+        },
+        {
+          "text": "告诉他这只是梦",
+          "effect": {},
+          "result": "芬恩点点头，但你看到他眼中的光芒暗淡了一些。",
+          "feedback": {
+            "guardianMood": {
+              "finn": -1
+            },
+            "message": "芬恩沉默了。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ng_plus_final_choice",
+      "title": "超越时间",
+      "description": "圣所的核心突然发出耀眼的光芒。一个声音在你脑海中响起：'你已经经历了足够多的轮回。现在，你可以选择——打破循环，或者永远留在其中。'",
+      "trigger": {
+        "type": "ng_plus",
+        "playthroughMin": 5,
+        "weekMin": 40,
+        "weekMax": 48,
+        "probability": 0.1
+      },
+      "type": "ng_plus_event",
+      "choices": [
+        {
+          "text": "打破循环",
+          "effect": {
+            "energy": -20,
+            "media": -20,
+            "environment": -10
+          },
+          "result": "光芒吞没了你。当你再次睁开眼睛时，圣所消失了。你站在一片绿草地上，阳光照在脸上。远处，一座新的城市正在建造。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 5,
+              "finn": 5,
+              "misha": 5,
+              "lorn": 5,
+              "ethel": 5
+            },
+            "message": "循环被打破了。新的开始。",
+            "unlockEntry": "arch_ng_final_message",
+            "triggerEnding": "true_ending"
+          }
+        },
+        {
+          "text": "留在循环中",
+          "effect": {},
+          "result": "你选择了留下。圣所的光芒渐渐暗淡，但你知道，在某个地方，另一个'你'正在做出同样的选择。",
+          "feedback": {
+            "message": "循环继续。但每一次，都更有意义。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "scheduled_lorn_gratitude",
+      "title": "洛恩的感激",
+      "description": "洛恩找到你，眼中带着罕见的温暖。'谢谢你……愿意听我说。'",
+      "trigger": {
+        "type": "scheduled",
+        "weekMin": 6,
+        "weekMax": 10,
+        "probability": 0.3
+      },
+      "choices": [
+        {
+          "text": "不客气",
+          "effect": {},
+          "result": "洛恩点点头，嘴角微微上扬。",
           "feedback": {
             "guardianMood": {
               "lorn": 1
@@ -965,7 +1518,7 @@
         {
           "text": "继续工作",
           "effect": {},
-          "result": "洛恩点点头，回到了他的工作台。",
+          "result": "洛恩回到了他的岗位。",
           "feedback": {}
         }
       ]
@@ -973,411 +1526,273 @@
     {
       "id": "scheduled_misha_concern",
       "title": "米莎的担忧",
-      "description": "米莎在生态监测站中找到你。她说环境读数持续下降，担心圣所的生态系统已经到了临界点。",
+      "description": "米莎看着窗外的黑暗，轻声说：'地表……是不是越来越安静了？'",
       "trigger": {
-        "type": "scheduled"
+        "type": "scheduled",
+        "weekMin": 8,
+        "weekMax": 14,
+        "probability": 0.25
       },
       "choices": [
         {
           "text": "安慰她",
           "effect": {
-            "environment": 5
+            "energy": -2
           },
-          "result": "米莎稍微安心了一些。她说：'有你在我身边，我不那么害怕了。'",
+          "result": "米莎靠在你的肩上，轻声说了句谢谢。",
           "feedback": {
             "guardianMood": {
               "misha": 1
             },
-            "message": "米莎感到被支持。"
+            "message": "米莎感到被关怀。"
           }
         },
         {
-          "text": "询问数据",
+          "text": "保持沉默",
           "effect": {},
-          "result": "米莎详细解释了数据。你记下了关键指标。",
-          "feedback": {
-            "guardianMood": {
-              "misha": 1
-            },
-            "message": "米莎欣赏你的认真态度。"
-          }
+          "result": "你们一起看着黑暗，沉默不语。",
+          "feedback": {}
         }
       ]
     },
     {
       "id": "scheduled_misha_exploration_report",
-      "title": "米莎的勘探发现",
-      "description": "米莎兴奋地报告：她在一片废墟中发现了一个封存的数据节点，里面可能包含未被发现的归档条目。",
+      "title": "米莎的勘探报告",
+      "description": "米莎从地表带回了一份详细的勘探报告，记录了生态变化的数据。",
       "trigger": {
-        "type": "scheduled"
+        "type": "scheduled",
+        "weekMin": 10,
+        "weekMax": 18,
+        "probability": 0.2
       },
       "choices": [
         {
-          "text": "立刻回收数据（+15介质）",
+          "text": "仔细阅读",
           "effect": {
-            "media": 15
+            "media": 5
           },
-          "result": "数据节点被成功回收。里面有一份完整的植物标本数据库。",
+          "result": "报告中的数据令人不安，但至少你们了解了真相。",
           "feedback": {
             "guardianMood": {
               "misha": 1
             },
-            "message": "米莎的发现得到了回报。"
+            "message": "知识就是力量。"
           }
         },
         {
-          "text": "让她继续研究",
-          "effect": {},
-          "result": "米莎花了额外时间分析数据。她的报告将丰富归档内容。",
+          "text": "先归档再说",
+          "effect": {
+            "media": -3
+          },
+          "result": "你将报告归档，留待日后研究。",
+          "feedback": {}
+        }
+      ]
+    },
+    {
+      "id": "scheduled_misha_discovery",
+      "title": "米莎的发现",
+      "description": "米莎兴奋地找到你：'我发现了一种新的植物！它能在极端环境下生存！'",
+      "trigger": {
+        "type": "scheduled",
+        "weekMin": 12,
+        "weekMax": 20,
+        "probability": 0.15
+      },
+      "choices": [
+        {
+          "text": "一起研究",
+          "effect": {
+            "energy": -5,
+            "media": 8
+          },
+          "result": "你们一起研究了这种植物。它是生命的奇迹。",
           "feedback": {
             "guardianMood": {
               "misha": 2
             },
-            "message": "米莎感到自己的工作被重视。",
-            "futureEvent": {
-              "week": 3,
-              "eventId": "scheduled_misha_discovery"
+            "message": "希望仍在。"
+          }
+        },
+        {
+          "text": "记录下来",
+          "effect": {
+            "media": -3
+          },
+          "result": "你将这种植物的样本归档。也许未来有人会需要它。",
+          "feedback": {
+            "guardianMood": {
+              "misha": 1
             }
           }
         }
       ]
     },
     {
-      "id": "scheduled_misha_discovery",
-      "title": "米莎的重大发现",
-      "description": "米莎成功解密了数据节点中的信息——一份完整的萨拉达斯植物基因库。她激动得说不出话来。",
-      "trigger": {
-        "type": "scheduled"
-      },
-      "choices": [
-        {
-          "text": "为她骄傲",
-          "effect": {
-            "media": 20
-          },
-          "result": "米莎流着泪说：'这是萨拉达斯最后的生命。谢谢你让我找到它。'",
-          "feedback": {
-            "guardianMood": {
-              "misha": 2
-            },
-            "message": "米莎永远不会忘记这一刻。"
-          }
-        }
-      ]
-    },
-    {
       "id": "scheduled_finn_ethel_unity",
-      "title": "历史与信仰的交汇",
-      "description": "芬恩和埃塞尔共同提出一个方案：将历史文献与宗教经文交叉保存，让后世能更完整地理解萨拉达斯的文化。",
+      "title": "芬恩与埃塞尔的团结",
+      "description": "芬恩和埃塞尔一起找到你，表示他们愿意放下分歧，共同守护圣所。",
       "trigger": {
-        "type": "scheduled"
+        "type": "scheduled",
+        "weekMin": 14,
+        "weekMax": 22,
+        "probability": 0.2
       },
       "choices": [
         {
-          "text": "采纳方案（+10介质）",
+          "text": "欢迎他们的决定",
           "effect": {
-            "media": 10
+            "energy": 5
           },
-          "result": "守护者们的合作让归档效率大大提升。圣所充满了前所未有的凝聚力。",
+          "result": "圣所中的气氛变得更加和谐。",
           "feedback": {
             "guardianMood": {
               "finn": 1,
               "ethel": 1
             },
-            "message": "团队合作的力量。"
+            "message": "团结就是力量。"
           }
         },
         {
-          "text": "暂时搁置",
+          "text": "继续观察",
           "effect": {},
-          "result": "你感谢了他们的提议，表示会考虑。",
+          "result": "你点了点头，但心中仍有疑虑。",
           "feedback": {}
         }
       ]
     },
     {
       "id": "scheduled_lorn_improvement",
-      "title": "洛恩的改进方案",
-      "description": "洛恩基于回收的补给零件，设计了一套能源回收系统。安装后每回合额外+3能源。",
+      "title": "洛恩的改进",
+      "description": "洛恩优化了圣所的能源系统，本周能源消耗降低。",
       "trigger": {
-        "type": "scheduled"
+        "type": "scheduled",
+        "weekMin": 16,
+        "weekMax": 24,
+        "probability": 0.25
       },
       "choices": [
         {
-          "text": "立即安装（消耗5介质）",
+          "text": "感谢他的努力",
           "effect": {
-            "media": -5
+            "energy": 8
           },
-          "result": "系统安装完成。洛恩骄傲地拍拍你的肩膀：'又一个小小的胜利。'",
+          "result": "洛恩点点头，继续他的工作。",
           "feedback": {
             "guardianMood": {
               "lorn": 1
             },
-            "message": "洛恩的信任更加坚定。",
-            "unlockBonus": "energy_per_turn_3"
+            "message": "效率提升。"
           }
         },
         {
-          "text": "以后再说",
-          "effect": {},
-          "result": "洛恩把方案收好，等待下次机会。",
-          "feedback": {}
+          "text": "提出更多建议",
+          "effect": {
+            "energy": -3
+          },
+          "result": "洛恩认真地记录了你的建议。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": 1
+            }
+          }
         }
       ]
     },
     {
       "id": "scheduled_ethel_memory_sharing",
-      "title": "埃塞尔的记忆",
-      "description": "埃塞尔邀请你进入她的私人储藏室。她打开一个旧盒子，里面是她母亲留下的日记。'我想把这个故事告诉你。'",
+      "title": "埃塞尔的记忆分享",
+      "description": "埃塞尔找到你，分享了她关于灾难前的记忆。",
       "trigger": {
-        "type": "scheduled"
+        "type": "scheduled",
+        "weekMin": 18,
+        "weekMax": 26,
+        "probability": 0.2
       },
       "choices": [
         {
-          "text": "倾听她的故事",
+          "text": "认真倾听",
           "effect": {
             "environment": 5
           },
-          "result": "埃塞尔讲述了她母亲的一生——一个在末日中依然热爱生活的人。你感到心中有什么被触动了。",
+          "result": "埃塞尔的故事让你更加坚定了守护的决心。",
           "feedback": {
             "guardianMood": {
               "ethel": 2
             },
-            "message": "埃塞尔的信任更加深厚。"
+            "message": "记忆是桥梁。"
           }
         },
         {
-          "text": "礼貌婉拒",
-          "effect": {},
-          "result": "埃塞尔微笑着说：'没关系。也许下次。'",
-          "feedback": {}
+          "text": "记录下来",
+          "effect": {
+            "media": -3
+          },
+          "result": "你将埃塞尔的故事归档。",
+          "feedback": {
+            "guardianMood": {
+              "ethel": 1
+            }
+          }
         }
       ]
     },
     {
       "id": "scheduled_environment_crisis",
       "title": "环境危机",
-      "description": "高温导致圣所核心温度飙升。如果不立即处理，归档数据可能永久损坏。",
+      "description": "圣所的环境控制系统出现故障，环境稳定度下降。",
       "trigger": {
-        "type": "scheduled"
+        "type": "scheduled",
+        "weekMin": 20,
+        "weekMax": 28,
+        "probability": 0.3
       },
       "choices": [
         {
-          "text": "紧急降温（-15能源，+10环境）",
+          "text": "紧急修复",
           "effect": {
-            "energy": -15,
+            "energy": -10,
             "environment": 10
           },
-          "result": "温度稳定了。数据得以保存。所有人都松了一口气。",
+          "result": "危机解除了。圣所恢复了正常。",
           "feedback": {
             "guardianMood": {
               "lorn": 1
             },
-            "message": "果断的决策挽救了圣所。"
+            "message": "危机解除。"
           }
         },
         {
-          "text": "自然冷却",
+          "text": "暂时忽略",
           "effect": {
-            "environment": -15
+            "environment": -10
           },
-          "result": "温度缓慢下降，但部分设备受损。",
+          "result": "环境恶化加剧。你们必须更加小心。",
           "feedback": {
-            "guardianMood": {
-              "lorn": -1,
-              "misha": -1
-            },
-            "message": "圣所承受了一些损失。"
+            "message": "环境恶化。"
           }
         }
       ]
     },
     {
       "id": "scheduled_guardian_appreciation",
-      "title": "守护者的感谢",
-      "description": "芬恩在日志中写道：'你的平衡策略让圣所多运行了两周。这不仅仅是数据——这是生命。'",
+      "title": "守护者的感激",
+      "description": "守护者们聚在一起，向你表达了他们的感激之情。",
       "trigger": {
-        "type": "scheduled"
+        "type": "scheduled",
+        "weekMin": 22,
+        "weekMax": 30,
+        "probability": 0.2
       },
       "choices": [
         {
-          "text": "记录在案",
-          "effect": {},
-          "result": "芬恩的话被加入系统日志。你感到一种沉甸甸的责任感。",
-          "feedback": {
-            "guardianMood": {
-              "finn": 1
-            },
-            "message": "芬恩感到被理解。"
-          }
-        }
-      ]
-    },
-    {
-      "id": "scheduled_lorn_efficiency_tip",
-      "title": "洛恩的节能技巧",
-      "description": "洛恩分享了一个优化能源分配的小技巧。采纳后每回合额外+2能源。",
-      "trigger": {
-        "type": "scheduled"
-      },
-      "choices": [
-        {
-          "text": "采纳建议",
-          "effect": {},
-          "result": "洛恩的技巧立竿见影。圣所能源消耗降低了10%。",
-          "feedback": {
-            "guardianMood": {
-              "lorn": 1
-            },
-            "message": "洛恩感到被信任。",
-            "unlockBonus": "energy_per_turn_2"
-          }
-        },
-        {
-          "text": "暂时不需要",
-          "effect": {},
-          "result": "洛恩点点头，把建议收好。",
-          "feedback": {}
-        }
-      ]
-    },
-    {
-      "id": "scheduled_guardian_discomfort",
-      "title": "圣所的不适",
-      "description": "温度持续上升。守护者们开始感到头晕和疲惫。米莎说：'我们还能坚持多久？'",
-      "trigger": {
-        "type": "scheduled"
-      },
-      "choices": [
-        {
-          "text": "优先修复环境（-10能源，+15环境）",
+          "text": "感谢他们的付出",
           "effect": {
-            "energy": -10,
-            "environment": 15
+            "energy": 5,
+            "media": 5
           },
-          "result": "环境恢复了。守护者们感激地看着你。",
+          "result": "圣所中充满了温暖的气氛。",
           "feedback": {
-            "guardianMood": {
-              "lorn": 1,
-              "misha": 1
-            },
-            "message": "你的决断让团队重新振作。"
-          }
-        },
-        {
-          "text": "让大家忍耐",
-          "effect": {
-            "environment": -10
-          },
-          "result": "守护者们继续工作，但士气低落。",
-          "feedback": {
-            "guardianMood": {
-              "lorn": -1,
-              "misha": -1
-            },
-            "message": "不满在蔓延。"
-          }
-        }
-      ]
-    },
-    {
-      "id": "finale_warning_18",
-      "title": "地热的警告",
-      "description": "圣所深处的地热管道发出不祥的轰鸣。洛恩检查后说：'管道正在结晶化，最多还能撑3周。'",
-      "trigger": {
-        "type": "finale",
-        "weekMin": 42,
-        "weekMax": 42
-      },
-      "type": "finale",
-      "choices": [
-        {
-          "text": "加快归档速度",
-          "effect": {
-            "energy": -10
-          },
-          "result": "你决定加快归档速度。守护者们开始轮班工作。",
-          "feedback": {
-            "narrativeFlag": "finale_accelerate",
-            "guardianMood": {
-              "lorn": 1
-            },
-            "message": "时间不多了。我们必须争分夺秒。"
-          }
-        },
-        {
-          "text": "让大家休息一下",
-          "effect": {
-            "environment": 5
-          },
-          "result": "你决定让大家休息一下。守护者们感激地看着你。",
-          "feedback": {
-            "narrativeFlag": "finale_rest",
-            "guardianMood": {
-              "misha": 1
-            },
-            "message": "短暂的休憩……也许这是明智的。"
-          }
-        }
-      ]
-    },
-    {
-      "id": "finale_collapse_19",
-      "title": "穹顶的裂痕",
-      "description": "主厅穹顶出现裂痕。这是圣所在告诉你们——时间到了。",
-      "trigger": {
-        "type": "finale",
-        "weekMin": 45,
-        "weekMax": 45
-      },
-      "type": "finale",
-      "choices": [
-        {
-          "text": "紧急修复裂痕",
-          "effect": {
-            "energy": -20,
-            "media": -10
-          },
-          "result": "裂痕被临时加固了。但所有人都知道，这只是拖延时间。",
-          "feedback": {
-            "narrativeFlag": "finale_repair",
-            "guardianMood": {
-              "lorn": 1
-            },
-            "message": "洛恩用精湛的技艺修复了系统。圣所重归平静。"
-          }
-        },
-        {
-          "text": "接受现实",
-          "effect": {},
-          "result": "你决定接受现实。守护者们沉默地看着穹顶的裂痕。",
-          "feedback": {
-            "narrativeFlag": "finale_accept",
-            "guardianMood": {
-              "ethel": 1
-            },
-            "message": "也许这就是……神的旨意。"
-          }
-        }
-      ]
-    },
-    {
-      "id": "finale_last_light_20",
-      "title": "最后的光",
-      "description": "能源读数归零。圣所即将进入永久封印。做出你们的最终选择吧。",
-      "trigger": {
-        "type": "finale",
-        "weekMin": 48,
-        "weekMax": 48
-      },
-      "type": "finale",
-      "choices": [
-        {
-          "text": "封印圣所",
-          "effect": {},
-          "result": "你启动了封印程序。所开始缓缓沉入地底。守护者们站在你身边，目送这一切。",
-          "feedback": {
-            "narrativeFlag": "finale_seal",
             "guardianMood": {
               "tika": 1,
               "finn": 1,
@@ -1385,8 +1800,186 @@
               "lorn": 1,
               "ethel": 1
             },
-            "message": "这是终结，也是开始。"
+            "message": "感激是双向的。"
           }
+        },
+        {
+          "text": "继续工作",
+          "effect": {},
+          "result": "你微笑着，继续你的工作。",
+          "feedback": {}
+        }
+      ]
+    },
+    {
+      "id": "scheduled_lorn_efficiency_tip",
+      "title": "洛恩的效率建议",
+      "description": "洛恩提出了一个提高归档效率的建议。",
+      "trigger": {
+        "type": "scheduled",
+        "weekMin": 24,
+        "weekMax": 32,
+        "probability": 0.25
+      },
+      "choices": [
+        {
+          "text": "采纳建议",
+          "effect": {
+            "media": 8
+          },
+          "result": "归档效率提升了。你们能保存更多记忆。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": 1
+            },
+            "message": "效率提升。"
+          }
+        },
+        {
+          "text": "暂时搁置",
+          "effect": {},
+          "result": "洛恩点点头，没有坚持。",
+          "feedback": {}
+        }
+      ]
+    },
+    {
+      "id": "scheduled_guardian_discomfort",
+      "title": "守护者的不适",
+      "description": "守护者们开始感到身体不适，可能是病变的早期症状。",
+      "trigger": {
+        "type": "scheduled",
+        "weekMin": 26,
+        "weekMax": 34,
+        "probability": 0.2
+      },
+      "choices": [
+        {
+          "text": "安排检查",
+          "effect": {
+            "energy": -5
+          },
+          "result": "检查结果显示一切正常，至少现在如此。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 1,
+              "finn": 1,
+              "misha": 1,
+              "lorn": 1,
+              "ethel": 1
+            },
+            "message": "预防胜于治疗。"
+          }
+        },
+        {
+          "text": "观察一段时间",
+          "effect": {
+            "environment": -3
+          },
+          "result": "你决定继续观察。希望一切安好。",
+          "feedback": {}
+        }
+      ]
+    },
+    {
+      "id": "finale_warning_18",
+      "title": "终局预警",
+      "description": "圣所的能源储备已经过半。你感到时间正在流逝。",
+      "trigger": {
+        "type": "finale",
+        "weekMin": 18,
+        "weekMax": 22,
+        "probability": 0.5
+      },
+      "choices": [
+        {
+          "text": "加快归档速度",
+          "effect": {
+            "media": -10
+          },
+          "result": "你们开始加速工作。每一秒都弥足珍贵。",
+          "feedback": {
+            "message": "时间不等人。"
+          }
+        },
+        {
+          "text": "保持节奏",
+          "effect": {},
+          "result": "你决定保持稳定。欲速则不达。",
+          "feedback": {}
+        }
+      ]
+    },
+    {
+      "id": "finale_collapse_19",
+      "title": "系统崩溃",
+      "description": "圣所的一个关键系统崩溃了。你们必须做出艰难的选择。",
+      "trigger": {
+        "type": "finale",
+        "weekMin": 19,
+        "weekMax": 24,
+        "probability": 0.4
+      },
+      "choices": [
+        {
+          "text": "修复系统",
+          "effect": {
+            "energy": -15
+          },
+          "result": "系统恢复了正常。但代价不菲。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": -1
+            },
+            "message": "损失可控。"
+          }
+        },
+        {
+          "text": "放弃部分功能",
+          "effect": {
+            "environment": -10
+          },
+          "result": "你们关闭了非必要系统。圣所变得更加脆弱。",
+          "feedback": {
+            "message": "艰难的抉择。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "finale_last_light_20",
+      "title": "最后的光芒",
+      "description": "圣所的能源即将耗尽。这是最后的冲刺。",
+      "trigger": {
+        "type": "finale",
+        "weekMin": 20,
+        "weekMax": 26,
+        "probability": 0.6
+      },
+      "choices": [
+        {
+          "text": "全力以赴",
+          "effect": {
+            "energy": -20,
+            "media": -10
+          },
+          "result": "你们拼尽全力。这是最后的机会。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 1,
+              "finn": 1,
+              "misha": 1,
+              "lorn": 1,
+              "ethel": 1
+            },
+            "message": "最后一搏。"
+          }
+        },
+        {
+          "text": "保存实力",
+          "effect": {},
+          "result": "你决定保留一些资源。也许还有机会。",
+          "feedback": {}
         }
       ]
     },
@@ -1398,7 +1991,8 @@
         "type": "ng_plus",
         "playthroughMin": 2,
         "weekMin": 3,
-        "weekMax": 8
+        "weekMax": 8,
+        "probability": 0.2
       },
       "type": "guardian_personal",
       "guardianId": "tika",
@@ -1433,7 +2027,8 @@
         "type": "ng_plus",
         "playthroughMin": 2,
         "weekMin": 3,
-        "weekMax": 8
+        "weekMax": 8,
+        "probability": 0.2
       },
       "type": "guardian_personal",
       "guardianId": "finn",
@@ -1468,7 +2063,8 @@
         "type": "ng_plus",
         "playthroughMin": 2,
         "weekMin": 3,
-        "weekMax": 8
+        "weekMax": 8,
+        "probability": 0.2
       },
       "type": "guardian_personal",
       "guardianId": "misha",
@@ -1488,9 +2084,9 @@
           }
         },
         {
-          "text": "让她自己处理",
+          "text": "以后再说",
           "effect": {},
-          "result": "米莎点点头，独自走向圣所核心。",
+          "result": "米莎把容器放在桌上。'等你有时间的时候。'",
           "feedback": {}
         }
       ]
@@ -1498,22 +2094,23 @@
     {
       "id": "ng_plus_lorn_request",
       "title": "洛恩的请求",
-      "description": "洛恩拿着一套复杂的图纸找到你。'我设计了一个新的能源系统。需要你的批准。'",
+      "description": "洛恩拿着一套工具找到你。'我想教你一些基础维护。这样我不在的时候，你也能照顾好圣所。'",
       "trigger": {
         "type": "ng_plus",
         "playthroughMin": 2,
         "weekMin": 3,
-        "weekMax": 8
+        "weekMax": 8,
+        "probability": 0.2
       },
       "type": "guardian_personal",
       "guardianId": "lorn",
       "choices": [
         {
-          "text": "批准方案",
+          "text": "学习维护",
           "effect": {
-            "media": -10
+            "energy": 5
           },
-          "result": "洛恩的新系统安装完成。圣所的能源效率提升了20%。",
+          "result": "洛恩耐心地教你。'这样圣所就能多运行一段时间了。'",
           "feedback": {
             "guardianMood": {
               "lorn": 2
@@ -1523,9 +2120,9 @@
           }
         },
         {
-          "text": "暂时搁置",
+          "text": "太忙了",
           "effect": {},
-          "result": "洛恩把图纸收好。'等你有兴趣的时候再说。'",
+          "result": "洛恩把工具放在桌上。'等你有时间的时候。'",
           "feedback": {}
         }
       ]
@@ -1533,34 +2130,35 @@
     {
       "id": "ng_plus_ethel_request",
       "title": "埃塞尔的请求",
-      "description": "埃塞尔拿着一本旧日记找到你。'这是我母亲的日记。我想把她的故事告诉你。'",
+      "description": "埃塞尔拿着一本祈祷书找到你。'我想为你祈祷。不是为圣所，是为你。'",
       "trigger": {
         "type": "ng_plus",
         "playthroughMin": 2,
         "weekMin": 3,
-        "weekMax": 8
+        "weekMax": 8,
+        "probability": 0.2
       },
       "type": "guardian_personal",
       "guardianId": "ethel",
       "choices": [
         {
-          "text": "倾听她的故事",
+          "text": "接受祈祷",
           "effect": {
             "environment": 5
           },
-          "result": "埃塞尔讲述了她母亲的一生——一个在末日中依然热爱生活的人。你感到心中有什么被触动了。",
+          "result": "埃塞尔的祷文充满了温暖。你感到一种超越时空的平静。",
           "feedback": {
             "guardianMood": {
               "ethel": 2
             },
-            "message": "埃塞尔的信任更加深厚。",
+            "message": "埃塞尔感到被理解。",
             "unlockEntry": "arch_ng_ethel_prayer"
           }
         },
         {
-          "text": "礼貌婉拒",
+          "text": "婉拒",
           "effect": {},
-          "result": "埃塞尔微笑着说：'没关系。也许下次。'",
+          "result": "埃塞尔点点头，轻声说：'愿神保佑你。'",
           "feedback": {}
         }
       ]
@@ -1568,90 +2166,106 @@
     {
       "id": "ng_plus_memory_echo",
       "title": "记忆回响",
-      "description": "圣所的墙壁突然发出微弱的光芒。上周目的记忆以回响的形式浮现——那些被归档的条目在低语。",
+      "description": "圣所中突然响起了奇怪的声音——像是来自另一个圣所的呼唤。",
       "trigger": {
         "type": "ng_plus",
         "playthroughMin": 2,
-        "weekMin": 5,
-        "weekMax": 10
+        "weekMin": 10,
+        "weekMax": 20,
+        "probability": 0.15
       },
       "type": "ng_plus_event",
       "choices": [
         {
-          "text": "倾听回响",
+          "text": "仔细聆听",
           "effect": {
-            "energy": 10
+            "media": 8
           },
-          "result": "你听到了上周目的声音。那些记忆并没有消失，它们只是换了一种方式存在。",
+          "result": "声音渐渐清晰。那是另一个圣所的故事。",
           "feedback": {
-            "message": "记忆回响带来了额外的能源。"
+            "guardianMood": {
+              "finn": 1
+            },
+            "message": "记忆在回响。",
+            "unlockEntry": "arch_ng_sanctuary_past_01"
           }
         },
         {
-          "text": "忽略回响",
+          "text": "关闭声音",
           "effect": {},
-          "result": "你选择专注于当前的工作。回响渐渐消散。",
+          "result": "声音消失了。但你知道，它在某个地方继续回响。",
           "feedback": {}
         }
       ]
     },
     {
       "id": "ng_plus_sanctuary_memory",
-      "title": "圣所的回忆",
-      "description": "圣所的墙壁上浮现出古老的文字。这是圣所本身的记忆——它记得每一个曾经在这里工作的人。",
+      "title": "圣所记忆",
+      "description": "圣所的系统中出现了一段被遗忘的记忆——关于圣所建造者的故事。",
       "trigger": {
         "type": "ng_plus",
         "playthroughMin": 3,
-        "weekMin": 4,
-        "weekMax": 12
+        "weekMin": 15,
+        "weekMax": 25,
+        "probability": 0.12
       },
       "type": "ng_plus_event",
       "choices": [
         {
-          "text": "阅读文字",
+          "text": "观看记忆",
           "effect": {
-            "media": 15
+            "energy": -5
           },
-          "result": "你读到了圣所建造者的日记。他们不知道圣所能否撑过十万年，但他们知道，如果不建，就真的什么都没了。",
+          "result": "你看到了圣所建造者的故事。他们的希望，他们的恐惧，他们的爱。",
           "feedback": {
-            "message": "圣所的回忆带来了额外的介质。"
+            "guardianMood": {
+              "lorn": 1,
+              "tika": 1
+            },
+            "message": "历史在重复。",
+            "unlockEntry": "arch_ng_sanctuary_past_02"
           }
         },
         {
-          "text": "继续工作",
+          "text": "跳过",
           "effect": {},
-          "result": "你选择专注于当前的工作。文字渐渐消散。",
+          "result": "你选择了跳过。有些故事，不必知道结局。",
           "feedback": {}
         }
       ]
     },
     {
       "id": "ng_plus_time_rift",
-      "title": "时间的裂缝",
-      "description": "圣所中出现了一道奇异的光芒。你看到了另一个时间线的自己——一个做出了不同选择的自己。",
+      "title": "时间裂隙",
+      "description": "圣所的时空似乎出现了裂隙。你看到了另一个版本的自己。",
       "trigger": {
         "type": "ng_plus",
         "playthroughMin": 4,
-        "weekMin": 6,
-        "weekMax": 15
+        "weekMin": 20,
+        "weekMax": 30,
+        "probability": 0.1
       },
       "type": "ng_plus_event",
       "choices": [
         {
-          "text": "触碰裂缝",
+          "text": "与另一个自己对话",
           "effect": {
-            "energy": 20,
-            "environment": -10
+            "energy": -10,
+            "media": -10
           },
-          "result": "你触碰了裂缝。两个时间线的记忆在你脑海中交汇。你看到了另一种可能——但你知道，这才是你的选择。",
+          "result": "另一个你说：'无论你做什么选择，都是正确的。'然后消失了。",
           "feedback": {
-            "message": "时间的裂缝带来了能源，但也扰乱了环境。"
+            "guardianMood": {
+              "finn": 2
+            },
+            "message": "时间会证明一切。",
+            "unlockEntry": "arch_ng_time_end_01"
           }
         },
         {
-          "text": "远离裂缝",
+          "text": "关闭裂隙",
           "effect": {},
-          "result": "你选择不触碰裂缝。有些事情，不知道更好。",
+          "result": "裂隙关闭了。但那个画面永远留在了你的记忆中。",
           "feedback": {}
         }
       ]

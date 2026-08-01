@@ -87,6 +87,14 @@
       },
       "explorationDialogues": {
         "exp_ruins_01": "寂静之城的中央广场……我曾经在那里演出过。歌声回荡在空荡的街道上。现在没有观众了，但我还是想为这些废墟唱一首歌。"
+      },
+      "memoryDialogues": {
+        "week1_playthrough2": "这一周……我好像经历过。也许是错觉吧。",
+        "week1_playthrough3": "第三次了。但每一次，都有一些不同。",
+        "week1_playthrough5": "你已经走了这么远。这一次，一定能到达终点。",
+        "archive_same_entry": "这个条目……我们以前归档过吗？感觉很熟悉。",
+        "skip_turn_memory": "跳过？你以前也做过同样的选择。",
+        "low_resource_memory": "资源又不够了。但这次，我们知道该怎么应对。"
       }
     },
     {
@@ -176,6 +184,14 @@
       "explorationDialogues": {
         "finn_library": "中央图书馆的地下室……文献保存得比我预想的好。我找到了一些从未被编目的记录。历史的角落里还藏着秘密。",
         "finn_ruins": "最终废墟的墙壁上涂满了末日标语。我逐字逐句地抄录。这是平民的历史——不是帝王将相，是普通人的最后声音。"
+      },
+      "memoryDialogues": {
+        "week1_playthrough2": "这一周……我好像经历过。也许是错觉吧。",
+        "week1_playthrough3": "第三次了。但每一次，都有一些不同。",
+        "week1_playthrough5": "你已经走了这么远。这一次，一定能到达终点。",
+        "archive_same_entry": "这个条目……我们以前归档过吗？感觉很熟悉。",
+        "skip_turn_memory": "跳过？你以前也做过同样的选择。",
+        "low_resource_memory": "资源又不够了。但这次，我们知道该怎么应对。"
       }
     },
     {
@@ -267,6 +283,14 @@
         "misha_crypt": "封存者地窖的封存者……我在文献中读到过。他们是最先预见末日的人。我想，他们一定会很高兴有人找到了这里。",
         "misha_ocean": "灰绿之海。我站在海边，看着那些灰绿色的膜在风中起伏。厌氧菌在吃同类的尸体。我给它起了个名字：'最后的盛宴'。这是海洋的葬礼。",
         "misha_clinic": "病变诊所的病历显示这是一种全新的疾病。没有先例。没有治疗方案。我采集了样本，但我们没有实验室来分析。芬恩和洛恩的时间不多了。"
+      },
+      "memoryDialogues": {
+        "week1_playthrough2": "这一周……我好像经历过。也许是错觉吧。",
+        "week1_playthrough3": "第三次了。但每一次，都有一些不同。",
+        "week1_playthrough5": "你已经走了这么远。这一次，一定能到达终点。",
+        "archive_same_entry": "这个条目……我们以前归档过吗？感觉很熟悉。",
+        "skip_turn_memory": "跳过？你以前也做过同样的选择。",
+        "low_resource_memory": "资源又不够了。但这次，我们知道该怎么应对。"
       }
     },
     {
@@ -357,6 +381,14 @@
         "lorn_factory": "工业制造区的设备虽然锈了，但结构完好。我能修好它们——如果有时间的话。这些机器曾经是文明的脊梁。",
         "lorn_shipyard": "轨道发射场……发射塔倒了，但轨道还在。我们曾梦想星辰。现在，至少让这些梦想被记住。",
         "lorn_core": "圣所核心。建造者的私人工作室。墙上的设计图纸比我的更精妙。他用自己的方式守住了这些。我也会用我的方式。"
+      },
+      "memoryDialogues": {
+        "week1_playthrough2": "这一周……我好像经历过。也许是错觉吧。",
+        "week1_playthrough3": "第三次了。但每一次，都有一些不同。",
+        "week1_playthrough5": "你已经走了这么远。这一次，一定能到达终点。",
+        "archive_same_entry": "这个条目……我们以前归档过吗？感觉很熟悉。",
+        "skip_turn_memory": "跳过？你以前也做过同样的选择。",
+        "low_resource_memory": "资源又不够了。但这次，我们知道该怎么应对。"
       }
     },
     {
@@ -445,6 +477,14 @@
       },
       "explorationDialogues": {
         "ethel_temple": "信仰之殿的彩色玻璃碎了，但光还在。神不在这里——但美在这里。这就够了。"
+      },
+      "memoryDialogues": {
+        "week1_playthrough2": "这一周……我好像经历过。也许是错觉吧。",
+        "week1_playthrough3": "第三次了。但每一次，都有一些不同。",
+        "week1_playthrough5": "你已经走了这么远。这一次，一定能到达终点。",
+        "archive_same_entry": "这个条目……我们以前归档过吗？感觉很熟悉。",
+        "skip_turn_memory": "跳过？你以前也做过同样的选择。",
+        "low_resource_memory": "资源又不够了。但这次，我们知道该怎么应对。"
       }
     }
   ]

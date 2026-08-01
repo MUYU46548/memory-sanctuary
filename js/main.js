@@ -109,7 +109,9 @@ function initGameState() {
         unlockedBonuses: [],
         exploration: { deployedUntil: 0, cooldownUntil: 0, completedExplorations: {}, fatigue: {}, explorationLog: [] },
         activeProjects: [],
-        completedProjects: []
+        completedProjects: [],
+        chaptersCompleted: [],
+        pendingEnding: null
     };
     
     MemorySanctuary.data.vaults.forEach(vault => {
