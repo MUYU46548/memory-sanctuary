@@ -289,6 +289,13 @@
                     </label>
                     <div class="settings-desc">归档完成后弹出窗口，展示条目详情与守护者反应。</div>
                 </div>
+                <div class="settings-item">
+                    <label class="settings-label">
+                        <input type="checkbox" id="setting-vn-guardian" checked>
+                        <span>守护者对话使用视觉小说演出</span>
+                    </label>
+                    <div class="settings-desc">开启后，守护者对话将以视觉小说风格逐字显示（章节过渡与结局始终启用）。</div>
+                </div>
             </div>
         </div>
     </div>
@@ -367,10 +374,32 @@
         </div>
     </div>
 
+    <!-- 视觉小说引擎覆盖层 -->
+    <div id="vn-overlay" class="hidden">
+        <div id="vn-portraits"></div>
+        <div id="vn-dialogue-box">
+            <button id="vn-skip-btn" class="disabled" title="首次观看，无法跳过">跳过剧情</button>
+            <div id="vn-close-hint">按 ESC 可跳过</div>
+            <div id="vn-speaker-name">旁白</div>
+            <div id="vn-dialogue-text"></div>
+            <div id="vn-click-hint" class="hidden">▼ 点击继续</div>
+        </div>
+        <div id="vn-confirm-modal" class="hidden">
+            <div class="vn-confirm-box">
+                <div class="vn-confirm-text">确定要跳过当前剧情吗？</div>
+                <div class="vn-confirm-buttons">
+                    <button class="vn-confirm-btn" id="vn-confirm-yes">确定跳过</button>
+                    <button class="vn-confirm-btn" id="vn-confirm-no">继续观看</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="js/main.js"></script>
     <script src="js/game.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/canvas.js"></script>
     <script src="js/audio.js"></script>
+    <script src="js/vn.js"></script>
 </body>
 </html>

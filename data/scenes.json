@@ -1,0 +1,330 @@
+{
+  "chapter_02": {
+    "title": "裂痕初现",
+    "background": "dome_crack",
+    "speakers": ["narrator", "lorn", "tika"],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "圣所的墙壁上出现了细微的裂纹。洛恩说这只是正常沉降，但他的眼神出卖了他。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "裂纹的深度在安全范围内。但……这周又多了三条。"
+      },
+      {
+        "speaker": "tika",
+        "text": "你在担心什么？"
+      },
+      {
+        "speaker": "lorn",
+        "text": "我在担心我们是不是在浪费时间。如果圣所撑不到封印的那一天——"
+      },
+      {
+        "speaker": "narrator",
+        "text": "缇卡轻轻地将手放在洛恩肩上。守护者们围坐在主厅中，第一次认真地讨论一个问题。"
+      },
+      {
+        "speaker": "tika",
+        "text": "圣所还能撑多久？"
+      },
+      {
+        "speaker": "lorn",
+        "text": "我不知道。但我知道，我们还能选择。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "你环顾四周。灯光柔和，声波环在穹顶缓缓旋转。这里是你们唯一的家，也是萨拉达斯最后的记忆。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "你会怎么做？"
+      }
+    ],
+    "transition": "event:chapter_transition_02"
+  },
+  "chapter_03": {
+    "title": "地表恶化",
+    "background": "dead_forest",
+    "speakers": ["narrator", "finn", "lorn"],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "勘探队从地表带回消息：东面的森林已经完全枯萎，空气中弥漫着刺鼻的气味。"
+      },
+      {
+        "speaker": "finn",
+        "text": "……记录完毕。这不是他们熟悉的那个世界了。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "你的手在发抖。"
+      },
+      {
+        "speaker": "finn",
+        "text": "我知道。每次去地表，我都以为已经看到了最坏的。但每次……都比上次更糟。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "芬恩合上笔记本。他的眼睛布满血丝，手指沾满灰尘。"
+      },
+      {
+        "speaker": "finn",
+        "text": "也许我们该加快了。每一秒都可能是最后的机会。"
+      }
+    ],
+    "transition": "event:chapter_transition_03"
+  },
+  "chapter_04": {
+    "title": "裂痕加深",
+    "background": "vault_room",
+    "speakers": ["narrator", "tika"],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "站在主厅中央，你环顾四周。十二间存储室中，有三间已经接近满员。"
+      },
+      {
+        "speaker": "tika",
+        "text": "你在想什么？"
+      },
+      {
+        "speaker": "narrator",
+        "text": "你告诉她你的担忧。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "这些被保存的条目，真的能代表萨拉达斯文明的全貌吗？还是只是冰山一角？"
+      },
+      {
+        "speaker": "tika",
+        "text": "没有人能保存一切。此刻的选择，就是最好的选择。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "缇卡的声音很轻，像是怕惊扰了存储室中沉睡的记忆。"
+      }
+    ],
+    "transition": "event:chapter_transition_04"
+  },
+  "chapter_05": {
+    "title": "衰退加速",
+    "background": "power_meter",
+    "speakers": ["narrator", "lorn"],
+    "dialogue": [
+      {
+        "speaker": "lorn",
+        "text": "能源衰减速度比预期快了15%。如果这个趋势持续下去……"
+      },
+      {
+        "speaker": "narrator",
+        "text": "他没有说完，但你知道他想说什么。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "我们必须做出选择。启动应急储备，还是缩减非必要消耗。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "洛恩手中的报告在颤抖。这不是他第一次面对危机，但这次，连他也显得有些无助。"
+      }
+    ],
+    "transition": "event:chapter_transition_05"
+  },
+  "chapter_06": {
+    "title": "灰绿之海",
+    "background": "grey_sea",
+    "speakers": ["narrator", "misha"],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "米莎从地表返回，眼中含泪。她手中的采样瓶里，是一种诡异的灰绿色液体。"
+      },
+      {
+        "speaker": "misha",
+        "text": "海洋……死了。所有的浮游生物，所有的鱼，全部死了。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "她的声音颤抖。"
+      },
+      {
+        "speaker": "misha",
+        "text": "这就是终点吗？"
+      },
+      {
+        "speaker": "narrator",
+        "text": "采样瓶中的液体在灯光下泛着诡异的光泽。这是萨拉达斯最后的海洋。"
+      }
+    ],
+    "transition": "event:chapter_transition_06"
+  },
+  "chapter_07": {
+    "title": "沉默降临",
+    "background": "radio_silence",
+    "speakers": ["narrator", "finn"],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "地表通讯站已经连续三周没有发出信号。曾经偶尔还能捕捉到的广播，如今只剩下静电噪音。"
+      },
+      {
+        "speaker": "finn",
+        "text": "圣所被彻底隔绝在世界之外——或者说，世界已经不复存在。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "芬恩坐在接收器前，耳机里只有沙沙的声响。"
+      },
+      {
+        "speaker": "finn",
+        "text": "沉默也是一种答案。"
+      }
+    ],
+    "transition": "event:chapter_transition_07"
+  },
+  "chapter_08": {
+    "title": "病变蔓延",
+    "background": "grey_spots",
+    "speakers": ["narrator", "ethel"],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "埃塞尔在晨间检查时发现，自己的指尖出现了淡淡的灰色斑点。羽毛病变的早期症状。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "她没有告诉任何人，但你看到了她藏起的手。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "……你看到了？"
+      },
+      {
+        "speaker": "narrator",
+        "text": "埃塞尔低下头，手指不自觉地攥紧。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "我不想让大家担心。"
+      }
+    ],
+    "transition": "event:chapter_transition_08"
+  },
+  "chapter_09": {
+    "title": "秩序崩塌",
+    "background": "argument",
+    "speakers": ["narrator", "finn", "lorn"],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "芬恩和洛恩发生了激烈的争吵。这是守护者之间第一次出现真正的分歧。"
+      },
+      {
+        "speaker": "finn",
+        "text": "历史文献才是文明的灵魂！没有历史，我们保存的只是一堆数据！"
+      },
+      {
+        "speaker": "lorn",
+        "text": "工程数据才是重建的基础！没有技术，历史只是废纸！"
+      },
+      {
+        "speaker": "narrator",
+        "text": "两人同时看向你。你必须做出选择。"
+      }
+    ],
+    "transition": "event:chapter_transition_09"
+  },
+  "chapter_10": {
+    "title": "告别准备",
+    "background": "old_photo",
+    "speakers": ["narrator", "tika"],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "缇卡在整理物品时，发现了一本旧相册。里面是灾难发生前的萨拉达斯——蓝天、绿树、孩子们的笑脸。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "她一页一页地翻着，泪水无声地滑落。"
+      },
+      {
+        "speaker": "tika",
+        "text": "……再也回不去了。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "相册中的照片已经泛黄，但那些笑容依然清晰。"
+      }
+    ],
+    "transition": "event:chapter_transition_10"
+  },
+  "chapter_11": {
+    "title": "最终倒计时",
+    "background": "low_power",
+    "speakers": ["narrator", "tika", "ethel"],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "圣所进入低功耗模式。大部分照明关闭，只保留核心系统的能源供应。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "穹顶上的声波环缓慢地脉动着，像是文明的心跳正在减弱。"
+      },
+      {
+        "speaker": "tika",
+        "text": "这是最后的时刻了。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "无论结果如何，我们已经尽力了。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "守护者们围坐在主厅中，回忆过去的点点滴滴。这本身就是一种保存。"
+      }
+    ],
+    "transition": "event:chapter_transition_11"
+  },
+  "chapter_12": {
+    "title": "终章",
+    "background": "seal_ritual",
+    "speakers": ["narrator", "tika", "finn", "misha", "lorn", "ethel"],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "这是最后的时刻。圣所的封印程序已经准备就绪。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "你站在主厅中央，看着这些陪伴你走过这段旅程的守护者。"
+      },
+      {
+        "speaker": "tika",
+        "text": "谢谢你。"
+      },
+      {
+        "speaker": "finn",
+        "text": "我们做到了。"
+      },
+      {
+        "speaker": "misha",
+        "text": "记忆永存。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "这是终结，也是开始。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "愿后世记得我们。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。但记忆永存。"
+      }
+    ],
+    "transition": "event:chapter_transition_12"
+  }
+}

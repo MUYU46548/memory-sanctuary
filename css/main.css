@@ -2963,3 +2963,373 @@ button.archive-btn.recommended {
     font-size: 0.7rem;
     color: var(--text-dim);
 }
+
+/* ============================================
+   视觉小说引擎 (VN Engine)
+   ============================================ */
+
+/* 覆盖层 */
+#vn-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 8vh;
+    transition: opacity 0.3s ease;
+}
+
+#vn-overlay.hidden {
+    display: none;
+}
+
+#vn-overlay.vn-fade-in {
+    animation: vnFadeIn 0.3s ease-out;
+}
+
+#vn-overlay.vn-fade-out {
+    animation: vnFadeOut 0.3s ease-out forwards;
+}
+
+@keyframes vnFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes vnFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+/* 抽象立绘容器 */
+#vn-portraits {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    align-items: flex-end;
+    margin-bottom: 24px;
+    height: 140px;
+}
+
+/* 抽象几何立绘 */
+.vn-portrait {
+    width: 90px;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.4;
+    filter: grayscale(0.3);
+}
+
+.vn-portrait.active {
+    opacity: 1;
+    transform: scale(1.1);
+    filter: grayscale(0);
+}
+
+.vn-portrait-label {
+    position: absolute;
+    bottom: -22px;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    font-family: var(--font-cn);
+    transition: color 0.3s ease;
+}
+
+.vn-portrait.active .vn-portrait-label {
+    color: var(--speaker-color, var(--amber-primary));
+}
+
+/* 圆形 - 缇卡 */
+.vn-portrait-circle::before {
+    content: '';
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, var(--portrait-glow), var(--portrait-color));
+    box-shadow: 0 0 20px var(--portrait-glow), inset 0 0 15px rgba(255,255,255,0.2);
+}
+
+/* 方形 - 芬恩 */
+.vn-portrait-square::before {
+    content: '';
+    width: 55px;
+    height: 55px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, var(--portrait-glow), var(--portrait-color));
+    box-shadow: 0 0 18px var(--portrait-glow), inset 0 0 12px rgba(255,255,255,0.15);
+}
+
+/* 三角形 - 米莎 */
+.vn-portrait-triangle::before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 30px solid transparent;
+    border-right: 30px solid transparent;
+    border-bottom: 55px solid var(--portrait-color);
+    filter: drop-shadow(0 0 12px var(--portrait-glow));
+}
+
+/* 菱形 - 洛恩 */
+.vn-portrait-diamond::before {
+    content: '';
+    width: 50px;
+    height: 50px;
+    border-radius: 4px;
+    background: linear-gradient(45deg, var(--portrait-glow), var(--portrait-color));
+    transform: rotate(45deg);
+    box-shadow: 0 0 16px var(--portrait-glow), inset 0 0 10px rgba(255,255,255,0.15);
+}
+
+/* 星形 - 埃塞尔 */
+.vn-portrait-star::before {
+    content: '★';
+    font-size: 55px;
+    color: var(--portrait-color);
+    text-shadow: 0 0 20px var(--portrait-glow), 0 0 40px var(--portrait-glow);
+}
+
+/* 旁白 - 无立绘 */
+.vn-portrait-narrator {
+    display: none;
+}
+
+/* 对话框 */
+#vn-dialogue-box {
+    width: 70%;
+    max-width: 700px;
+    min-height: 140px;
+    background: linear-gradient(180deg, rgba(18, 18, 26, 0.95), rgba(10, 10, 15, 0.98));
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 20px 24px;
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+    transition: border-color 0.3s ease;
+}
+
+#vn-dialogue-box:hover {
+    border-color: var(--amber-dim);
+}
+
+/* 说话者名字 */
+#vn-speaker-name {
+    font-family: var(--font-cn);
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: var(--speaker-color, var(--amber-primary));
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+}
+
+/* 对话文本 */
+#vn-dialogue-text {
+    font-family: var(--font-cn);
+    font-size: 1rem;
+    color: var(--text-primary);
+    line-height: 1.7;
+    min-height: 60px;
+}
+
+#vn-dialogue-text.typing::after {
+    content: '▎';
+    animation: vnCursorBlink 0.6s infinite;
+    color: var(--amber-primary);
+    margin-left: 2px;
+}
+
+@keyframes vnCursorBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* 点击继续提示 */
+#vn-click-hint {
+    position: absolute;
+    bottom: 10px;
+    right: 16px;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    animation: vnHintPulse 1.5s ease-in-out infinite;
+}
+
+#vn-click-hint.hidden {
+    display: none;
+}
+
+@keyframes vnHintPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* 跳过按钮 */
+#vn-skip-btn {
+    position: absolute;
+    top: -50px;
+    right: 16px;
+    padding: 6px 16px;
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-family: var(--font-cn);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#vn-skip-btn:hover:not(.disabled) {
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+}
+
+#vn-skip-btn.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: var(--border-subtle);
+}
+
+/* 跳过确认弹窗 */
+#vn-confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1100;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#vn-confirm-modal.hidden {
+    display: none;
+}
+
+.vn-confirm-box {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 24px 32px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.vn-confirm-text {
+    font-family: var(--font-cn);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
+
+.vn-confirm-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.vn-confirm-btn {
+    padding: 8px 24px;
+    border-radius: 4px;
+    font-family: var(--font-cn);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#vn-confirm-yes {
+    background: var(--amber-dim);
+    border: 1px solid var(--amber-primary);
+    color: var(--bg-deep);
+}
+
+#vn-confirm-yes:hover {
+    background: var(--amber-primary);
+}
+
+#vn-confirm-no {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+}
+
+#vn-confirm-no:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+}
+
+/* 关闭提示 (按 ESC 显示) */
+#vn-close-hint {
+    position: absolute;
+    top: -50px;
+    left: 16px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#vn-overlay:hover #vn-close-hint {
+    opacity: 0.7;
+}
+
+/* 浅色模式覆盖 */
+[data-theme="light"] #vn-overlay {
+    background: rgba(245, 240, 232, 0.9);
+}
+
+[data-theme="light"] #vn-dialogue-box {
+    background: linear-gradient(180deg, rgba(250, 247, 242, 0.98), rgba(245, 240, 232, 0.99));
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255,255,255,0.5);
+}
+
+[data-theme="light"] .vn-confirm-box {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* 立绘浅色模式 */
+[data-theme="light"] .vn-portrait-circle::before {
+    box-shadow: 0 0 20px var(--portrait-glow), inset 0 0 15px rgba(255,255,255,0.3);
+}
+
+[data-theme="light"] .vn-portrait-star::before {
+    text-shadow: 0 0 20px var(--portrait-glow), 0 0 40px var(--portrait-glow);
+}
+
+/* 响应式 */
+@media (max-width: 800px) {
+    #vn-dialogue-box {
+        width: 90%;
+    }
+
+    .vn-portrait {
+        width: 70px;
+        height: 70px;
+    }
+
+    .vn-portrait-circle::before { width: 45px; height: 45px; }
+    .vn-portrait-square::before { width: 42px; height: 42px; }
+    .vn-portrait-triangle::before { border-left: 22px solid transparent; border-right: 22px solid transparent; border-bottom: 42px solid var(--portrait-color); }
+    .vn-portrait-diamond::before { width: 38px; height: 38px; }
+    .vn-portrait-star::before { font-size: 42px; }
+
+    #vn-portraits {
+        gap: 16px;
+        height: 120px;
+    }
+}
+

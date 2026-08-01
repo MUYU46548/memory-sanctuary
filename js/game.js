@@ -49,6 +49,9 @@ function adjustResource(resource, amount) {
     
     const max = resource === 'media' ? 60 : 100;
     state.resources[resource] = Math.max(0, Math.min(max, state.resources[resource] + amount));
+    
+    // 资源变化后立即检查衰竭状态（勘探/事件奖励不推进时间）
+    if (typeof checkSanctuaryDeterioration === 'function') checkSanctuaryDeterioration();
 }
 
 // ==========================================
@@ -727,6 +730,9 @@ function skipTurn() {
     // 推进时间（触发衰减检查）
     advanceTime(1);
     
+    // 检查事件（包括章节过渡VN）
+    if (typeof checkRandomEvent === 'function') checkRandomEvent();
+    
     // 守护者可能对此有反应
     const guardians = MemorySanctuary.data.guardians;
     const randomGuardian = guardians[Math.floor(Math.random() * guardians.length)];
@@ -970,7 +976,32 @@ function initGuardianInteraction() {
     if (talkBtn) {
         talkBtn.addEventListener('click', () => {
             const currentGuardian = getCurrentGuardianId();
-            showGuardianDialogue(currentGuardian, 'idle');
+            const guardian = getGuardianById(currentGuardian);
+            if (!guardian) return;
+            
+            // Get dialogue text
+            let dialogues;
+            if (guardian.moodDialogues) {
+                dialogues = getMoodDialogue(currentGuardian);
+            } else if (guardian.dialogues && guardian.dialogues.idle) {
+                dialogues = guardian.dialogues.idle;
+            } else {
+                dialogues = ['……'];
+            }
+            const text = dialogues[Math.floor(Math.random() * dialogues.length)];
+            
+            // Check if VN mode is enabled for guardian dialogue
+            const settings = (typeof getSettings === 'function') ? getSettings() : { vnGuardianDialogue: true };
+            if (settings.vnGuardianDialogue && typeof VN !== 'undefined') {
+                VN.showQuickDialogue(currentGuardian, text, () => {
+                    // After VN, update the guardian panel text
+                    const dialogueEl = document.getElementById('guardian-dialogue');
+                    if (dialogueEl) dialogueEl.textContent = text;
+                });
+            } else {
+                showGuardianDialogue(currentGuardian, 'idle');
+            }
+            
             menu.classList.add('hidden');
         });
     }
@@ -1189,6 +1220,9 @@ function triggerGuardianInitiative(event) {
         addLog(`${guardian.name}：「${event.dialogue}」`, 'guardian');
         addLog(`获得奖励：${formatReward(event.reward)}`, 'success');
         
+        // 资源变化后立即检查衰竭状态
+        if (typeof checkSanctuaryDeterioration === 'function') checkSanctuaryDeterioration();
+        
         // 如果有指定条目，自动高亮
         if (event.archiveId) {
             highlightRecommendedEntry(event.archiveId);
@@ -1245,7 +1279,21 @@ function checkRandomEvent() {
     });
     
     if (chapterTransitionEvents.length > 0) {
-        triggerEvent(chapterTransitionEvents[0]);
+        const eventToTrigger = chapterTransitionEvents[0];
+        const chapterNum = eventToTrigger.trigger.chapterMin;
+        const sceneId = `chapter_${chapterNum.toString().padStart(2, '0')}`;
+        
+        // Check if VN scene exists for this chapter
+        if (typeof VN !== 'undefined' && VN.getScene(sceneId)) {
+            VN.show(sceneId, () => {
+                // After VN scene completes, show the event panel
+                triggerEvent(eventToTrigger);
+            });
+            return;
+        }
+        
+        // Fallback: trigger event directly if no VN scene
+        triggerEvent(eventToTrigger);
         return;
     }
     
@@ -1357,13 +1405,17 @@ function resolveEvent(choiceIndex) {
             MemorySanctuary.state.resources.energy + choice.effect.energy);
     }
     if (choice.effect.media) {
-        MemorySanctuary.state.resources.media = Math.max(0, 
+        MemorySanctuary.state.resources.media = Math.max(0,
             MemorySanctuary.state.resources.media + choice.effect.media);
     }
     if (choice.effect.environment) {
-        MemorySanctuary.state.resources.environment = Math.max(0, 
+        MemorySanctuary.state.resources.environment = Math.max(0,
             MemorySanctuary.state.resources.environment + choice.effect.environment);
     }
+    
+    // 资源变化后立即检查衰竭状态
+    if (typeof checkSanctuaryDeterioration === 'function') checkSanctuaryDeterioration();
+    
     if (choice.effect.time) {
         advanceTime(choice.effect.time);
     }
@@ -2438,7 +2490,8 @@ function getNGPlusData() {
             bonuses: [],
             unlockedEntries: [],
             guardianFinalesSeen: [],
-            guardianHistory: []
+            guardianHistory: [],
+            seenScenes: []
         };
     }
     try {
@@ -2447,6 +2500,7 @@ function getNGPlusData() {
         if (!data.unlockedEntries) data.unlockedEntries = [];
         if (!data.guardianFinalesSeen) data.guardianFinalesSeen = [];
         if (!data.guardianHistory) data.guardianHistory = [];
+        if (!data.seenScenes) data.seenScenes = [];
         return data;
     } catch (e) {
         return {
@@ -2455,7 +2509,8 @@ function getNGPlusData() {
             bonuses: [],
             unlockedEntries: [],
             guardianFinalesSeen: [],
-            guardianHistory: []
+            guardianHistory: [],
+            seenScenes: []
         };
     }
 }
@@ -2645,8 +2700,29 @@ function checkAchievements(context) {
 function checkSealAchievements(endingId, week) {
     unlockAchievement('first_seal');
     
+    // 结局 ID → 成就 ID 映射
+    const endingToAchievement = {
+        'finale_song_of_doom': 'song_of_doom',
+        'finale_roots_of_civilization': 'roots_of_civilization',
+        'finale_children_of_stardust': 'children_of_stardust',
+        'finale_fire_of_life': 'fire_of_life',
+        'finale_eternal_question': 'eternal_question',
+        'finale_chronicle_of_doom': 'chronicle_of_doom',
+        'finale_voice_of_home': 'voice_of_home',
+        'finale_silent_sanctuary': 'silent_sanctuary',
+        'finale_guardian_of_fragments': 'memory_keeper',
+        'finale_whisper_keeper': 'eternal_keeper',
+        'true_ending': 'beyond_time',
+        'guardian_tika_finale': 'guardian_tika_love',
+        'guardian_finn_finale': 'guardian_finn_love',
+        'guardian_misha_finale': 'guardian_misha_love',
+        'guardian_lorn_finale': 'guardian_lorn_love',
+        'guardian_ethel_finale': 'guardian_ethel_love'
+    };
+    
     if (endingId) {
-        unlockAchievement(endingId);
+        const achievementId = endingToAchievement[endingId] || endingId;
+        unlockAchievement(achievementId);
         if (endingId.startsWith('guardian_finale_')) {
             const gid = endingId.replace('guardian_finale_', '');
             unlockAchievement('guardian_' + gid + '_love');
@@ -2664,7 +2740,7 @@ function checkSealAchievements(endingId, week) {
     const baseEndings = ['complete_memory', 'finale_song_of_doom', 'finale_roots_of_civilization', 
         'finale_children_of_stardust', 'finale_fire_of_life', 'finale_eternal_question',
         'finale_chronicle_of_doom', 'finale_voice_of_home', 'finale_silent_sanctuary'];
-    const allBase = baseEndings.every(e => getUnlockedAchievements().includes(e));
+    const allBase = baseEndings.every(e => getUnlockedAchievements().includes(endingToAchievement[e] || e));
     if (allBase) unlockAchievement('all_endings_base');
     
     checkAchievements({ type: 'seal' });
@@ -3434,12 +3510,22 @@ function sealSanctuary() {
         checkSealAchievements(ending ? ending.id : null, state.week);
     }
     
-    // Show completion modal with portrait (includes ending info)
-    const modalContent = getEndingModalData(ending);
-    showSealModalWithContent(modalContent, ending);
-    
     // Apply NG+ count
     startNewGamePlus();
+    
+    // Show ending VN if scene exists, otherwise show modal directly
+    const endingSceneId = ending ? ending.id : 'silent_sanctuary';
+    if (typeof VN !== 'undefined' && VN.getEndingScene(endingSceneId)) {
+        VN.showEnding(endingSceneId, () => {
+            // After VN completes, show stats modal
+            const modalContent = getEndingModalData(ending);
+            showSealModalWithContent(modalContent, ending);
+        });
+    } else {
+        // Fallback: show modal directly
+        const modalContent = getEndingModalData(ending);
+        showSealModalWithContent(modalContent, ending);
+    }
 }
 
 function showSealModalWithContent(modalContent, ending) {

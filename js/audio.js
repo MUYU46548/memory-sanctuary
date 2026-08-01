@@ -374,6 +374,115 @@ window.AudioSystem = (() => {
         noise.start(now);
     }
 
+    // ─── VN 视觉小说音效 ───
+
+    function playVNOpen() {
+        if (!ctx || isMuted) return;
+        resume();
+        const now = ctx.currentTime;
+        // 低沉的开启音，像大门缓缓打开
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.3);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(now);
+        osc.stop(now + 0.5);
+    }
+
+    function playVNAdvance() {
+        if (!ctx || isMuted) return;
+        resume();
+        const now = ctx.currentTime;
+        // 轻柔的点击音
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, now);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(now);
+        osc.stop(now + 0.15);
+    }
+
+    function playVNSkipConfirm() {
+        if (!ctx || isMuted) return;
+        resume();
+        const now = ctx.currentTime;
+        // 双音提示
+        [400, 500].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.08, now + i * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.2);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now + i * 0.08);
+            osc.stop(now + i * 0.08 + 0.25);
+        });
+    }
+
+    function playVNSkip() {
+        if (!ctx || isMuted) return;
+        resume();
+        const now = ctx.currentTime;
+        // 下降音，表示跳过
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, now);
+        osc.frequency.exponentialRampToValueAtTime(200, now + 0.25);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(now);
+        osc.stop(now + 0.35);
+    }
+
+    function playVNCancel() {
+        if (!ctx || isMuted) return;
+        resume();
+        const now = ctx.currentTime;
+        // 短促的取消音
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, now);
+        gain.gain.setValueAtTime(0.07, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(now);
+        osc.stop(now + 0.15);
+    }
+
+    function playVNClose() {
+        if (!ctx || isMuted) return;
+        resume();
+        const now = ctx.currentTime;
+        // 温暖的关闭音
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(200, now);
+        osc.frequency.exponentialRampToValueAtTime(300, now + 0.15);
+        gain.gain.setValueAtTime(0.09, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(now);
+        osc.stop(now + 0.35);
+    }
+
     // 播放场景特征音效
     function playSceneSound(scene) {
         if (!ctx || isMuted || scene === currentScene) return;
@@ -512,6 +621,12 @@ window.AudioSystem = (() => {
         playExploreReturnNarrative,
         playExploreReturnRisk,
         playSceneSound,
+        playVNOpen,
+        playVNAdvance,
+        playVNSkipConfirm,
+        playVNSkip,
+        playVNCancel,
+        playVNClose,
         updateDroneByEnergy,
         updateHeartbeat,
         resume,

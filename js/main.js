@@ -38,6 +38,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof initSaveSystem === 'function') initSaveSystem();
         if (typeof initSettings === 'function') initSettings();
         
+        // 初始化视觉小说引擎
+        if (typeof VN !== 'undefined' && MemorySanctuary.data.scenes) {
+            VN.init(MemorySanctuary.data.scenes);
+            if (MemorySanctuary.data.endingScenes) {
+                VN.loadEndingScenes(MemorySanctuary.data.endingScenes);
+            }
+        }
+        
         // 音频系统延迟初始化（需要用户交互，在首次点击时触发）
         if (typeof AudioSystem !== 'undefined') {
             const initAudio = () => {
@@ -87,6 +95,22 @@ async function loadGameData() {
     } catch (e) {
         console.warn('[数据] achievements.json 加载失败');
         MemorySanctuary.data.achievements = [];
+    }
+    try {
+        const scenesRes = await fetch('data/scenes.json');
+        MemorySanctuary.data.scenes = await scenesRes.json();
+        console.log(`[数据] ${Object.keys(MemorySanctuary.data.scenes).length} 个剧情场景`);
+    } catch (e) {
+        console.warn('[数据] scenes.json 加载失败，VN系统不可用');
+        MemorySanctuary.data.scenes = {};
+    }
+    try {
+        const endingScenesRes = await fetch('data/ending_scenes.json');
+        MemorySanctuary.data.endingScenes = await endingScenesRes.json();
+        console.log(`[数据] ${Object.keys(MemorySanctuary.data.endingScenes).length} 个结局场景`);
+    } catch (e) {
+        console.warn('[数据] ending_scenes.json 加载失败');
+        MemorySanctuary.data.endingScenes = {};
     }
 
     console.log(`[数据] ${MemorySanctuary.data.archives.length}条目, ${MemorySanctuary.data.vaults.length}存储室, ${MemorySanctuary.data.guardians.length}守护者, ${MemorySanctuary.data.events.length}随机事件, ${MemorySanctuary.data.scheduledEvents.length}调度事件, ${MemorySanctuary.data.explorations.length}勘探点, ${MemorySanctuary.data.projects.length}项目`);
@@ -283,7 +307,8 @@ function initSaveData() {
         localStorage.setItem('memory-sanctuary-ngplus', JSON.stringify({
             playthroughCount: 0,
             totalArchivesSaved: 0,
-            bonuses: []
+            bonuses: [],
+            seenScenes: []
         }));
     }
     
@@ -292,7 +317,8 @@ function initSaveData() {
     if (!settingsRaw) {
         localStorage.setItem('memory-sanctuary-settings', JSON.stringify({
             skipConfirm: false,
-            showResult: true
+            showResult: true,
+            vnGuardianDialogue: true
         }));
     }
 }
@@ -318,11 +344,13 @@ function initSettings() {
     const closeBtn = document.getElementById('settings-close');
     const skipConfirmCheckbox = document.getElementById('setting-skip-confirm');
     const showResultCheckbox = document.getElementById('setting-show-result');
+    const vnGuardianCheckbox = document.getElementById('setting-vn-guardian');
     
     // Load current settings into checkboxes
     const settings = getSettings();
     if (skipConfirmCheckbox) skipConfirmCheckbox.checked = settings.skipConfirm;
     if (showResultCheckbox) showResultCheckbox.checked = settings.showResult;
+    if (vnGuardianCheckbox) vnGuardianCheckbox.checked = settings.vnGuardianDialogue;
     
     // Open settings from title screen
     if (titleSettingsBtn) {
@@ -364,6 +392,13 @@ function initSettings() {
         showResultCheckbox.addEventListener('change', () => {
             const s = getSettings();
             s.showResult = showResultCheckbox.checked;
+            localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
+        });
+    }
+    if (vnGuardianCheckbox) {
+        vnGuardianCheckbox.addEventListener('change', () => {
+            const s = getSettings();
+            s.vnGuardianDialogue = vnGuardianCheckbox.checked;
             localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
         });
     }

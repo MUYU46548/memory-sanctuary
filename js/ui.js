@@ -665,10 +665,31 @@ function renderCodexEndings() {
     const endings = MemorySanctuary.data.endings || [];
     const unlockedAchievements = getUnlockedAchievements();
     
+    // 结局 ID → 成就 ID 映射
+    const endingToAchievement = {
+        'finale_song_of_doom': 'song_of_doom',
+        'finale_roots_of_civilization': 'roots_of_civilization',
+        'finale_children_of_stardust': 'children_of_stardust',
+        'finale_fire_of_life': 'fire_of_life',
+        'finale_eternal_question': 'eternal_question',
+        'finale_chronicle_of_doom': 'chronicle_of_doom',
+        'finale_voice_of_home': 'voice_of_home',
+        'finale_silent_sanctuary': 'silent_sanctuary',
+        'finale_guardian_of_fragments': 'memory_keeper',
+        'finale_whisper_keeper': 'eternal_keeper',
+        'true_ending': 'beyond_time',
+        'guardian_tika_finale': 'guardian_tika_love',
+        'guardian_finn_finale': 'guardian_finn_love',
+        'guardian_misha_finale': 'guardian_misha_love',
+        'guardian_lorn_finale': 'guardian_lorn_love',
+        'guardian_ethel_finale': 'guardian_ethel_love'
+    };
+    
     container.innerHTML = '';
     
     for (const ending of endings) {
-        const isUnlocked = unlockedAchievements.includes(ending.id);
+        const achievementId = endingToAchievement[ending.id] || ending.id;
+        const isUnlocked = unlockedAchievements.includes(achievementId);
         
         const item = document.createElement('div');
         item.className = `codex-ending-item ${isUnlocked ? 'unlocked' : 'locked'}`;
