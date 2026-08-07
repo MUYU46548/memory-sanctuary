@@ -18,8 +18,29 @@ function initUI() {
     // Initialize title screen panels (must be here because ui.js loads after main.js)
     initAchievementsPanel();
     initCodexPanel();
+    initProjectPanel();
+    initResourceTooltips();
 
     console.log('[UI] 初始化完成');
+}
+
+function initProjectPanel() {
+    const projectBtn = document.getElementById('project-btn');
+    if (projectBtn) {
+        projectBtn.addEventListener('click', () => openProjectPanel());
+    }
+    
+    const closeBtn = document.getElementById('project-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => closeProjectPanel());
+    }
+    
+    const overlay = document.getElementById('project-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeProjectPanel();
+        });
+    }
 }
 
 function renderAll() {
@@ -43,17 +64,19 @@ function updateEmergencyButton() {
     if (!btn || !MemorySanctuary.state) return;
     const state = MemorySanctuary.state;
     
-    // 应急协议在任意资源归零或低资源时可用
+    // 应急协议在任意资源归零或低资源时可用，或腐败度 > 0
     const res = state.resources;
     const anyZero = res.energy <= 0 || res.media <= 0 || res.environment <= 0;
     const anyCritical = res.energy < 20 || res.media < 15 || res.environment < 15;
+    const hasCorruption = (state.emergencyCorruption || 0) > 0;
     
     if (state.gameOver || state.week >= 48) {
         btn.disabled = true;
         btn.title = '终局已至';
-    } else if (anyZero || anyCritical) {
+        btn.classList.remove('emergency-ready');
+    } else if (anyZero || anyCritical || hasCorruption) {
         btn.disabled = false;
-        btn.title = '应急协议：牺牲环境换取能源';
+        btn.title = '⚡ 应急协议 — 点击使用非常规手段';
         btn.classList.add('emergency-ready');
     } else {
         btn.disabled = true;
@@ -149,20 +172,30 @@ function renderResources() {
     const energyEl = document.getElementById('energy-value');
     const mediaEl = document.getElementById('media-value');
     const envEl = document.getElementById('environment-value');
+    const foodEl = document.getElementById('food-value');
     
     if (energyEl) energyEl.textContent = Math.floor(resources.energy);
     if (mediaEl) mediaEl.textContent = Math.floor(resources.media);
     if (envEl) envEl.textContent = Math.floor(resources.environment);
+    if (foodEl) foodEl.textContent = Math.floor(resources.food);
     
     updateResourceColor('res-energy', resources.energy, 100);
     updateResourceColor('res-media', resources.media, 60);
     updateResourceColor('res-environment', resources.environment, 100);
+    updateResourceColor('res-food', resources.food, 80);
+    
+    // 刷新悬停提示（如果可见）
+    const tooltip = document.getElementById('resource-tooltip');
+    if (tooltip && tooltip.classList.contains('visible') && tooltip.dataset.resourceKey) {
+        tooltip.innerHTML = buildResourceTooltip(tooltip.dataset.resourceKey);
+    }
     
     // 圣所衰竭视觉指示
     const det = MemorySanctuary.state.deterioration;
     const resEnergy = document.getElementById('res-energy');
     const resMedia = document.getElementById('res-media');
     const resEnv = document.getElementById('res-environment');
+    const resFood = document.getElementById('res-food');
     
     if (resEnergy) {
         if (det.energy) resEnergy.classList.add('deterioration');
@@ -176,16 +209,21 @@ function renderResources() {
         if (det.environment) resEnv.classList.add('deterioration');
         else resEnv.classList.remove('deterioration');
     }
+    if (resFood) {
+        if (det.food) resFood.classList.add('deterioration');
+        else resFood.classList.remove('deterioration');
+    }
 }
 
 function getResourceStatus() {
     const state = MemorySanctuary.state;
-    if (!state) return { energy: 0, media: 0, environment: 0 };
+    if (!state) return { energy: 0, media: 0, environment: 0, food: 0 };
     
     return {
         energy: Math.max(0, state.resources.energy),
         media: Math.max(0, state.resources.media),
-        environment: Math.max(0, state.resources.environment)
+        environment: Math.max(0, state.resources.environment),
+        food: Math.max(0, state.resources.food || 0)
     };
 }
 
@@ -202,7 +240,7 @@ function updateResourceColor(elementId, value, max) {
 }
 
 function getResourceName(resource) {
-    const names = { energy: '能源', media: '介质', environment: '环境' };
+    const names = { energy: '能源', media: '介质', environment: '环境', food: '食物' };
     return names[resource] || resource;
 }
 
@@ -360,20 +398,29 @@ function updateProjectButton() {
     const week = MemorySanctuary.state.week;
     const hasAvailableProjects = MemorySanctuary.data.projects && 
         MemorySanctuary.data.projects.some(p => canStartProject(p));
+    const hasLockedButRelevant = MemorySanctuary.data.projects &&
+        MemorySanctuary.data.projects.some(p => p.availableAfter && week >= p.availableAfter - 4);
     
-    if (week >= 20 && hasAvailableProjects) {
+    if (hasAvailableProjects || hasLockedButRelevant) {
         btn.disabled = false;
-        btn.title = '圣所维护项目（可开始）';
-        btn.classList.add('ready');
-    } else if (week >= 20 && MemorySanctuary.state.activeProjects && MemorySanctuary.state.activeProjects.length > 0) {
-        btn.disabled = false;
-        btn.title = '圣所维护项目（进行中）';
-        btn.classList.remove('ready');
+        btn.title = hasAvailableProjects ? '圣所维护项目（可开始）' : '圣所维护项目';
+        btn.classList.toggle('ready', hasAvailableProjects);
     } else {
         btn.disabled = true;
-        btn.title = '圣所维护项目（未解锁）';
+        btn.title = '圣所维护项目（第 8 周解锁）';
         btn.classList.remove('ready');
     }
+}
+
+function openProjectPanel() {
+    renderProjectList();
+    const overlay = document.getElementById('project-overlay');
+    if (overlay) overlay.classList.remove('hidden');
+}
+
+function closeProjectPanel() {
+    const overlay = document.getElementById('project-overlay');
+    if (overlay) overlay.classList.add('hidden');
 }
 
 function renderProjectList() {
@@ -445,6 +492,8 @@ function getProjectEffectText(project) {
     switch (e.type) {
         case 'resourceBoost':
             return `每回合 +${e.amount} ${getResourceName(e.resource)}`;
+        case 'foodBoost':
+            return `每回合 +${e.amount} 食物`;
         case 'decayReduction':
             return `${getResourceName(e.resource)} 衰减降低 ${Math.round(e.percent * 100)}%`;
         case 'unlockArchives':
@@ -518,7 +567,7 @@ function renderAchievementsList(filter) {
         const aUnlocked = unlocked.includes(a.id);
         const bUnlocked = unlocked.includes(b.id);
         if (aUnlocked !== bUnlocked) return bUnlocked - aUnlocked;
-        return a.category.localeCompare(b.category);
+        return (a.category || '').localeCompare(b.category || '');
     });
     
     if (filtered.length === 0) {
@@ -784,3 +833,152 @@ function renderCodexEntries() {
         container.appendChild(vaultDiv);
     }
 }
+
+// ==========================================
+// 资源栏悬停提示（EU4/Stellaris 风格）
+// ==========================================
+
+function initResourceTooltips() {
+    const resourceKeys = ['energy', 'media', 'environment', 'food'];
+    resourceKeys.forEach(key => {
+        const el = document.getElementById('res-' + key);
+        if (!el) return;
+        
+        el.addEventListener('mouseenter', (e) => showTooltip(e, key));
+        el.addEventListener('mousemove', (e) => moveTooltip(e));
+        el.addEventListener('mouseleave', () => hideTooltip());
+    });
+}
+
+function buildResourceTooltip(resourceKey) {
+    const state = MemorySanctuary.state;
+    if (!state || !state.resourceChanges) return '';
+    
+    const changes = state.resourceChanges[resourceKey] || 0;
+    const changeClass = changes > 0 ? 'gain' : (changes < 0 ? 'loss' : 'neutral');
+    const changeSign = changes > 0 ? '+' : '';
+    
+    // 收集来源分解
+    const breakdowns = getResourceBreakdown(resourceKey);
+    
+    let html = `<div class="rt-title">${getResourceName(resourceKey)}</div>`;
+    html += `<div class="rt-total ${changeClass}">${changeSign}${changes.toFixed(1)} / 回合</div>`;
+    
+    if (breakdowns.length > 0) {
+        html += '<div class="rt-breakdown">';
+        breakdowns.forEach(b => {
+            const bClass = b.amount > 0 ? 'gain' : 'loss';
+            const bSign = b.amount > 0 ? '+' : '';
+            html += `<div class="rt-item ${bClass}">${bSign}${b.amount.toFixed(1)} ${b.source}</div>`;
+        });
+        html += '</div>';
+    }
+    
+    // 储量信息
+    const maxCap = resourceKey === 'media' ? 60 : (resourceKey === 'food' ? 80 : 100);
+    const current = state.resources[resourceKey] || 0;
+    html += `<div class="rt-capacity">储量: ${current.toFixed(1)} / ${maxCap}</div>`;
+    
+    return html;
+}
+
+function getResourceBreakdown(resourceKey) {
+    const state = MemorySanctuary.state;
+    if (!state) return [];
+    
+    const breakdowns = [];
+    
+    // 自然衰减
+    const decay = (typeof getWeeklyDecay === 'function') ? getWeeklyDecay() : null;
+    if (decay && decay[resourceKey]) {
+        breakdowns.push({ amount: -decay[resourceKey], source: '自然衰减' });
+    }
+    
+    // 腐败度额外衰减（作用于能源/介质/环境，不作用于食物）
+    if (state.emergencyCorruption > 0 && resourceKey !== 'food') {
+        const corruptionPenalty = Math.floor(state.emergencyCorruption / 20) * 0.5;
+        if (corruptionPenalty > 0) {
+            breakdowns.push({ amount: -corruptionPenalty, source: '圣所腐败' });
+        }
+    }
+    
+    // 项目增益
+    if (state.activeProjects) {
+        state.activeProjects.forEach(p => {
+            const proj = (typeof getProjectById === 'function') ? getProjectById(p.id) : null;
+            if (proj && proj.effect && proj.effect.type === 'resourceBoost' && proj.effect.resource === resourceKey && proj.effect.amount) {
+                breakdowns.push({ amount: proj.effect.amount, source: proj.name || '项目' });
+            }
+            if (proj && proj.effect && proj.effect.type === 'foodBoost' && resourceKey === 'food' && proj.effect.amount) {
+                breakdowns.push({ amount: proj.effect.amount, source: proj.name || '农场' });
+            }
+        });
+    }
+    
+    // 持续效果（ongoing effects）
+    if (state.ongoingEffects) {
+        state.ongoingEffects.forEach(eff => {
+            if (eff.resource === resourceKey && eff.amount) {
+                breakdowns.push({ amount: eff.amount, source: '持续效果' + (eff.remainingTurns ? ` (${eff.remainingTurns}回合)` : '') });
+            }
+        });
+    }
+    
+    // 解锁的永久奖励
+    if (state.unlockedBonuses) {
+        state.unlockedBonuses.forEach(bonus => {
+            if (bonus === 'energy_per_turn_3' && resourceKey === 'energy') {
+                breakdowns.push({ amount: 3, source: '永久增益' });
+            } else if (bonus === 'energy_per_turn_2' && resourceKey === 'energy') {
+                breakdowns.push({ amount: 2, source: '永久增益' });
+            }
+        });
+    }
+    
+    return breakdowns;
+}
+
+function showTooltip(event, resourceKey) {
+    let tooltip = document.getElementById('resource-tooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'resource-tooltip';
+        document.body.appendChild(tooltip);
+    }
+    
+    tooltip.dataset.resourceKey = resourceKey;
+    tooltip.innerHTML = buildResourceTooltip(resourceKey);
+    tooltip.classList.add('visible');
+    
+    moveTooltip(event);
+}
+
+function moveTooltip(event) {
+    const tooltip = document.getElementById('resource-tooltip');
+    if (!tooltip || !tooltip.classList.contains('visible')) return;
+    
+    const padding = 12;
+    let x = event.clientX + padding;
+    let y = event.clientY + padding;
+    
+    // 防止溢出屏幕右边缘
+    const rect = tooltip.getBoundingClientRect();
+    if (x + rect.width > window.innerWidth - padding) {
+        x = event.clientX - rect.width - padding;
+    }
+    // 防止溢出屏幕底部
+    if (y + rect.height > window.innerHeight - padding) {
+        y = event.clientY - rect.height - padding;
+    }
+    
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+}
+
+function hideTooltip() {
+    const tooltip = document.getElementById('resource-tooltip');
+    if (tooltip) {
+        tooltip.classList.remove('visible');
+    }
+}
+

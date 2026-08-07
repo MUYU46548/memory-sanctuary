@@ -19,6 +19,243 @@ window.AudioSystem = (() => {
     let heartbeatInterval = null;
     let currentScene = null;
 
+    // ─── BGM 配置（数据驱动，方便扩展） ───
+    // 文件缺失时自动跳过，不阻塞游戏
+    const BGM_CONFIG = {
+        title:         { file: 'title.mp3',         loop: true,  volume: 0.6, label: '标题' },
+        game:          { file: 'game.mp3',          loop: true,  volume: 0.5, label: '游戏' },
+        game_late:     { file: 'game_late.mp3',     loop: true,  volume: 0.5, label: '游戏中期' },
+        game_final:    { file: 'game_final.mp3',    loop: true,  volume: 0.5, label: '游戏后期' },
+        ending_normal: { file: 'ending_normal.mp3', loop: false, volume: 0.6, label: '普通结局' },
+        ending_true:   { file: 'ending_true.mp3',   loop: false, volume: 0.6, label: '真结局' }
+    };
+
+    // BGM 状态
+    let bgmAudio = new Audio();  // 单一 Audio 元素，复用不重建
+    let bgmCurrentScene = null;    // 当前 BGM 场景 ID
+    let bgmMuted = false;          // BGM 静音（独立于音效）
+    let bgmVolume = 1.0;           // BGM 音量倍率 (0-1)
+    let bgmFadeTimer = null;       // 淡入淡出定时器
+    let bgmFailedScenes = {};      // 记录加载失败的场景，避免重复请求
+    let bgmPendingScene = null;    // 等待用户交互后播放的场景
+    let bgmIsPlaying = false;      // 当前是否有 BGM 在播放
+    let bgmGeneration = 0;         // 每次 playBGM 递增，用于检测过期回调
+
+    // ─── BGM 核心方法 ───
+
+    function getBGMPath(sceneId) {
+        const config = BGM_CONFIG[sceneId];
+        if (!config) return null;
+        return `assets/bgm/${config.file}`;
+    }
+
+    // 立即停止（硬切）— 用于场景切换，操作单一 audio 元素
+    function hardStopBGM() {
+        if (bgmFadeTimer) {
+            clearInterval(bgmFadeTimer);
+            bgmFadeTimer = null;
+        }
+        // 先清空 src 强制浏览器停止加载/播放，再 pause
+        bgmAudio.src = '';
+        bgmAudio.pause();
+        bgmCurrentScene = null;
+        bgmIsPlaying = false;
+    }
+
+    // 淡出停止 — 用于彻底停止 BGM（如返回标题、游戏结束）
+    function stopBGM() {
+        if (!bgmIsPlaying) return;
+        if (bgmFadeTimer) clearInterval(bgmFadeTimer);
+
+        const startVolume = bgmAudio.volume;
+        const steps = 20;
+        const duration = 800;
+        const interval = duration / steps;
+        let step = 0;
+
+        bgmFadeTimer = setInterval(() => {
+            step++;
+            bgmAudio.volume = Math.max(0, startVolume * (1 - step / steps));
+            if (step >= steps) {
+                clearInterval(bgmFadeTimer);
+                bgmFadeTimer = null;
+                bgmAudio.src = '';
+                bgmAudio.pause();
+                bgmCurrentScene = null;
+                bgmIsPlaying = false;
+            }
+        }, interval);
+    }
+
+    // 播放 BGM（场景切换：硬切 + 淡入）
+    // 同步停止旧音频 + 设置新 src，异步播放（fire-and-forget with race check）
+    function playBGM(sceneId) {
+        const config = BGM_CONFIG[sceneId];
+        if (!config) {
+            console.warn(`[BGM] 未知场景: ${sceneId}`);
+            return;
+        }
+
+        // 同场景已在播放 → 跳过
+        if (bgmCurrentScene === sceneId && bgmIsPlaying) return;
+
+        // 已记录为不可用 → 跳过
+        if (bgmFailedScenes[sceneId]) {
+            console.warn(`[BGM] 场景 ${sceneId} 已记录为不可用，跳过`);
+            return;
+        }
+
+        // 硬切上一首（立即停止，无淡出）
+        hardStopBGM();
+
+        // 递增 generation，使过期的 play() 回调失效
+        bgmGeneration++;
+        const thisGen = bgmGeneration;
+
+        // 设置新 src 并尝试播放
+        const path = getBGMPath(sceneId);
+        bgmAudio.src = path;
+        bgmAudio.loop = config.loop;
+        bgmAudio.volume = 0;
+        bgmAudio.preload = 'auto';
+        bgmCurrentScene = sceneId;
+
+        bgmAudio.play()
+            .then(() => {
+                // 竞争检查：generation 不匹配说明已有新的 playBGM 调用
+                if (thisGen !== bgmGeneration || bgmCurrentScene !== sceneId) {
+                    bgmAudio.src = '';
+                    bgmAudio.pause();
+                    bgmIsPlaying = false;
+                    return;
+                }
+                bgmIsPlaying = true;
+                fadeInBGM(config.volume);
+                console.log(`[BGM] 开始播放: ${sceneId}`);
+            })
+            .catch(e => {
+                if (e.name === 'NotAllowedError') {
+                    console.log(`[BGM] 等待用户交互后播放: ${sceneId}`);
+                    bgmPendingScene = sceneId;
+                    bgmCurrentScene = null;
+                    bgmIsPlaying = false;
+                    return;
+                }
+                console.warn(`[BGM] 播放失败: ${e.message}`);
+                bgmFailedScenes[sceneId] = true;
+                bgmCurrentScene = null;
+                bgmIsPlaying = false;
+            });
+    }
+
+    // 同步版本（用于已知文件存在的场景）
+    function playBGMSync(sceneId) {
+        const config = BGM_CONFIG[sceneId];
+        if (!config) return;
+        if (bgmCurrentScene === sceneId && bgmIsPlaying) return;
+        if (bgmFailedScenes[sceneId]) return;
+
+        hardStopBGM();
+
+        bgmGeneration++;
+        const thisGen = bgmGeneration;
+
+        const path = getBGMPath(sceneId);
+        bgmAudio.src = path;
+        bgmAudio.loop = config.loop;
+        bgmAudio.volume = 0;
+        bgmAudio.preload = 'auto';
+        bgmCurrentScene = sceneId;
+
+        bgmAudio.play()
+            .then(() => {
+                if (thisGen !== bgmGeneration || bgmCurrentScene !== sceneId) {
+                    bgmAudio.src = '';
+                    bgmAudio.pause();
+                    bgmIsPlaying = false;
+                    return;
+                }
+                bgmIsPlaying = true;
+                fadeInBGM(config.volume);
+            })
+            .catch(e => {
+                if (e.name === 'NotAllowedError') {
+                    bgmPendingScene = sceneId;
+                    bgmCurrentScene = null;
+                    bgmIsPlaying = false;
+                    return;
+                }
+                bgmFailedScenes[sceneId] = true;
+                bgmCurrentScene = null;
+                bgmIsPlaying = false;
+            });
+    }
+
+    // 用户交互后尝试播放等待中的 BGM
+    function tryPlayBGMAfterInteraction() {
+        if (bgmPendingScene) {
+            const pending = bgmPendingScene;
+            bgmPendingScene = null;
+            playBGM(pending);
+        }
+    }
+
+    // 淡入 BGM
+    function fadeInBGM(targetVolume) {
+        if (bgmFadeTimer) clearInterval(bgmFadeTimer);
+        
+        const effectiveVolume = bgmMuted ? 0 : targetVolume * bgmVolume;
+        const steps = 30;
+        const duration = 1500; // 1.5s
+        const interval = duration / steps;
+        let step = 0;
+
+        bgmFadeTimer = setInterval(() => {
+            step++;
+            if (bgmIsPlaying) {
+                bgmAudio.volume = Math.min(effectiveVolume, (effectiveVolume * step) / steps);
+            }
+            if (step >= steps) {
+                clearInterval(bgmFadeTimer);
+                bgmFadeTimer = null;
+            }
+        }, interval);
+    }
+
+    // 设置 BGM 音量 (0-1)
+    function setBGMVolume(value) {
+        bgmVolume = Math.max(0, Math.min(1, value));
+        if (bgmIsPlaying && !bgmMuted) {
+            const config = BGM_CONFIG[bgmCurrentScene];
+            const target = config ? config.volume * bgmVolume : bgmVolume;
+            bgmAudio.volume = target;
+        }
+    }
+
+    // BGM 静音切换（独立于音效）
+    function toggleBGMMute() {
+        bgmMuted = !bgmMuted;
+        if (bgmIsPlaying) {
+            const config = BGM_CONFIG[bgmCurrentScene];
+            const target = bgmMuted ? 0 : (config ? config.volume * bgmVolume : bgmVolume);
+            bgmAudio.volume = target;
+        }
+        return bgmMuted;
+    }
+
+    // 获取当前 BGM 场景 ID
+    function getCurrentBGM() {
+        return bgmCurrentScene;
+    }
+
+    // ─── 章节 BGM 自动切换辅助 ───
+    // 根据游戏周数返回对应的 game BGM 场景 ID
+    function getGameBGMForWeek(week) {
+        if (week >= 36) return 'game_final';
+        if (week >= 16) return 'game_late';
+        return 'game';
+    }
+
     // 延迟初始化（用户交互后）
     function init() {
         if (isInitialized) return;
@@ -295,6 +532,33 @@ window.AudioSystem = (() => {
         osc2.stop(now + 0.35);
     }
 
+    // 播放项目完成音
+    function playProjectComplete() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        
+        // 上升音：象征项目完成
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.linearRampToValueAtTime(600, now + 0.2);
+        osc.frequency.linearRampToValueAtTime(900, now + 0.4);
+        
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.12, now + 0.1);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+        
+        osc.connect(gain);
+        gain.connect(masterGain);
+        
+        osc.start(now);
+        osc.stop(now + 0.7);
+    }
+    
     // 播放机械启动音（项目面板/应急协议）
     function playMechanicalEngage() {
         if (!ctx || isMuted) return;
@@ -616,6 +880,7 @@ window.AudioSystem = (() => {
         playAlertTone,
         playShatterSound,
         playMechanicalEngage,
+        playProjectComplete,
         playExploreDeploy,
         playExploreReturnResource,
         playExploreReturnNarrative,
@@ -632,7 +897,18 @@ window.AudioSystem = (() => {
         resume,
         toggleMute,
         setVolume,
+        // BGM 系统
+        playBGM,
+        playBGMSync,
+        stopBGM,
+        setBGMVolume,
+        toggleBGMMute,
+        getCurrentBGM,
+        getGameBGMForWeek,
+        tryPlayBGMAfterInteraction,
         get isMuted() { return isMuted; },
-        get isReady() { return isInitialized; }
+        get isReady() { return isInitialized; },
+        get isBGMMuted() { return bgmMuted; },
+        get bgmVolumeLevel() { return bgmVolume; }
     };
 })();

@@ -2269,6 +2269,462 @@
           "feedback": {}
         }
       ]
+    },
+    {
+      "id": "event_refugee_01",
+      "title": "流亡者叩门",
+      "description": "三名地表流亡者来到圣所入口。他们饥肠辘辘，恳求分享一半食物。米莎看着你，等待决定。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 4,
+        "weekMax": 12,
+        "probability": 0.3
+      },
+      "choices": [
+        {
+          "text": "分享一半食物",
+          "effect": {
+            "food": -15
+          },
+          "result": "流亡者们含泪接过食物。米莎轻声说：「你做了正确的事。」",
+          "feedback": {
+            "guardianMood": {
+              "misha": 5
+            },
+            "message": "米莎对你的决断深表赞同。"
+          }
+        },
+        {
+          "text": "拒绝",
+          "effect": {},
+          "result": "流亡者们离开了。埃塞尔望向他们的背影，沉默了很久。",
+          "feedback": {
+            "guardianMood": {
+              "misha": -3,
+              "ethel": -2
+            },
+            "message": "米莎叹了口气。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "event_bumper_crop_01",
+      "title": "丰收",
+      "description": "水培农场迎来了一轮超出预期的产出。芬恩建议将多余食物分享给守护者，提升士气。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 12,
+        "weekMax": 24,
+        "probability": 0.3
+      },
+      "choices": [
+        {
+          "text": "分享多余食物",
+          "effect": {
+            "food": 10
+          },
+          "result": "守护者们共享了一顿难得的晚餐。芬恩笑着说：\"这才是生活该有的样子。\"",
+          "feedback": {
+            "guardianMood": {
+              "finn": 3,
+              "tika": 2
+            },
+            "message": "守护者们的关系更加紧密了。"
+          }
+        },
+        {
+          "text": "储存起来",
+          "effect": {
+            "food": 20
+          },
+          "result": "多余食物被妥善储存。理性地说，这是最优选择。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": 1
+            },
+            "message": "洛恩认可你的务实。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "event_food_contamination_01",
+      "title": "食物污染",
+      "description": "一批储存的食物因管道泄漏被污染。虽然避免了饥荒，但损失惨重。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 8,
+        "weekMax": 20,
+        "probability": 0.25
+      },
+      "choices": [
+        {
+          "text": "接受损失",
+          "effect": {
+            "food": -20
+          },
+          "result": "污染食物被处理。守护者们的配给减少了一半。",
+          "feedback": {
+            "guardianMood": {
+              "tika": -2
+            },
+            "message": "蒂卡默默接受了现实。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "event_hunting_party_01",
+      "title": "狩猎邀请",
+      "description": "米莎提议带队前往地表捕猎可食用的发光菌类。但地表危险，可能得不偿失。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 6,
+        "weekMax": 18,
+        "probability": 0.25
+      },
+      "choices": [
+        {
+          "text": "批准狩猎",
+          "effect": {
+            "food": 15
+          },
+          "result": "米莎带着一袋菌类归来。「今天的餐桌会丰盛一些。」",
+          "feedback": {
+            "guardianMood": {
+              "misha": 4
+            },
+            "message": "米莎为自己的收获感到自豪。"
+          }
+        },
+        {
+          "text": "太危险了",
+          "effect": {},
+          "result": "米莎点点头，但难掩失落。",
+          "feedback": {
+            "guardianMood": {
+              "misha": -2
+            },
+            "message": "米莎沉默了一整天。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "event_rationing_01",
+      "title": "配给危机",
+      "description": "食物储备持续下降。芬恩建议将每日配给量减少三分之一以撑过难关。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 6,
+        "weekMax": 10,
+        "probability": 0.35
+      },
+      "choices": [
+        {
+          "text": "同意减量（-10食物但避免心情下降）",
+          "effect": {
+            "food": -10
+          },
+          "result": "守护者们默默接受了减少的配给。虽然吃不饱，但没人抱怨。",
+          "feedback": {
+            "guardianMood": {
+              "finn": 2
+            },
+            "message": "芬恩感谢你的信任。"
+          }
+        },
+        {
+          "text": "维持原量（守护者心情+2/-15食物）",
+          "effect": {
+            "food": -15
+          },
+          "result": "额外的消耗让储备进一步告急，但守护者们感受到了被珍视。",
+          "feedback": {
+            "guardianMood": {
+              "finn": 3,
+              "tika": 2
+            },
+            "message": "守护者们的心更加紧密了。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "event_mushroom_bloom_01",
+      "title": "菌类繁盛",
+      "description": "圣所深处一片被遗忘的蘑菇培养区突然大面积出菇。这是意外之喜，但品质参差不齐。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 10,
+        "weekMax": 16,
+        "probability": 0.3
+      },
+      "choices": [
+        {
+          "text": "全部采集（+25食物）",
+          "effect": {
+            "food": 25
+          },
+          "result": "大筐菌类被运进仓库。虽然卖相不佳，但聊胜于无。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 2
+            },
+            "message": "蒂卡对这批'意外之财'很满意。"
+          }
+        },
+        {
+          "text": "精选食用（+10食物，环境+5）",
+          "effect": {
+            "food": 10,
+            "environment": 5
+          },
+          "result": "只采收确认安全的品种，其余重新覆土。谨慎总是对的。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": 2
+            },
+            "message": "洛恩赞许你的谨慎。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "event_supply_cache_01",
+      "title": "补给窖藏",
+      "description": "一次常规勘探中，队伍在旧时代避难所发现了封存完好的应急食品罐头。部分已过期，但大部分还能食用。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 5,
+        "weekMax": 15,
+        "probability": 0.25
+      },
+      "choices": [
+        {
+          "text": "运回全部（+18食物）",
+          "effect": {
+            "food": 18
+          },
+          "result": "勘探队扛着沉重的箱子返回。这些罐头足够支撑好几周。",
+          "feedback": {
+            "guardianMood": {
+              "misha": 2
+            },
+            "message": "米莎清点着库存，露出了久违的微笑。"
+          }
+        },
+        {
+          "text": "只取检验合格的（+8食物，安全为上）",
+          "effect": {
+            "food": 8
+          },
+          "result": "少量罐头被运回。剩下的……只能祈祷它们在地下继续沉睡。",
+          "feedback": {
+            "message": "安全永远第一。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "event_infestation_01",
+      "title": "鼠患",
+      "description": "什么东西在夜间活动——仓库角落发现了啃咬痕迹，一批食物被污染了。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 8,
+        "weekMax": 18,
+        "probability": 0.3
+      },
+      "choices": [
+        {
+          "text": "捕杀并修补（-12食物）",
+          "effect": {
+            "food": -12
+          },
+          "result": "罪魁祸首被清除了，但损失已无法挽回。至少问题不会扩大。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": 1
+            },
+            "message": "洛恩说这在意料之中。"
+          }
+        },
+        {
+          "text": "用毒饵（-8食物，但环境-5）",
+          "effect": {
+            "food": -8,
+            "environment": -5
+          },
+          "result": "毒饵见效了。但空气中弥漫的气味让人不适。",
+          "feedback": {
+            "guardianMood": {
+              "tika": -1
+            },
+            "message": "蒂卡对毒药的味道皱起眉头。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "event_trader_01",
+      "title": "游商交易",
+      "description": "一名自称「响铃人」的游商路过圣所。他愿意用一批干粮交换一些晶体介质。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 12,
+        "weekMax": 20,
+        "probability": 0.25
+      },
+      "choices": [
+        {
+          "text": "交易（-10介质，+22食物）",
+          "effect": {
+            "media": -10,
+            "food": 22
+          },
+          "result": "响铃人满意地离去。这批干粮包装精美，标签是看不懂的文字。",
+          "feedback": {
+            "guardianMood": {
+              "finn": 1
+            },
+            "message": "芬恩对这笔交易表示认可。"
+          }
+        },
+        {
+          "text": "拒绝交易",
+          "effect": {},
+          "result": "响铃人耸耸肩，消失在风雪中。",
+          "feedback": {
+            "message": "在末世中，信任是奢侈品。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "event_blight_01",
+      "title": "枯萎病",
+      "description": "水培农场出现了不明病害，作物叶片大面积发黄。如果不处理，产出将减半。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 14,
+        "weekMax": 22,
+        "probability": 0.3
+      },
+      "choices": [
+        {
+          "text": "隔离病区（-15食物损失可控）",
+          "effect": {
+            "food": -15
+          },
+          "result": "病株被拔除焚烧。农场保住了，但代价不小。",
+          "feedback": {
+            "guardianMood": {
+              "finn": -2
+            },
+            "message": "芬恩心疼地看着那些枯萎的作物。"
+          }
+        },
+        {
+          "text": "使用未知药剂（赌博：50% -5食物 / 50% -30食物）",
+          "effect": {
+            "food": -20
+          },
+          "result": "药剂效果不确定。病害似乎在扩散，也可能被遏制了……",
+          "feedback": {
+            "guardianMood": {
+              "lorn": -1
+            },
+            "message": "结果仍不明朗。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "event_feast_01",
+      "title": "记忆盛宴",
+      "description": "埃塞尔提议举办一次盛宴，用珍贵食材制作一顿像样的晚餐。她说：「在终末之前，至少该有一次温暖回忆。」",
+      "trigger": {
+        "type": "random",
+        "weekMin": 15,
+        "weekMax": 25,
+        "probability": 0.2
+      },
+      "choices": [
+        {
+          "text": "同意（-12食物，全体守护者心情+5）",
+          "effect": {
+            "food": -12
+          },
+          "result": "那晚的餐桌上笑声不断。珍贵的香料让简单的食材变得非凡。",
+          "feedback": {
+            "guardianMood": {
+              "ethel": 5,
+              "finn": 4,
+              "misha": 3,
+              "tika": 3,
+              "lorn": 2
+            },
+            "message": "这是很久以来最温暖的一晚。"
+          }
+        },
+        {
+          "text": "太浪费了",
+          "effect": {},
+          "result": "埃塞尔低下头，不再说话。",
+          "feedback": {
+            "guardianMood": {
+              "ethel": -4
+            },
+            "message": "埃塞尔失望地转过身去。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "event_seed_gift_01",
+      "title": "陌生人的种子",
+      "description": "一名沉默的老者来到圣所门口，递来一小袋种子，然后转身离去。没有人知道他从哪里来。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 8,
+        "weekMax": 16,
+        "probability": 0.2
+      },
+      "choices": [
+        {
+          "text": "种植（+5食物/回合，持续3回合）",
+          "effect": {
+            "food": 8
+          },
+          "result": "种子在培养皿中迅速发芽。这品种……似乎不属于任何已知记录。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 2
+            },
+            "message": "蒂卡小心翼翼地照料着这些神秘的植物。",
+            "specialEffect": {
+              "type": "foodBoostOverTime",
+              "amount": 5,
+              "duration": 3
+            }
+          }
+        },
+        {
+          "text": "研究后再决定（环境+3）",
+          "effect": {
+            "environment": 3
+          },
+          "result": "种子被收入档案。也许有一天，它会派上用场。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": 1
+            },
+            "message": "谨慎未必是坏事。"
+          }
+        }
+      ]
     }
   ]
 }

@@ -12,14 +12,14 @@
         {
           "type": "resource",
           "resource": "energy",
-          "amount": 15,
+          "amount": 18,
           "probability": 0.3,
           "message": "在废弃的能源站中找到了可用的能源罐。"
         },
         {
           "type": "resource",
           "resource": "media",
-          "amount": 12,
+          "amount": 14,
           "probability": 0.3,
           "message": "从倒塌的档案室中回收了光学存储盘。"
         },
@@ -36,7 +36,8 @@
           "probability": 0.15,
           "message": "遭遇了光雨渗透，匆忙撤退中损失了部分环境储备。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_forest_02",
@@ -56,14 +57,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 20,
+          "amount": 24,
           "probability": 0.35,
           "message": "在森林深处的实验室中找到了种子基因库。"
         },
         {
           "type": "resource",
           "resource": "environment",
-          "amount": 10,
+          "amount": 12,
           "probability": 0.25,
           "message": "发现了一处天然水源，净化后补充了环境储备。"
         },
@@ -80,7 +81,8 @@
           "probability": 0.15,
           "message": "迷失在枯林中，消耗了大量能源才找到归路。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_observatory_03",
@@ -96,14 +98,14 @@
         {
           "type": "resource",
           "resource": "energy",
-          "amount": 20,
+          "amount": 24,
           "probability": 0.3,
           "message": "找到了备用的地热能源核心。"
         },
         {
           "type": "resource",
           "resource": "media",
-          "amount": 18,
+          "amount": 22,
           "probability": 0.3,
           "message": "回收了天文观测数据硬盘。"
         },
@@ -120,7 +122,8 @@
           "probability": 0.1,
           "message": "穹顶结构突然松动，匆忙中损失了部分设备。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_hospital_04",
@@ -136,14 +139,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 15,
+          "amount": 18,
           "probability": 0.35,
           "message": "找到了医学研究数据库的备份。"
         },
         {
           "type": "resource",
           "resource": "environment",
-          "amount": 12,
+          "amount": 14,
           "probability": 0.3,
           "message": "回收了环境净化滤芯。"
         },
@@ -160,7 +163,8 @@
           "probability": 0.1,
           "message": "接触了泄漏的化学试剂，损失了部分存储介质。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_library_05",
@@ -179,14 +183,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 22,
+          "amount": 26,
           "probability": 0.4,
           "message": "在地下室找到了防水存储箱，内含珍贵文献。"
         },
         {
           "type": "resource",
           "resource": "energy",
-          "amount": 10,
+          "amount": 12,
           "probability": 0.2,
           "message": "找到了应急能源电池。"
         },
@@ -203,7 +207,8 @@
           "probability": 0.1,
           "message": "书架倒塌时险些被困，消耗能源强行突围。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_factory_06",
@@ -223,14 +228,14 @@
         {
           "type": "resource",
           "resource": "energy",
-          "amount": 30,
+          "amount": 36,
           "probability": 0.3,
           "message": "重启了一座小型发电机。"
         },
         {
           "type": "resource",
           "resource": "media",
-          "amount": 25,
+          "amount": 30,
           "probability": 0.3,
           "message": "在控制室找到了生产日志和工艺图纸。"
         },
@@ -247,7 +252,8 @@
           "probability": 0.15,
           "message": "化学物质泄漏，环境储备大幅下降。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_temple_07",
@@ -267,14 +273,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 18,
+          "amount": 22,
           "probability": 0.35,
           "message": "找到了宗教仪式的完整记录。"
         },
         {
           "type": "resource",
           "resource": "environment",
-          "amount": 15,
+          "amount": 18,
           "probability": 0.3,
           "message": "圣殿的静谧让心灵平静，环境储备自然恢复。"
         },
@@ -291,7 +297,8 @@
           "probability": 0.05,
           "message": "在祈祷中忘记了时间，额外消耗了一周能源。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_suburb_08",
@@ -305,14 +312,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 14,
+          "amount": 17,
           "probability": 0.35,
           "message": "在民居中找到了日记和家庭影像记录。"
         },
         {
           "type": "resource",
           "resource": "energy",
-          "amount": 12,
+          "amount": 14,
           "probability": 0.25,
           "message": "收集了分散的能源电池。"
         },
@@ -329,7 +336,8 @@
           "probability": 0.1,
           "message": "房屋结构不稳，撤退时损失了环境储备。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_reactor_09",
@@ -346,14 +354,14 @@
         {
           "type": "resource",
           "resource": "energy",
-          "amount": 40,
+          "amount": 48,
           "probability": 0.35,
           "message": "成功收集了地热核心的高能输出。"
         },
         {
           "type": "resource",
           "resource": "media",
-          "amount": 20,
+          "amount": 24,
           "probability": 0.25,
           "message": "在反应堆控制室找到了运行日志。"
         },
@@ -370,7 +378,8 @@
           "probability": 0.15,
           "message": "反应堆突然波动，紧急撤离中损失了大量能源。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_crypt_10",
@@ -389,14 +398,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 28,
+          "amount": 34,
           "probability": 0.4,
           "message": "找到了封存者精心保存的文化遗产。"
         },
         {
           "type": "resource",
           "resource": "energy",
-          "amount": 18,
+          "amount": 22,
           "probability": 0.25,
           "message": "发现了封存者的私人能源储备。"
         },
@@ -413,7 +422,8 @@
           "probability": 0.1,
           "message": "触发了封存者的防御机制，损失了部分存储介质。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_shipyard_11",
@@ -433,14 +443,14 @@
         {
           "type": "resource",
           "resource": "energy",
-          "amount": 35,
+          "amount": 42,
           "probability": 0.3,
           "message": "回收了发射场备用能源系统。"
         },
         {
           "type": "resource",
           "resource": "media",
-          "amount": 22,
+          "amount": 26,
           "probability": 0.3,
           "message": "找到了航天日志和轨道计算数据。"
         },
@@ -457,7 +467,8 @@
           "probability": 0.1,
           "message": "发射井中有毒气体泄漏，消耗额外能源撤离。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_memorial_12",
@@ -471,14 +482,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 20,
+          "amount": 24,
           "probability": 0.4,
           "message": "纪念碑底座中藏有完整的文明数据库。"
         },
         {
           "type": "resource",
           "resource": "environment",
-          "amount": 18,
+          "amount": 22,
           "probability": 0.3,
           "message": "纪念碑周围的环境异常稳定，补充了储备。"
         },
@@ -495,7 +506,8 @@
           "probability": 0.05,
           "message": "纪念碑突然崩塌，扬起的尘埃污染了环境。"
         }
-      ]
+      ],
+      "availableAfter": 1
     },
     {
       "id": "exp_gray_ocean_21",
@@ -516,14 +528,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 25,
+          "amount": 30,
           "probability": 0.35,
           "message": "在海岸带找到了海洋生物基因库。"
         },
         {
           "type": "resource",
           "resource": "environment",
-          "amount": 15,
+          "amount": 18,
           "probability": 0.25,
           "message": "回收了海水净化样本。"
         },
@@ -557,14 +569,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 18,
+          "amount": 22,
           "probability": 0.35,
           "message": "在废墟中找到了家庭影像记录。"
         },
         {
           "type": "resource",
           "resource": "energy",
-          "amount": 15,
+          "amount": 18,
           "probability": 0.25,
           "message": "收集了分散的能源电池。"
         },
@@ -602,14 +614,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 28,
+          "amount": 34,
           "probability": 0.4,
           "message": "找到了辐射病研究的原始数据。"
         },
         {
           "type": "resource",
           "resource": "environment",
-          "amount": 18,
+          "amount": 22,
           "probability": 0.25,
           "message": "回收了医疗滤芯。"
         },
@@ -644,14 +656,14 @@
         {
           "type": "resource",
           "resource": "energy",
-          "amount": 30,
+          "amount": 36,
           "probability": 0.3,
           "message": "找到了未受损的能源罐。"
         },
         {
           "type": "resource",
           "resource": "media",
-          "amount": 25,
+          "amount": 30,
           "probability": 0.3,
           "message": "在废墟中找到了暴动日记。"
         },
@@ -688,14 +700,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 22,
+          "amount": 26,
           "probability": 0.35,
           "message": "找到了末日期间的生活记录。"
         },
         {
           "type": "resource",
           "resource": "environment",
-          "amount": 15,
+          "amount": 18,
           "probability": 0.25,
           "message": "回收了空气净化滤芯。"
         },
@@ -730,14 +742,14 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 20,
+          "amount": 24,
           "probability": 0.4,
           "message": "找到了圣所建造者的私人日记。"
         },
         {
           "type": "resource",
           "resource": "energy",
-          "amount": 18,
+          "amount": 22,
           "probability": 0.3,
           "message": "发现了隐藏的能源储备。"
         },

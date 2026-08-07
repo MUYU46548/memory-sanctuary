@@ -7,7 +7,7 @@
 // 资源管理
 // ==========================================
 
-function consumeResources(energy, media) {
+function consumeResources(energy, media, food) {
     const state = MemorySanctuary.state;
     
     // 圣所衰竭：能源枯竭时消耗加倍
@@ -22,15 +22,21 @@ function consumeResources(energy, media) {
         addLog('存储介质不足，无法执行录入操作。', 'system');
         return false;
     }
+    if (food && state.resources.food < food) {
+        addLog('食物不足，无法执行操作。', 'system');
+        return false;
+    }
     
     state.resources.energy -= actualEnergy;
     state.resources.media -= media;
+    if (food) state.resources.food -= food;
     return true;
 }
 
-function hasResources(energy, media) {
+function hasResources(energy, media, food) {
     const state = MemorySanctuary.state;
     const energyMultiplier = (state.deterioration && state.deterioration.energy) ? 2 : 1;
+    if (food && state.resources.food < food) return false;
     return state.resources.energy >= energy * energyMultiplier && state.resources.media >= media;
 }
 
@@ -39,7 +45,8 @@ function getResourceStatus() {
     return {
         energy: state.resources.energy,
         media: state.resources.media,
-        environment: state.resources.environment
+        environment: state.resources.environment,
+        food: state.resources.food
     };
 }
 
@@ -47,7 +54,7 @@ function adjustResource(resource, amount) {
     const state = MemorySanctuary.state;
     if (!state) return;
     
-    const max = resource === 'media' ? 60 : 100;
+    const max = resource === 'media' ? 60 : (resource === 'food' ? 80 : 100);
     state.resources[resource] = Math.max(0, Math.min(max, state.resources[resource] + amount));
     
     // 资源变化后立即检查衰竭状态（勘探/事件奖励不推进时间）
@@ -72,6 +79,7 @@ function isArchiveCompleted(id) {
 
 function archiveEntry(archiveId) {
     const entry = getArchiveById(archiveId);
+    const state = MemorySanctuary.state;
     
     if (!entry) {
         addLog(`错误：找不到条目 ${archiveId}`, 'system');
@@ -90,9 +98,21 @@ function archiveEntry(archiveId) {
         return false;
     }
     
-    if (!hasResources(entry.energyCost, entry.dataCost)) {
-        addLog(`资源不足，无法归档 "${entry.title}"。`, 'system');
-        return false;
+    const isEmergencyArchive = MemorySanctuary.state.emergencyArchiveActive;
+    
+    // 紧急归档协议：跳过介质检查
+    if (isEmergencyArchive) {
+        if (state.resources.energy < entry.energyCost * 2) {
+            addLog(`能源不足，无法紧急归档 "${entry.title}"。`, 'system');
+            // 归档失败时关闭紧急归档，避免影响后续正常归档
+            MemorySanctuary.state.emergencyArchiveActive = false;
+            return false;
+        }
+    } else {
+        if (!hasResources(entry.energyCost, entry.dataCost)) {
+            addLog(`资源不足，无法归档 "${entry.title}"。`, 'system');
+            return false;
+        }
     }
     
     const vault = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
@@ -102,15 +122,32 @@ function archiveEntry(archiveId) {
     }
     
     const currentUsage = MemorySanctuary.state.vaultUsage[vault.id] || 0;
-    if (currentUsage + entry.dataCost > vault.capacity) {
+    
+    // 紧急归档协议：跳过容量检查（不消耗介质）
+    if (!isEmergencyArchive && currentUsage + entry.dataCost > vault.capacity) {
         addLog(`存储室 "${vault.name}" 容量不足。`, 'system');
         return false;
     }
     
-    if (!consumeResources(entry.energyCost, entry.dataCost)) return false;
+    // 紧急归档协议：本回合归档不消耗介质（能源消耗加倍）
+    if (isEmergencyArchive) {
+        // 紧急归档：介质消耗为 0，能源消耗加倍
+        if (!consumeResources(entry.energyCost * 2, 0)) return false;
+    } else {
+        if (!consumeResources(entry.energyCost, entry.dataCost)) return false;
+    }
+    
+    // 紧急归档协议激活后立即关闭
+    if (MemorySanctuary.state.emergencyArchiveActive) {
+        MemorySanctuary.state.emergencyArchiveActive = false;
+        addLog('📦 紧急归档协议已关闭（一次性效果已使用）。', 'system');
+    }
     
     MemorySanctuary.state.completedArchives.push(archiveId);
-    MemorySanctuary.state.vaultUsage[vault.id] = currentUsage + entry.dataCost;
+    // 紧急归档不消耗介质，所以不增加 vaultUsage
+    if (!isEmergencyArchive) {
+        MemorySanctuary.state.vaultUsage[vault.id] = currentUsage + entry.dataCost;
+    }
     advanceTime(1);
     
     addLog(`已完成归档："${entry.title}"`, 'success');
@@ -159,25 +196,69 @@ function advanceTime(weeks) {
 }
 
 function onTimeAdvanced(weeks) {
+    const state = MemorySanctuary.state;
+    
+    // 重置每回合资源变化追踪
+    state.resourceChanges = { energy: 0, media: 0, environment: 0, food: 0 };
+    
     // 资源自然衰减（生存压力核心）
     const decay = getWeeklyDecay();
-    MemorySanctuary.state.resources.energy = Math.max(0,
-        MemorySanctuary.state.resources.energy - decay.energy * weeks
+    state.resources.energy = Math.max(0,
+        state.resources.energy - decay.energy * weeks
     );
-    MemorySanctuary.state.resources.media = Math.max(0,
-        MemorySanctuary.state.resources.media - decay.media * weeks
+    state.resources.media = Math.max(0,
+        state.resources.media - decay.media * weeks
     );
-    MemorySanctuary.state.resources.environment = Math.max(0,
-        MemorySanctuary.state.resources.environment - decay.environment * weeks
+    state.resources.environment = Math.max(0,
+        state.resources.environment - decay.environment * weeks
     );
+    
+    // 追踪衰减为负值
+    state.resourceChanges.energy -= decay.energy * weeks;
+    state.resourceChanges.media -= decay.media * weeks;
+    state.resourceChanges.environment -= decay.environment * weeks;
 
     // 应用持续效果（如：每回合额外能源）
     applySustainedBonuses();
+    
+    // 腐败度系统：自然衰减 -2/周
+    if (state.emergencyCorruption > 0) {
+        state.emergencyCorruption = Math.max(0, state.emergencyCorruption - 2);
+    }
+    
+    // 腐败度惩罚：每20点，所有资源额外 -0.5/周
+    if (state.emergencyCorruption > 0) {
+        const penalty = Math.floor(state.emergencyCorruption / 20) * 0.5;
+        if (penalty > 0) {
+            state.resources.energy = Math.max(0, state.resources.energy - penalty);
+            state.resources.media = Math.max(0, state.resources.media - penalty);
+            state.resources.environment = Math.max(0, state.resources.environment - penalty);
+            state.resourceChanges.energy -= penalty;
+            state.resourceChanges.media -= penalty;
+            state.resourceChanges.environment -= penalty;
+        }
+    }
+    
+    // 更新应急协议冷却
+    if (state.emergencyCooldowns) {
+        Object.keys(state.emergencyCooldowns).forEach(key => {
+            if (state.emergencyCooldowns[key] > 0) {
+                state.emergencyCooldowns[key]--;
+            }
+        });
+    }
 
     // 更新drone音量和终局心跳
     if (typeof AudioSystem !== 'undefined' && MemorySanctuary.state) {
         AudioSystem.updateDroneByEnergy(MemorySanctuary.state.resources.energy);
         AudioSystem.updateHeartbeat(MemorySanctuary.state.week);
+        
+        // 章节 BGM 自动切换：week >= 16 中期，week >= 36 后期
+        const bgmWeek = MemorySanctuary.state.week;
+        const bgmScene = AudioSystem.getGameBGMForWeek(bgmWeek);
+        if (bgmScene !== AudioSystem.getCurrentBGM()) {
+            AudioSystem.playBGM(bgmScene);
+        }
     }
 
     // 检查过期条目（仅记录消失，警告移至聚合面板）
@@ -231,6 +312,34 @@ function applySustainedBonuses() {
             state.resources.energy = Math.min(100, state.resources.energy + 2);
         }
     });
+
+    // 处理持续效果（如 foodBoostOverTime）
+    processOngoingEffects();
+}
+
+function processOngoingEffects() {
+    const state = MemorySanctuary.state;
+    if (!state.ongoingEffects || state.ongoingEffects.length === 0) return;
+    
+    const stillActive = [];
+    for (const effect of state.ongoingEffects) {
+        if (effect.remainingTurns <= 0) continue;
+        
+        // 应用效果
+        if (effect.resource && effect.amount) {
+            const cap = effect.resource === 'media' ? 60 : (effect.resource === 'food' ? 80 : 100);
+            state.resources[effect.resource] = Math.min(cap, state.resources[effect.resource] + effect.amount);
+            state.resourceChanges[effect.resource] = (state.resourceChanges[effect.resource] || 0) + effect.amount;
+        }
+        
+        effect.remainingTurns--;
+        if (effect.remainingTurns > 0) {
+            stillActive.push(effect);
+        } else {
+            addLog(`🌱 持续效果结束：${effect.type}`, 'event');
+        }
+    }
+    state.ongoingEffects = stillActive;
 }
 
 // ==========================================
@@ -269,6 +378,15 @@ function triggerScheduledEvent(eventId) {
     
     if (!event) {
         console.warn(`[调度事件] 找不到事件 ${eventId}`);
+        return;
+    }
+    
+    // 如果已有活跃事件，将调度事件推迟到下周
+    if (MemorySanctuary.activeEvent) {
+        const state = MemorySanctuary.state;
+        if (!state.scheduledEvents) state.scheduledEvents = [];
+        state.scheduledEvents.push({ eventId, week: state.week + 1 });
+        console.log(`[调度事件] ${event.title} 因已有活跃事件而推迟到下周`);
         return;
     }
     
@@ -400,13 +518,15 @@ function checkStuckState() {
         `;
         banner.className = 'stuck-banner warning';
         
-        // Add event listeners
-        setTimeout(() => {
-            const skipLink = document.getElementById('stuck-skip');
-            const sealLink = document.getElementById('stuck-seal');
-            if (skipLink) skipLink.onclick = (e) => { e.preventDefault(); skipTurn(); };
-            if (sealLink) sealLink.onclick = (e) => { e.preventDefault(); if (canSealSanctuary()) sealSanctuary(); };
-        }, 50);
+        // Bind events immediately (DOM is already updated via innerHTML)
+        const skipLink = document.getElementById('stuck-skip');
+        const sealLink = document.getElementById('stuck-seal');
+        if (skipLink) {
+            skipLink.onclick = (e) => { e.preventDefault(); skipTurn(true); };
+        }
+        if (sealLink) {
+            sealLink.onclick = (e) => { e.preventDefault(); if (canSealSanctuary()) sealSanctuary(); };
+        }
     } else {
         banner.className = 'stuck-banner hidden';
     }
@@ -439,7 +559,7 @@ function checkFailureCondition() {
     
     const res = MemorySanctuary.state.resources;
     
-    // 失败条件：两种资源归零即崩溃
+    // 失败条件：两种资源归零即崩溃（食物不直接导致崩溃，但会触发饥饿惩罚）
     let zeroCount = 0;
     if (res.energy <= 0) zeroCount++;
     if (res.media <= 0) zeroCount++;
@@ -447,6 +567,25 @@ function checkFailureCondition() {
     
     if (zeroCount >= 2) {
         triggerGameOver('collapse');
+    }
+    
+    // 食物饥饿惩罚
+    if (typeof checkStarvation === 'function') checkStarvation();
+}
+
+function checkStarvation() {
+    const state = MemorySanctuary.state;
+    if (state.resources.food <= 0) {
+        // 食物耗尽时：守护者每回合心情 -2
+        if (!state.starvationLogged) {
+            addLog('食物耗尽...守护者士气低沉。', 'warning');
+            state.starvationLogged = true;
+        }
+        Object.keys(state.guardianMoods || {}).forEach(gid => {
+            state.guardianMoods[gid] = (state.guardianMoods[gid] || 0) - 2;
+        });
+    } else {
+        state.starvationLogged = false;
     }
 }
 
@@ -558,6 +697,24 @@ function applyEventFeedback(choiceIndex) {
         }
         MemorySanctuary.state.unlockedBonuses.push(choice.feedback.unlockBonus);
         addLog(`🔓 解锁持续效果：${choice.feedback.unlockBonus}`, 'success');
+    }
+
+    // 处理特殊持续效果（如 foodBoostOverTime）
+    if (choice.feedback.specialEffect) {
+        const se = choice.feedback.specialEffect;
+        if (!MemorySanctuary.state.ongoingEffects) {
+            MemorySanctuary.state.ongoingEffects = [];
+        }
+        if (se.type === 'foodBoostOverTime') {
+            MemorySanctuary.state.ongoingEffects.push({
+                type: 'foodBoostOverTime',
+                resource: 'food',
+                amount: se.amount || 5,
+                remainingTurns: se.duration || 3,
+                source: event.id
+            });
+            addLog(`🌱 持续效果：每回合 +${se.amount || 5} 食物，持续 ${se.duration || 3} 回合`, 'success');
+        }
     }
     
     // 显示反馈
@@ -700,10 +857,18 @@ function closeConfirmModal(archiveId, confirmed) {
 // 跳过回合（横幅提醒版）
 // ==========================================
 
-function skipTurn() {
+function skipTurn(forceFromStuck = false) {
     if (MemorySanctuary.activeEvent) {
-        showSkipBlockedBanner();
-        return false;
+        // 困局跳过：允许玩家在被事件阻塞时仍能跳过恢复资源
+        if (forceFromStuck) {
+            // 关闭当前事件面板，但不清空 activeEvent（玩家未做选择）
+            const panel = document.getElementById('event-panel');
+            if (panel) panel.classList.add('hidden');
+            addLog('你强行跳过当前事件，让圣所进入低功耗维护模式。', 'warning');
+        } else {
+            showSkipBlockedBanner();
+            return false;
+        }
     }
     
     // 游戏结束后不能跳过
@@ -1133,6 +1298,11 @@ function checkGuardianInitiative() {
         }
     }
     
+    // 后期章节提升触发概率
+    if (state.week >= 30) {
+        triggerChance = Math.min(0.6, triggerChance + 0.15);
+    }
+    
     if (Math.random() > triggerChance) return;
     
     const guardianEvents = [
@@ -1164,19 +1334,50 @@ function checkGuardianInitiative() {
             guardianId: 'lorn',
             title: '洛恩的维护成果',
             description: '洛恩优化了发电机效率，本周能源产出增加。',
-            dialogue: '「系统升级完成。能源利用效率提升了12%。」',
-            reward: { energy: 15 },
+            dialogue: '「机器老了，但还能撑一撑。」',
+            reward: { energy: 8 },
             archiveId: null
         },
         {
             guardianId: 'ethel',
             title: '埃塞尔的祈祷',
-            description: '埃塞尔完成了一场净化仪式，圣所环境稳定度有所恢复。',
-            dialogue: '「仪式完成了。愿圣所得到庇佑。」',
-            reward: { environment: 10 },
+            description: '埃塞尔完成了本周的圣所净化仪式，环境稳定度略有恢复。',
+            dialogue: '「愿这片土地安息。」',
+            reward: { environment: 6 },
             archiveId: null
         }
     ];
+    
+    // Late-game variant events (week >= 30)
+    if (state.week >= 30) {
+        const lateGameEvents = [
+            {
+                guardianId: 'tika',
+                title: '缇卡的最后歌谣',
+                description: '缇卡想录制她这辈子最重要的歌——一首关于文明终结的挽歌。',
+                dialogue: '「这首歌……我写了很久。也许这是最后一首了。」',
+                reward: { media: 12 },
+                archiveId: 'arch_001'
+            },
+            {
+                guardianId: 'finn',
+                title: '芬恩的最终编年',
+                description: '芬恩决定整理一份完整的文明编年史，作为最后的记录。',
+                dialogue: '「如果只有一份文档能留存，应该是这个。」',
+                reward: { energy: 10 },
+                archiveId: 'arch_emergency_004'
+            },
+            {
+                guardianId: 'misha',
+                title: '米莎的最后标本',
+                description: '米莎收集了最后一批地表标本，记录了生态完全崩溃前的状态。',
+                dialogue: '「森林没了，海洋灰了。但至少……我记得它们。」',
+                reward: { media: 15 },
+                archiveId: 'arch_008'
+            }
+        ];
+        guardianEvents.push(...lateGameEvents);
+    }
     
     const event = guardianEvents[Math.floor(Math.random() * guardianEvents.length)];
     triggerGuardianInitiative(event);
@@ -1411,6 +1612,10 @@ function resolveEvent(choiceIndex) {
     if (choice.effect.environment) {
         MemorySanctuary.state.resources.environment = Math.max(0,
             MemorySanctuary.state.resources.environment + choice.effect.environment);
+    }
+    if (choice.effect.food) {
+        MemorySanctuary.state.resources.food = Math.max(0,
+            MemorySanctuary.state.resources.food + choice.effect.food);
     }
     
     // 资源变化后立即检查衰竭状态
@@ -1850,9 +2055,12 @@ function renderExploreList() {
         const lastResult = exp.explorationLog && exp.explorationLog.find(l => l.id === expData.id);
         const lastResultText = lastResult ? `<div class="explore-item-last-result">上次：${lastResult.resultText}</div>` : '';
 
+        const foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
+        const foodCostHtml = foodCost > 0 ? `<span class="food-cost">🍖 ${foodCost}</span>` : '';
+
         item.innerHTML = `
             <div class="explore-item-header">
-                <div class="explore-item-name">${expData.name}${completedBadge}${lockedBadge}</div>
+                <div class="explore-item-name">${expData.name}${completedBadge}${lockedBadge}${foodCostHtml}</div>
                 <div class="explore-item-difficulty">${difficultyStars}</div>
             </div>
             <div class="explore-item-desc">${expData.description}</div>
@@ -1996,8 +2204,18 @@ function executeExploration() {
     const expData = data.explorations.find(e => e.id === selectedExplorationId);
     if (!expData) return;
 
+    // 食物消耗：按难度分档，默认 0
+    const foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
+    
+    if (!hasResources(0, 0, foodCost)) {
+        addLog('食物不足，无法派出勘探队。', 'system');
+        return;
+    }
+
     const now = MemorySanctuary.state.week;
     MemorySanctuary.state.exploration.deployedUntil = now + expData.duration;
+    
+    consumeResources(0, 0, foodCost);
 
     const roll = Math.random();
     let cumulative = 0;
@@ -2236,73 +2454,225 @@ function renderExploreLog() {
 // 应急协议
 // ==========================================
 
-function openEmergencyProtocol() {
-    const state = MemorySanctuary.state;
-    const overlay = document.getElementById('modal-overlay');
-    const title = document.getElementById('modal-title');
-    const content = document.getElementById('modal-content');
-    const closeBtn = document.getElementById('modal-close');
-
-    if (!overlay || !title || !content) return;
-
-    title.textContent = '⚡ 应急协议：能源转化';
-
-    const energyCost = 15; // 环境代价
-    const energyGain = 25; // 能源收益
-
-    let contentText = `圣所的储备即将耗尽。你可以激活应急协议，强制从环境稳定系统中提取能源。\n\n`;
-    contentText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-    contentText += `代价：环境稳定度 -${energyCost}\n`;
-    contentText += `收益：能源 +${energyGain}\n`;
-    contentText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
-
-    const canActivate = state.resources.environment > energyCost;
-
-    if (!canActivate) {
-        contentText += `当前环境稳定度不足以激活协议。需要至少 ${energyCost} 点环境稳定度。\n\n`;
-        contentText += `圣所的状况已至极境。你只能祈求奇迹，或选择封印。`;
-    } else {
-        contentText += `「榨取圣所最后的庇护之力，换取保存文明的希望。\n`;
-        contentText += `——守护者不会赞成这种选择，但圣所的命运在你手中。」`;
-    }
-
-    content.textContent = contentText;
-    overlay.classList.remove('hidden');
-
-    if (closeBtn) {
-        if (canActivate) {
-            closeBtn.textContent = '激活协议';
-            closeBtn.onclick = () => {
-                state.resources.environment -= energyCost;
-                state.resources.energy = Math.min(100, state.resources.energy + energyGain);
-                
-                addLog(`⚡ 应急协议激活：环境稳定度 -${energyCost}，能源 +${energyGain}。`, 'system');
-                addLog('圣所发出一声沉闷的呻吟。空气变得稀薄，温度在下降。', 'system');
-                
-                if (typeof AudioSystem !== 'undefined') AudioSystem.playMechanicalEngage();
-                
-                // 守护者反应
-                const guardians = MemorySanctuary.data.guardians;
-                const unluckyGuardian = guardians[Math.floor(Math.random() * guardians.length)];
-                const reactions = [
-                    `……你在赌。但愿你是对的。`,
-                    `这代价……但愿是值得的。`,
-                    `圣所承受了这一切。为了文明。`,
-                    `环境系统在尖叫。但我能理解你的选择。`,
-                    `愿后世的眼睛能看见你所做的一切。`
-                ];
-                const reaction = reactions[Math.floor(Math.random() * reactions.length)];
-                addLog(`${unluckyGuardian.name}：「${reaction}」`, 'guardian');
-                
-                overlay.classList.add('hidden');
-                renderAll();
-                if (typeof checkStuckState === 'function') checkStuckState();
-            };
-        } else {
-            closeBtn.textContent = '关闭';
-            closeBtn.onclick = () => overlay.classList.add('hidden');
+const EMERGENCY_PROTOCOLS = [
+    {
+        id: 'energy_extract',
+        name: '能源榨取',
+        icon: '⚡',
+        desc: '从环境稳定系统中强制提取能源',
+        cost: '环境稳定度 -15',
+        gain: '能源 +30',
+        cooldown: 3,
+        corruption: 15,
+        available: (state) => state.resources.environment > 15,
+        execute: (state) => {
+            state.resources.environment -= 15;
+            state.resources.energy = Math.min(100, state.resources.energy + 30);
+        }
+    },
+    {
+        id: 'media_recycle',
+        name: '介质回收',
+        icon: '♻️',
+        desc: '消耗能源换取存储介质',
+        cost: '能源 -20',
+        gain: '介质 +30',
+        cooldown: 3,
+        corruption: 15,
+        available: (state) => state.resources.energy > 20,
+        execute: (state) => {
+            state.resources.energy -= 20;
+            state.resources.media = Math.min(60, state.resources.media + 30);
+        }
+    },
+    {
+        id: 'emergency_explore',
+        name: '紧急勘探',
+        icon: '🔭',
+        desc: '立即派遣勘探队（无视冷却），但守护者疲劳+2周',
+        cost: '无',
+        gain: '立即派遣',
+        cooldown: 4,
+        corruption: 20,
+        available: (state) => true,
+        execute: (state) => {
+            if (state.exploration) {
+                state.exploration.cooldownUntil = 0;
+            }
+        },
+        extraEffect: (state) => {
+            const guardians = MemorySanctuary.data.guardians;
+            guardians.forEach(g => {
+                if (state.exploration.fatigue && state.exploration.fatigue[g.id]) {
+                    state.exploration.fatigue[g.id] += 2;
+                }
+            });
+        }
+    },
+    {
+        id: 'emergency_archive',
+        name: '紧急归档',
+        icon: '📦',
+        desc: '本回合归档不消耗介质（能源消耗加倍）',
+        cost: '本回合生效',
+        gain: '介质消耗 0',
+        cooldown: 2,
+        corruption: 10,
+        available: (state) => true,
+        execute: (state) => {
+            state.emergencyArchiveActive = true;
         }
     }
+];
+
+const EMERGENCY_GUARDIAN_REACTIONS = [
+    '……你在赌。但愿你是对的。',
+    '这代价……但愿是值得的。',
+    '圣所承受了这一切。为了文明。',
+    '环境系统在尖叫。但我能理解你的选择。',
+    '愿后世的眼睛能看见你所做的一切。',
+    '每一次应急，都在透支未来。',
+    '圣所的呻吟声越来越大了。',
+    '我……我不确定我们还能撑多久。',
+    '如果你认为必须如此，那我支持你。',
+    '这不仅仅是数字。这是我们最后的庇护所。'
+];
+
+function openEmergencyProtocol() {
+    const state = MemorySanctuary.state;
+    const overlay = document.getElementById('emergency-overlay');
+    const panel = document.getElementById('emergency-panel');
+    const list = document.getElementById('emergency-list');
+    const corruptionBar = document.getElementById('corruption-bar');
+    const corruptionText = document.getElementById('corruption-text');
+    const closeBtn = document.getElementById('emergency-close');
+    
+    if (!overlay || !panel || !list) return;
+    
+    // 渲染腐败度
+    const corruption = state.emergencyCorruption || 0;
+    if (corruptionBar) {
+        corruptionBar.style.width = corruption + '%';
+        // 根据腐败度改变颜色
+        if (corruption < 30) {
+            corruptionBar.style.background = '#c9a87c';
+        } else if (corruption < 60) {
+            corruptionBar.style.background = '#d4a017';
+        } else if (corruption < 80) {
+            corruptionBar.style.background = '#e67e22';
+        } else {
+            corruptionBar.style.background = '#e74c3c';
+        }
+    }
+    if (corruptionText) {
+        corruptionText.textContent = `${corruption} / 100`;
+        if (corruption >= 60) {
+            corruptionText.style.color = '#e74c3c';
+        } else if (corruption >= 30) {
+            corruptionText.style.color = '#d4a017';
+        } else {
+            corruptionText.style.color = 'var(--text-dim)';
+        }
+    }
+    
+    // 渲染协议列表
+    list.innerHTML = '';
+    EMERGENCY_PROTOCOLS.forEach(protocol => {
+        const isOnCooldown = state.emergencyCooldowns && state.emergencyCooldowns[protocol.id] > 0;
+        const cooldownRemaining = isOnCooldown ? state.emergencyCooldowns[protocol.id] : 0;
+        const canUse = protocol.available(state) && !isOnCooldown;
+        
+        const item = document.createElement('div');
+        item.className = `emergency-item ${canUse ? 'usable' : 'disabled'} ${isOnCooldown ? 'cooldown' : ''}`;
+        
+        let cooldownText = '';
+        if (isOnCooldown) {
+            cooldownText = `<span class="cooldown-badge">冷却中 ${cooldownRemaining} 周</span>`;
+        }
+        
+        item.innerHTML = `
+            <div class="emergency-icon">${protocol.icon}</div>
+            <div class="emergency-info">
+                <div class="emergency-name">${protocol.name} ${cooldownText}</div>
+                <div class="emergency-desc">${protocol.desc}</div>
+                <div class="emergency-effects">
+                    <span class="effect-cost">${protocol.cost}</span>
+                    <span class="effect-gain">${protocol.gain}</span>
+                    <span class="effect-corruption">腐败+${protocol.corruption}</span>
+                </div>
+            </div>
+            <button class="emergency-activate" ${canUse ? '' : 'disabled'}>激活</button>
+        `;
+        
+        if (canUse) {
+            item.querySelector('.emergency-activate').addEventListener('click', () => {
+                activateEmergencyProtocol(protocol);
+            });
+        }
+        
+        list.appendChild(item);
+    });
+    
+    // 腐败度警告
+    if (corruption >= 80) {
+        const warning = document.createElement('div');
+        warning.className = 'emergency-warning';
+        warning.textContent = '⚠️ 圣所腐败度极高！每回合资源额外衰减 -2.5';
+        list.appendChild(warning);
+    } else if (corruption >= 50) {
+        const warning = document.createElement('div');
+        warning.className = 'emergency-warning moderate';
+        warning.textContent = `⚠️ 腐败度已达 ${corruption}。圣所正在缓慢崩溃。`;
+        list.appendChild(warning);
+    }
+    
+    overlay.classList.remove('hidden');
+    
+    if (closeBtn) {
+        closeBtn.onclick = () => overlay.classList.add('hidden');
+    }
+    overlay.onclick = (e) => {
+        if (e.target === overlay) overlay.classList.add('hidden');
+    };
+}
+
+function activateEmergencyProtocol(protocol) {
+    const state = MemorySanctuary.state;
+    
+    // 执行效果
+    protocol.execute(state);
+    if (protocol.extraEffect) protocol.extraEffect(state);
+    
+    // 应用冷却
+    if (!state.emergencyCooldowns) state.emergencyCooldowns = {};
+    state.emergencyCooldowns[protocol.id] = protocol.cooldown;
+    
+    // 增加腐败度
+    state.emergencyCorruption = Math.min(100, (state.emergencyCorruption || 0) + protocol.corruption);
+    
+    // 日志
+    addLog(`⚡ 应急协议「${protocol.name}」激活。腐败度 +${protocol.corruption}。`, 'system');
+    
+    // 音效
+    if (typeof AudioSystem !== 'undefined') {
+        AudioSystem.playMechanicalEngage();
+    }
+    
+    // 守护者反应（50% 概率）
+    if (Math.random() < 0.5) {
+        const guardians = MemorySanctuary.data.guardians;
+        const guardian = guardians[Math.floor(Math.random() * guardians.length)];
+        const reaction = EMERGENCY_GUARDIAN_REACTIONS[Math.floor(Math.random() * EMERGENCY_GUARDIAN_REACTIONS.length)];
+        addLog(`${guardian.name}：「${reaction}」`, 'guardian');
+    }
+    
+    // 关闭面板
+    const overlay = document.getElementById('emergency-overlay');
+    if (overlay) overlay.classList.add('hidden');
+    
+    renderAll();
+    if (typeof checkStuckState === 'function') checkStuckState();
+    if (typeof updateEmergencyButton === 'function') updateEmergencyButton();
 }
 
 function showAboutModal() {
@@ -2361,6 +2731,8 @@ function saveGame(slot) {
             vaultUsage: { ...MemorySanctuary.state.vaultUsage },
             narrativeFlags: [...MemorySanctuary.state.narrativeFlags],
             deterioration: { ...MemorySanctuary.state.deterioration },
+            emergencyCorruption: MemorySanctuary.state.emergencyCorruption,
+            emergencyCooldowns: { ...MemorySanctuary.state.emergencyCooldowns },
             activeEvents: [],
             activeEventIds: [...MemorySanctuary.state.activeEventIds],
             guardianMoods: { ...MemorySanctuary.state.guardianMoods },
@@ -2368,7 +2740,9 @@ function saveGame(slot) {
             unlockedBonuses: [...MemorySanctuary.state.unlockedBonuses],
             exploration: { ...MemorySanctuary.state.exploration },
             activeProjects: [...MemorySanctuary.state.activeProjects],
-            completedProjects: [...MemorySanctuary.state.completedProjects]
+            completedProjects: [...MemorySanctuary.state.completedProjects],
+            ongoingEffects: [...(MemorySanctuary.state.ongoingEffects || [])],
+            resourceChanges: { ...(MemorySanctuary.state.resourceChanges || { energy: 0, media: 0, environment: 0, food: 0 }) }
         },
         currentVaultId: MemorySanctuary.currentVaultId
     };
@@ -2412,6 +2786,8 @@ function loadGame(slot) {
         MemorySanctuary.state.exploration = { ...(saveData.state.exploration || { deployedUntil: 0, cooldownUntil: 0, completedExplorations: {}, fatigue: {}, explorationLog: [] }) };
         MemorySanctuary.state.activeProjects = [...(saveData.state.activeProjects || [])];
         MemorySanctuary.state.completedProjects = [...(saveData.state.completedProjects || [])];
+        MemorySanctuary.state.ongoingEffects = [...(saveData.state.ongoingEffects || [])];
+        MemorySanctuary.state.resourceChanges = { ...(saveData.state.resourceChanges || { energy: 0, media: 0, environment: 0, food: 0 }) };
 
         MemorySanctuary.currentVaultId = saveData.currentVaultId || 1;
         MemorySanctuary.activeEvent = null;
@@ -3623,6 +3999,7 @@ function canStartProject(project) {
         if (project.cost.energy && state.resources.energy < project.cost.energy) return false;
         if (project.cost.media && state.resources.media < project.cost.media) return false;
         if (project.cost.environment && state.resources.environment < project.cost.environment) return false;
+        if (project.cost.food && state.resources.food < project.cost.food) return false;
     }
 
     return true;
@@ -3671,6 +4048,9 @@ function processActiveProjects() {
             state.completedProjects.push(active.id);
             applyProjectEffect(project, true);
             addLog(`项目完成：${project.name}`, 'success');
+            if (typeof AudioSystem !== 'undefined' && AudioSystem.playProjectComplete) {
+                AudioSystem.playProjectComplete();
+            }
         } else {
             // Project still active, apply ongoing effect
             applyProjectEffect(project, false);
@@ -3688,7 +4068,17 @@ function applyProjectEffect(project, isCompletion) {
 
     switch (effect.type) {
         case 'resourceBoost':
-            // Applied each turn via onTimeAdvanced
+            if (!isCompletion && effect.amount) {
+                state.resources[effect.resource] = Math.min(
+                    effect.resource === 'media' ? 60 : 100,
+                    state.resources[effect.resource] + effect.amount
+                );
+            }
+            break;
+        case 'foodBoost':
+            if (!isCompletion && effect.amount) {
+                state.resources.food = Math.min(80, state.resources.food + effect.amount);
+            }
             break;
         case 'decayReduction':
             // Applied in getWeeklyDecay

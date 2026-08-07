@@ -4,9 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>记忆圣所 | Memory Sanctuary</title>
+    <style>
+        /* 启动壳 — 内联，不依赖外部 CSS */
+        body { margin:0; padding:0; background:#1a1a2e; overflow:hidden; }
+        #boot-screen {
+            position: fixed; inset: 0; z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: #1a1a2e; color: #e0e0e0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            transition: opacity 0.5s ease;
+        }
+        #boot-screen.fade-out { opacity: 0; pointer-events: none; }
+        .boot-title { font-size: 2rem; font-weight: 300; letter-spacing: 0.3em; margin-bottom: 2rem; color: #c9a87c; }
+        .boot-progress { width: 240px; height: 3px; background: #2a2a3e; border-radius: 2px; overflow: hidden; margin-bottom: 1rem; }
+        .boot-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #c9a87c, #a07a30); transition: width 0.3s ease; border-radius: 2px; }
+        .boot-status { font-size: 0.85rem; color: #888; letter-spacing: 0.1em; }
+    </style>
     <link rel="stylesheet" href="css/main.css">
 </head>
 <body>
+    <!-- 启动画面 — 外部 CSS 加载前渲染 -->
+    <div id="boot-screen">
+        <div class="boot-title">记忆圣所</div>
+        <div class="boot-progress"><div class="boot-progress-bar" id="boot-progress-bar"></div></div>
+        <div class="boot-status" id="boot-status">正在初始化...</div>
+    </div>
     <!-- 标题画面 -->
     <div id="title-screen">
         <div id="title-content">
@@ -59,6 +81,11 @@
                     <span class="res-icon">○</span>
                     <span class="res-label">环境稳定</span>
                     <span class="res-value" id="environment-value">95</span>
+                </div>
+                <div class="resource" id="res-food">
+                    <span class="res-icon">🍖</span>
+                    <span class="res-label">食物</span>
+                    <span class="res-value" id="food-value">50</span>
                 </div>
                 <button id="theme-toggle" title="切换主题">◐</button>
                 <button id="mute-toggle" title="静音切换">🔊</button>
@@ -179,6 +206,24 @@
         </footer>
     </div>
 
+    <!-- 应急协议面板 -->
+    <div id="emergency-overlay" class="hidden">
+        <div id="emergency-panel">
+            <div id="emergency-panel-header">
+                <h2>⚡ 应急协议</h2>
+                <button id="emergency-close">✕</button>
+            </div>
+            <div id="emergency-corruption">
+                <div class="corruption-label">圣所腐败度</div>
+                <div class="corruption-bar-container">
+                    <div class="corruption-bar" id="corruption-bar"></div>
+                </div>
+                <div class="corruption-text" id="corruption-text">0 / 100</div>
+            </div>
+            <div id="emergency-list"></div>
+        </div>
+    </div>
+
     <!-- 归档完成弹窗 -->
     <div id="modal-overlay" class="hidden">
         <div id="modal">
@@ -296,6 +341,17 @@
                     </label>
                     <div class="settings-desc">开启后，守护者对话将以视觉小说风格逐字显示（章节过渡与结局始终启用）。</div>
                 </div>
+                <div class="settings-item">
+                    <label class="settings-label">
+                        <span>BGM 音量</span>
+                    </label>
+                    <div class="settings-volume-row">
+                        <input type="range" id="setting-bgm-volume" min="0" max="100" value="100" class="settings-slider">
+                        <span class="settings-volume-value" id="bgm-volume-value">100%</span>
+                        <button class="settings-mute-btn" id="setting-bgm-mute" title="BGM 静音">🎵</button>
+                    </div>
+                    <div class="settings-desc">调整背景音乐音量。点击 🎵 可单独静音/取消 BGM。</div>
+                </div>
             </div>
         </div>
     </div>
@@ -395,6 +451,7 @@
         </div>
     </div>
 
+    <script src="js/font-loader.js"></script>
     <script src="js/main.js"></script>
     <script src="js/game.js"></script>
     <script src="js/ui.js"></script>

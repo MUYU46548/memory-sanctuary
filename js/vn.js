@@ -27,6 +27,11 @@ const VN = (() => {
     let settings = { vnGuardianDialogue: true };
 
     // ─────────────────────────────────────
+    // Internal Helpers
+    // ─────────────────────────────────────
+    const isActive = () => overlay && !overlay.classList.contains('hidden');
+
+    // ─────────────────────────────────────
     // DOM Cache
     // ─────────────────────────────────────
     let els = {};
@@ -194,9 +199,12 @@ const VN = (() => {
         // Render first dialogue
         renderDialogue();
 
-        // Play sound
-        if (typeof AudioSystem !== 'undefined' && AudioSystem.playVNOpen) {
+        // Play sound & BGM
+        if (typeof AudioSystem !== 'undefined') {
             AudioSystem.playVNOpen();
+            // 结局 BGM 切换：真结局用 ending_true，其余用 ending_normal
+            const bgmScene = (sceneId === 'true_ending') ? 'ending_true' : 'ending_normal';
+            AudioSystem.playBGM(bgmScene);
         }
     }
 
@@ -432,7 +440,7 @@ const VN = (() => {
         loadEndingScenes,
         getScene,
         getEndingScene,
-        isActive: () => overlay && !overlay.classList.contains('hidden'),
+        isActive,
         isSceneFirstView: (sceneId) => {
             const ngData = (typeof getNGPlusData === 'function') ? getNGPlusData() : {};
             return !(ngData.seenScenes && ngData.seenScenes.includes(sceneId));

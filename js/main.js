@@ -15,15 +15,50 @@ window.MemorySanctuary = {
     activeEvent: null
 };
 
+/**
+ * 启动流程：
+ * 1. 显示启动画面（内联 CSS，瞬间出现）
+ * 2. 加载游戏数据 + 后台下载字体（并行）
+ * 3. 初始化游戏系统
+ * 4. 隐藏启动画面，显示标题
+ */
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log('[记忆圣所] 初始化开始...');
+    console.log('[记忆圣所] 启动中...');
+    
+    const bootScreen = document.getElementById('boot-screen');
+    const progressBar = document.getElementById('boot-progress-bar');
+    const statusText = document.getElementById('boot-status');
+    
+    function updateBoot(percent, message) {
+        if (progressBar) progressBar.style.width = percent + '%';
+        if (statusText && message) statusText.textContent = message;
+    }
     
     try {
-        await loadGameData();
+        // 阶段1：显示启动画面
+        updateBoot(5, '正在初始化...');
+        
+        // 阶段2：并行加载字体和游戏数据
+        const fontLoader = new FontLoader();
+        
+        const fontPromise = fontLoader.load((pct, msg) => {
+            // 字体加载进度映射到 10-95%
+            updateBoot(10 + pct * 0.85, msg);
+        });
+        
+        const dataPromise = loadGameData().then(() => {
+            updateBoot(92, '正在加载数据...');
+        });
+        
+        // 并行执行，但字体失败不影响数据加载
+        await Promise.all([fontPromise, dataPromise]);
+        
+        // 阶段3：初始化游戏系统
+        updateBoot(95, '正在启动圣所...');
+        
         initTheme();
         initSaveData();
         
-        // Initialize game systems while game container is visible
         if (typeof initCanvas === 'function') initCanvas();
         if (typeof initUI === 'function') initUI();
         if (typeof initEventSystem === 'function') initEventSystem();
@@ -38,7 +73,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof initSaveSystem === 'function') initSaveSystem();
         if (typeof initSettings === 'function') initSettings();
         
-        // 初始化视觉小说引擎
         if (typeof VN !== 'undefined' && MemorySanctuary.data.scenes) {
             VN.init(MemorySanctuary.data.scenes);
             if (MemorySanctuary.data.endingScenes) {
@@ -46,10 +80,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }
         
-        // 音频系统延迟初始化（需要用户交互，在首次点击时触发）
         if (typeof AudioSystem !== 'undefined') {
             const initAudio = () => {
                 AudioSystem.init();
+                AudioSystem.tryPlayBGMAfterInteraction();
                 document.removeEventListener('click', initAudio);
                 document.removeEventListener('keydown', initAudio);
             };
@@ -57,12 +91,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.addEventListener('keydown', initAudio);
         }
         
-        // Show title screen after game systems are ready
         initTitleScreen();
+        
+        if (typeof AudioSystem !== 'undefined') {
+            AudioSystem.playBGM('title');
+        }
+        
+        // 阶段4：隐藏启动画面
+        updateBoot(100, '完成');
+        setTimeout(() => {
+            if (bootScreen) {
+                bootScreen.classList.add('fade-out');
+                setTimeout(() => bootScreen.remove(), 500);
+            }
+        }, 300);
         
         console.log('[记忆圣所] 初始化完成');
     } catch (error) {
         console.error('[记忆圣所] 初始化失败:', error);
+        if (statusText) statusText.textContent = '加载失败，请刷新页面';
     }
 });
 
@@ -78,8 +125,8 @@ async function loadGameData() {
     MemorySanctuary.data.vaults = (await vaultsRes.json()).vaults;
     MemorySanctuary.data.guardians = (await guardiansRes.json()).guardians;
     const eventsData = await eventsRes.json();
-    MemorySanctuary.data.events = eventsData.events;
-    MemorySanctuary.data.scheduledEvents = eventsData.scheduledEvents || [];
+    MemorySanctuary.data.events = eventsData.events.filter(e => e.trigger?.type !== 'scheduled');
+    MemorySanctuary.data.scheduledEvents = eventsData.events.filter(e => e.trigger?.type === 'scheduled');
     MemorySanctuary.data.explorations = (await explorationsRes.json()).explorations || [];
     MemorySanctuary.data.projects = (await projectsRes.json()).projects || [];
     try {
@@ -118,7 +165,9 @@ async function loadGameData() {
 
 function initGameState() {
     MemorySanctuary.state = {
-        resources: { energy: 100, media: 60, environment: 95 },
+        resources: { energy: 100, media: 60, environment: 95, food: 50 },
+        ongoingEffects: [],
+        resourceChanges: { energy: 0, media: 0, environment: 0, food: 0 },
         week: 1,
         chapter: 1,
         completedArchives: [],
@@ -127,6 +176,8 @@ function initGameState() {
         activeEvents: [],
         activeEventIds: [],
         deterioration: { energy: false, media: false, environment: false },
+        emergencyCorruption: 0,
+        emergencyCooldowns: {},
         gameOver: false,
         guardianMoods: {},
         scheduledEvents: [],
@@ -251,6 +302,11 @@ function showTitleScreen() {
     titleScreen.classList.remove('hidden');
     gameContainer.classList.add('hidden');
     
+    // 返回标题画面：播放标题 BGM
+    if (typeof AudioSystem !== 'undefined') {
+        AudioSystem.playBGM('title');
+    }
+    
     // Refresh NG+ info
     const ng = getNGPlusData();
     if (ngplusEl && ng.playthroughCount > 0) {
@@ -345,12 +401,30 @@ function initSettings() {
     const skipConfirmCheckbox = document.getElementById('setting-skip-confirm');
     const showResultCheckbox = document.getElementById('setting-show-result');
     const vnGuardianCheckbox = document.getElementById('setting-vn-guardian');
+    const bgmVolumeSlider = document.getElementById('setting-bgm-volume');
+    const bgmVolumeValue = document.getElementById('bgm-volume-value');
+    const bgmMuteBtn = document.getElementById('setting-bgm-mute');
     
     // Load current settings into checkboxes
     const settings = getSettings();
     if (skipConfirmCheckbox) skipConfirmCheckbox.checked = settings.skipConfirm;
     if (showResultCheckbox) showResultCheckbox.checked = settings.showResult;
     if (vnGuardianCheckbox) vnGuardianCheckbox.checked = settings.vnGuardianDialogue;
+    
+    // BGM 设置初始化
+    if (typeof AudioSystem !== 'undefined') {
+        const bgmVol = AudioSystem.bgmVolumeLevel;
+        if (bgmVolumeSlider) {
+            bgmVolumeSlider.value = Math.round(bgmVol * 100);
+        }
+        if (bgmVolumeValue) {
+            bgmVolumeValue.textContent = Math.round(bgmVol * 100) + '%';
+        }
+        if (bgmMuteBtn) {
+            bgmMuteBtn.textContent = AudioSystem.isBGMMuted ? '🔇' : '🎵';
+            bgmMuteBtn.classList.toggle('muted', AudioSystem.isBGMMuted);
+        }
+    }
     
     // Open settings from title screen
     if (titleSettingsBtn) {
@@ -402,6 +476,51 @@ function initSettings() {
             localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
         });
     }
+    
+    // BGM 音量滑块
+    function updateSliderFill() {
+        if (!bgmVolumeSlider) return;
+        const val = parseInt(bgmVolumeSlider.value, 10);
+        const pct = val + '%';
+        bgmVolumeSlider.style.background = `linear-gradient(to right, var(--amber-primary) 0%, var(--amber-primary) ${pct}, var(--bg-panel) ${pct}, var(--bg-panel) 100%)`;
+    }
+    
+    // 初始化填充
+    updateSliderFill();
+    
+    if (bgmVolumeSlider) {
+        bgmVolumeSlider.addEventListener('input', () => {
+            const val = parseInt(bgmVolumeSlider.value, 10) / 100;
+            if (bgmVolumeValue) {
+                bgmVolumeValue.textContent = Math.round(val * 100) + '%';
+            }
+            if (typeof AudioSystem !== 'undefined') {
+                AudioSystem.setBGMVolume(val);
+            }
+            updateSliderFill();
+        });
+    }
+    
+    // BGM 静音按钮
+    if (bgmMuteBtn) {
+        bgmMuteBtn.addEventListener('click', () => {
+            if (typeof AudioSystem !== 'undefined') {
+                const isMuted = AudioSystem.toggleBGMMute();
+                bgmMuteBtn.textContent = isMuted ? '🔇' : '🎵';
+                bgmMuteBtn.classList.toggle('muted', isMuted);
+                // 静音时滑块变灰
+                if (bgmVolumeSlider) {
+                    if (isMuted) {
+                        bgmVolumeSlider.style.filter = 'grayscale(1)';
+                        bgmMuteBtn.classList.add('muted');
+                    } else {
+                        bgmVolumeSlider.style.filter = '';
+                        bgmMuteBtn.classList.remove('muted');
+                    }
+                }
+            }
+        });
+    }
 }
 
 function openSettingsPanel() {
@@ -447,6 +566,11 @@ function startNewGame(slot, isNGPlus) {
         addLog(`第 ${ngData.playthroughCount} 周目开始。继承奖励已应用。`, 'system');
     } else {
         addLog('新游戏开始。愿你的选择得到善待。', 'system');
+    }
+    
+    // 新游戏开始：播放游戏 BGM
+    if (typeof AudioSystem !== 'undefined') {
+        AudioSystem.playBGM('game');
     }
 
     // Start tutorial for first play

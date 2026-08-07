@@ -3,16 +3,16 @@
     {
       "id": "proj_generator",
       "name": "修复备用发电机",
-      "description": "洛恩建议修复地表备用发电机。安装后每回合额外 +2 能源，持续 3 周。",
+      "description": "洛恩修复地表备用发电机。安装后每回合额外 +3 能源，持续 5 周。",
       "cost": {
         "energy": 15,
         "media": 10
       },
-      "duration": 4,
+      "duration": 5,
       "effect": {
         "type": "resourceBoost",
         "resource": "energy",
-        "amount": 2
+        "amount": 3
       },
       "availableAfter": 20,
       "repeatable": false,
@@ -25,16 +25,16 @@
     {
       "id": "proj_cooling",
       "name": "修复冷却系统",
-      "description": "埃塞尔提议重启圣所冷却系统，降低介质衰减速度 50%，持续 4 周。",
+      "description": "埃塞尔重启圣所冷却系统，降低介质衰减速度 60%，持续 6 周。",
       "cost": {
         "energy": 20,
         "media": 5
       },
-      "duration": 5,
+      "duration": 6,
       "effect": {
         "type": "decayReduction",
         "resource": "media",
-        "percent": 0.5
+        "percent": 0.6
       },
       "availableAfter": 20,
       "repeatable": true,
@@ -71,7 +71,7 @@
     {
       "id": "proj_water_filter",
       "name": "修复水循环系统",
-      "description": "米莎提议修复圣所的水循环系统，降低环境衰减速度50%，持续5周。",
+      "description": "米莎修复圣所水循环系统，降低环境衰减速度 60%，持续 5 周。",
       "cost": {
         "energy": 15,
         "media": 8
@@ -80,7 +80,7 @@
       "effect": {
         "type": "decayReduction",
         "resource": "environment",
-        "percent": 0.5
+        "percent": 0.6
       },
       "availableAfter": 16,
       "repeatable": false,
@@ -93,7 +93,7 @@
     {
       "id": "proj_medical_lab",
       "name": "建立医疗实验室",
-      "description": "芬恩建议建立医疗实验室，解锁3条医学条目，持续4周。",
+      "description": "芬恩建立医疗实验室，解锁4条医学条目，持续 4 周。",
       "cost": {
         "energy": 20,
         "media": 15
@@ -102,9 +102,10 @@
       "effect": {
         "type": "unlockArchives",
         "archiveIds": [
-          "arch_v2_021",
-          "arch_v2_022",
-          "arch_v2_023"
+          "arch_emergency_004",
+          "arch_emergency_005",
+          "arch_med_001",
+          "arch_med_002"
         ]
       },
       "availableAfter": 28,
@@ -118,7 +119,7 @@
     {
       "id": "proj_communication",
       "name": "修复通讯阵列",
-      "description": "洛恩想要修复通讯阵列，解锁2条来自其他圣所的加密记录，持续3周。",
+      "description": "修复通讯阵列，解锁3条加密记录，持续 3 周。",
       "cost": {
         "energy": 25,
         "media": 20
@@ -127,8 +128,9 @@
       "effect": {
         "type": "unlockArchives",
         "archiveIds": [
-          "arch_v2_032",
-          "arch_v2_033"
+          "arch_emergency_004",
+          "arch_emergency_005",
+          "arch_comms_001"
         ]
       },
       "availableAfter": 36,
@@ -142,7 +144,7 @@
     {
       "id": "proj_final_seal",
       "name": "最终封印准备",
-      "description": "准备最终的封印程序，解锁5条最终归档条目，持续4周。",
+      "description": "最终封印准备，解锁3条最终归档条目，持续 4 周。",
       "cost": {
         "energy": 30,
         "media": 25
@@ -151,11 +153,9 @@
       "effect": {
         "type": "unlockArchives",
         "archiveIds": [
-          "arch_v2_041",
-          "arch_v2_042",
-          "arch_v2_043",
-          "arch_v2_044",
-          "arch_v2_045"
+          "arch_final_001",
+          "arch_final_002",
+          "arch_final_003"
         ]
       },
       "availableAfter": 44,
@@ -164,6 +164,48 @@
         "guardian": "tika",
         "mood": 4,
         "extraEffect": "finaleBoost"
+      }
+    },
+    {
+      "id": "proj_farm",
+      "name": "建造水培农场",
+      "description": "建造水培农场，每回合额外产出 4 食物，持续 7 周。",
+      "cost": {
+        "energy": 20,
+        "media": 10
+      },
+      "duration": 7,
+      "effect": {
+        "type": "foodBoost",
+        "amount": 4
+      },
+      "availableAfter": 12,
+      "repeatable": true,
+      "guardianBonus": {
+        "guardian": "misha",
+        "mood": 4,
+        "extraEffect": "foodBoostExtra"
+      }
+    },
+    {
+      "id": "proj_kitchen",
+      "name": "共享食堂",
+      "description": "建立共享食堂，每回合额外产出 2 食物，持续 5 周。",
+      "cost": {
+        "energy": 15,
+        "media": 8
+      },
+      "duration": 5,
+      "effect": {
+        "type": "foodBoost",
+        "amount": 2
+      },
+      "availableAfter": 8,
+      "repeatable": true,
+      "guardianBonus": {
+        "guardian": "finn",
+        "mood": 4,
+        "extraEffect": "moodBonusPerTurn"
       }
     }
   ]

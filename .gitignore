@@ -1,4 +1,16 @@
-# Agent项目信息与日志
+# 临时验证脚本
+scripts/hermes-verify-*.js
+C:\Users\47219\AppData\Local\Temp\hermes-verify-*.js
+
+# Hermes 桌面附件缓存
+.hermes/desktop-attachments/
+
+# IDE / 系统文件
+.DS_Store
+Thumbs.db
+*.swp
+
+# 日志文档（已在原gitignore中，保留）
 开发日志.md
 开发日志2.md
 IDEA.md
