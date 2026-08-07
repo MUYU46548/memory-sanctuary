@@ -53,6 +53,41 @@ function renderAll() {
     renderExplorationButton();
     updateProjectButton();
     updateEmergencyButton();
+    renderSealTopbarButton();
+}
+
+// ============================================================
+// 顶部栏封印按钮
+// ============================================================
+
+function renderSealTopbarButton() {
+    const btn = document.getElementById('seal-topbar-btn');
+    if (!btn || !MemorySanctuary.state) return;
+    const state = MemorySanctuary.state;
+    const week = state.week;
+    const archivedCount = state.completedArchives.length;
+
+    // week < 20: 隐藏按钮
+    if (week < 20) {
+        btn.classList.add('hidden');
+        return;
+    }
+
+    btn.classList.remove('hidden');
+    btn.classList.remove('sealable-ready', 'sealable-warning');
+
+    // 判断状态
+    if (week >= 45) {
+        // 接近终局 — 红色警告脉冲
+        btn.classList.add('sealable-warning');
+        btn.textContent = `⚠ 封印圣所（${archivedCount} 条）`;
+        btn.title = '终局将至！点击封印圣所以保存记忆';
+    } else if (week >= 20) {
+        // 可封印 — 琥珀色脉冲
+        btn.classList.add('sealable-ready');
+        btn.textContent = `封印圣所（${archivedCount} 条）`;
+        btn.title = '点击封印圣所，结束当前周目并解锁多周目奖励';
+    }
 }
 
 // ============================================================

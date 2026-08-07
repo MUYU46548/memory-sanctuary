@@ -263,6 +263,56 @@ body {
     background: var(--bg-panel-hover);
 }
 
+/* 封印圣所按钮 — top bar 终局按钮 */
+#seal-topbar-btn {
+    background: var(--bg-panel);
+    border: 1px solid var(--amber-dim);
+    border-radius: 4px;
+    padding: 6px 14px;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    transition: all 0.3s ease;
+    opacity: 0.6;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+/* 可封印状态 — week >= 20 且有足够条目时高亮脉冲 */
+#seal-topbar-btn.sealable-ready {
+    opacity: 1;
+    border-color: var(--amber-primary);
+    color: var(--amber-primary);
+    background: var(--bg-panel-hover);
+    box-shadow: 0 0 8px rgba(212, 160, 74, 0.3);
+    animation: sealPulse 2s ease-in-out infinite;
+}
+
+@keyframes sealPulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(212, 160, 74, 0.3); }
+    50% { box-shadow: 0 0 20px rgba(212, 160, 74, 0.6), 0 0 30px rgba(212, 160, 74, 0.2); }
+}
+
+#seal-topbar-btn:hover.sealable-ready {
+    background: var(--amber-primary);
+    color: var(--bg-deep);
+    box-shadow: 0 0 25px rgba(212, 160, 74, 0.7);
+}
+
+/* 危险状态 — 接近终局时红色警告 */
+#seal-topbar-btn.sealable-warning {
+    opacity: 1;
+    border-color: var(--danger);
+    color: var(--danger);
+    animation: sealPulseRed 1.5s ease-in-out infinite;
+}
+
+@keyframes sealPulseRed {
+    0%, 100% { box-shadow: 0 0 6px rgba(138, 58, 42, 0.4); }
+    50% { box-shadow: 0 0 18px rgba(138, 58, 42, 0.7); }
+}
+
 /* ============================================
    主内容区
    ============================================ */

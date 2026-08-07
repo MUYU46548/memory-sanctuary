@@ -600,41 +600,85 @@ function checkWeekLimit() {
 
 function triggerGameOver(reason) {
     MemorySanctuary.state.gameOver = true;
-    
+
     const overlay = document.getElementById('modal-overlay');
     const title = document.getElementById('modal-title');
     const content = document.getElementById('modal-content');
     const closeBtn = document.getElementById('modal-close');
-    
+
     if (!overlay || !title || !content) return;
-    
+
     let titleText = '圣所已崩溃';
     let contentText = '';
-    
+
     if (reason === 'collapse') {
         contentText = '能源、介质与环境稳定度全部归零。\n\n圣所的系统一个接一个地停止了运转。最后的灯光熄灭，空气变得沉默。\n\n你未能保存萨拉达斯的遗产。后世将永远不知道这里曾存在过一个文明。\n\n「我们曾存在，但没有人记得。」';
     } else if (reason === 'timeup') {
         titleText = '时间已至';
         contentText = `圣所已运行 ${MAX_WEEK} 周。地热能源即将耗尽，地表环境已完全不可生存。\n\n你必须在此刻做出最终抉择——封印圣所，让后世有机会发现你保存的记忆。\n\n这是终结，也是开始。`;
     }
-    
+
     const archivedCount = MemorySanctuary.state.completedArchives.length;
     const totalCount = MemorySanctuary.data.archives.length;
     contentText += `\n\n最终统计：\n`;
     contentText += `• 运行周数：${MemorySanctuary.state.week} 周\n`;
     contentText += `• 归档条目：${archivedCount} / ${totalCount}\n`;
     contentText += `• 文明完整度：${Math.round((archivedCount / totalCount) * 100)}%\n`;
-    
+
+    // ─── 崩溃结局：走 VN 演出 ───
+    if (reason === 'collapse') {
+        // 检查是否有可触发的结局
+        const ending = (typeof checkHiddenEndings === 'function') ? checkHiddenEndings() : null;
+        const endingSceneId = ending ? ending.id : 'silent_sanctuary';
+        const hasVNScene = (typeof VN !== 'undefined' && VN.getEndingScene(endingSceneId));
+
+        // 先关闭可能存在的 modal
+        overlay.classList.add('hidden');
+
+        if (hasVNScene) {
+            // VN.showEnding 内部会播放对应 BGM
+            VN.showEnding(endingSceneId, () => {
+                const modalContent = getEndingModalData(ending);
+                showSealModalWithContent(modalContent, ending, true);
+            });
+        } else {
+            // 无 VN 场景 → 播放 ending_normal BGM，直接显示统计 modal
+            if (typeof AudioSystem !== 'undefined') {
+                const ngData = (typeof getNGPlusData === 'function') ? getNGPlusData() : {};
+                const isTrueEnding = ngData.playthroughCount >= 5 && MemorySanctuary.state.pendingEnding === 'true_ending';
+                AudioSystem.playBGM(isTrueEnding ? 'ending_true' : 'ending_normal');
+            }
+
+            contentText += `\n点击「返回标题」重新开始。`;
+            title.textContent = titleText;
+            content.textContent = contentText;
+            overlay.classList.remove('hidden');
+
+            if (closeBtn) {
+                closeBtn.textContent = '返回标题';
+                closeBtn.onclick = () => {
+                    overlay.classList.add('hidden');
+                    showTitleScreen();
+                };
+            }
+        }
+
+        // 记录成就
+        if (typeof checkSealAchievements === 'function') {
+            checkSealAchievements(ending ? ending.id : null, MemorySanctuary.state.week);
+        }
+        return;
+    }
+
+    // ─── 时间耗尽结局：显示 modal → 封印 ───
     if (reason === 'timeup') {
         contentText += `\n点击「封印圣所」结束游戏并保存记录。`;
-    } else {
-        contentText += `\n点击「返回标题」重新开始。`;
     }
-    
+
     title.textContent = titleText;
     content.textContent = contentText;
     overlay.classList.remove('hidden');
-    
+
     if (closeBtn) {
         if (reason === 'timeup') {
             closeBtn.textContent = '封印圣所';
@@ -3099,8 +3143,8 @@ function checkSealAchievements(endingId, week) {
     if (endingId) {
         const achievementId = endingToAchievement[endingId] || endingId;
         unlockAchievement(achievementId);
-        if (endingId.startsWith('guardian_finale_')) {
-            const gid = endingId.replace('guardian_finale_', '');
+        if (endingId.startsWith('guardian_') && endingId.endsWith('_finale')) {
+            const gid = endingId.replace('guardian_', '').replace('_finale', '');
             unlockAchievement('guardian_' + gid + '_love');
         }
     }
@@ -3702,9 +3746,9 @@ function checkGuardianFinale(guardianId) {
     const tierNames = { hostile: '疏离', cold: '冷淡', neutral: '平和', friendly: '友好', intimate: '亲密' };
     const moodIndicator = getMoodIndicator(guardianId);
     return {
-        id: 'guardian_finale_' + guardianId,
+        id: 'guardian_' + guardianId + '_finale',
         title: guardian.name + '的专属结局',
-        description: guardian.endingDialogues.ending.join('\n\n') + '\n\n【与' + guardian.name + '的关系：' + tierNames[tier] + ' ' + moodIndicator + '】',
+        description: guardian.endingDialogues.ending.join('\\n\\n') + '\\n\\n【与' + guardian.name + '的关系：' + tierNames[tier] + ' ' + moodIndicator + '】',
         unlockEntry: guardian.endingDialogues.unlockEntry || null
     };
 }
@@ -3825,6 +3869,7 @@ function canSealSanctuary() {
 }
 
 function sealSanctuary() {
+    MemorySanctuary.state.gameOver = true;
     const archivedCount = MemorySanctuary.state.completedArchives.length;
     const totalCount = MemorySanctuary.data.archives.length;
     const ngData = getNGPlusData();
@@ -3873,8 +3918,8 @@ function sealSanctuary() {
     const ending = checkHiddenEndings();
     
     // Show unlock message for guardian endings
-    if (ending && ending.id && ending.id.startsWith('guardian_finale_')) {
-        const gid = ending.id.replace('guardian_finale_', '');
+    if (ending && ending.id && ending.id.startsWith('guardian_') && ending.id.endsWith('_finale')) {
+        const gid = ending.id.replace('guardian_', '').replace('_finale', '');
         const guardian = getGuardianById(gid);
         if (guardian) {
             addLog(`💕 解锁${guardian.name}的专属结局！`, 'success');
@@ -3904,7 +3949,7 @@ function sealSanctuary() {
     }
 }
 
-function showSealModalWithContent(modalContent, ending) {
+function showSealModalWithContent(modalContent, ending, isGameOver = false) {
     const overlay = document.getElementById('modal-overlay');
     const title = document.getElementById('modal-title');
     const content = document.getElementById('modal-content');
@@ -3912,17 +3957,29 @@ function showSealModalWithContent(modalContent, ending) {
     
     if (!overlay || !title || !content) return;
     
-    title.textContent = '圣所已封印';
+    title.textContent = isGameOver ? '圣所已崩溃' : '圣所已封印';
     content.textContent = modalContent;
     overlay.classList.remove('hidden');
     
+    // 自动返回标题（30秒后）
+    let autoReturnTimer = null;
+    const autoReturn = () => {
+        if (autoReturnTimer) {
+            clearTimeout(autoReturnTimer);
+            autoReturnTimer = null;
+        }
+        overlay.classList.add('hidden');
+        if (typeof showTitleScreen === 'function') showTitleScreen();
+    };
+    
     if (closeBtn) {
-        closeBtn.textContent = '继续游戏';
-        closeBtn.onclick = () => {
-            overlay.classList.add('hidden');
-            closeBtn.textContent = '确认';
-        };
+        // 封印后或崩溃后，按钮立即返回标题
+        closeBtn.textContent = '返回标题';
+        closeBtn.onclick = autoReturn;
     }
+    
+    // 30秒无操作自动返回
+    autoReturnTimer = setTimeout(autoReturn, 30000);
 }
 
 

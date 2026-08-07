@@ -225,6 +225,19 @@ function initTheme() {
             muteToggle.textContent = isMuted ? '🔇' : '🔊';
         });
     }
+
+    // 封印圣所按钮（顶部栏）
+    const sealBtn = document.getElementById('seal-topbar-btn');
+    if (sealBtn) {
+        sealBtn.addEventListener('click', () => {
+            if (!MemorySanctuary.state) return;
+            const archivedCount = MemorySanctuary.state.completedArchives.length;
+            const week = MemorySanctuary.state.week;
+            if (confirm(`确定封印圣所吗？\n\n已归档条目：${archivedCount}\n运行周数：${week}\n\n这将结束当前周目并解锁多周目奖励。`)) {
+                sealSanctuary();
+            }
+        });
+    }
 }
 
 // ==========================================
