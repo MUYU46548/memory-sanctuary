@@ -54,7 +54,7 @@ function adjustResource(resource, amount) {
     const state = MemorySanctuary.state;
     if (!state) return;
     
-    const max = resource === 'media' ? 60 : (resource === 'food' ? 80 : 100);
+    const max = resource === 'media' ? 150 : (resource === 'food' ? 80 : 150);
     state.resources[resource] = Math.max(0, Math.min(max, state.resources[resource] + amount));
     
     // 资源变化后立即检查衰竭状态（勘探/事件奖励不推进时间）
@@ -307,9 +307,9 @@ function applySustainedBonuses() {
     // 应用持续效果
     state.unlockedBonuses.forEach(bonus => {
         if (bonus === 'energy_per_turn_3') {
-            state.resources.energy = Math.min(100, state.resources.energy + 3);
+            state.resources.energy = Math.min(150, state.resources.energy + 3);
         } else if (bonus === 'energy_per_turn_2') {
-            state.resources.energy = Math.min(100, state.resources.energy + 2);
+            state.resources.energy = Math.min(150, state.resources.energy + 2);
         }
     });
 
@@ -416,7 +416,7 @@ function getWeeklyDecay() {
         multiplier = 2; // 已衰竭两种资源，剩余资源加速衰减
     }
     
-    return { energy: 1.5 * multiplier, media: 0.8 * multiplier, environment: 0.5 * multiplier };
+    return { energy: 1.0 * multiplier, media: 0.5 * multiplier, environment: 0.5 * multiplier };
 }
 
 function getEffectiveExpiryWeeks(entry) {
@@ -474,6 +474,7 @@ function checkSanctuaryDeterioration() {
 function checkStuckState() {
     const state = MemorySanctuary.state;
     const archives = MemorySanctuary.data.archives;
+    const week = state.week;
     
     // Ensure banner exists
     let banner = document.getElementById('stuck-banner');
@@ -483,15 +484,18 @@ function checkStuckState() {
     }
     if (!banner) return;
     
-    // Count actionable entries (not completed, not expired, has resources)
-    const actionable = archives.filter(a => 
-        !isArchiveCompleted(a.id) && !a.expired && hasResources(a.energyCost, a.dataCost)
+    // Count currently visible entries (appeared and not expired)
+    const visible = archives.filter(a => 
+        a.availableAfter <= week && !isArchiveCompleted(a.id) && !a.expired
+    );
+    
+    // Count actionable entries (visible + has resources)
+    const actionable = visible.filter(a => 
+        hasResources(a.energyCost, a.dataCost)
     ).length;
     
-    // Count entries that could be archived if we had resources
-    const potential = archives.filter(a => 
-        !isArchiveCompleted(a.id) && !a.expired
-    ).length;
+    // Count entries that could be archived if we had resources (only currently visible)
+    const potential = visible.filter(a => !isArchiveCompleted(a.id)).length;
     
     // Check if player is stuck (no actionable entries, but potential exists)
     const isStuck = actionable === 0 && potential > 0;
@@ -601,6 +605,12 @@ function checkWeekLimit() {
 function triggerGameOver(reason) {
     MemorySanctuary.state.gameOver = true;
 
+    // 时间至 → 直接封印圣所（走完整结局流程）
+    if (reason === 'timeup') {
+        sealSanctuary();
+        return;
+    }
+
     const overlay = document.getElementById('modal-overlay');
     const title = document.getElementById('modal-title');
     const content = document.getElementById('modal-content');
@@ -609,14 +619,7 @@ function triggerGameOver(reason) {
     if (!overlay || !title || !content) return;
 
     let titleText = '圣所已崩溃';
-    let contentText = '';
-
-    if (reason === 'collapse') {
-        contentText = '能源、介质与环境稳定度全部归零。\n\n圣所的系统一个接一个地停止了运转。最后的灯光熄灭，空气变得沉默。\n\n你未能保存萨拉达斯的遗产。后世将永远不知道这里曾存在过一个文明。\n\n「我们曾存在，但没有人记得。」';
-    } else if (reason === 'timeup') {
-        titleText = '时间已至';
-        contentText = `圣所已运行 ${MAX_WEEK} 周。地热能源即将耗尽，地表环境已完全不可生存。\n\n你必须在此刻做出最终抉择——封印圣所，让后世有机会发现你保存的记忆。\n\n这是终结，也是开始。`;
-    }
+    let contentText = '能源、介质与环境稳定度全部归零。\n\n圣所的系统一个接一个地停止了运转。最后的灯光熄灭，空气变得沉默。\n\n你未能保存萨拉达斯的遗产。后世将永远不知道这里曾存在过一个文明。\n\n「我们曾存在，但没有人记得。」';
 
     const archivedCount = MemorySanctuary.state.completedArchives.length;
     const totalCount = MemorySanctuary.data.archives.length;
@@ -651,7 +654,7 @@ function triggerGameOver(reason) {
 
             contentText += `\n点击「返回标题」重新开始。`;
             title.textContent = titleText;
-            content.textContent = contentText;
+            content.innerHTML = contentText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
             overlay.classList.remove('hidden');
 
             if (closeBtn) {
@@ -670,29 +673,22 @@ function triggerGameOver(reason) {
         return;
     }
 
-    // ─── 时间耗尽结局：显示 modal → 封印 ───
+    // ─── 时间耗尽结局：直接跳转到结算页面 ───
     if (reason === 'timeup') {
-        contentText += `\n点击「封印圣所」结束游戏并保存记录。`;
+        sealSanctuary();
+        return;
     }
 
     title.textContent = titleText;
-    content.textContent = contentText;
+    content.innerHTML = contentText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
     overlay.classList.remove('hidden');
 
     if (closeBtn) {
-        if (reason === 'timeup') {
-            closeBtn.textContent = '封印圣所';
-            closeBtn.onclick = () => {
-                overlay.classList.add('hidden');
-                sealSanctuary();
-            };
-        } else {
-            closeBtn.textContent = '返回标题';
-            closeBtn.onclick = () => {
-                overlay.classList.add('hidden');
-                showTitleScreen();
-            };
-        }
+        closeBtn.textContent = '返回标题';
+        closeBtn.onclick = () => {
+            overlay.classList.add('hidden');
+            showTitleScreen();
+        };
     }
 }
 
@@ -808,7 +804,7 @@ function confirmArchive(archiveId) {
     
     contentText += `\n\n归档后将推进1周时间。`;
     
-    content.textContent = contentText;
+    content.innerHTML = contentText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
     overlay.classList.remove('hidden');
     
     // 创建确认按钮容器
@@ -905,11 +901,18 @@ function skipTurn(forceFromStuck = false) {
     if (MemorySanctuary.activeEvent) {
         // 困局跳过：允许玩家在被事件阻塞时仍能跳过恢复资源
         if (forceFromStuck) {
-            // 关闭当前事件面板，但不清空 activeEvent（玩家未做选择）
+            // 关闭当前事件面板，清空 activeEvent（玩家选择跳过事件）
             const panel = document.getElementById('event-panel');
             if (panel) panel.classList.add('hidden');
+            MemorySanctuary.activeEvent = null;
             addLog('你强行跳过当前事件，让圣所进入低功耗维护模式。', 'warning');
         } else {
+            // 如果事件面板已隐藏，先打开它让玩家看到
+            const panel = document.getElementById('event-panel');
+            if (panel && panel.classList.contains('hidden')) {
+                panel.classList.remove('hidden');
+                renderEvent(MemorySanctuary.activeEvent);
+            }
             showSkipBlockedBanner();
             return false;
         }
@@ -930,8 +933,8 @@ function skipTurn(forceFromStuck = false) {
     
     // 恢复资源
     const state = MemorySanctuary.state;
-    state.resources.energy = Math.min(100, state.resources.energy + 18);
-    state.resources.media = Math.min(100, state.resources.media + 12);
+    state.resources.energy = Math.min(150, state.resources.energy + 18);
+    state.resources.media = Math.min(150, state.resources.media + 12);
     state.resources.environment = Math.min(100, state.resources.environment + 8);
     
     addLog('维护完成：能源+18，介质+12，环境+8。', 'success');
@@ -978,6 +981,13 @@ function skipTurn(forceFromStuck = false) {
 function showSkipBlockedBanner() {
     const banner = document.getElementById('stuck-banner');
     if (banner) {
+        // 如果事件面板已隐藏，自动打开它而不是显示空提示
+        const eventPanel = document.getElementById('event-panel');
+        const event = MemorySanctuary.activeEvent;
+        if (event && eventPanel && eventPanel.classList.contains('hidden')) {
+            eventPanel.classList.remove('hidden');
+            renderEvent(event);
+        }
         banner.innerHTML = `<span>⚠️ 当前有未处理的突发事件，无法跳过。请先处理事件。</span>`;
         banner.className = 'stuck-banner warning';
         setTimeout(() => {
@@ -1453,10 +1463,10 @@ function triggerGuardianInitiative(event) {
     acceptBtn.addEventListener('click', () => {
         // 应用奖励
         if (event.reward.energy) {
-            MemorySanctuary.state.resources.energy = Math.min(100, MemorySanctuary.state.resources.energy + event.reward.energy);
+            MemorySanctuary.state.resources.energy = Math.min(150, MemorySanctuary.state.resources.energy + event.reward.energy);
         }
         if (event.reward.media) {
-            MemorySanctuary.state.resources.media = Math.min(100, MemorySanctuary.state.resources.media + event.reward.media);
+            MemorySanctuary.state.resources.media = Math.min(150, MemorySanctuary.state.resources.media + event.reward.media);
         }
         if (event.reward.environment) {
             MemorySanctuary.state.resources.environment = Math.min(100, MemorySanctuary.state.resources.environment + event.reward.environment);
@@ -1803,7 +1813,7 @@ function showArchiveCompleteModal(entry) {
         }
     }
     
-    content.textContent = modalContent;
+    content.innerHTML = modalContent.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
     overlay.classList.remove('hidden');
     
     const closeBtn = document.getElementById('modal-close');
@@ -2167,14 +2177,32 @@ function selectExploration(expData, element) {
 function renderDispatchGuardians(expData) {
     const container = document.getElementById('dispatch-guardians');
     container.innerHTML = '';
-
+    
     const guardians = MemorySanctuary.data.guardians;
     const now = MemorySanctuary.state.week;
+    
+    // Food cost display
+    const foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
+    const foodCostDiv = document.createElement('div');
+    foodCostDiv.className = 'dispatch-food-cost';
+    foodCostDiv.innerHTML = `🍖 食物消耗：${foodCost}`;
+    container.appendChild(foodCostDiv);
+    
+    const guardianGrid = document.createElement('div');
+    guardianGrid.className = 'dispatch-guardians-grid';
+    
     guardians.forEach(g => {
         const div = document.createElement('div');
         div.className = 'dispatch-guardian';
-        div.innerHTML = `<span>${g.avatar}</span><span>${g.name}</span>`;
-
+        
+        // Show skills
+        const skillsHtml = g.skills ? g.skills.map(s => `<span class="guardian-skill">${skillName(s)}</span>`).join('') : '';
+        div.innerHTML = `
+            <span class="guardian-avatar">${g.avatar}</span>
+            <span class="guardian-name">${g.name}</span>
+            <div class="guardian-skills">${skillsHtml}</div>
+        `;
+        
         if (isGuardianFatigued(g.id)) {
             div.classList.add('fatigued');
             div.title = '该守护者本周疲劳，无法派遣';
@@ -2190,9 +2218,11 @@ function renderDispatchGuardians(expData) {
                 renderOutcomeBars(expData);
             });
         }
-
-        container.appendChild(div);
+        
+        guardianGrid.appendChild(div);
     });
+    
+    container.appendChild(guardianGrid);
 }
 
 function renderOutcomeBars(expData) {
@@ -2511,7 +2541,7 @@ const EMERGENCY_PROTOCOLS = [
         available: (state) => state.resources.environment > 15,
         execute: (state) => {
             state.resources.environment -= 15;
-            state.resources.energy = Math.min(100, state.resources.energy + 30);
+            state.resources.energy = Math.min(150, state.resources.energy + 30);
         }
     },
     {
@@ -2526,7 +2556,7 @@ const EMERGENCY_PROTOCOLS = [
         available: (state) => state.resources.energy > 20,
         execute: (state) => {
             state.resources.energy -= 20;
-            state.resources.media = Math.min(60, state.resources.media + 30);
+            state.resources.media = Math.min(150, state.resources.media + 30);
         }
     },
     {
@@ -3950,36 +3980,106 @@ function sealSanctuary() {
 }
 
 function showSealModalWithContent(modalContent, ending, isGameOver = false) {
+    // Hide modal overlay if visible
     const overlay = document.getElementById('modal-overlay');
-    const title = document.getElementById('modal-title');
-    const content = document.getElementById('modal-content');
-    const closeBtn = document.getElementById('modal-close');
+    if (overlay) overlay.classList.add('hidden');
     
-    if (!overlay || !title || !content) return;
+    // Show the full ending summary page
+    showEndingSummaryPage(ending, isGameOver);
+}
+
+function showEndingSummaryPage(ending, isGameOver = false) {
+    const pageOverlay = document.getElementById('ending-overlay');
+    const titleEl = document.getElementById('ending-title');
+    const portraitEl = document.getElementById('ending-portrait');
+    const statsEl = document.getElementById('ending-stats');
+    const guardiansEl = document.getElementById('ending-guardians');
+    const ngEl = document.getElementById('ending-ng');
+    const returnBtn = document.getElementById('ending-return-btn');
     
-    title.textContent = isGameOver ? '圣所已崩溃' : '圣所已封印';
-    content.textContent = modalContent;
-    overlay.classList.remove('hidden');
+    if (!pageOverlay) return;
     
-    // 自动返回标题（30秒后）
-    let autoReturnTimer = null;
-    const autoReturn = () => {
-        if (autoReturnTimer) {
-            clearTimeout(autoReturnTimer);
-            autoReturnTimer = null;
+    // Set title
+    titleEl.textContent = isGameOver ? '圣所已崩溃' : '圣所封印';
+    
+    // Generate civilization portrait
+    const portrait = generateCivilizationPortrait();
+    
+    // Portrait section
+    portraitEl.innerHTML = `
+        <h3>${portrait.title}</h3>
+        <p>${portrait.description}</p>
+    `;
+    
+    // Stats section
+    const state = MemorySanctuary.state;
+    const totalArchives = MemorySanctuary.data.archives.filter(a => !a.ngPlusExclusive).length;
+    statsEl.innerHTML = `
+        <div class="ending-stat">
+            <div class="ending-stat-value">${state.week}</div>
+            <div class="ending-stat-label">运行周数</div>
+        </div>
+        <div class="ending-stat">
+            <div class="ending-stat-value">${state.completedArchives.length}/${totalArchives}</div>
+            <div class="ending-stat-label">归档条目</div>
+        </div>
+        <div class="ending-stat">
+            <div class="ending-stat-value">${portrait.totalPercent}%</div>
+            <div class="ending-stat-label">文明完整度</div>
+        </div>
+    `;
+    
+    // Guardians section
+    const tierNames = { hostile: '疏离', cold: '冷淡', neutral: '平和', friendly: '友好', intimate: '亲密' };
+    const guardianRows = [];
+    if (state.guardianMoods) {
+        for (const [guardianId, mood] of Object.entries(state.guardianMoods)) {
+            const guardian = getGuardianById(guardianId);
+            if (guardian) {
+                const tier = getMoodTier(guardianId);
+                const indicator = getMoodIndicator(guardianId);
+                guardianRows.push(`
+                    <div class="ending-guardian-row">
+                        <span class="ending-guardian-avatar">${guardian.avatar}</span>
+                        <span class="ending-guardian-name">${guardian.name}</span>
+                        <span class="ending-guardian-tier ${tier}">${indicator} ${tierNames[tier]}</span>
+                    </div>
+                `);
+            }
         }
-        overlay.classList.add('hidden');
-        if (typeof showTitleScreen === 'function') showTitleScreen();
-    };
+    }
+    guardiansEl.innerHTML = `<h3>守护者关系</h3>${guardianRows.join('')}`;
     
-    if (closeBtn) {
-        // 封印后或崩溃后，按钮立即返回标题
-        closeBtn.textContent = '返回标题';
-        closeBtn.onclick = autoReturn;
+    // NG+ section
+    const ngData = getNGPlusData();
+    if (ngData.playthroughCount > 0) {
+        ngEl.innerHTML = `
+            <h3>多周目进度</h3>
+            <div class="ending-ng-row">
+                <span class="ending-ng-label">已完成周目</span>
+                <span class="ending-ng-value">${ngData.playthroughCount}</span>
+            </div>
+            <div class="ending-ng-row">
+                <span class="ending-ng-label">累计归档</span>
+                <span class="ending-ng-value">${ngData.totalArchivesSaved} 条</span>
+            </div>
+            <div class="ending-ng-row">
+                <span class="ending-ng-label">最佳记录</span>
+                <span class="ending-ng-value">${ngData.bestRun ? `${ngData.bestRun.count} 条` : '—'}</span>
+            </div>
+        `;
+        ngEl.classList.remove('hidden');
+    } else {
+        ngEl.classList.add('hidden');
     }
     
-    // 30秒无操作自动返回
-    autoReturnTimer = setTimeout(autoReturn, 30000);
+    // Return button
+    returnBtn.onclick = () => {
+        pageOverlay.classList.add('hidden');
+        showTitleScreen();
+    };
+    
+    pageOverlay.classList.remove('hidden');
 }
 
 
@@ -4126,8 +4226,9 @@ function applyProjectEffect(project, isCompletion) {
     switch (effect.type) {
         case 'resourceBoost':
             if (!isCompletion && effect.amount) {
+                const cap = effect.resource === 'media' ? 150 : (effect.resource === 'food' ? 80 : 150);
                 state.resources[effect.resource] = Math.min(
-                    effect.resource === 'media' ? 60 : 100,
+                    cap,
                     state.resources[effect.resource] + effect.amount
                 );
             }
@@ -4182,7 +4283,7 @@ function applyProjectEffect(project, isCompletion) {
 function processFinaleEvents() {
     const state = MemorySanctuary.state;
     const week = state.week;
-    const finaleEvents = MemorySanctuary.data.events.filter(e => e.type === 'finale');
+    const finaleEvents = MemorySanctuary.data.events.filter(e => e.trigger.type === 'finale');
 
     for (const event of finaleEvents) {
         if (week >= event.trigger.weekMin && week <= event.trigger.weekMax) {

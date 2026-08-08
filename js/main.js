@@ -165,7 +165,7 @@ async function loadGameData() {
 
 function initGameState() {
     MemorySanctuary.state = {
-        resources: { energy: 100, media: 60, environment: 95, food: 50 },
+        resources: { energy: 150, media: 100, environment: 95, food: 50 },
         ongoingEffects: [],
         resourceChanges: { energy: 0, media: 0, environment: 0, food: 0 },
         week: 1,

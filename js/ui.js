@@ -799,21 +799,51 @@ function renderCodexGuardians() {
     
     const guardians = MemorySanctuary.data.guardians || [];
     const ngData = getNGPlusData();
+    const history = ngData.guardianHistory || [];
+    const tierNames = { hostile: '疏离', cold: '冷淡', neutral: '平和', friendly: '友好', intimate: '亲密' };
+    const tierColors = { hostile: '#e74c3c', cold: '#5dade2', neutral: '#aaa', friendly: '#f39c12', intimate: '#e91e63' };
     
     container.innerHTML = '';
     
     for (const g of guardians) {
         const isSeen = ngData.guardianFinalesSeen.includes(g.id);
         
+        // Collect mood history for this guardian
+        const moodHistory = [];
+        for (const run of history) {
+            if (run.moods && run.moods[g.id]) {
+                moodHistory.push({
+                    playthrough: run.playthrough,
+                    week: run.week,
+                    tier: run.moods[g.id].tier,
+                    level: run.moods[g.id].mood,
+                    indicator: run.moods[g.id].indicator
+                });
+            }
+        }
+        
         const item = document.createElement('div');
         item.className = `codex-guardian-item ${isSeen ? 'unlocked' : 'locked'}`;
+        
+        let historyHtml = '';
+        if (moodHistory.length > 0) {
+            historyHtml = `<div class="codex-guardian-history">`;
+            for (const h of moodHistory) {
+                const color = tierColors[h.tier] || '#aaa';
+                historyHtml += `<span class="codex-guardian-run" style="border-color:${color}" title="第${h.playthrough}周目 · 第${h.week}周">${h.indicator} ${tierNames[h.tier]}</span>`;
+            }
+            historyHtml += `</div>`;
+        } else {
+            historyHtml = `<div class="codex-guardian-history"><span class="codex-guardian-no-history">暂无记录 — 完成一次游戏后查看</span></div>`;
+        }
         
         item.innerHTML = `
             <div class="codex-guardian-avatar">${g.avatar}</div>
             <div class="codex-guardian-info">
-                <div class="codex-guardian-name">${g.name}</div>
+                <div class="codex-guardian-name">${g.name} <span class="codex-guardian-title">${g.title || ''}</span></div>
                 <div class="codex-guardian-role">${g.role}</div>
-                <div class="codex-guardian-status">${isSeen ? '专属结局已解锁' : '未解锁 — 达到亲密关系'}</div>
+                <div class="codex-guardian-status">${isSeen ? '💕 专属结局已解锁' : '🔒 未解锁 — 达到亲密关系'}</div>
+                ${historyHtml}
             </div>
         `;
         

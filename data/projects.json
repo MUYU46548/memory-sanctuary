@@ -3,153 +3,124 @@
     {
       "id": "proj_generator",
       "name": "修复备用发电机",
-      "description": "洛恩修复地表备用发电机。安装后每回合额外 +3 能源，持续 5 周。",
+      "description": "修复圣所的主能源系统，稳定供电。",
+      "availableAfter": 1,
+      "duration": 1,
       "cost": {
-        "energy": 15,
-        "media": 10
+        "energy": 15
       },
-      "duration": 5,
       "effect": {
         "type": "resourceBoost",
         "resource": "energy",
-        "amount": 3
-      },
-      "availableAfter": 20,
-      "repeatable": false,
-      "guardianBonus": {
-        "guardian": "lorn",
-        "mood": 3,
-        "durationBonus": 2
+        "amount": 7
       }
     },
     {
       "id": "proj_cooling",
       "name": "修复冷却系统",
-      "description": "埃塞尔重启圣所冷却系统，降低介质衰减速度 60%，持续 6 周。",
+      "description": "修复介质存储设备，减少自然衰减。",
+      "availableAfter": 4,
+      "duration": 1,
       "cost": {
-        "energy": 20,
-        "media": 5
+        "energy": 10
       },
-      "duration": 6,
       "effect": {
         "type": "decayReduction",
         "resource": "media",
-        "percent": 0.6
+        "percent": 0.5
+      }
+    },
+    {
+      "id": "proj_water_filter",
+      "name": "修复水循环系统",
+      "description": "修复水净化系统，改善环境储备。",
+      "availableAfter": 4,
+      "duration": 1,
+      "cost": {
+        "energy": 10
       },
-      "availableAfter": 20,
-      "repeatable": true,
-      "guardianBonus": {
-        "guardian": "ethel",
-        "mood": 3,
-        "extraEffect": "environmentBoost"
+      "effect": {
+        "type": "decayReduction",
+        "resource": "environment",
+        "percent": 0.5
       }
     },
     {
       "id": "proj_satellite",
       "name": "重启卫星天线",
-      "description": "芬恩想要修复卫星天线，解锁2条来自其他圣所的加密记录。",
+      "description": "重新建立与外界的微弱联系，解锁应急档案。",
+      "availableAfter": 8,
+      "duration": 2,
       "cost": {
-        "energy": 25,
-        "media": 15
+        "energy": 20,
+        "media": 10
       },
-      "duration": 3,
       "effect": {
         "type": "unlockArchives",
         "archiveIds": [
           "arch_emergency_004",
           "arch_emergency_005"
         ]
-      },
-      "availableAfter": 24,
-      "repeatable": false,
-      "guardianBonus": {
-        "guardian": "finn",
-        "mood": 4,
-        "extraArchives": true
-      }
-    },
-    {
-      "id": "proj_water_filter",
-      "name": "修复水循环系统",
-      "description": "米莎修复圣所水循环系统，降低环境衰减速度 60%，持续 5 周。",
-      "cost": {
-        "energy": 15,
-        "media": 8
-      },
-      "duration": 5,
-      "effect": {
-        "type": "decayReduction",
-        "resource": "environment",
-        "percent": 0.6
-      },
-      "availableAfter": 16,
-      "repeatable": false,
-      "guardianBonus": {
-        "guardian": "misha",
-        "mood": 3,
-        "extraEffect": "environmentBoost"
       }
     },
     {
       "id": "proj_medical_lab",
       "name": "建立医疗实验室",
-      "description": "芬恩建立医疗实验室，解锁4条医学条目，持续 4 周。",
+      "description": "在圣所内部建立简易医疗设施，解锁医学档案。",
+      "availableAfter": 10,
+      "duration": 2,
       "cost": {
-        "energy": 20,
+        "energy": 25,
         "media": 15
       },
-      "duration": 4,
       "effect": {
         "type": "unlockArchives",
         "archiveIds": [
-          "arch_emergency_004",
-          "arch_emergency_005",
           "arch_med_001",
           "arch_med_002"
         ]
-      },
-      "availableAfter": 28,
-      "repeatable": false,
-      "guardianBonus": {
-        "guardian": "finn",
-        "mood": 3,
-        "extraArchives": true
       }
     },
     {
-      "id": "proj_communication",
-      "name": "修复通讯阵列",
-      "description": "修复通讯阵列，解锁3条加密记录，持续 3 周。",
+      "id": "proj_farm",
+      "name": "建造水培农场",
+      "description": "在圣所内种植食物，补充储备。",
+      "availableAfter": 2,
+      "duration": 1,
       "cost": {
-        "energy": 25,
-        "media": 20
+        "energy": 15,
+        "media": 10
       },
-      "duration": 3,
       "effect": {
-        "type": "unlockArchives",
-        "archiveIds": [
-          "arch_emergency_004",
-          "arch_emergency_005",
-          "arch_comms_001"
-        ]
+        "type": "foodBoost",
+        "amount": 8
+      }
+    },
+    {
+      "id": "proj_kitchen",
+      "name": "共享食堂",
+      "description": "改善食物分配效率，额外补充储备。",
+      "availableAfter": 6,
+      "duration": 1,
+      "cost": {
+        "energy": 10,
+        "media": 5
       },
-      "availableAfter": 36,
-      "repeatable": false,
-      "guardianBonus": {
-        "guardian": "lorn",
-        "mood": 3,
-        "durationBonus": 2
+      "effect": {
+        "type": "foodBoost",
+        "amount": 5
       }
     },
     {
       "id": "proj_final_seal",
       "name": "最终封印准备",
-      "description": "最终封印准备，解锁3条最终归档条目，持续 4 周。",
+      "description": "为圣所做最终封印准备，解锁封印相关档案。",
+      "availableAfter": 40,
+      "duration": 4,
       "cost": {
         "energy": 30,
-        "media": 25
+        "media": 20
       },
-      "duration": 4,
       "effect": {
         "type": "unlockArchives",
         "archiveIds": [
@@ -157,55 +128,6 @@
           "arch_final_002",
           "arch_final_003"
         ]
-      },
-      "availableAfter": 44,
-      "repeatable": false,
-      "guardianBonus": {
-        "guardian": "tika",
-        "mood": 4,
-        "extraEffect": "finaleBoost"
-      }
-    },
-    {
-      "id": "proj_farm",
-      "name": "建造水培农场",
-      "description": "建造水培农场，每回合额外产出 4 食物，持续 7 周。",
-      "cost": {
-        "energy": 20,
-        "media": 10
-      },
-      "duration": 7,
-      "effect": {
-        "type": "foodBoost",
-        "amount": 4
-      },
-      "availableAfter": 12,
-      "repeatable": true,
-      "guardianBonus": {
-        "guardian": "misha",
-        "mood": 4,
-        "extraEffect": "foodBoostExtra"
-      }
-    },
-    {
-      "id": "proj_kitchen",
-      "name": "共享食堂",
-      "description": "建立共享食堂，每回合额外产出 2 食物，持续 5 周。",
-      "cost": {
-        "energy": 15,
-        "media": 8
-      },
-      "duration": 5,
-      "effect": {
-        "type": "foodBoost",
-        "amount": 2
-      },
-      "availableAfter": 8,
-      "repeatable": true,
-      "guardianBonus": {
-        "guardian": "finn",
-        "mood": 4,
-        "extraEffect": "moodBonusPerTurn"
       }
     }
   ]

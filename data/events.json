@@ -43,7 +43,8 @@
             "message": "洛恩叹了口气，但没有说什么。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_power_surge_01",
@@ -85,7 +86,8 @@
             }
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_exploration_find_01",
@@ -125,7 +127,8 @@
             "message": "你选择专注于手头的工作。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_guardian_conflict_01",
@@ -187,7 +190,8 @@
             }
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_surface_exploration_01",
@@ -248,7 +252,8 @@
             }
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_guardian_donation_01",
@@ -293,7 +298,8 @@
             "message": "埃塞尔感激地点点头。你的尊重让她感到温暖。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_geothermal_surge_01",
@@ -345,7 +351,8 @@
             }
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_equipment_failure_01",
@@ -395,7 +402,8 @@
             }
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_first_crisis",
@@ -453,7 +461,8 @@
             "message": "洛恩摇头，但没有反驳。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_surface_deterioration",
@@ -504,7 +513,8 @@
             "message": "洛恩完成了任务，但沉默了很多天。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_ocean_turns_gray",
@@ -558,7 +568,8 @@
             "unlockEntry": "arch_v2_015"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_soil_powder_25",
@@ -616,7 +627,8 @@
             "message": "洛恩说：'简陋的东西在末日里最可靠。'"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_feather_plague_29",
@@ -672,7 +684,8 @@
             "message": "埃塞尔说：'神没有回应。但我回应了。'"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_ration_riot_33",
@@ -730,7 +743,8 @@
             "message": "紧张的气氛消散了。团队合作更加紧密。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_covenant_collapse_37",
@@ -782,7 +796,8 @@
             "message": "新规则被写进了编年史。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_final_preparation_41",
@@ -836,7 +851,8 @@
             "message": "守护者们感到被关怀。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_last_transmission_43",
@@ -884,7 +900,8 @@
             "message": "沉默是最后的回答。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_final_farewell_45",
@@ -939,7 +956,8 @@
             "unlockEntry": "arch_v2_037"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_surface_echo",
@@ -963,7 +981,8 @@
             "message": "地表仍在回响。圣所将每一丝波动都转化为文明存续的燃料。"
           }
         }
-      ]
+      ],
+      "type": "periodic"
     },
     {
       "id": "chapter_transition_02",
@@ -997,7 +1016,8 @@
             "message": "沉默也是一种回答。"
           }
         }
-      ]
+      ],
+      "type": "chapter"
     },
     {
       "id": "chapter_transition_03",
@@ -1035,7 +1055,8 @@
             "message": "洛恩欣赏你的务实。"
           }
         }
-      ]
+      ],
+      "type": "chapter"
     },
     {
       "id": "chapter_transition_04",
@@ -1068,7 +1089,8 @@
             "message": "担忧是清醒者的代价。"
           }
         }
-      ]
+      ],
+      "type": "chapter"
     },
     {
       "id": "chapter_transition_05",
@@ -1104,7 +1126,8 @@
             "message": "节俭是生存之道。"
           }
         }
-      ]
+      ],
+      "type": "chapter"
     },
     {
       "id": "chapter_transition_06",
@@ -1142,7 +1165,8 @@
             "message": "米莎沉默地离开了。"
           }
         }
-      ]
+      ],
+      "type": "chapter"
     },
     {
       "id": "chapter_transition_07",
@@ -1175,7 +1199,8 @@
             "message": "放手需要另一种勇气。"
           }
         }
-      ]
+      ],
+      "type": "chapter"
     },
     {
       "id": "chapter_transition_08",
@@ -1213,7 +1238,8 @@
             "message": "埃塞尔对你点了点头。"
           }
         }
-      ]
+      ],
+      "type": "chapter"
     },
     {
       "id": "chapter_transition_09",
@@ -1268,7 +1294,8 @@
             "message": "你尽力了。"
           }
         }
-      ]
+      ],
+      "type": "chapter"
     },
     {
       "id": "chapter_transition_10",
@@ -1305,7 +1332,8 @@
             "message": "缇卡独自承受着一切。"
           }
         }
-      ]
+      ],
+      "type": "chapter"
     },
     {
       "id": "chapter_transition_11",
@@ -1345,7 +1373,8 @@
             "message": "最后的温暖。"
           }
         }
-      ]
+      ],
+      "type": "chapter"
     },
     {
       "id": "chapter_transition_12",
@@ -1365,7 +1394,8 @@
             "message": "这是终结，也是开始。"
           }
         }
-      ]
+      ],
+      "type": "chapter"
     },
     {
       "id": "ng_plus_ghost_signal",
@@ -1521,7 +1551,8 @@
           "result": "洛恩回到了他的岗位。",
           "feedback": {}
         }
-      ]
+      ],
+      "type": "scheduled"
     },
     {
       "id": "scheduled_misha_concern",
@@ -1553,7 +1584,8 @@
           "result": "你们一起看着黑暗，沉默不语。",
           "feedback": {}
         }
-      ]
+      ],
+      "type": "scheduled"
     },
     {
       "id": "scheduled_misha_exploration_report",
@@ -1587,7 +1619,8 @@
           "result": "你将报告归档，留待日后研究。",
           "feedback": {}
         }
-      ]
+      ],
+      "type": "scheduled"
     },
     {
       "id": "scheduled_misha_discovery",
@@ -1626,7 +1659,8 @@
             }
           }
         }
-      ]
+      ],
+      "type": "scheduled"
     },
     {
       "id": "scheduled_finn_ethel_unity",
@@ -1659,7 +1693,8 @@
           "result": "你点了点头，但心中仍有疑虑。",
           "feedback": {}
         }
-      ]
+      ],
+      "type": "scheduled"
     },
     {
       "id": "scheduled_lorn_improvement",
@@ -1697,7 +1732,8 @@
             }
           }
         }
-      ]
+      ],
+      "type": "scheduled"
     },
     {
       "id": "scheduled_ethel_memory_sharing",
@@ -1735,7 +1771,8 @@
             }
           }
         }
-      ]
+      ],
+      "type": "scheduled"
     },
     {
       "id": "scheduled_environment_crisis",
@@ -1772,7 +1809,8 @@
             "message": "环境恶化。"
           }
         }
-      ]
+      ],
+      "type": "scheduled"
     },
     {
       "id": "scheduled_guardian_appreciation",
@@ -1809,7 +1847,8 @@
           "result": "你微笑着，继续你的工作。",
           "feedback": {}
         }
-      ]
+      ],
+      "type": "scheduled"
     },
     {
       "id": "scheduled_lorn_efficiency_tip",
@@ -1841,7 +1880,8 @@
           "result": "洛恩点点头，没有坚持。",
           "feedback": {}
         }
-      ]
+      ],
+      "type": "scheduled"
     },
     {
       "id": "scheduled_guardian_discomfort",
@@ -1879,7 +1919,8 @@
           "result": "你决定继续观察。希望一切安好。",
           "feedback": {}
         }
-      ]
+      ],
+      "type": "scheduled"
     },
     {
       "id": "finale_warning_18",
@@ -1908,7 +1949,8 @@
           "result": "你决定保持稳定。欲速则不达。",
           "feedback": {}
         }
-      ]
+      ],
+      "type": "finale"
     },
     {
       "id": "finale_collapse_19",
@@ -1944,7 +1986,8 @@
             "message": "艰难的抉择。"
           }
         }
-      ]
+      ],
+      "type": "finale"
     },
     {
       "id": "finale_last_light_20",
@@ -1981,7 +2024,8 @@
           "result": "你决定保留一些资源。也许还有机会。",
           "feedback": {}
         }
-      ]
+      ],
+      "type": "finale"
     },
     {
       "id": "ng_plus_tika_request",
@@ -2306,7 +2350,8 @@
             "message": "米莎叹了口气。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_bumper_crop_01",
@@ -2346,7 +2391,8 @@
             "message": "洛恩认可你的务实。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_food_contamination_01",
@@ -2372,7 +2418,8 @@
             "message": "蒂卡默默接受了现实。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_hunting_party_01",
@@ -2409,7 +2456,8 @@
             "message": "米莎沉默了一整天。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_rationing_01",
@@ -2449,7 +2497,8 @@
             "message": "守护者们的心更加紧密了。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_mushroom_bloom_01",
@@ -2489,7 +2538,8 @@
             "message": "洛恩赞许你的谨慎。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_supply_cache_01",
@@ -2525,7 +2575,8 @@
             "message": "安全永远第一。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_infestation_01",
@@ -2565,7 +2616,8 @@
             "message": "蒂卡对毒药的味道皱起眉头。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_trader_01",
@@ -2600,7 +2652,8 @@
             "message": "在末世中，信任是奢侈品。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_blight_01",
@@ -2639,7 +2692,8 @@
             "message": "结果仍不明朗。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_feast_01",
@@ -2680,7 +2734,8 @@
             "message": "埃塞尔失望地转过身去。"
           }
         }
-      ]
+      ],
+      "type": "random"
     },
     {
       "id": "event_seed_gift_01",
@@ -2724,7 +2779,8 @@
             "message": "谨慎未必是坏事。"
           }
         }
-      ]
+      ],
+      "type": "random"
     }
   ]
 }
