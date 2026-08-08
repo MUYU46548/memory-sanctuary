@@ -162,6 +162,127 @@ function renderGuardianMood() {
         panelEl.classList.remove('mood-hostile', 'mood-cold', 'mood-neutral', 'mood-friendly', 'mood-intimate');
         panelEl.classList.add('mood-' + getMoodTier(guardianId));
     }
+    
+    // 渲染守护者全局视图
+    renderGuardianOverview();
+}
+
+// ==========================================
+// 守护者全局视图
+// ==========================================
+
+function renderGuardianOverview() {
+    const container = document.getElementById('guardian-overview');
+    if (!container) return;
+    
+    const guardians = MemorySanctuary.data.guardians;
+    const currentName = document.getElementById('guardian-name')?.textContent;
+    
+    container.innerHTML = '';
+    
+    guardians.forEach(g => {
+        const item = document.createElement('div');
+        item.className = 'guardian-overview-item';
+        if (g.name === currentName) {
+            item.classList.add('active');
+        }
+        
+        const moodIndicator = getMoodIndicator(g.id);
+        
+        item.innerHTML = `
+            <span class="guardian-overview-avatar">${g.avatar}</span>
+            <span class="guardian-overview-name">${g.name}</span>
+            <span class="guardian-overview-mood">${moodIndicator}</span>
+        `;
+        
+        item.addEventListener('click', () => {
+            // 切换主守护者
+            document.getElementById('guardian-avatar').textContent = g.avatar;
+            document.getElementById('guardian-name').textContent = g.name;
+            document.getElementById('guardian-role').textContent = g.role;
+            
+            // 更新对话
+            const dialogues = g.dialogues?.idle || ['……'];
+            document.getElementById('guardian-dialogue').textContent = dialogues[0];
+            
+            // 更新心情显示
+            renderGuardianMood();
+            
+            // 关闭详情面板
+            const detailPanel = document.getElementById('guardian-detail-panel');
+            if (detailPanel) detailPanel.classList.add('hidden');
+        });
+        
+        container.appendChild(item);
+    });
+}
+
+// ==========================================
+// 守护者详情面板
+// ==========================================
+
+const SKILL_NAMES = {
+    singing: '歌唱',
+    languages: '语言',
+    history: '历史',
+    law: '法律',
+    documentation: '档案',
+    ecology: '生态',
+    exploration: '勘探',
+    survival: '生存',
+    engineering: '工程',
+    maintenance: '维护',
+    energy: '能源',
+    religion: '宗教',
+    philosophy: '哲学',
+    ritual: '仪式',
+    medicine: '医学'
+};
+
+function toggleGuardianDetail() {
+    const detailPanel = document.getElementById('guardian-detail-panel');
+    if (!detailPanel) return;
+    
+    if (detailPanel.classList.contains('hidden')) {
+        renderGuardianDetail();
+        detailPanel.classList.remove('hidden');
+    } else {
+        detailPanel.classList.add('hidden');
+    }
+}
+
+function renderGuardianDetail() {
+    const detailPanel = document.getElementById('guardian-detail-panel');
+    if (!detailPanel) return;
+    
+    const nameEl = document.getElementById('guardian-name');
+    if (!nameEl) return;
+    
+    const guardian = MemorySanctuary.data.guardians.find(g => g.name === nameEl.textContent);
+    if (!guardian) return;
+    
+    const tier = getMoodTier(guardian.id);
+    const tierNames = { hostile: '疏离', cold: '冷淡', neutral: '平和', friendly: '友好', intimate: '亲密' };
+    const moodLevel = getMoodLevel(guardian.id);
+    
+    const skillsHtml = guardian.skills?.map(s => 
+        `<span class="guardian-detail-skill">${SKILL_NAMES[s] || s}</span>`
+    ).join('') || '';
+    
+    detailPanel.innerHTML = `
+        <div class="guardian-detail-section">
+            <div class="guardian-detail-label">技能</div>
+            <div class="guardian-detail-skills">${skillsHtml}</div>
+        </div>
+        <div class="guardian-detail-section">
+            <div class="guardian-detail-label">关系等级</div>
+            <div class="guardian-detail-value">${tierNames[tier]} (${moodLevel > 0 ? '+' : ''}${moodLevel})</div>
+        </div>
+        <div class="guardian-detail-section">
+            <div class="guardian-detail-label">职责</div>
+            <div class="guardian-detail-value">${guardian.role}</div>
+        </div>
+    `;
 }
 
 // ==========================================
@@ -247,6 +368,15 @@ function renderResources() {
     if (resFood) {
         if (det.food) resFood.classList.add('deterioration');
         else resFood.classList.remove('deterioration');
+        
+        // 食物预警机制
+        const food = resources.food;
+        resFood.classList.remove('food-warning', 'food-critical');
+        if (food <= 10) {
+            resFood.classList.add('food-critical');
+        } else if (food <= 20) {
+            resFood.classList.add('food-warning');
+        }
     }
 }
 

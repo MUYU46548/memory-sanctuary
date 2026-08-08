@@ -222,6 +222,27 @@ body {
     animation: deteriorationPulse 2s ease-in-out infinite;
 }
 
+/* 食物预警机制 */
+.resource.food-warning {
+    border-color: var(--warning);
+    animation: foodWarningPulse 2s ease-in-out infinite;
+}
+
+.resource.food-critical {
+    border-color: var(--danger);
+    animation: foodCriticalPulse 1s ease-in-out infinite;
+}
+
+@keyframes foodWarningPulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(243, 156, 18, 0.3); }
+    50% { box-shadow: 0 0 12px rgba(243, 156, 18, 0.5); }
+}
+
+@keyframes foodCriticalPulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(138, 58, 42, 0.4); }
+    50% { box-shadow: 0 0 16px rgba(138, 58, 42, 0.7); }
+}
+
 @keyframes deteriorationPulse {
     0%, 100% { box-shadow: 0 0 4px rgba(138, 58, 42, 0.3); }
     50% { box-shadow: 0 0 16px rgba(138, 58, 42, 0.6); }
@@ -812,6 +833,96 @@ body {
     border-left: 2px solid var(--amber-dim);
 }
 
+/* 守护者全局视图 */
+.guardian-overview {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    gap: 4px;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.guardian-overview-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 48px;
+}
+
+.guardian-overview-item:hover {
+    background: var(--bg-panel-hover);
+}
+
+.guardian-overview-item.active {
+    background: var(--bg-deep);
+    border: 1px solid var(--amber-dim);
+}
+
+.guardian-overview-avatar {
+    font-size: 1.2rem;
+}
+
+.guardian-overview-name {
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+}
+
+.guardian-overview-mood {
+    font-size: 0.7rem;
+}
+
+/* 守护者详情面板 */
+.guardian-detail-panel {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.guardian-detail-panel.hidden {
+    display: none;
+}
+
+.guardian-detail-section {
+    margin-bottom: 8px;
+}
+
+.guardian-detail-label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.guardian-detail-value {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.guardian-detail-skills {
+    display: flex;
+    gap: 3px;
+    flex-wrap: wrap;
+}
+
+.guardian-detail-skill {
+    font-size: 0.55rem;
+    padding: 1px 5px;
+    background: rgba(243, 156, 18, 0.15);
+    color: var(--amber-primary);
+    border-radius: 2px;
+}
+
 /* 守护者互动菜单 */
 #guardian-menu {
     display: flex;
@@ -1377,6 +1488,28 @@ button.archive-btn.recommended {
     font-style: italic;
 }
 
+/* 滚动提示：勘探地点列表开头 */
+#explore-list-container {
+    position: relative;
+}
+
+#explore-list-container::before {
+    content: '↕ 向下滚动查看更多地点';
+    display: block;
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    font-style: italic;
+    opacity: 0.8;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+#explore-list-container.scrolled::before {
+    opacity: 0;
+}
+
 #dispatch-title {
     color: var(--text-primary);
     font-size: 0.85rem;
@@ -1392,9 +1525,9 @@ button.archive-btn.recommended {
 
 #dispatch-guardians {
     display: flex;
+    flex-direction: column;
     gap: 8px;
     margin-bottom: 12px;
-    flex-wrap: wrap;
 }
 
 .dispatch-food-cost {
@@ -1657,15 +1790,43 @@ button.archive-btn.recommended {
     font-style: italic;
 }
 
-/* 守护者疲劳标记 */
+/* 守护者疲劳标记 - 增强版 */
 .dispatch-guardian.fatigued {
-    opacity: 0.4;
+    opacity: 0.5;
     cursor: not-allowed;
     border-color: var(--danger);
+    position: relative;
+}
+
+.dispatch-guardian.fatigued::after {
+    content: '疲劳';
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    font-size: 0.45rem;
+    background: var(--danger);
+    color: #fff;
+    padding: 1px 4px;
+    border-radius: 2px;
+    line-height: 1;
 }
 
 .dispatch-guardian.fatigued:hover {
     border-color: var(--danger);
+    opacity: 0.7;
+}
+
+.dispatch-guardian.fatigued:hover::after {
+    content: '疲劳中 • ' attr(data-fatigue-weeks) '周后恢复';
+    font-size: 0.4rem;
+    white-space: nowrap;
+    top: -8px;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 10;
 }
 
 /* 勘探日志标签页 */

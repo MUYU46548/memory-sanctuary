@@ -1232,6 +1232,15 @@ function initGuardianInteraction() {
             menu.classList.add('hidden');
         });
     }
+    
+    // 详情按钮
+    const detailBtn = document.getElementById('guardian-detail');
+    if (detailBtn) {
+        detailBtn.addEventListener('click', () => {
+            toggleGuardianDetail();
+            menu.classList.add('hidden');
+        });
+    }
 }
 
 function getCurrentGuardianId() {
@@ -2090,6 +2099,23 @@ function renderExploreList() {
 
     listEl.innerHTML = '';
 
+    // 滚动提示：监听滚动并添加 scrolled 类
+    const listContainer = document.getElementById('explore-list-container');
+    if (listContainer) {
+        listContainer.classList.remove('scrolled');
+        // 移除旧监听器（避免重复绑定）
+        const newContainer = listContainer.cloneNode(false);
+        while (listContainer.firstChild) {
+            newContainer.appendChild(listContainer.firstChild);
+        }
+        listContainer.parentNode.replaceChild(newContainer, listContainer);
+        newContainer.addEventListener('scroll', function() {
+            if (this.scrollTop > 50) {
+                this.classList.add('scrolled');
+            }
+        }, { passive: true });
+    }
+
     data.explorations.forEach((expData) => {
         const item = document.createElement('div');
         item.className = 'explore-item';
@@ -2205,7 +2231,10 @@ function renderDispatchGuardians(expData) {
         
         if (isGuardianFatigued(g.id)) {
             div.classList.add('fatigued');
-            div.title = '该守护者本周疲劳，无法派遣';
+            const fatigueUntil = exp.fatigue[g.id];
+            const weeksLeft = fatigueUntil - now;
+            div.title = `疲劳中，${weeksLeft}周后恢复`;
+            div.dataset.fatigueWeeks = weeksLeft;
         } else {
             div.addEventListener('click', () => {
                 if (selectedGuardians.has(g.id)) {
