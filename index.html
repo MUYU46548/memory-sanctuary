@@ -275,6 +275,10 @@
             </div>
             <div id="save-slots"></div>
             <div id="save-info"></div>
+            <div id="save-export-import">
+                <button id="save-export-btn" class="save-action-btn">📤 导出存档</button>
+                <button id="save-import-btn" class="save-action-btn">📥 导入存档</button>
+            </div>
         </div>
     </div>
 
@@ -384,6 +388,16 @@
                 </div>
                 <div class="settings-item">
                     <label class="settings-label">
+                        <span>主题</span>
+                    </label>
+                    <div class="settings-theme-row">
+                        <button class="settings-theme-btn" id="theme-dark" data-theme="dark">🌙 暗色</button>
+                        <button class="settings-theme-btn" id="theme-light" data-theme="light">☀️ 亮色</button>
+                    </div>
+                    <div class="settings-desc">切换界面主题。当前主题将高亮显示。</div>
+                </div>
+                <div class="settings-item">
+                    <label class="settings-label">
                         <span>BGM 音量</span>
                     </label>
                     <div class="settings-volume-row">
@@ -396,6 +410,41 @@
             </div>
         </div>
     </div>
+
+    <!-- 设置面板 JS 初始化 -->
+    <script>
+        (function() {
+            // 主题切换
+            const darkBtn = document.getElementById('theme-dark');
+            const lightBtn = document.getElementById('theme-light');
+            const updateThemeBtns = () => {
+                const current = document.documentElement.getAttribute('data-theme');
+                darkBtn.classList.toggle('active', current === 'dark');
+                lightBtn.classList.toggle('active', current === 'light');
+            };
+            if (darkBtn) {
+                darkBtn.addEventListener('click', () => {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('memory-sanctuary-theme', 'dark');
+                    updateThemeBtns();
+                    if (typeof AudioSystem !== 'undefined') AudioSystem.playButtonClick();
+                });
+            }
+            if (lightBtn) {
+                lightBtn.addEventListener('click', () => {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    localStorage.setItem('memory-sanctuary-theme', 'light');
+                    updateThemeBtns();
+                    if (typeof AudioSystem !== 'undefined') AudioSystem.playButtonClick();
+                });
+            }
+            // 初始化高亮
+            if (typeof initTheme === 'function') {
+                initTheme();
+            }
+            updateThemeBtns();
+        })();
+    </script>
 
     <!-- 成就图鉴面板 -->
     <div id="achievements-panel" class="hidden">
@@ -514,6 +563,7 @@
                 <div id="ending-ng"></div>
             </div>
             <div id="ending-footer">
+                <button id="ending-ng-btn" class="hidden">开始 NG+</button>
                 <button id="ending-return-btn">返回标题</button>
             </div>
         </div>

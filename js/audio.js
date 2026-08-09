@@ -110,7 +110,7 @@ window.AudioSystem = (() => {
 
         // 硬切上一首（立即停止，无淡出）
         hardStopBGM();
-
+    
         // 递增 generation，使过期的 play() 回调失效
         bgmGeneration++;
         const thisGen = bgmGeneration;
@@ -142,6 +142,11 @@ window.AudioSystem = (() => {
                     bgmPendingScene = sceneId;
                     bgmCurrentScene = null;
                     bgmIsPlaying = false;
+                    return;
+                }
+                // AbortError / interrupted 是切换 BGM 时的正常竞争，静默忽略
+                if (e.name === 'AbortError' || e.message?.includes('interrupted')) {
+                    console.log(`[BGM] 播放被新请求打断: ${sceneId}`);
                     return;
                 }
                 console.warn(`[BGM] 播放失败: ${e.message}`);
@@ -180,18 +185,29 @@ window.AudioSystem = (() => {
                 }
                 bgmIsPlaying = true;
                 fadeInBGM(config.volume);
+                console.log(`[BGM] 开始播放: ${sceneId}`);
             })
             .catch(e => {
                 if (e.name === 'NotAllowedError') {
+                    console.log(`[BGM] 等待用户交互后播放: ${sceneId}`);
                     bgmPendingScene = sceneId;
                     bgmCurrentScene = null;
                     bgmIsPlaying = false;
                     return;
                 }
+                if (e.name === 'AbortError' || e.message?.includes('interrupted')) {
+                    console.log(`[BGM] 播放被新请求打断: ${sceneId}`);
+                    return;
+                }
+                console.warn(`[BGM] 播放失败: ${e.message}`);
                 bgmFailedScenes[sceneId] = true;
                 bgmCurrentScene = null;
                 bgmIsPlaying = false;
             });
+    }
+
+    function getBGMPath(sceneId) {
+        return `assets/bgm/${sceneId}.mp3`;
     }
 
     // 用户交互后尝试播放等待中的 BGM
@@ -769,6 +785,25 @@ window.AudioSystem = (() => {
         });
     }
 
+    // 通用按钮点击音效
+
+    function playButtonClick() {
+        if (!ctx || isMuted) return;
+        resume();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1000, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.06);
+        gain.gain.setValueAtTime(0.06, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(now);
+        osc.stop(now + 0.1);
+    }
+
     // ─── VN 视觉小说音效 ───
 
     function playVNOpen() {
@@ -1067,6 +1102,7 @@ window.AudioSystem = (() => {
         playVNSkip,
         playVNCancel,
         playVNClose,
+        playButtonClick,
         updateDroneByEnergy,
         updateHeartbeat,
         resume,

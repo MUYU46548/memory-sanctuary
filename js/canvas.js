@@ -78,11 +78,23 @@ function initCanvas() {
         return;
     }
     
+    // 防止重复初始化导致多动画循环叠加
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+    }
+    
     // 响应式自适应
     resizeCanvas();
+    
+    // 防止重复绑定 resize 监听器
+    window.removeEventListener('resize', resizeCanvas);
     window.addEventListener('resize', resizeCanvas);
     
     sanctuaryCtx = sanctuaryCanvas.getContext('2d');
+    time = 0; // 重置动画时间
+    particles = [];
+    floatingSymbols = [];
     animate();
     console.log('[Canvas] 圣所主厅初始化完成');
 }
@@ -93,9 +105,11 @@ function resizeCanvas() {
     if (!container) return;
     
     const rect = container.getBoundingClientRect();
-    // 保持 3:2 宽高比
     const width = Math.min(rect.width, 600);
     const height = width * (2 / 3);
+    
+    // 防止容器隐藏时 width=0 导致 SANCTUARY_CONFIG 被污染（后续除零产生 NaN/Infinity）
+    if (width < 1 || height < 1) return;
     
     // 计算缩放比例
     const scaleX = width / SANCTUARY_CONFIG.width;
@@ -162,6 +176,9 @@ function animate() {
 }
 
 function addParticle() {
+    // 粒子上限保护：长时间游玩后防止内存增长
+    if (particles.length >= 200) return;
+    
     const scene = getSceneTheme();
     const config = SANCTUARY_CONFIG;
     
@@ -229,6 +246,9 @@ function addParticle() {
 }
 
 function addFloatingSymbol() {
+    // 漂浮符号上限保护
+    if (floatingSymbols.length >= 80) return;
+    
     const scene = getSceneTheme();
     const config = SANCTUARY_CONFIG;
     const symbols = SYMBOL_LIBRARY[scene] || SYMBOL_LIBRARY.language;

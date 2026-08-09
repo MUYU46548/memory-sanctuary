@@ -229,117 +229,123 @@ function onTimeAdvanced(weeks) {
     // 重置每回合资源变化追踪
     state.resourceChanges = { energy: 0, media: 0, environment: 0, food: 0 };
     
-    // 资源自然衰减（生存压力核心）
-    const decay = getWeeklyDecay();
-    state.resources.energy = Math.max(0,
-        state.resources.energy - decay.energy * weeks
-    );
-    state.resources.media = Math.max(0,
-        state.resources.media - decay.media * weeks
-    );
-    state.resources.environment = Math.max(0,
-        state.resources.environment - decay.environment * weeks
-    );
-    state.resources.food = Math.max(0,
-        state.resources.food - decay.food * weeks
-    );
-    
-    // 追踪衰减为负值
-    state.resourceChanges.energy -= decay.energy * weeks;
-    state.resourceChanges.media -= decay.media * weeks;
-    state.resourceChanges.environment -= decay.environment * weeks;
-    state.resourceChanges.food -= decay.food * weeks;
+    try {
+        // 资源自然衰减（生存压力核心）
+        const decay = getWeeklyDecay();
+        state.resources.energy = Math.max(0,
+            state.resources.energy - decay.energy * weeks
+        );
+        state.resources.media = Math.max(0,
+            state.resources.media - decay.media * weeks
+        );
+        state.resources.environment = Math.max(0,
+            state.resources.environment - decay.environment * weeks
+        );
+        state.resources.food = Math.max(0,
+            state.resources.food - decay.food * weeks
+        );
+        
+        // 追踪衰减为负值
+        state.resourceChanges.energy -= decay.energy * weeks;
+        state.resourceChanges.media -= decay.media * weeks;
+        state.resourceChanges.environment -= decay.environment * weeks;
+        state.resourceChanges.food -= decay.food * weeks;
 
-    // 应用持续效果（如：每回合额外能源）
-    applySustainedBonuses();
-    
-    // 士气持续压力（资源/环境影响心情）
-    applyMoralePressure();
-    if (state.emergencyCorruption > 0) {
-        state.emergencyCorruption = Math.max(0, state.emergencyCorruption - 2);
-    }
-    
-    // 季节影响食物产出（每12周一个季节循环）
-    if (typeof applySeasonalEffects === 'function') applySeasonalEffects();
-    
-    // 食物充裕/枯竭奖惩
-    if (typeof checkFoodAbundancePenalty === 'function') checkFoodAbundancePenalty();
-    
-    // 腐败度惩罚：每20点，所有资源额外 -0.5/周（食物受影响但减半）
-    if (state.emergencyCorruption > 0) {
-        const penalty = Math.floor(state.emergencyCorruption / 20) * 0.5;
-        const foodPenalty = penalty * 0.5;
-        if (penalty > 0) {
-            state.resources.energy = Math.max(0, state.resources.energy - penalty);
-            state.resources.media = Math.max(0, state.resources.media - penalty);
-            state.resources.environment = Math.max(0, state.resources.environment - penalty);
-            if (foodPenalty > 0) {
-                state.resources.food = Math.max(0, state.resources.food - foodPenalty);
-            }
-            state.resourceChanges.energy -= penalty;
-            state.resourceChanges.media -= penalty;
-            state.resourceChanges.environment -= penalty;
-            if (foodPenalty > 0) {
-                state.resourceChanges.food -= foodPenalty;
+        // 应用持续效果（如：每回合额外能源）
+        applySustainedBonuses();
+        
+        // 士气持续压力（资源/环境影响心情）
+        applyMoralePressure();
+        if (state.emergencyCorruption > 0) {
+            state.emergencyCorruption = Math.max(0, state.emergencyCorruption - 2);
+        }
+        
+        // 季节影响食物产出（每12周一个季节循环）
+        if (typeof applySeasonalEffects === 'function') applySeasonalEffects();
+        
+        // 食物充裕/枯竭奖惩
+        if (typeof checkFoodAbundancePenalty === 'function') checkFoodAbundancePenalty();
+        
+        // 腐败度惩罚：每20点，所有资源额外 -0.5/周（食物受影响但减半）
+        if (state.emergencyCorruption > 0) {
+            const penalty = Math.floor(state.emergencyCorruption / 20) * 0.5;
+            const foodPenalty = penalty * 0.5;
+            if (penalty > 0) {
+                state.resources.energy = Math.max(0, state.resources.energy - penalty);
+                state.resources.media = Math.max(0, state.resources.media - penalty);
+                state.resources.environment = Math.max(0, state.resources.environment - penalty);
+                if (foodPenalty > 0) {
+                    state.resources.food = Math.max(0, state.resources.food - foodPenalty);
+                }
+                state.resourceChanges.energy -= penalty;
+                state.resourceChanges.media -= penalty;
+                state.resourceChanges.environment -= penalty;
+                if (foodPenalty > 0) {
+                    state.resourceChanges.food -= foodPenalty;
+                }
             }
         }
-    }
-    
-    // 更新应急协议冷却
-    if (state.emergencyCooldowns) {
-        Object.keys(state.emergencyCooldowns).forEach(key => {
-            if (state.emergencyCooldowns[key] > 0) {
-                state.emergencyCooldowns[key]--;
+        
+        // 更新应急协议冷却
+        if (state.emergencyCooldowns) {
+            Object.keys(state.emergencyCooldowns).forEach(key => {
+                if (state.emergencyCooldowns[key] > 0) {
+                    state.emergencyCooldowns[key]--;
+                }
+            });
+        }
+        
+        // 更新drone音量和终局心跳
+        if (typeof AudioSystem !== 'undefined' && MemorySanctuary.state) {
+            AudioSystem.updateDroneByEnergy(MemorySanctuary.state.resources.energy);
+            AudioSystem.updateHeartbeat(MemorySanctuary.state.week);
+            
+            // 章节 BGM 自动切换：week >= 16 中期，week >= 36 后期
+            const bgmWeek = MemorySanctuary.state.week;
+            const bgmScene = AudioSystem.getGameBGMForWeek(bgmWeek);
+            if (bgmScene !== AudioSystem.getCurrentBGM()) {
+                AudioSystem.playBGM(bgmScene);
+            }
+        }
+        
+        // 检查过期条目（仅记录消失，警告移至聚合面板）
+        MemorySanctuary.data.archives.forEach(entry => {
+            if (entry.expiresAfter && !isArchiveCompleted(entry.id) && !entry.expired) {
+                const effectiveExpiry = getEffectiveExpiryWeeks(entry);
+                const remaining = effectiveExpiry - MemorySanctuary.state.week;
+                if (remaining <= 0) {
+                    addLog(`条目 "${entry.title}" 已永久消失。`, 'system');
+                    entry.expired = true;
+                    if (typeof AudioSystem !== 'undefined') AudioSystem.playShatterSound();
+                }
             }
         });
-    }
-
-    // 更新drone音量和终局心跳
-    if (typeof AudioSystem !== 'undefined' && MemorySanctuary.state) {
-        AudioSystem.updateDroneByEnergy(MemorySanctuary.state.resources.energy);
-        AudioSystem.updateHeartbeat(MemorySanctuary.state.week);
         
-        // 章节 BGM 自动切换：week >= 16 中期，week >= 36 后期
-        const bgmWeek = MemorySanctuary.state.week;
-        const bgmScene = AudioSystem.getGameBGMForWeek(bgmWeek);
-        if (bgmScene !== AudioSystem.getCurrentBGM()) {
-            AudioSystem.playBGM(bgmScene);
-        }
+        // 检查圣所衰竭状态
+        if (typeof checkSanctuaryDeterioration === 'function') checkSanctuaryDeterioration();
+        
+        // 处理调度事件（新增）
+        if (typeof processScheduledEvents === 'function') processScheduledEvents();
+        
+        // 守护者主动事件
+        if (typeof checkGuardianInitiative === 'function') checkGuardianInitiative();
+        
+        // 更新困局检测
+        if (typeof checkStuckState === 'function') checkStuckState();
+        
+        // 检查章节过渡完成
+        if (typeof checkChapterCompletion === 'function') checkChapterCompletion();
+        
+        // 检查失败条件
+        if (typeof checkFailureCondition === 'function') checkFailureCondition();
+        
+        // 检查周数上限
+        if (typeof checkWeekLimit === 'function') checkWeekLimit();
+        
+    } catch (err) {
+        console.error('[onTimeAdvanced] 子系统异常:', err);
+        // 继续执行 renderAll — UI 不会白屏
     }
-
-    // 检查过期条目（仅记录消失，警告移至聚合面板）
-    MemorySanctuary.data.archives.forEach(entry => {
-        if (entry.expiresAfter && !isArchiveCompleted(entry.id) && !entry.expired) {
-            const effectiveExpiry = getEffectiveExpiryWeeks(entry);
-            const remaining = effectiveExpiry - MemorySanctuary.state.week;
-            if (remaining <= 0) {
-                addLog(`条目 "${entry.title}" 已永久消失。`, 'system');
-                entry.expired = true;
-                if (typeof AudioSystem !== 'undefined') AudioSystem.playShatterSound();
-            }
-        }
-    });
-
-    // 检查圣所衰竭状态
-    if (typeof checkSanctuaryDeterioration === 'function') checkSanctuaryDeterioration();
-    
-    // 处理调度事件（新增）
-    if (typeof processScheduledEvents === 'function') processScheduledEvents();
-    
-    // 守护者主动事件
-    if (typeof checkGuardianInitiative === 'function') checkGuardianInitiative();
-    
-    // 更新困局检测
-    if (typeof checkStuckState === 'function') checkStuckState();
-    
-    // 检查章节过渡完成
-    if (typeof checkChapterCompletion === 'function') checkChapterCompletion();
-    
-    // 检查失败条件
-    if (typeof checkFailureCondition === 'function') checkFailureCondition();
-    
-    // 检查周数上限
-    if (typeof checkWeekLimit === 'function') checkWeekLimit();
 }
 
 // ==========================================
@@ -1361,12 +1367,7 @@ function showSkipBlockedBanner() {
 }
 
 function initSkipTurn() {
-    const skipBtn = document.getElementById('skip-btn');
-    if (skipBtn) {
-        skipBtn.addEventListener('click', () => {
-            skipTurn();
-        });
-    }
+    // 跳过回合按钮事件已移至 initFuncBar 统一处理
 }
 
 // ==========================================
@@ -2558,9 +2559,13 @@ function initFuncBar() {
     const aboutBtn = document.getElementById('about-btn');
     const exploreBtn = document.getElementById('explore-btn');
 
+    // 通用按钮点击音效函数
+    const btnClick = () => { if (typeof AudioSystem !== 'undefined') AudioSystem.playButtonClick(); };
+
     // 帮助按钮：显示帮助弹窗
     if (helpBtn) {
         helpBtn.addEventListener('click', () => {
+            btnClick();
             showHelpModal();
         });
     }
@@ -2568,13 +2573,53 @@ function initFuncBar() {
     // 关于按钮：显示版权信息
     if (aboutBtn) {
         aboutBtn.addEventListener('click', () => {
+            btnClick();
             showAboutModal();
+        });
+    }
+
+    // 跳过回合按钮
+    const skipBtn = document.getElementById('skip-btn');
+    if (skipBtn) {
+        skipBtn.addEventListener('click', () => {
+            btnClick();
+            skipTurn();
+        });
+    }
+
+    // 文明图谱按钮
+    const atlasBtn = document.getElementById('atlas-btn');
+    if (atlasBtn) {
+        atlasBtn.addEventListener('click', () => {
+            btnClick();
+            toggleAtlas();
+        });
+    }
+
+    // 存档按钮
+    const saveBtn = document.getElementById('save-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            btnClick();
+            openSaveScreen('save');
+        });
+    }
+
+    // 返回标题按钮
+    const titleBtn = document.getElementById('title-btn');
+    if (titleBtn) {
+        titleBtn.addEventListener('click', () => {
+            btnClick();
+            const slot = getCurrentSlot();
+            if (slot >= 1) saveGame(slot);
+            showTitleScreen();
         });
     }
 
     // 勘探按钮
     if (exploreBtn) {
         exploreBtn.addEventListener('click', () => {
+            btnClick();
             if (!MemorySanctuary.state) return;
             const now = MemorySanctuary.state.week;
             const exp = MemorySanctuary.state.exploration;
@@ -3483,10 +3528,13 @@ const SAVE_KEY_PREFIX = 'memory-sanctuary-save-slot-';
 const SAVE_SLOT_COUNT = 3;
 const NG_PLUS_KEY = 'memory-sanctuary-ngplus';
 const CURRENT_SLOT_KEY = 'memory-sanctuary-current-slot';
+const BACKUP_KEY_PREFIX = 'memory-sanctuary-backup-slot-';
+const BACKUP_INTERVAL = 5;
+let saveCounter = 0;
 
 function saveGame(slot) {
     if (slot < 1 || slot > SAVE_SLOT_COUNT) return false;
-
+    
     const ngData = getNGPlusData();
 
     const saveData = {
@@ -3519,8 +3567,16 @@ function saveGame(slot) {
     };
 
     try {
-        localStorage.setItem(SAVE_KEY_PREFIX + slot, JSON.stringify(saveData));
+        const serialized = JSON.stringify(saveData);
+        localStorage.setItem(SAVE_KEY_PREFIX + slot, serialized);
         localStorage.setItem(CURRENT_SLOT_KEY, String(slot));
+        
+        // 定期自动备份
+        saveCounter++;
+        if (saveCounter % BACKUP_INTERVAL === 0) {
+            localStorage.setItem(BACKUP_KEY_PREFIX + slot, serialized);
+        }
+        
         addLog(`游戏已保存至存档槽 ${slot}。`, 'system');
         return true;
     } catch (e) {
@@ -3530,74 +3586,127 @@ function saveGame(slot) {
     }
 }
 
+// 尝试从备份恢复
+function tryRecoverFromBackup(slot) {
+    const backup = localStorage.getItem(BACKUP_KEY_PREFIX + slot);
+    if (!backup) return null;
+    try {
+        const data = JSON.parse(backup);
+        if (data && data.state && data.version) {
+            return data;
+        }
+    } catch (e) {
+        console.warn('[备份] 备份文件也损坏:', e);
+    }
+    return null;
+}
+
+// 加载存档时检查损坏并尝试恢复
 function loadGame(slot) {
     if (slot < 1 || slot > SAVE_SLOT_COUNT) return false;
 
     const raw = localStorage.getItem(SAVE_KEY_PREFIX + slot);
     if (!raw) return false;
 
+    let saveData = null;
     try {
-        const saveData = JSON.parse(raw);
+        saveData = JSON.parse(raw);
+    } catch (e) {
+        console.error(`[存档] 槽位 ${slot} 数据损坏:`, e);
+        // 尝试从备份恢复
+        const backup = tryRecoverFromBackup(slot);
+        if (backup) {
+            if (confirm(`检测到槽位 ${slot} 的存档损坏，但发现自动备份。是否从备份恢复？\n\n注意：备份最多保留到上次保存后 ${BACKUP_INTERVAL} 次操作前的状态。`)) {
+                saveData = backup;
+                // 立即用备份覆盖损坏的存档
+                localStorage.setItem(SAVE_KEY_PREFIX + slot, JSON.stringify(backup));
+            } else {
+                return false;
+            }
+        } else {
+            alert(`槽位 ${slot} 的存档已损坏且无可用备份。请删除并新建。`);
+            return false;
+        }
+    }
+    
+    // 校验数据完整性
+    if (!saveData || !saveData.state || !saveData.state.resources) {
+        const backup = tryRecoverFromBackup(slot);
+        if (backup) {
+            if (confirm(`检测到槽位 ${slot} 的存档结构异常。是否从备份恢复？`)) {
+                saveData = backup;
+                localStorage.setItem(SAVE_KEY_PREFIX + slot, JSON.stringify(backup));
+            } else {
+                return false;
+            }
+        } else {
+            alert(`槽位 ${slot} 的存档无效且无可用备份。请删除并新建。`);
+            return false;
+        }
+    }
 
+    try {
         // Initialize fresh state before loading
         initGameState();
 
         MemorySanctuary.state.resources = { ...saveData.state.resources };
-        MemorySanctuary.state.week = saveData.state.week;
-        MemorySanctuary.state.chapter = saveData.state.chapter;
-        MemorySanctuary.state.completedArchives = [...saveData.state.completedArchives];
-        MemorySanctuary.state.vaultUsage = { ...saveData.state.vaultUsage };
+        MemorySanctuary.state.week = saveData.state.week || 1;
+        MemorySanctuary.state.chapter = saveData.state.chapter || 1;
+        MemorySanctuary.state.completedArchives = [...(saveData.state.completedArchives || [])];
+        MemorySanctuary.state.vaultUsage = { ...(saveData.state.vaultUsage || {}) };
         MemorySanctuary.state.narrativeFlags = [...(saveData.state.narrativeFlags || [])];
-        MemorySanctuary.state.deterioration = { ...saveData.state.deterioration } || { energy: false, media: false, environment: false };
-        MemorySanctuary.state.activeEvents = [];
+        MemorySanctuary.state.deterioration = { ...(saveData.state.deterioration || { energy: false, media: false, environment: false }) };
+        MemorySanctuary.state.emergencyCorruption = saveData.state.emergencyCorruption || 0;
+        MemorySanctuary.state.emergencyCooldowns = { ...(saveData.state.emergencyCooldowns || {}) };
         MemorySanctuary.state.activeEventIds = [...(saveData.state.activeEventIds || [])];
         MemorySanctuary.state.guardianMoods = { ...(saveData.state.guardianMoods || {}) };
         MemorySanctuary.state.scheduledEvents = [...(saveData.state.scheduledEvents || [])];
         MemorySanctuary.state.unlockedBonuses = [...(saveData.state.unlockedBonuses || [])];
-        MemorySanctuary.state.exploration = { ...(saveData.state.exploration || { deployedUntil: 0, cooldownUntil: 0, completedExplorations: {}, fatigue: {}, explorationLog: [] }) };
+        MemorySanctuary.state.exploration = { ...(saveData.state.exploration || {}) };
         MemorySanctuary.state.activeProjects = [...(saveData.state.activeProjects || [])];
         MemorySanctuary.state.completedProjects = [...(saveData.state.completedProjects || [])];
         MemorySanctuary.state.ongoingEffects = [...(saveData.state.ongoingEffects || [])];
         MemorySanctuary.state.resourceChanges = { ...(saveData.state.resourceChanges || { energy: 0, media: 0, environment: 0, food: 0 }) };
-
-        MemorySanctuary.currentVaultId = saveData.currentVaultId || 1;
-        MemorySanctuary.activeEvent = null;
+        
+        MemorySanctuary.state.gameOver = false;
+        
+        if (saveData.currentVaultId) {
+            MemorySanctuary.currentVaultId = saveData.currentVaultId;
+        }
 
         localStorage.setItem(CURRENT_SLOT_KEY, String(slot));
-
-        renderAll();
-        if (typeof checkStuckState === 'function') checkStuckState();
-        if (typeof initCanvas === 'function') initCanvas();
-
-        const guardian = MemorySanctuary.data.guardians[0];
-        if (guardian) showGuardianDialogue(guardian.id, 'idle');
-
-        addLog(`已从存档槽 ${slot} 读取游戏。`, 'system');
+        
+        // 读取后也创建一次备份（确保备份是最新的有效版本）
+        localStorage.setItem(BACKUP_KEY_PREFIX + slot, JSON.stringify(saveData));
+        
+        addLog(`已从存档槽 ${slot} 读取。`, 'system');
         return true;
-    } catch (e) {
-        console.error('[存档] 读取失败:', e);
-        addLog('读档失败：存档数据已损坏。', 'system');
+    } catch (error) {
+        console.error('[存档] 读取失败:', error);
+        addLog('读取存档失败。', 'system');
         return false;
     }
 }
 
+// 获取存档槽信息（含备份状态）
 function getSaveSlotInfo(slot) {
     const raw = localStorage.getItem(SAVE_KEY_PREFIX + slot);
     if (!raw) return null;
-
     try {
         const data = JSON.parse(raw);
+        // 检查是否有备份
+        const hasBackup = !!localStorage.getItem(BACKUP_KEY_PREFIX + slot);
         return {
-            slot: data.slot,
-            savedAt: data.savedAt,
-            week: data.state.week,
-            chapter: data.state.chapter,
-            archivedCount: data.state.completedArchives.length,
-            currentVaultId: data.currentVaultId,
-            playthrough: data.playthrough || 1
+            slot: data.slot || slot,
+            savedAt: data.savedAt || 0,
+            playthrough: data.playthrough || 1,
+            week: data.state?.week || 1,
+            chapter: data.state?.chapter || 1,
+            archivedCount: data.state?.completedArchives?.length || 0,
+            hasBackup: hasBackup
         };
     } catch (e) {
-        return null;
+        return { corrupted: true };
     }
 }
 
@@ -3610,10 +3719,12 @@ function getAllSaveSlots() {
 }
 
 function deleteSaveSlot(slot) {
+    if (slot < 1 || slot > SAVE_SLOT_COUNT) return;
     localStorage.removeItem(SAVE_KEY_PREFIX + slot);
+    localStorage.removeItem(BACKUP_KEY_PREFIX + slot);
 }
 
-function hasAnySaves() {
+function hasAnySave() {
     for (let i = 1; i <= SAVE_SLOT_COUNT; i++) {
         if (localStorage.getItem(SAVE_KEY_PREFIX + i)) return true;
     }
@@ -3624,8 +3735,49 @@ function getCurrentSlot() {
     return parseInt(localStorage.getItem(CURRENT_SLOT_KEY) || '0');
 }
 
-// ==========================================
-// 多周目继承
+function getSaveSlotInfo(slot) {
+    const raw = localStorage.getItem(SAVE_KEY_PREFIX + slot);
+    if (!raw) return null;
+
+    try {
+        const data = JSON.parse(raw);
+        const hasBackup = !!localStorage.getItem(BACKUP_KEY_PREFIX + slot);
+        return {
+            slot: data.slot || slot,
+            savedAt: data.savedAt || 0,
+            playthrough: data.playthrough || 1,
+            week: data.state?.week || 1,
+            chapter: data.state?.chapter || 1,
+            archivedCount: data.state?.completedArchives?.length || 0,
+            hasBackup: hasBackup
+        };
+    } catch (e) {
+        return { corrupted: true };
+    }
+}
+
+function getAllSaveSlots() {
+    const slots = [];
+    for (let i = 1; i <= SAVE_SLOT_COUNT; i++) {
+        slots.push(getSaveSlotInfo(i));
+    }
+    return slots;
+}
+
+function deleteSaveSlot(slot) {
+    if (slot < 1 || slot > SAVE_SLOT_COUNT) return;
+    localStorage.removeItem(SAVE_KEY_PREFIX + slot);
+    localStorage.removeItem(BACKUP_KEY_PREFIX + slot);
+}
+
+function hasAnySave() {
+    for (let i = 1; i <= SAVE_SLOT_COUNT; i++) {
+        if (localStorage.getItem(SAVE_KEY_PREFIX + i)) return true;
+    }
+    return false;
+}
+
+// ─── 多周目继承 ───
 // ==========================================
 
 function getNGPlusData() {
@@ -4091,21 +4243,106 @@ function handleSaveAction(slot, action, mode) {
     }
 }
 
-function initSaveSystem() {
-    const saveBtn = document.getElementById('save-btn');
-    const loadBtn = document.getElementById('load-btn');
-    const saveCloseBtn = document.getElementById('save-close');
+// ─── 存档导出/导入 ───
 
-    // Save button: open slot selection panel
-    if (saveBtn) {
-        saveBtn.addEventListener('click', () => {
-            openSaveScreen('save');
+function exportSaveToClipboard(slot) {
+    const raw = localStorage.getItem(SAVE_KEY_PREFIX + slot);
+    if (!raw) {
+        alert('该存档槽为空！');
+        return;
+    }
+    
+    try {
+        const saveData = JSON.parse(raw);
+        const jsonStr = JSON.stringify(saveData);
+        const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(encoded).then(() => {
+                alert(`存档 ${slot} 已导出到剪贴板！\n将此文本发送给他人即可分享。`);
+            }).catch(() => {
+                prompt(`存档 ${slot} 导出文本（全选复制）：`, encoded);
+            });
+        } else {
+            prompt(`存档 ${slot} 导出文本（全选复制）：`, encoded);
+        }
+        
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playButtonClick();
+    } catch (e) {
+        alert('导出失败：' + e.message);
+    }
+}
+
+function importSaveFromClipboard() {
+    const input = prompt('粘贴导入文本：');
+    if (!input || !input.trim()) return;
+    
+    try {
+        const jsonStr = decodeURIComponent(escape(atob(input.trim())));
+        const saveData = JSON.parse(jsonStr);
+        
+        if (!saveData || !saveData.state || !saveData.version) {
+            alert('无效的存档文本！');
+            return;
+        }
+        
+        const slots = getAllSaveSlots();
+        let targetSlot = slots.findIndex(s => s === null) + 1;
+        
+        if (targetSlot === 0) {
+            const slotStr = prompt(`所有存档槽已满。输入槽位号 (1-${SAVE_SLOT_COUNT}) 覆盖：`);
+            targetSlot = parseInt(slotStr);
+            if (isNaN(targetSlot) || targetSlot < 1 || targetSlot > SAVE_SLOT_COUNT) {
+                alert('无效的槽位号。');
+                return;
+            }
+            if (!confirm(`确定要覆盖存档槽 ${targetSlot} 吗？`)) return;
+        }
+        
+        localStorage.setItem(SAVE_KEY_PREFIX + targetSlot, JSON.stringify(saveData));
+        alert(`存档已导入到槽位 ${targetSlot}！`);
+        
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playGuardianEventTrigger();
+        
+        const saveOverlay = document.getElementById('save-overlay');
+        if (saveOverlay && !saveOverlay.classList.contains('hidden')) {
+            renderSaveSlots('save');
+        }
+    } catch (e) {
+        alert('导入失败：存档文本已损坏。\n' + e.message);
+    }
+}
+
+function initExportImport() {
+    const exportBtn = document.getElementById('save-export-btn');
+    const importBtn = document.getElementById('save-import-btn');
+    
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            const currentSlot = getCurrentSlot();
+            if (currentSlot >= 1) {
+                exportSaveToClipboard(currentSlot);
+            } else {
+                alert('没有活跃的存档。请先保存或读取一个存档。');
+            }
         });
     }
+    
+    if (importBtn) {
+        importBtn.addEventListener('click', () => {
+            importSaveFromClipboard();
+        });
+    }
+}
+
+function initSaveSystem() {
+    const loadBtn = document.getElementById('load-btn');
+    const saveCloseBtn = document.getElementById('save-close');
 
     // Load button: open slot selection panel
     if (loadBtn) {
         loadBtn.addEventListener('click', () => {
+            if (typeof AudioSystem !== 'undefined') AudioSystem.playButtonClick();
             openSaveScreen('load');
         });
     }
@@ -4233,11 +4470,7 @@ function initCivilizationAtlas() {
     const atlasClose = document.getElementById('atlas-close');
     const atlasOverlay = document.getElementById('atlas-overlay');
     
-    if (atlasBtn) {
-        atlasBtn.addEventListener('click', () => {
-            toggleAtlas();
-        });
-    }
+    // 图谱按钮事件已移至 initFuncBar 统一处理
     
     if (atlasClose) {
         atlasClose.addEventListener('click', () => {
@@ -4881,9 +5114,24 @@ function showEndingSummaryPage(ending, isGameOver = false) {
         ngEl.classList.add('hidden');
     }
     
+    // NG+ button: allow starting NG+ directly
+    const ngBtn = document.getElementById('ending-ng-btn');
+    if (ngBtn) {
+        ngBtn.classList.remove('hidden');
+        ngBtn.onclick = () => {
+            pageOverlay.classList.add('hidden');
+            // Determine next slot
+            const currentSlot = getCurrentSlot();
+            const nextSlot = currentSlot >= 1 ? currentSlot : 1;
+            startNewGame(nextSlot, true);
+            if (typeof AudioSystem !== 'undefined') AudioSystem.playGuardianEventTrigger();
+        };
+    }
+    
     // Return button
     returnBtn.onclick = () => {
         pageOverlay.classList.add('hidden');
+        if (ngBtn) ngBtn.classList.add('hidden');
         showTitleScreen();
     };
     

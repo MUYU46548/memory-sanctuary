@@ -7,6 +7,24 @@
 // ============================================================
 const GAME_VERSION = '1.6.0';
 
+// ============================================================
+// 全局错误处理：防止加载失败白屏
+// ============================================================
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('[记忆圣所] 未处理的Promise异常:', event.reason);
+    const statusText = document.getElementById('boot-status');
+    if (statusText && statusText.textContent && statusText.textContent.includes('加载失败')) {
+        // 已经在显示错误信息，不重复
+        return;
+    }
+    // 尝试显示错误提示
+    const bootScreen = document.getElementById('boot-screen');
+    if (bootScreen && !bootScreen.classList.contains('fade-out')) {
+        const status = document.getElementById('boot-status');
+        if (status) status.textContent = '加载失败: ' + (event.reason?.message || event.reason);
+    }
+});
+
 window.MemorySanctuary = {
     state: null,
     data: {
@@ -27,7 +45,38 @@ window.MemorySanctuary = {
  * 3. 初始化游戏系统
  * 4. 隐藏启动画面，显示标题
  */
+// ============================================================
+// 移动端检测
+// ============================================================
+function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           (window.innerWidth <= 768 && 'ontouchstart' in window);
+}
+
+function showMobileWarning() {
+    const bootScreen = document.getElementById('boot-screen');
+    if (bootScreen) {
+        bootScreen.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:2rem;text-align:center;">
+                <div style="font-size:3rem;margin-bottom:1rem;">📱</div>
+                <div style="font-size:1.2rem;color:#c9a87c;margin-bottom:1rem;">暂不支持移动端</div>
+                <div style="font-size:0.9rem;color:#888;max-width:300px;line-height:1.6;">
+                    记忆圣所是一款为桌面浏览器设计的游戏。<br>
+                    请在 PC 或笔记本上启动本游戏以获得最佳体验。
+                </div>
+            </div>
+        `;
+        bootScreen.classList.remove('fade-out');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    // 早期移动端检测
+    if (isMobileDevice()) {
+        showMobileWarning();
+        return; // 阻止后续初始化
+    }
+    
     console.log('[记忆圣所] 启动中...');
     
     const bootScreen = document.getElementById('boot-screen');
@@ -76,6 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof initStuckBanner === 'function') initStuckBanner();
         if (typeof initCivilizationAtlas === 'function') initCivilizationAtlas();
         if (typeof initSaveSystem === 'function') initSaveSystem();
+        if (typeof initExportImport === 'function') initExportImport();
         if (typeof initSettings === 'function') initSettings();
         
         if (typeof VN !== 'undefined' && MemorySanctuary.data.scenes) {
@@ -339,6 +389,9 @@ function initTitleScreen() {
 }
 
 function showTitleScreen() {
+    // 清空活跃事件，防止下次读档时残留导致"有事件无法跳过"
+    MemorySanctuary.activeEvent = null;
+    
     const titleScreen = document.getElementById('title-screen');
     const gameContainer = document.getElementById('game-container');
     const ngplusEl = document.getElementById('title-ngplus');

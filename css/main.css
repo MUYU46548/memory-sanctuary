@@ -1233,21 +1233,10 @@ button.archive-btn.recommended {
 
 #event-panel {
     width: 100%;
-    opacity: 0;
-    visibility: hidden;
-    height: 0;
-    overflow: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease, height 0.3s ease;
-}
-
-#event-panel:not(.hidden) {
-    opacity: 1;
-    visibility: visible;
-    height: auto;
 }
 
 #event-panel.hidden {
-    display: block !important;
+    display: none !important;
 }
 
 #event-banner {
@@ -2521,14 +2510,35 @@ button.archive-btn.recommended {
     color: var(--bg-deep);
 }
 
-#save-info {
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border-subtle);
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    text-align: center;
-    flex-shrink: 0;
+#save-export-import {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-dark);
+    border-radius: 0 0 8px 8px;
+}
+
+.save-action-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-panel);
+    color: var(--text-primary);
+    font-family: var(--font-cn);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.save-action-btn:hover {
+    border-color: var(--amber-primary);
+    background: var(--bg-dark);
+}
+
+.save-action-btn:active {
+    transform: scale(0.98);
 }
 
 #save-info:empty {
@@ -2599,6 +2609,8 @@ button.archive-btn.recommended {
     justify-content: center;
     z-index: 10000;
     backdrop-filter: blur(4px);
+    padding: 1rem;
+    box-sizing: border-box;
 }
 
 #settings-overlay.hidden {
@@ -2609,19 +2621,24 @@ button.archive-btn.recommended {
     background: var(--bg-panel);
     border: 1px solid var(--amber-primary);
     border-radius: 12px;
-    padding: 32px;
+    padding: 28px;
     width: 90%;
-    max-width: 420px;
+    max-width: 500px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
     box-shadow: 0 0 60px rgba(212, 160, 74, 0.2);
+    overflow: hidden;
 }
 
 #settings-panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
 }
 
 #settings-panel-header h2 {
@@ -2650,7 +2667,28 @@ button.archive-btn.recommended {
 #settings-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
+    overflow-y: auto;
+    flex: 1;
+    padding-right: 8px;
+}
+
+/* Settings list scrollbar */
+#settings-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#settings-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#settings-list::-webkit-scrollbar-thumb {
+    background: var(--amber-primary);
+    border-radius: 3px;
+}
+
+#settings-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
 }
 
 .settings-item {
@@ -2754,6 +2792,36 @@ button.archive-btn.recommended {
 .settings-mute-btn.muted {
     opacity: 0.5;
     border-color: var(--text-dim);
+}
+
+/* ─── 主题切换按钮 ─── */
+.settings-theme-row {
+    display: flex;
+    gap: 8px;
+    padding-left: 28px;
+}
+
+.settings-theme-btn {
+    padding: 6px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--bg-panel);
+    color: var(--text-primary);
+    font-family: var(--font-cn);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.settings-theme-btn:hover {
+    border-color: var(--amber-primary);
+}
+
+.settings-theme-btn.active {
+    background: var(--amber-primary);
+    color: var(--bg-panel);
+    border-color: var(--amber-primary);
+    box-shadow: 0 0 8px rgba(201, 168, 124, 0.4);
 }
 
 /* 归档确认弹窗 */
@@ -4603,6 +4671,9 @@ button.archive-btn.recommended {
 #ending-footer {
     border-top: 1px solid var(--border-subtle);
     padding-top: 16px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
 }
 
 #ending-return-btn {
@@ -4619,6 +4690,26 @@ button.archive-btn.recommended {
 
 #ending-return-btn:hover {
     opacity: 0.85;
+}
+
+#ending-ng-btn {
+    padding: 12px 32px;
+    background: var(--success);
+    border: none;
+    border-radius: 4px;
+    color: var(--bg-deep);
+    font-family: var(--font-cn);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+#ending-ng-btn:hover {
+    opacity: 0.85;
+}
+
+#ending-ng-btn.hidden {
+    display: none;
 }
 
 
