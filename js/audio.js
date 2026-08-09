@@ -533,6 +533,28 @@ window.AudioSystem = (() => {
     }
 
     // 播放项目完成音
+    // 立即归档音效：清脆短促的确认音
+    function playInstantArchive() {
+        if (!ctx || isMuted) return;
+        resume();
+        const now = ctx.currentTime;
+        const frequencies = [1047, 1319]; // C6, E6
+        
+        frequencies.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, now + i * 0.08);
+            gain.gain.linearRampToValueAtTime(0.12, now + i * 0.08 + 0.04);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now + i * 0.08);
+            osc.stop(now + i * 0.08 + 0.5);
+        });
+    }
+
     function playProjectComplete() {
         if (!ctx || isMuted) return;
         resume();
@@ -636,6 +658,86 @@ window.AudioSystem = (() => {
         gain.connect(masterGain);
         
         noise.start(now);
+    }
+
+    // 链式完成音效：上升琶音
+    function playChainComplete() {
+        if (!ctx || isMuted) return;
+        resume();
+        const now = ctx.currentTime;
+        const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6 琶音
+        
+        notes.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, now + i * 0.1);
+            gain.gain.linearRampToValueAtTime(0.08, now + i * 0.1 + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.5);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now + i * 0.1);
+            osc.stop(now + i * 0.1 + 0.6);
+        });
+    }
+
+    // 守护者事件触发：温暖的和弦
+    function playGuardianEventTrigger() {
+        if (!ctx || isMuted) return;
+        resume();
+        const now = ctx.currentTime;
+        const notes = [392, 494, 587]; // G4, B4, D5 大调和弦
+        
+        notes.forEach((freq) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.07, now + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 0.9);
+        });
+    }
+
+    // 封印音效：低沉庄严的钟声
+    function playSealSound() {
+        if (!ctx || isMuted) return;
+        resume();
+        const now = ctx.currentTime;
+        
+        // 基础频率：125Hz 低频钟声
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(125, now);
+        osc.frequency.exponentialRampToValueAtTime(100, now + 0.5);
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.15, now + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 2);
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start(now);
+        osc.stop(now + 2.1);
+        
+        // 泛音列
+        [250, 375, 500].forEach((freq, i) => {
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.value = freq;
+            gain2.gain.setValueAtTime(0, now + 0.05);
+            gain2.gain.linearRampToValueAtTime(0.04 / (i + 1), now + 0.1);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.5 - i * 0.2);
+            osc2.connect(gain2);
+            gain2.connect(masterGain);
+            osc2.start(now + 0.05);
+            osc2.stop(now + 1.6 - i * 0.2);
+        });
     }
 
     // ─── VN 视觉小说音效 ───
@@ -880,6 +982,10 @@ window.AudioSystem = (() => {
         playAlertTone,
         playShatterSound,
         playMechanicalEngage,
+        playInstantArchive,
+        playChainComplete,
+        playGuardianEventTrigger,
+        playSealSound,
         playProjectComplete,
         playExploreDeploy,
         playExploreReturnResource,

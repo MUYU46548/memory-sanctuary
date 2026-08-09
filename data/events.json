@@ -2781,6 +2781,179 @@
         }
       ],
       "type": "random"
+    },
+    {
+      "id": "event_hunting_season_01",
+      "title": "狩猎季节",
+      "description": "米莎在圣所外围发现了小型生物活动的痕迹。如果能组织一次狩猎，或许能获得数周的食物补给。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 14,
+        "weekMax": 28,
+        "probability": 0.25
+      },
+      "choices": [
+        {
+          "text": "组织狩猎（-5能源，+20食物）",
+          "effect": {
+            "energy": -5,
+            "food": 20
+          },
+          "result": "米莎带队出发。三天后，他们带着猎物归来。",
+          "feedback": {
+            "guardianMood": {
+              "misha": 3
+            },
+            "message": "米莎：「新鲜的肉……我已经很久没有尝过了。」"
+          }
+        },
+        {
+          "text": "专注于现有储备（守护者心情+1）",
+          "effect": {
+            "food": 0
+          },
+          "result": "圣所选择了稳健。但猎物的痕迹已经消失。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 1,
+              "finn": 1
+            },
+            "message": "谨慎未必是坏事。"
+          }
+        }
+      ],
+      "type": "random"
+    },
+    {
+      "id": "event_food_trader_02",
+      "title": "流浪商人",
+      "description": "一位自称来自「遗忘市集」的商人请求进入圣所。他声称能用食物交换其他物资。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 20,
+        "weekMax": 38,
+        "probability": 0.2
+      },
+      "choices": [
+        {
+          "text": "用介质交换（-12介质，+25食物）",
+          "effect": {
+            "media": -12,
+            "food": 25
+          },
+          "result": "交易完成。商人微笑着离去，背影消失在风沙中。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": -1,
+              "finn": 2
+            },
+            "message": "芬恩：「物物交换……这是文明最后的影子。」"
+          }
+        },
+        {
+          "text": "拒绝交易",
+          "effect": {
+            "food": 0
+          },
+          "result": "商人耸耸肩，转身消失在风沙中。",
+          "feedback": {
+            "guardianMood": {
+              "lorn": 1
+            },
+            "message": "洛恩：「不受未知来源的食物是基本安全准则。」"
+          }
+        }
+      ],
+      "type": "random"
+    },
+    {
+      "id": "event_storage_inspection_01",
+      "title": "储藏室检查",
+      "description": "例行检查中发现部分储备食物出现了霉变迹象。需要立即决定如何处理。",
+      "trigger": {
+        "type": "random",
+        "weekMin": 6,
+        "weekMax": 18,
+        "probability": 0.3
+      },
+      "choices": [
+        {
+          "text": "隔离霉变部分（-8食物损失，环境+5）",
+          "effect": {
+            "food": -8,
+            "environment": 5
+          },
+          "result": "及时止损。圣所环境得到了净化。",
+          "feedback": {
+            "guardianMood": {
+              "ethel": 2
+            },
+            "message": "埃塞尔：「洁净是圣所的第一要务。」"
+          }
+        },
+        {
+          "text": "全部食用（+5食物，但环境-3）",
+          "effect": {
+            "food": 5,
+            "environment": -3
+          },
+          "result": "勉强能入口。但霉味久久不散。",
+          "feedback": {
+            "guardianMood": {
+              "tika": -1,
+              "misha": -1
+            },
+            "message": "米莎皱起了眉头。"
+          }
+        }
+      ],
+      "type": "random"
+    },
+    {
+      "id": "event_famine_warning_01",
+      "title": "饥荒预警",
+      "description": "食物储备已降至危险水平。如果不立即采取行动，圣所将面临饥荒。",
+      "trigger": {
+        "type": "scheduled",
+        "weekMin": 1,
+        "weekMax": 48,
+        "probability": 1.0,
+        "condition": "food_below_15"
+      },
+      "choices": [
+        {
+          "text": "紧急配给（-5食物，守护者心情+2）",
+          "effect": {
+            "food": -5
+          },
+          "result": "通过紧缩配给，圣所暂时渡过了危机。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 2,
+              "finn": 2,
+              "misha": 2,
+              "lorn": 2,
+              "ethel": 2
+            },
+            "message": "守护者们团结一心，共度难关。"
+          }
+        },
+        {
+          "text": "维持现状（食物自然消耗）",
+          "effect": {
+            "food": 0
+          },
+          "result": "圣所选择相信储备。但情况没有好转。",
+          "feedback": {
+            "guardianMood": {
+              "tika": -2,
+              "ethel": -1
+            },
+            "message": "缇卡的眼神中满是担忧。"
+          }
+        }
+      ],
+      "type": "scheduled"
     }
   ]
 }

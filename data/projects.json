@@ -5,14 +5,14 @@
       "name": "修复备用发电机",
       "description": "修复圣所的主能源系统，稳定供电。",
       "availableAfter": 1,
-      "duration": 1,
+      "duration": 3,
       "cost": {
         "energy": 15
       },
       "effect": {
         "type": "resourceBoost",
         "resource": "energy",
-        "amount": 7
+        "amount": 3
       }
     },
     {
@@ -20,14 +20,14 @@
       "name": "修复冷却系统",
       "description": "修复介质存储设备，减少自然衰减。",
       "availableAfter": 4,
-      "duration": 1,
+      "duration": 4,
       "cost": {
         "energy": 10
       },
       "effect": {
         "type": "decayReduction",
         "resource": "media",
-        "percent": 0.5
+        "percent": 0.4
       }
     },
     {
@@ -35,14 +35,14 @@
       "name": "修复水循环系统",
       "description": "修复水净化系统，改善环境储备。",
       "availableAfter": 4,
-      "duration": 1,
+      "duration": 4,
       "cost": {
         "energy": 10
       },
       "effect": {
         "type": "decayReduction",
         "resource": "environment",
-        "percent": 0.5
+        "percent": 0.4
       }
     },
     {
@@ -68,7 +68,7 @@
       "name": "建立医疗实验室",
       "description": "在圣所内部建立简易医疗设施，解锁医学档案。",
       "availableAfter": 10,
-      "duration": 2,
+      "duration": 3,
       "cost": {
         "energy": 25,
         "media": 15
@@ -86,14 +86,14 @@
       "name": "建造水培农场",
       "description": "在圣所内种植食物，补充储备。",
       "availableAfter": 2,
-      "duration": 1,
+      "duration": 5,
       "cost": {
         "energy": 15,
         "media": 10
       },
       "effect": {
         "type": "foodBoost",
-        "amount": 8
+        "amount": 4
       }
     },
     {
@@ -101,14 +101,14 @@
       "name": "共享食堂",
       "description": "改善食物分配效率，额外补充储备。",
       "availableAfter": 6,
-      "duration": 1,
+      "duration": 4,
       "cost": {
         "energy": 10,
         "media": 5
       },
       "effect": {
         "type": "foodBoost",
-        "amount": 5
+        "amount": 3
       }
     },
     {

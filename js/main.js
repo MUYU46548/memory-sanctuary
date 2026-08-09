@@ -159,6 +159,14 @@ async function loadGameData() {
         console.warn('[数据] ending_scenes.json 加载失败');
         MemorySanctuary.data.endingScenes = {};
     }
+    try {
+        const guardianEventsRes = await fetch('data/guardian_events.json');
+        MemorySanctuary.data.guardianEvents = (await guardianEventsRes.json()).guardian_events || [];
+        console.log(`[数据] ${MemorySanctuary.data.guardianEvents.length} 个守护者事件`);
+    } catch (e) {
+        console.warn('[数据] guardian_events.json 加载失败');
+        MemorySanctuary.data.guardianEvents = [];
+    }
 
     console.log(`[数据] ${MemorySanctuary.data.archives.length}条目, ${MemorySanctuary.data.vaults.length}存储室, ${MemorySanctuary.data.guardians.length}守护者, ${MemorySanctuary.data.events.length}随机事件, ${MemorySanctuary.data.scheduledEvents.length}调度事件, ${MemorySanctuary.data.explorations.length}勘探点, ${MemorySanctuary.data.projects.length}项目`);
 }
@@ -186,7 +194,8 @@ function initGameState() {
         activeProjects: [],
         completedProjects: [],
         chaptersCompleted: [],
-        pendingEnding: null
+        pendingEnding: null,
+        instantArchiveChances: 0
     };
     
     MemorySanctuary.data.vaults.forEach(vault => {

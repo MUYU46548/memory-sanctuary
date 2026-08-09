@@ -1,0 +1,168 @@
+{
+  "guardian_events": [
+    {
+      "id": "tika_song_of_memory",
+      "title": "记忆之歌",
+      "guardianId": "tika",
+      "trigger": {
+        "type": "mood_check",
+        "moodTier": "friendly",
+        "weekMin": 8,
+        "probability": 0.15
+      },
+      "description": "缇卡在归档一段关于古老歌谣的条目后，突然唱起了旋律。那是她母亲教她的歌——关于一个失落的季节。",
+      "choices": [
+        {
+          "text": "静静地听她唱完",
+          "effect": {
+            "tikaMood": 3,
+            "revealArchive": "arch_v2_039"
+          },
+          "result": "缇卡的眼中闪烁着泪光。'谢谢你……这是我第一次在别人面前唱这首歌。'",
+          "sound": "vn_dialogue"
+        },
+        {
+          "text": "建议她教给你",
+          "effect": {
+            "tikaMood": 2,
+            "energy": -5
+          },
+          "result": "缇卡微笑着点头。'好，跟我唱。'你笨拙地跟着哼唱，她笑得眼角都弯了。",
+          "sound": "vn_dialogue"
+        },
+        {
+          "text": "这太浪费能源了",
+          "effect": {
+            "tikaMood": -3
+          },
+          "result": "缇卡沉默了。她低下头，不再说话。",
+          "sound": "vn_dialogue"
+        }
+      ]
+    },
+    {
+      "id": "finn_unfinished_page",
+      "title": "未完之页",
+      "guardianId": "finn",
+      "trigger": {
+        "type": "week",
+        "week": 12,
+        "probability": 0.3
+      },
+      "description": "芬恩在整理旧文档时，发现了一页未完成的编年史——那是关于他自己的故事，只写了一半。",
+      "choices": [
+        {
+          "text": "帮他写完这一页",
+          "effect": {
+            "finnMood": 3,
+            "energy": -10
+          },
+          "result": "芬恩认真地说：'你怎么知道我心里想的什么？'他接过笔，和你一起写完了那一页。",
+          "sound": "vn_dialogue"
+        },
+        {
+          "text": "告诉他真相",
+          "effect": {
+            "finnMood": -2,
+            "environment": -5
+          },
+          "result": "芬恩叹了口气：'我知道。但我一直在逃避。'",
+          "sound": "vn_dialogue"
+        }
+      ]
+    },
+    {
+      "id": "misha_seedling",
+      "title": "意外的幼苗",
+      "guardianId": "misha",
+      "trigger": {
+        "type": "exploration_complete",
+        "explorationId": "exp_surface_01",
+        "probability": 0.4
+      },
+      "description": "米莎从地表带回一颗枯萎的种子。'它在错误的时间发芽了……但我想试试。'",
+      "choices": [
+        {
+          "text": "消耗10能源为她培育",
+          "effect": {
+            "mishaMood": 3,
+            "energy": -10,
+            "revealArchive": "arch_ng_seed_vault"
+          },
+          "result": "米莎的眼睛亮了：'你真的愿意？'几周后，幼苗开出了花——那是你从未见过的颜色。",
+          "sound": "vn_dialogue"
+        },
+        {
+          "text": "圣所资源有限",
+          "effect": {
+            "mishaMood": -2,
+            "environment": -3
+          },
+          "result": "米莎轻轻点头：'我理解。'她把种子小心地收进口袋。",
+          "sound": "vn_dialogue"
+        }
+      ]
+    },
+    {
+      "id": "lorn_engine_confession",
+      "title": "引擎室的独白",
+      "guardianId": "lorn",
+      "trigger": {
+        "type": "week",
+        "week": 20,
+        "probability": 0.25
+      },
+      "description": "深夜，洛恩独自在引擎室。你发现他对着核心喃喃自语：'你还能撑多久？我们还能撑多久？'",
+      "choices": [
+        {
+          "text": "和他一起守夜",
+          "effect": {
+            "lornMood": 3,
+            "food": -10
+          },
+          "result": "洛恩递给你一杯热饮：'谢谢。'你们沉默地坐着，听着引擎的低吟。",
+          "sound": "vn_dialogue"
+        },
+        {
+          "text": "告诉他一切都会好起来的",
+          "effect": {
+            "lornMood": -1
+          },
+          "result": "洛恩笑了，但笑容有些苦涩：'希望如此。'",
+          "sound": "vn_dialogue"
+        }
+      ]
+    },
+    {
+      "id": "ethel_night_prayer",
+      "title": "夜祷",
+      "guardianId": "ethel",
+      "trigger": {
+        "type": "week",
+        "week": 25,
+        "probability": 0.2
+      },
+      "description": "埃塞尔在祈祷室点燃了最后一支蜡烛。'愿这光……能照亮某个人的归途。'",
+      "choices": [
+        {
+          "text": "为她唱一首歌",
+          "effect": {
+            "ethelMood": 3,
+            "revealArchive": "arch_v2_024"
+          },
+          "result": "埃塞尔合掌微笑：'你的歌声里有光。'",
+          "sound": "vn_dialogue"
+        },
+        {
+          "text": "默默陪她站一会儿",
+          "effect": {
+            "ethelMood": 2,
+            "environment": 5
+          },
+          "result": "埃塞尔轻声说：'谢谢你的陪伴。'",
+          "sound": "vn_dialogue"
+        }
+      ]
+    }
+  ]
+}

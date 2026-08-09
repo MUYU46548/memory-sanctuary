@@ -134,7 +134,15 @@ function archiveEntry(archiveId) {
         // 紧急归档：介质消耗为 0，能源消耗加倍
         if (!consumeResources(entry.energyCost * 2, 0)) return false;
     } else {
-        if (!consumeResources(entry.energyCost, entry.dataCost)) return false;
+        // 食物归零惩罚：归档能源消耗 +20%
+        let foodPenalty = 0;
+        if (MemorySanctuary.state.resources.food <= 0) {
+            foodPenalty = Math.ceil(entry.energyCost * 0.2);
+        }
+        if (!consumeResources(entry.energyCost + foodPenalty, entry.dataCost)) return false;
+        if (foodPenalty > 0) {
+            addLog(`🍂 饥荒惩罚：归档能耗 +${foodPenalty}（食物耗尽）`, 'warning');
+        }
     }
     
     // 紧急归档协议激活后立即关闭
@@ -212,11 +220,15 @@ function onTimeAdvanced(weeks) {
     state.resources.environment = Math.max(0,
         state.resources.environment - decay.environment * weeks
     );
+    state.resources.food = Math.max(0,
+        state.resources.food - decay.food * weeks
+    );
     
     // 追踪衰减为负值
     state.resourceChanges.energy -= decay.energy * weeks;
     state.resourceChanges.media -= decay.media * weeks;
     state.resourceChanges.environment -= decay.environment * weeks;
+    state.resourceChanges.food -= decay.food * weeks;
 
     // 应用持续效果（如：每回合额外能源）
     applySustainedBonuses();
@@ -226,16 +238,23 @@ function onTimeAdvanced(weeks) {
         state.emergencyCorruption = Math.max(0, state.emergencyCorruption - 2);
     }
     
-    // 腐败度惩罚：每20点，所有资源额外 -0.5/周
+    // 腐败度惩罚：每20点，所有资源额外 -0.5/周（食物受影响但减半）
     if (state.emergencyCorruption > 0) {
         const penalty = Math.floor(state.emergencyCorruption / 20) * 0.5;
+        const foodPenalty = penalty * 0.5;
         if (penalty > 0) {
             state.resources.energy = Math.max(0, state.resources.energy - penalty);
             state.resources.media = Math.max(0, state.resources.media - penalty);
             state.resources.environment = Math.max(0, state.resources.environment - penalty);
+            if (foodPenalty > 0) {
+                state.resources.food = Math.max(0, state.resources.food - foodPenalty);
+            }
             state.resourceChanges.energy -= penalty;
             state.resourceChanges.media -= penalty;
             state.resourceChanges.environment -= penalty;
+            if (foodPenalty > 0) {
+                state.resourceChanges.food -= foodPenalty;
+            }
         }
     }
     
@@ -307,9 +326,15 @@ function applySustainedBonuses() {
     // 应用持续效果
     state.unlockedBonuses.forEach(bonus => {
         if (bonus === 'energy_per_turn_3') {
+            const before = state.resources.energy;
             state.resources.energy = Math.min(150, state.resources.energy + 3);
+            const actualGain = state.resources.energy - before;
+            state.resourceChanges.energy = (state.resourceChanges.energy || 0) + actualGain;
         } else if (bonus === 'energy_per_turn_2') {
+            const before = state.resources.energy;
             state.resources.energy = Math.min(150, state.resources.energy + 2);
+            const actualGain = state.resources.energy - before;
+            state.resourceChanges.energy = (state.resourceChanges.energy || 0) + actualGain;
         }
     });
 
@@ -327,7 +352,7 @@ function processOngoingEffects() {
         
         // 应用效果
         if (effect.resource && effect.amount) {
-            const cap = effect.resource === 'media' ? 60 : (effect.resource === 'food' ? 80 : 100);
+            const cap = effect.resource === 'media' ? 150 : (effect.resource === 'food' ? 80 : (effect.resource === 'energy' ? 150 : 100));
             state.resources[effect.resource] = Math.min(cap, state.resources[effect.resource] + effect.amount);
             state.resourceChanges[effect.resource] = (state.resourceChanges[effect.resource] || 0) + effect.amount;
         }
@@ -416,7 +441,29 @@ function getWeeklyDecay() {
         multiplier = 2; // 已衰竭两种资源，剩余资源加速衰减
     }
     
-    return { energy: 1.0 * multiplier, media: 0.5 * multiplier, environment: 0.5 * multiplier };
+    // 基础衰减值
+    let energyDecay = 1.0 * multiplier;
+    let mediaDecay = 0.5 * multiplier;
+    let environmentDecay = 0.5 * multiplier;
+    const foodDecay = 0.3 * multiplier;
+    
+    // 应用项目衰减减免（decayReduction 类型）
+    if (state.completedProjects) {
+        state.completedProjects.forEach(pid => {
+            const proj = getProjectById(pid);
+            if (proj && proj.effect && proj.effect.type === 'decayReduction') {
+                if (proj.effect.resource === 'energy') {
+                    energyDecay *= (1 - (proj.effect.percent || 0));
+                } else if (proj.effect.resource === 'media') {
+                    mediaDecay *= (1 - (proj.effect.percent || 0));
+                } else if (proj.effect.resource === 'environment') {
+                    environmentDecay *= (1 - (proj.effect.percent || 0));
+                }
+            }
+        });
+    }
+    
+    return { energy: energyDecay, media: mediaDecay, environment: environmentDecay, food: foodDecay };
 }
 
 function getEffectiveExpiryWeeks(entry) {
@@ -588,6 +635,12 @@ function checkStarvation() {
         Object.keys(state.guardianMoods || {}).forEach(gid => {
             state.guardianMoods[gid] = (state.guardianMoods[gid] || 0) - 2;
         });
+        // 食物归零额外惩罚：勘探成功率下降（通过 fatigue 模拟）
+        if (state.exploration && state.exploration.fatigue) {
+            Object.keys(state.exploration.fatigue).forEach(gid => {
+                state.exploration.fatigue[gid] = Math.min(3, (state.exploration.fatigue[gid] || 0) + 1);
+            });
+        }
     } else {
         state.starvationLogged = false;
     }
@@ -804,6 +857,12 @@ function confirmArchive(archiveId) {
     
     contentText += `\n\n归档后将推进1周时间。`;
     
+    // 立即归档机会提示
+    const instantChances = MemorySanctuary.state.instantArchiveChances || 0;
+    if (instantChances > 0) {
+        contentText += `\n\n⚡ 你有 ${instantChances} 次立即归档机会（不消耗介质，不推进时间）。`;
+    }
+    
     content.innerHTML = contentText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
     overlay.classList.remove('hidden');
     
@@ -817,6 +876,7 @@ function confirmArchive(archiveId) {
     confirmContainer.style.gap = '12px';
     confirmContainer.style.alignItems = 'center';
     confirmContainer.style.marginTop = '16px';
+    confirmContainer.style.flexWrap = 'wrap';
     
     // "不再提示"复选框
     const skipLabel = document.createElement('label');
@@ -850,7 +910,6 @@ function confirmArchive(archiveId) {
     
     confirmBtn.onclick = () => {
         if (skipCheckbox.checked) {
-            // 保存到设置系统
             if (typeof getSettings === 'function') {
                 const s = getSettings();
                 s.skipConfirm = true;
@@ -863,6 +922,36 @@ function confirmArchive(archiveId) {
     confirmContainer.appendChild(skipLabel);
     confirmContainer.appendChild(confirmBtn);
     
+    // 立即归档按钮（有机会时显示）
+    if (instantChances > 0) {
+        const instantBtn = document.createElement('button');
+        instantBtn.id = 'modal-instant-btn';
+        instantBtn.textContent = '⚡ 立即归档';
+        instantBtn.style.padding = '10px 20px';
+        instantBtn.style.background = 'var(--success)';
+        instantBtn.style.border = 'none';
+        instantBtn.style.borderRadius = '4px';
+        instantBtn.style.color = '#fff';
+        instantBtn.style.fontFamily = 'var(--font-cn)';
+        instantBtn.style.fontSize = '0.85rem';
+        instantBtn.style.cursor = 'pointer';
+        instantBtn.title = '不消耗介质，不推进时间';
+        
+        instantBtn.onclick = () => {
+            if (skipCheckbox.checked) {
+                if (typeof getSettings === 'function') {
+                    const s = getSettings();
+                    s.skipConfirm = true;
+                    localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
+                }
+            }
+            closeConfirmModal(archiveId, false);
+            useInstantArchive(archiveId);
+        };
+        
+        confirmContainer.appendChild(instantBtn);
+    }
+    
     // 修改关闭按钮为"取消"
     if (closeBtn) {
         closeBtn.textContent = '取消';
@@ -872,6 +961,79 @@ function confirmArchive(archiveId) {
     }
     
     content.appendChild(confirmContainer);
+}
+
+// 立即归档：消耗1次机会，不消耗介质，不推进时间
+function useInstantArchive(archiveId) {
+    const entry = getArchiveById(archiveId);
+    if (!entry) return false;
+    if (MemorySanctuary.state.instantArchiveChances <= 0) {
+        addLog('没有立即归档机会。', 'system');
+        return false;
+    }
+    if (isArchiveCompleted(archiveId)) {
+        addLog('该条目已被归档。', 'system');
+        return false;
+    }
+    
+    const state = MemorySanctuary.state;
+    const vault = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
+    if (!vault) return false;
+    
+    // 检查能源（正常消耗）
+    if (state.resources.energy < entry.energyCost) {
+        addLog(`能源不足，无法立即归档「${entry.title}」。`, 'system');
+        return false;
+    }
+    
+    // 检查容量
+    const currentUsage = state.vaultUsage[vault.id] || 0;
+    if (currentUsage + entry.dataCost > vault.capacity) {
+        addLog(`存储室「${vault.name}」容量不足。`, 'system');
+        return false;
+    }
+    
+    // 消耗机会 + 能源，不消耗介质，不推进时间
+    state.instantArchiveChances--;
+    state.resources.energy -= entry.energyCost;
+    state.completedArchives.push(archiveId);
+    state.vaultUsage[vault.id] = currentUsage + entry.dataCost;
+    
+    addLog(`⚡ 立即归档：「${entry.title}」（剩余机会：${state.instantArchiveChances}）`, 'success');
+    
+    // 音效
+    if (typeof AudioSystem !== 'undefined') {
+        AudioSystem.playArchiveChime();
+        if (AudioSystem.playInstantArchive) AudioSystem.playInstantArchive();
+    }
+    
+    // 守护者反应
+    const guardianId = Object.keys(entry.guardianReactions || {})[0];
+    if (guardianId && entry.guardianReactions[guardianId]) {
+        addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
+    }
+    
+    // 检查叙事线索链
+    if (typeof checkNarrativeChains === 'function') checkNarrativeChains(archiveId);
+    
+    renderAll();
+    return true;
+}
+
+// 消耗食物换取立即归档机会
+function buyInstantArchiveWithFood() {
+    const state = MemorySanctuary.state;
+    const cost = 30; // 30食物 = 1次机会
+    if ((state.resources.food || 0) < cost) {
+        addLog(`食物不足，需要 ${cost} 食物兑换1次立即归档机会。`, 'system');
+        return false;
+    }
+    state.resources.food -= cost;
+    state.instantArchiveChances++;
+    addLog(`🍖 消耗 ${cost} 食物，获得1次立即归档机会（当前：${state.instantArchiveChances}次）。`, 'success');
+    if (typeof AudioSystem !== 'undefined') AudioSystem.playExploreDeploy();
+    renderAll();
+    return true;
 }
 
 function closeConfirmModal(archiveId, confirmed) {
@@ -1534,6 +1696,22 @@ function checkRandomEvent() {
     const week = MemorySanctuary.state.week;
     const ngData = getNGPlusData();
     
+    // 检查守护者个人事件（最高优先级）
+    const guardianEvent = checkGuardianPersonalEvent();
+    if (guardianEvent) {
+        triggerEvent(guardianEvent);
+        return;
+    }
+    
+    // 饥荒预警事件（条件触发，食物低于15时）
+    const famineWarning = MemorySanctuary.data.events.find(e => e.id === 'event_famine_warning_01');
+    if (famineWarning && MemorySanctuary.state.resources.food <= 15 && !MemorySanctuary.state.activeEventIds.includes(famineWarning.id)) {
+        if (week >= famineWarning.trigger.weekMin && week <= famineWarning.trigger.weekMax) {
+            triggerEvent(famineWarning);
+            return;
+        }
+    }
+    
     // 先处理章节过渡事件
     const chapterTransitionEvents = MemorySanctuary.data.events.filter(e => {
         if (e.trigger.type !== 'chapter_transition') return false;
@@ -1586,8 +1764,6 @@ function checkRandomEvent() {
         // NG+ events filtering
         if (e.trigger.type === 'ng_plus') {
             if (ngData.playthroughCount < e.trigger.playthroughMin) return false;
-        } else if (e.trigger.type === 'guardian_personal') {
-            if (ngData.playthroughCount < 2) return false;
         }
         
         return week >= e.trigger.weekMin && week <= e.trigger.weekMax;
@@ -1599,6 +1775,46 @@ function checkRandomEvent() {
             break;
         }
     }
+}
+
+// ==========================================
+// 守护者个人事件系统
+// ==========================================
+
+function checkGuardianPersonalEvent() {
+    const state = MemorySanctuary.state;
+    const events = MemorySanctuary.data.guardianEvents || [];
+    
+    for (const event of events) {
+        if (state.activeEventIds.includes(event.id)) continue;
+        
+        const trigger = event.trigger;
+        if (!trigger) continue;
+        
+        // 检查触发条件
+        if (trigger.type === 'mood_check') {
+            const guardianMood = state.guardianMoods[event.guardianId] || 0;
+            const tier = getMoodTier(event.guardianId);
+            if (tier !== trigger.moodTier) continue;
+            if (state.week < trigger.weekMin) continue;
+            if (Math.random() > (trigger.probability || 0.15)) continue;
+            return event;
+        }
+        
+        if (trigger.type === 'week') {
+            if (state.week !== trigger.week) continue;
+            if (Math.random() > (trigger.probability || 0.3)) continue;
+            return event;
+        }
+        
+        if (trigger.type === 'exploration_complete') {
+            if (state.week < 10) continue;
+            if (Math.random() > (trigger.probability || 0.25)) continue;
+            return event;
+        }
+    }
+    
+    return null;
 }
 
 // Check for NG+ personal events that should trigger automatically
@@ -1631,6 +1847,12 @@ function triggerEvent(event) {
     MemorySanctuary.activeEvent = event;
     MemorySanctuary.state.activeEventIds.push(event.id);
     addLog(`突发事件：${event.title}`, 'event');
+    
+    // 守护者个人事件触发音效
+    if (event.guardianId && typeof AudioSystem !== 'undefined') {
+        AudioSystem.playGuardianEventTrigger();
+    }
+    
     renderEvent(event);
 }
 
@@ -1681,11 +1903,35 @@ function resolveEvent(choiceIndex) {
             MemorySanctuary.state.resources.food + choice.effect.food);
     }
     
+    // 守护者个人事件效果
+    const moodKey = event.guardianId + 'Mood';
+    if (choice.effect[moodKey]) {
+        adjustGuardianMood(event.guardianId, choice.effect[moodKey]);
+    }
+    if (choice.effect.revealArchive) {
+        const archive = getArchiveById(choice.effect.revealArchive);
+        if (archive) {
+            addLog(`📜 新条目解锁：「${archive.title}」`, 'success');
+        }
+    }
+    
     // 资源变化后立即检查衰竭状态
     if (typeof checkSanctuaryDeterioration === 'function') checkSanctuaryDeterioration();
     
     if (choice.effect.time) {
         advanceTime(choice.effect.time);
+    }
+    
+    // 播放结果音效
+    if (choice.sound === 'vn_dialogue' && typeof AudioSystem !== 'undefined') {
+        AudioSystem.playVNAdvance();
+    }
+    
+    // 守护者事件特有反馈
+    if (event.guardianId && typeof AudioSystem !== 'undefined') {
+        if (choice.effect && choice.effect[event.guardianId + 'Mood'] > 0) {
+            AudioSystem.playExploreReturnNarrative();
+        }
     }
     
     addLog(`选择：${choice.text} —— ${choice.result}`, 'event');
@@ -2174,7 +2420,12 @@ function skillName(skill) {
         philosophy: '哲学',
         energy: '能源',
         maintenance: '维护',
-        exploration: '勘探'
+        exploration: '勘探',
+        singing: '歌唱',
+        languages: '语言',
+        history: '历史',
+        law: '法律',
+        ritual: '仪式'
     };
     return names[skill] || skill;
 }
@@ -2265,7 +2516,7 @@ function renderOutcomeBars(expData) {
 
         const label = document.createElement('span');
         label.className = 'outcome-label';
-        label.textContent = o.type === 'resource' ? (o.resource === 'energy' ? '能源' : o.resource === 'media' ? '介质' : '环境') : o.type === 'narrative' ? '叙事' : '风险';
+        label.textContent = o.type === 'resource' ? (o.resource === 'energy' ? '能源' : o.resource === 'media' ? '介质' : o.resource === 'food' ? '食物' : '环境') : o.type === 'narrative' ? '叙事' : '风险';
 
         const fill = document.createElement('span');
         fill.className = 'outcome-fill' + (o.type === 'risk' ? ' risk' : '');
@@ -2284,6 +2535,10 @@ function calculateOutcomeProbability(outcome, expData) {
         prob = Math.max(0.02, prob - matchedSkills * 0.04);
     } else if (outcome.type === 'resource') {
         prob = Math.min(0.6, prob + matchedSkills * 0.05);
+    }
+    // 食物归零惩罚：资源型结果概率降低
+    if (MemorySanctuary.state.resources.food <= 0 && outcome.type === 'resource') {
+        prob = Math.max(0.05, prob * 0.7);
     }
     return Math.round(prob * 100) / 100;
 }
@@ -2380,17 +2635,19 @@ function applyExplorationResult(outcome, expData) {
 
     const effects = [];
     if (outcome.type === 'resource') {
-        const resName = outcome.resource === 'energy' ? '能源' : outcome.resource === 'media' ? '介质' : '环境';
+        const resName = outcome.resource === 'energy' ? '能源' : outcome.resource === 'media' ? '介质' : outcome.resource === 'food' ? '食物' : '环境';
         effects.push({ name: `${resName} +${outcome.amount}`, positive: outcome.amount > 0 });
         if (outcome.resource === 'energy') adjustResource('energy', outcome.amount);
         if (outcome.resource === 'media') adjustResource('media', outcome.amount);
         if (outcome.resource === 'environment') adjustResource('environment', outcome.amount);
+        if (outcome.resource === 'food') adjustResource('food', outcome.amount);
     } else if (outcome.type === 'risk') {
-        const resName = outcome.resource === 'energy' ? '能源' : outcome.resource === 'media' ? '介质' : '环境';
+        const resName = outcome.resource === 'energy' ? '能源' : outcome.resource === 'media' ? '介质' : outcome.resource === 'food' ? '食物' : '环境';
         effects.push({ name: `${resName} ${outcome.amount}`, positive: false });
         if (outcome.resource === 'energy') adjustResource('energy', outcome.amount);
         if (outcome.resource === 'media') adjustResource('media', outcome.amount);
         if (outcome.resource === 'environment') adjustResource('environment', outcome.amount);
+        if (outcome.resource === 'food') adjustResource('food', outcome.amount);
     }
 
     document.getElementById('result-text').textContent = outcome.message;
@@ -2737,6 +2994,30 @@ function openEmergencyProtocol() {
     overlay.onclick = (e) => {
         if (e.target === overlay) overlay.classList.add('hidden');
     };
+    
+    // 食物换归档按钮
+    const buyArchiveBtn = document.createElement('button');
+    buyArchiveBtn.className = 'emergency-btn instant-archive-buy';
+    buyArchiveBtn.innerHTML = `
+        <span class="emergency-btn-icon">🍖</span>
+        <span class="emergency-btn-label">食物换归档</span>
+        <span class="emergency-btn-desc">消耗30食物换取1次立即归档机会</span>
+        <span class="emergency-btn-cost">30 食物</span>
+    `;
+    
+    const currentChances = state.instantArchiveChances || 0;
+    buyArchiveBtn.addEventListener('click', () => {
+        if ((state.resources.food || 0) < 30) {
+            addLog('食物不足，需要30食物兑换1次立即归档机会。', 'system');
+            return;
+        }
+        if (confirm(`确定消耗30食物换取1次立即归档机会？（当前：${currentChances}次）`)) {
+            buyInstantArchiveWithFood();
+            openEmergencyProtocol(); // refresh
+        }
+    });
+    
+    list.appendChild(buyArchiveBtn);
 }
 
 function activateEmergencyProtocol(protocol) {
@@ -3459,6 +3740,18 @@ function checkNarrativeChains(archiveId) {
     if (unlocked.length > 0) {
         const names = unlocked.map(e => `「${e.title}」`).join('、');
         addLog(`🔗 线索揭示：归档此条目揭示了与 ${names} 的关联。`, 'guardian');
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playExploreReturnNarrative();
+    }
+    
+    // 链式完成奖励：所有关联条目都已归档
+    const allRelatedCompleted = entry.relatedArchives.every(id => isArchiveCompleted(id));
+    if (allRelatedCompleted && entry.relatedArchives.length >= 2) {
+        MemorySanctuary.state.instantArchiveChances++;
+        addLog(`🎉 链式归档完成！关联条目全部归档，获得1次立即归档机会（当前：${MemorySanctuary.state.instantArchiveChances}次）。`, 'success');
+        if (typeof AudioSystem !== 'undefined') {
+            AudioSystem.playArchiveChime();
+            if (AudioSystem.playChainComplete) AudioSystem.playChainComplete();
+        }
     }
 }
 
@@ -4013,6 +4306,11 @@ function showSealModalWithContent(modalContent, ending, isGameOver = false) {
     const overlay = document.getElementById('modal-overlay');
     if (overlay) overlay.classList.add('hidden');
     
+    // Play seal sound
+    if (typeof AudioSystem !== 'undefined' && AudioSystem.playSealSound) {
+        AudioSystem.playSealSound();
+    }
+    
     // Show the full ending summary page
     showEndingSummaryPage(ending, isGameOver);
 }
@@ -4256,15 +4554,21 @@ function applyProjectEffect(project, isCompletion) {
         case 'resourceBoost':
             if (!isCompletion && effect.amount) {
                 const cap = effect.resource === 'media' ? 150 : (effect.resource === 'food' ? 80 : 150);
+                const before = state.resources[effect.resource];
                 state.resources[effect.resource] = Math.min(
                     cap,
                     state.resources[effect.resource] + effect.amount
                 );
+                const actualGain = state.resources[effect.resource] - before;
+                state.resourceChanges[effect.resource] = (state.resourceChanges[effect.resource] || 0) + actualGain;
             }
             break;
         case 'foodBoost':
             if (!isCompletion && effect.amount) {
+                const before = state.resources.food;
                 state.resources.food = Math.min(80, state.resources.food + effect.amount);
+                const actualGain = state.resources.food - before;
+                state.resourceChanges.food = (state.resourceChanges.food || 0) + actualGain;
             }
             break;
         case 'decayReduction':

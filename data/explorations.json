@@ -57,6 +57,12 @@
       "outcomes": [
         {
           "type": "resource",
+          "resource": "food",
+          "amount": 18,
+          "message": "在枯木根系下发现了可食用的菌落和浆果丛。"
+        },
+        {
+          "type": "resource",
           "resource": "media",
           "amount": 24,
           "probability": 0.35,
@@ -318,6 +324,12 @@
       "outcomes": [
         {
           "type": "resource",
+          "resource": "food",
+          "amount": 15,
+          "message": "在废弃住宅的储藏室里找到了密封良好的罐头和干粮。"
+        },
+        {
+          "type": "resource",
           "resource": "media",
           "amount": 17,
           "probability": 0.35,
@@ -539,6 +551,12 @@
       "outcomes": [
         {
           "type": "resource",
+          "resource": "food",
+          "amount": 25,
+          "message": "在灰绿之海的边缘采集到了藻类和贝类，足以支撑数周。"
+        },
+        {
+          "type": "resource",
           "resource": "media",
           "amount": 30,
           "probability": 0.35,
@@ -579,6 +597,12 @@
       ],
       "availableAfter": 25,
       "outcomes": [
+        {
+          "type": "resource",
+          "resource": "food",
+          "amount": 22,
+          "message": "村庄废墟中的地窖保存着完好的腌制食品和谷物储备。"
+        },
         {
           "type": "resource",
           "resource": "media",

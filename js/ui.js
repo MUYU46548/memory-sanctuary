@@ -1070,7 +1070,10 @@ function buildResourceTooltip(resourceKey) {
     }
     
     // 储量信息
-    const maxCap = resourceKey === 'media' ? 60 : (resourceKey === 'food' ? 80 : 100);
+    const maxCap = resourceKey === 'food' ? 80
+        : resourceKey === 'energy' ? 150
+        : resourceKey === 'media' ? 150
+        : 100;
     const current = state.resources[resourceKey] || 0;
     html += `<div class="rt-capacity">储量: ${current.toFixed(1)} / ${maxCap}</div>`;
     
@@ -1126,6 +1129,21 @@ function getResourceBreakdown(resourceKey) {
                 breakdowns.push({ amount: 3, source: '永久增益' });
             } else if (bonus === 'energy_per_turn_2' && resourceKey === 'energy') {
                 breakdowns.push({ amount: 2, source: '永久增益' });
+            }
+        });
+    }
+    
+    // 项目衰减减免（decayReduction 类型）
+    if (state.completedProjects && resourceKey !== 'food') {
+        state.completedProjects.forEach(pid => {
+            const proj = (typeof getProjectById === 'function') ? getProjectById(pid) : null;
+            if (proj && proj.effect && proj.effect.type === 'decayReduction' && proj.effect.resource === resourceKey) {
+                // 计算减免量（基于当前衰减值）
+                const decay = (typeof getWeeklyDecay === 'function') ? getWeeklyDecay() : null;
+                if (decay && decay[resourceKey]) {
+                    // 不显示实际减免值，因为 tooltip 显示的是分解项
+                    // 衰减减少会在自然衰减项中体现
+                }
             }
         });
     }
