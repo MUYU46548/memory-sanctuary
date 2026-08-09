@@ -2471,7 +2471,7 @@
       },
       "choices": [
         {
-          "text": "同意减量（-10食物但避免心情下降）",
+          "text": "同意减量（-10食物但避免士气下降）",
           "effect": {
             "food": -10
           },
@@ -2484,7 +2484,7 @@
           }
         },
         {
-          "text": "维持原量（守护者心情+2/-15食物）",
+          "text": "维持原量（守护者士气+2/-15食物）",
           "effect": {
             "food": -15
           },
@@ -2707,7 +2707,7 @@
       },
       "choices": [
         {
-          "text": "同意（-12食物，全体守护者心情+5）",
+          "text": "同意（-12食物，全体守护者士气+5）",
           "effect": {
             "food": -12
           },
@@ -2808,7 +2808,7 @@
           }
         },
         {
-          "text": "专注于现有储备（守护者心情+1）",
+          "text": "专注于现有储备（守护者士气+1）",
           "effect": {
             "food": 0
           },
@@ -2922,7 +2922,7 @@
       },
       "choices": [
         {
-          "text": "紧急配给（-5食物，守护者心情+2）",
+          "text": "紧急配给（-5食物，守护者士气+2）",
           "effect": {
             "food": -5
           },
@@ -2954,6 +2954,227 @@
         }
       ],
       "type": "scheduled"
+    },
+    {
+      "id": "ng_plus_memory_echo",
+      "title": "记忆回响",
+      "description": "在整理归档时，你发现了一些不属于这个轮回的记忆碎片。它们来自上一个周目的圣所……",
+      "trigger": {
+        "type": "ng_plus",
+        "playthroughMin": 2
+      },
+      "choices": [
+        {
+          "text": "深入探索这些记忆",
+          "effect": {
+            "unlockNGEntry": "arch_ng_memory_echo",
+            "energy": -10
+          },
+          "feedback": {
+            "narrator": "你看到了上一个周目的守护者。他们的面孔如此熟悉，却又如此遥远。"
+          }
+        },
+        {
+          "text": "将它们归档",
+          "effect": {
+            "media": -15,
+            "unlockNGEntry": "arch_ng_memory_echo"
+          },
+          "feedback": {
+            "narrator": "这些记忆被妥善保存。也许有一天，它们会被后人发现。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ng_plus_tika_sacrifice",
+      "title": "最后的歌者",
+      "description": "缇卡找到你，手中握着一卷古老的乐谱。「这是萨拉达斯最古老的歌谣——我们的创世之歌。如果把它编码进圣所核心，它将成为永恒的共鸣。」她停顿了一下，「但我必须亲自去核心完成最后的咏唱。」她的眼神平静而坚定。这意味着……她将不会回来。",
+      "trigger": {
+        "type": "ng_plus",
+        "playthroughMin": 2,
+        "weekMin": 32,
+        "weekMax": 40,
+        "probability": 0.25,
+        "guardianId": "tika",
+        "moodTier": "friendly"
+      },
+      "guardianId": "tika",
+      "choices": [
+        {
+          "text": "「缇卡……我同意。让创世之歌永远回响。」",
+          "effect": {
+            "guardianSacrifice": "tika"
+          },
+          "feedback": {
+            "tika": "谢谢你。这是我能想到的，最美的结局。",
+            "narrator": "缇卡微笑着，最后一次抚摸圣所的墙壁。她的脚步声渐渐远去，走向核心的方向。从此，圣所中再也没有响起她的歌声——但每当风吹过穹顶，你仿佛仍能听见那微弱的共鸣。"
+          }
+        },
+        {
+          "text": "「不。我们需要你留在这里，和我们一起。」",
+          "effect": {},
+          "feedback": {
+            "tika": "……我明白了。也许你是对的。",
+            "guardianMood": {
+              "tika": -3
+            },
+            "narrator": "缇卡点点头，但你眼中闪过一丝难以言喻的失落。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ng_plus_finn_sacrifice",
+      "title": "编年史官的请求",
+      "description": "芬恩在深夜找到你，桌上铺满了密密麻麻的手稿。「我想做一件疯狂的事。」他的眼睛闪着光，「我要把自己写进编年史。不是作为记录者——而是作为记录的一部分。」他解释道，将自己的意识编码进圣所核心，可以让编年史获得「灵魂」，在万年之后仍能向后人讲述。",
+      "trigger": {
+        "type": "ng_plus",
+        "playthroughMin": 2,
+        "weekMin": 32,
+        "weekMax": 40,
+        "probability": 0.25,
+        "guardianId": "finn",
+        "moodTier": "friendly"
+      },
+      "guardianId": "finn",
+      "choices": [
+        {
+          "text": "「芬恩……让你的文字成为永恒。」",
+          "effect": {
+            "guardianSacrifice": "finn"
+          },
+          "feedback": {
+            "finn": "这是我能想到的，最好的告别方式。",
+            "narrator": "芬恩笑了。他最后看了一眼自己的手稿，然后合上眼睛。当光芒散去后，桌上只剩下一本空白的书——它等待着被万年后的人重新翻开。"
+          }
+        },
+        {
+          "text": "「不。你是记录者，不是记录本身。」",
+          "effect": {},
+          "feedback": {
+            "finn": "……也许吧。也许还有别的办法。",
+            "guardianMood": {
+              "finn": -3
+            },
+            "narrator": "芬恩沉默了很久。那个夜晚，你听见他在书房里反复踱步。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ng_plus_misha_sacrifice",
+      "title": "种子的最后旅程",
+      "description": "米莎在温室里找到你，手中捧着一颗发光的种子。「这是萨拉达斯的最后一颗原初种子。如果把它种在圣所核心，它会生根发芽，让圣所成为一个活的建筑。」她的声音很轻，「但我必须陪它一起去。没有园丁，种子不会发芽。」",
+      "trigger": {
+        "type": "ng_plus",
+        "playthroughMin": 2,
+        "weekMin": 32,
+        "weekMax": 40,
+        "probability": 0.25,
+        "guardianId": "misha",
+        "moodTier": "friendly"
+      },
+      "guardianId": "misha",
+      "choices": [
+        {
+          "text": "「米莎……让生命重新绽放。」",
+          "effect": {
+            "guardianSacrifice": "misha"
+          },
+          "feedback": {
+            "misha": "不要悲伤。这不是告别——这是新的开始。",
+            "narrator": "米莎将种子贴在额头，闭上了眼睛。她的身体化作绿色的光粒，与种子融为一体。从那天起，圣所的墙壁上开始生长出细小的藤蔓——它们会一直蔓延，直到覆盖整座圣所。"
+          }
+        },
+        {
+          "text": "「不。种子可以在别处发芽，但这里需要你。」",
+          "effect": {},
+          "feedback": {
+            "misha": "……你说得对。是我太着急了。",
+            "guardianMood": {
+              "misha": -3
+            },
+            "narrator": "米莎握紧了种子，将它放回玻璃罩中。那天之后，她更加沉默了。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ng_plus_lorn_sacrifice",
+      "title": "最后的引擎",
+      "description": "洛恩从引擎室走出来，浑身油污，但眼中带着罕见的光芒。「我找到方法了。」他举起一张图纸，「如果把我改造成圣所核心的一部分，整个系统可以永远运转下去。不是几十年，是永远。」他顿了顿，「我知道这意味着什么。但我已经决定了。",
+      "trigger": {
+        "type": "ng_plus",
+        "playthroughMin": 2,
+        "weekMin": 32,
+        "weekMax": 40,
+        "probability": 0.25,
+        "guardianId": "lorn",
+        "moodTier": "friendly"
+      },
+      "guardianId": "lorn",
+      "choices": [
+        {
+          "text": "「洛恩……让你的创造成为永恒。」",
+          "effect": {
+            "guardianSacrifice": "lorn"
+          },
+          "feedback": {
+            "lorn": "终于……我可以真正休息了。",
+            "narrator": "洛恩最后一次检查了所有系统。他把手放在核心上，嘴角带着微笑。当光芒将他吞没时，你听见引擎发出了一声低沉的轰鸣——像是叹息，又像是感激。从此，圣所的心脏永远不会停止跳动。"
+          }
+        },
+        {
+          "text": "「不。你是守护者，不是零件。」",
+          "effect": {},
+          "feedback": {
+            "lorn": "……好吧。也许还有别的办法。",
+            "guardianMood": {
+              "lorn": -3
+            },
+            "narrator": "洛恩收起图纸，转身走回引擎室。那天之后，他工作得更晚了。"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ng_plus_ethel_sacrifice",
+      "title": "最后的祈祷",
+      "description": "埃塞尔跪在祈祷室中，双手合十。「我做了一个梦。」她睁开眼睛，目光温柔而悲伤，「梦见圣所在千年之后被打开。后人看见的不只是遗物——他们看见了我为他们祈祷的身影。」她站起身，「如果我把祈祷编码进圣所的结构中，它将成为一道永恒的光。但代价是……我将化为光的一部分。」",
+      "trigger": {
+        "type": "ng_plus",
+        "playthroughMin": 2,
+        "weekMin": 32,
+        "weekMax": 40,
+        "probability": 0.25,
+        "guardianId": "ethel",
+        "moodTier": "friendly"
+      },
+      "guardianId": "ethel",
+      "choices": [
+        {
+          "text": "「埃塞尔……让光永远照耀。」",
+          "effect": {
+            "guardianSacrifice": "ethel"
+          },
+          "feedback": {
+            "ethel": "不要为我哭泣。我只是去了更高的地方。",
+            "narrator": "埃塞尔微笑着走向核心。她的身体开始发光，像是一颗缓缓升起的星辰。当最后一缕光芒融入圣所时，你听见了她的声音——不是用耳朵，而是用心灵：「愿后世记得我们。」"
+          }
+        },
+        {
+          "text": "「不。活着的人比逝去的祈祷更重要。」",
+          "effect": {},
+          "feedback": {
+            "ethel": "……我明白了。是我太自私了。",
+            "guardianMood": {
+              "ethel": -3
+            },
+            "narrator": "埃塞尔站起身，擦去眼角的泪水。从那天起，她再也没有去过祈祷室。"
+          }
+        }
+      ]
     }
   ]
 }

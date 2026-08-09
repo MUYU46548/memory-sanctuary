@@ -2,6 +2,11 @@
  * main.js - 入口与初始化
  */
 
+// ============================================================
+// 全局常量
+// ============================================================
+const GAME_VERSION = '1.6.0';
+
 window.MemorySanctuary = {
     state: null,
     data: {
@@ -187,9 +192,16 @@ function initGameState() {
         emergencyCorruption: 0,
         emergencyCooldowns: {},
         gameOver: false,
-        guardianMoods: {},
+        guardianMoods: { tika: 2, finn: 2, misha: 2, lorn: 2, ethel: 2 },
         scheduledEvents: [],
         unlockedBonuses: [],
+        departedGuardians: [],
+        sacrificedGuardian: null,
+        guardianSacrifice: false,
+        starvationWeeks: 0,
+        weeksWithoutStarvation: 0,
+        turnsSkipped: 0,
+        emergencyArchiveUsed: 0,
         exploration: { deployedUntil: 0, cooldownUntil: 0, completedExplorations: {}, fatigue: {}, explorationLog: [] },
         activeProjects: [],
         completedProjects: [],
@@ -274,7 +286,16 @@ function initTitleScreen() {
         `;
     }
 
-    // New game button - open save screen for slot selection
+    const titleThemeToggle = document.getElementById('title-theme-toggle');
+    if (titleThemeToggle) {
+        titleThemeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('memory-sanctuary-theme', next);
+            titleThemeToggle.textContent = next === 'dark' ? '◐ 主题' : '◑ 主题';
+        });
+    }
     if (titleNew) {
         titleNew.addEventListener('click', () => {
             openSaveScreen('new');
@@ -357,15 +378,26 @@ function showTitleHelpModal() {
 
     let helpContent = '欢迎来到「记忆圣所」。\n\n';
     helpContent += '【游戏目标】\n';
-    helpContent += '在有限的时间内，尽可能多地归档文明碎片，为后世保存萨拉达斯文明的记忆。\n\n';
-    helpContent += '【操作指南】\n';
+    helpContent += '在有限的 48 周内，尽可能多地归档文明碎片，为后世保存萨拉达斯文明的记忆。\n\n';
+    helpContent += '【核心操作】\n';
     helpContent += '• 选择存储室 → 查看可归档条目 → 点击「录入归档」\n';
-    helpContent += '• 管理资源（能源/介质/环境），它们会随时间消耗\n';
-    helpContent += '• 与守护者互动获取建议，应对突发事件\n';
-    helpContent += '• 点击底部「存档」保存进度，「读档」恢复进度\n\n';
+    helpContent += '• 归档消耗能源与存储介质，同时推进时间\n\n';
+    helpContent += '【资源管理】\n';
+    helpContent += '• 能源：归档的基础消耗，归零后归档能耗加倍\n';
+    helpContent += '• 存储介质：归档必需品，归零后无法录入新条目\n';
+    helpContent += '• 环境稳定：影响条目保存条件，归零后条目过期速度翻倍\n';
+    helpContent += '• 食物：维持守护者士气，影响资源衰减效率\n\n';
     helpContent += '【进阶系统】\n';
-    helpContent += '• 封印圣所（20 周后）可触发多周目奖励\n';
-    helpContent += '• 奖励随周目递增，鼓励重复游玩探索不同选择\n\n';
+    helpContent += '• 封印圣所（16 周起可预览，20 周后可触发）\n';
+    helpContent += '• 多周目奖励：继承奖励随周目递增\n';
+    helpContent += '• 圣所项目：投入资源换取持续增益\n';
+    helpContent += '• 地表勘探：派出守护者获取资源\n';
+    helpContent += '• 应急协议：危急时使用非常规手段\n\n';
+    helpContent += '【士气系统】\n';
+    helpContent += '• 守护者士气会影响资源衰减效率\n';
+    helpContent += '• 资源越紧张、时间越靠后，士气压力越大\n';
+    helpContent += '• 归档成功可提升士气\n';
+    helpContent += '• 通过守护者菜单分发补给品可鼓舞士气\n\n';
     helpContent += '「——终来之刻，何物当存？」';
 
     content.textContent = helpContent;
@@ -426,12 +458,24 @@ function initSettings() {
     const bgmVolumeSlider = document.getElementById('setting-bgm-volume');
     const bgmVolumeValue = document.getElementById('bgm-volume-value');
     const bgmMuteBtn = document.getElementById('setting-bgm-mute');
+    const sfxVolumeSlider = document.getElementById('setting-sfx-volume');
+    const sfxVolumeValue = document.getElementById('sfx-volume-value');
     
     // Load current settings into checkboxes
     const settings = getSettings();
     if (skipConfirmCheckbox) skipConfirmCheckbox.checked = settings.skipConfirm;
     if (showResultCheckbox) showResultCheckbox.checked = settings.showResult;
     if (vnGuardianCheckbox) vnGuardianCheckbox.checked = settings.vnGuardianDialogue;
+    
+    // SFX 音量初始化
+    if (typeof AudioSystem !== 'undefined') {
+        if (sfxVolumeSlider) {
+            sfxVolumeSlider.value = 100;
+        }
+        if (sfxVolumeValue) {
+            sfxVolumeValue.textContent = '100%';
+        }
+    }
     
     // BGM 设置初始化
     if (typeof AudioSystem !== 'undefined') {
@@ -523,6 +567,29 @@ function initSettings() {
         });
     }
     
+    // SFX 音量滑块
+    function updateSfxSliderFill() {
+        if (!sfxVolumeSlider) return;
+        const val = parseInt(sfxVolumeSlider.value, 10);
+        const pct = val + '%';
+        sfxVolumeSlider.style.background = `linear-gradient(to right, var(--amber-primary) 0%, var(--amber-primary) ${pct}, var(--bg-panel) ${pct}, var(--bg-panel) 100%)`;
+    }
+    
+    updateSfxSliderFill();
+    
+    if (sfxVolumeSlider) {
+        sfxVolumeSlider.addEventListener('input', () => {
+            const val = parseInt(sfxVolumeSlider.value, 10) / 100;
+            if (sfxVolumeValue) {
+                sfxVolumeValue.textContent = Math.round(val * 100) + '%';
+            }
+            if (typeof AudioSystem !== 'undefined') {
+                AudioSystem.setSFXVolume(val);
+            }
+            updateSfxSliderFill();
+        });
+    }
+    
     // BGM 静音按钮
     if (bgmMuteBtn) {
         bgmMuteBtn.addEventListener('click', () => {
@@ -538,6 +605,54 @@ function initSettings() {
                     } else {
                         bgmVolumeSlider.style.filter = '';
                         bgmMuteBtn.classList.remove('muted');
+                    }
+                }
+            }
+        });
+    }
+    
+    // SFX 静音按钮
+    const sfxMuteBtn = document.getElementById('setting-sfx-mute');
+    if (sfxMuteBtn) {
+        sfxMuteBtn.addEventListener('click', () => {
+            if (typeof AudioSystem !== 'undefined') {
+                const isMuted = AudioSystem.toggleSFXMute();
+                sfxMuteBtn.textContent = isMuted ? '🔇' : '🔊';
+                sfxMuteBtn.classList.toggle('muted', isMuted);
+                // 静音时滑块变灰
+                if (sfxVolumeSlider) {
+                    if (isMuted) {
+                        sfxVolumeSlider.style.filter = 'grayscale(1)';
+                        sfxMuteBtn.classList.add('muted');
+                    } else {
+                        sfxVolumeSlider.style.filter = '';
+                        sfxMuteBtn.classList.remove('muted');
+                    }
+                }
+            }
+        });
+    }
+    
+    // 全局静音按钮
+    const globalMuteBtn = document.getElementById('setting-global-mute');
+    if (globalMuteBtn) {
+        globalMuteBtn.addEventListener('click', () => {
+            if (typeof AudioSystem !== 'undefined') {
+                const isMuted = AudioSystem.toggleGlobalMute();
+                globalMuteBtn.textContent = isMuted ? '🔇 已静音' : '🔇 全局静音';
+                globalMuteBtn.classList.toggle('active', isMuted);
+                // 同步更新两个滑块和静音按钮状态
+                if (sfxVolumeSlider && bgmVolumeSlider) {
+                    if (isMuted) {
+                        sfxVolumeSlider.style.filter = 'grayscale(1)';
+                        bgmVolumeSlider.style.filter = 'grayscale(1)';
+                    } else {
+                        if (sfxMuteBtn && !sfxMuteBtn.classList.contains('muted')) {
+                            sfxVolumeSlider.style.filter = '';
+                        }
+                        if (bgmMuteBtn && !bgmMuteBtn.classList.contains('muted')) {
+                            bgmVolumeSlider.style.filter = '';
+                        }
                     }
                 }
             }

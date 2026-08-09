@@ -18,6 +18,7 @@ window.AudioSystem = (() => {
     let isMuted = false;
     let heartbeatInterval = null;
     let currentScene = null;
+    let sfxVolume = 1.0; // 音效音量倍率 (0-1)
 
     // ─── BGM 配置（数据驱动，方便扩展） ───
     // 文件缺失时自动跳过，不阻塞游戏
@@ -40,6 +41,8 @@ window.AudioSystem = (() => {
     let bgmPendingScene = null;    // 等待用户交互后播放的场景
     let bgmIsPlaying = false;      // 当前是否有 BGM 在播放
     let bgmGeneration = 0;         // 每次 playBGM 递增，用于检测过期回调
+    let sfxMuted = false;          // 音效静音状态
+    let globalMuted = false;       // 全局静音状态
 
     // ─── BGM 核心方法 ───
 
@@ -265,7 +268,7 @@ window.AudioSystem = (() => {
             
             ctx = new AudioContext();
             masterGain = ctx.createGain();
-            masterGain.gain.value = 0.3;
+            masterGain.gain.value = 0.3 * sfxVolume * (sfxMuted || globalMuted ? 0 : 1);
             masterGain.connect(ctx.destination);
             
             startDrone();
@@ -367,6 +370,32 @@ window.AudioSystem = (() => {
         
         osc.start(now);
         osc.stop(now + 0.7);
+    }
+
+    // 播放急促心跳声（资源危急）
+    function playHeartbeatAlert() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        for (let i = 0; i < 3; i++) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(80 + i * 10, now + i * 0.15);
+            osc.frequency.exponentialRampToValueAtTime(40, now + i * 0.15 + 0.1);
+            
+            gain.gain.setValueAtTime(0, now + i * 0.15);
+            gain.gain.linearRampToValueAtTime(0.12, now + i * 0.15 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.15 + 0.12);
+            
+            osc.connect(gain);
+            gain.connect(masterGain);
+            
+            osc.start(now + i * 0.15);
+            osc.stop(now + i * 0.15 + 0.15);
+        }
     }
 
     // 播放勘探出发音效
@@ -964,22 +993,62 @@ window.AudioSystem = (() => {
         if (!ctx) return false;
         isMuted = !isMuted;
         if (masterGain) {
-            masterGain.gain.setValueAtTime(isMuted ? 0 : 0.3, ctx.currentTime);
+            masterGain.gain.setValueAtTime(isMuted ? 0 : sfxVolume * 0.3, ctx.currentTime);
+        }
+        // 同时静音 BGM
+        if (bgmAudio) {
+            bgmAudio.volume = isMuted ? 0 : bgmVolume * (bgmMuted ? 0 : 1);
         }
         return isMuted;
     }
 
     // 主音量控制
     function setVolume(value) {
+        sfxVolume = Math.max(0, Math.min(1, value));
         if (masterGain && ctx) {
-            masterGain.gain.setValueAtTime(value * 0.3, ctx.currentTime);
+            masterGain.gain.setValueAtTime(sfxVolume * 0.3, ctx.currentTime);
         }
+    }
+    
+    function setSFXVolume(value) {
+        setVolume(value);
+    }
+    
+    function toggleSFXMute() {
+        sfxMuted = !sfxMuted;
+        if (masterGain && ctx) {
+            masterGain.gain.setValueAtTime(sfxVolume * 0.3 * (sfxMuted || globalMuted ? 0 : 1), ctx.currentTime);
+        }
+        return sfxMuted;
+    }
+    
+    function toggleGlobalMute() {
+        globalMuted = !globalMuted;
+        if (globalMuted) {
+            // 静音所有音频
+            if (masterGain && ctx) {
+                masterGain.gain.setValueAtTime(0, ctx.currentTime);
+            }
+            if (bgmAudio) {
+                bgmAudio.volume = 0;
+            }
+        } else {
+            // 恢复
+            if (masterGain && ctx) {
+                masterGain.gain.setValueAtTime(sfxVolume * 0.3 * (sfxMuted ? 0 : 1), ctx.currentTime);
+            }
+            if (bgmAudio && !bgmMuted) {
+                bgmAudio.volume = bgmVolume * (bgmMuted ? 0 : 1);
+            }
+        }
+        return globalMuted;
     }
 
     return {
         init,
         playArchiveChime,
         playAlertTone,
+        playHeartbeatAlert,
         playShatterSound,
         playMechanicalEngage,
         playInstantArchive,
@@ -1003,6 +1072,9 @@ window.AudioSystem = (() => {
         resume,
         toggleMute,
         setVolume,
+        setSFXVolume,
+        toggleSFXMute,
+        toggleGlobalMute,
         // BGM 系统
         playBGM,
         playBGMSync,

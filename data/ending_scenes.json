@@ -235,6 +235,84 @@
       {"speaker": "narrator", "text": "没有人会回答「这里曾经住着谁？」"}
     ]
   },
+  "sacrifice_tika": {
+    "title": "💫 牺牲 - 缇卡",
+    "background": "song",
+    "speakers": ["narrator", "finn", "misha", "lorn", "ethel"],
+    "dialogue": [
+      {"speaker": "narrator", "text": "缇卡走向圣所核心，创世之歌的旋律在她身边环绕。"},
+      {"speaker": "narrator", "text": "她回头看了你们最后一次，嘴角带着微笑。"},
+      {"speaker": "narrator", "text": "「若星辰之上仍有倾听者——请带走我们的名字。」"},
+      {"speaker": "finn", "text": "……她终于成为了永恒的一部分。"},
+      {"speaker": "misha", "text": "她的歌声会一直在这里。每一次风吹过穹顶，我们都会想起她。"},
+      {"speaker": "lorn", "text": "圣所的能量稳定了。她是对的——这确实有效。"},
+      {"speaker": "ethel", "text": "愿她在星辰之间安息。"},
+      {"speaker": "narrator", "text": "缇卡的身体化作光点，融入核心。从此，圣所的穹顶之下永远回荡着一首无声的歌。封印程序启动。圣所缓缓沉入黑暗。"}
+    ]
+  },
+  "sacrifice_finn": {
+    "title": "💫 牺牲 - 芬恩",
+    "background": "chronicle",
+    "speakers": ["narrator", "tika", "misha", "lorn", "ethel"],
+    "dialogue": [
+      {"speaker": "narrator", "text": "芬恩坐在编年史前，写下了最后一行。"},
+      {"speaker": "narrator", "text": "然后他站起身，走向核心——他的步伐比任何时候都要坚定。"},
+      {"speaker": "tika", "text": "芬恩……他会永远活在他的文字里。"},
+      {"speaker": "narrator", "text": "芬恩笑了。他最后看了一眼手稿，然后闭上眼睛。"},
+      {"speaker": "narrator", "text": "当光芒散去后，桌上只剩下一本空白的书——它等待着被万年后的人重新翻开。"},
+      {"speaker": "misha", "text": "他终于……把自己写进了永恒。"},
+      {"speaker": "lorn", "text": "编年史获得了灵魂。千年之后，它会自己讲述这个故事。"},
+      {"speaker": "ethel", "text": "愿后世读到他的文字时，能感受到他的温度。"},
+      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。但在那本空白的书页上，文字正在缓缓浮现。"}
+    ]
+  },
+  "sacrifice_misha": {
+    "title": "💫 牺牲 - 米莎",
+    "background": "seed_vault",
+    "speakers": ["narrator", "tika", "finn", "lorn", "ethel"],
+    "dialogue": [
+      {"speaker": "narrator", "text": "米莎将种子贴在额头，闭上了眼睛。"},
+      {"speaker": "narrator", "text": "她的身体开始发光，像是一颗即将播撒的种子。"},
+      {"speaker": "tika", "text": "米莎……"},
+      {"speaker": "narrator", "text": "「不要悲伤。这不是告别——这是新的开始。」"},
+      {"speaker": "finn", "text": "她成为了最后一片土壤。"},
+      {"speaker": "lorn", "text": "藤蔓开始生长了。她做到了——圣所正在变成一个活着的建筑。"},
+      {"speaker": "ethel", "text": "生命不会真正消失。她只是换了一种方式存在。"},
+      {"speaker": "narrator", "text": "米莎的身体化作绿色的光粒，与种子融为一体。从那天起，圣所的墙壁上永远生长着细小的藤蔓。封印程序启动。圣所缓缓沉入黑暗。"}
+    ]
+  },
+  "sacrifice_lorn": {
+    "title": "💫 牺牲 - 洛恩",
+    "background": "engine_room",
+    "speakers": ["narrator", "tika", "finn", "misha", "ethel"],
+    "dialogue": [
+      {"speaker": "narrator", "text": "洛恩最后一次检查了所有系统。"},
+      {"speaker": "narrator", "text": "他把手放在核心上，嘴角带着微笑。"},
+      {"speaker": "narrator", "text": "「终于……我可以真正休息了。」"},
+      {"speaker": "tika", "text": "洛恩……"},
+      {"speaker": "narrator", "text": "当光芒将他吞没时，引擎发出了一声低沉的轰鸣——像是叹息，又像是感激。"},
+      {"speaker": "finn", "text": "圣所的心脏永远不会停止跳动了。"},
+      {"speaker": "misha", "text": "他成为了永恒的一部分——以最洛恩的方式。"},
+      {"speaker": "ethel", "text": "愿他在星辰之间找到他一直在寻找的答案。"},
+      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。但在那永恒运转的核心中，你能听见洛恩的心跳。"}
+    ]
+  },
+  "sacrifice_ethel": {
+    "title": "💫 牺牲 - 埃塞尔",
+    "background": "prayer_hall",
+    "speakers": ["narrator", "tika", "finn", "misha", "lorn"],
+    "dialogue": [
+      {"speaker": "narrator", "text": "埃塞尔走向核心。她的身体开始发光，像是一颗缓缓升起的星辰。"},
+      {"speaker": "narrator", "text": "当最后一缕光芒融入圣所时，你听见了她的声音——"},
+      {"speaker": "narrator", "text": "不是用耳朵，而是用心灵。"},
+      {"speaker": "narrator", "text": "「愿后世记得我们。」"},
+      {"speaker": "tika", "text": "她的祈祷将永远守护着圣所。"},
+      {"speaker": "finn", "text": "千年之后，当后人打开圣所，他们会感受到一道温暖的光。"},
+      {"speaker": "misha", "text": "她成为了光的一部分。"},
+      {"speaker": "lorn", "text": "圣所的墙壁上……你能看见她的祷文。它们在发光。"},
+      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。但在那永恒的黑暗中，埃塞尔的光永不熄灭。"}
+    ]
+  },
   "true_ending": {
     "title": "超越时间",
     "background": "new_world",

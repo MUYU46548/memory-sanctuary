@@ -326,25 +326,25 @@
     {
       "id": "seal_early",
       "name": "速战速决",
-      "description": "在12周或更早封印圣所。",
+      "description": "在22周或更早封印圣所。",
       "icon": "⚡",
       "category": "challenge",
       "hidden": false,
       "condition": {
         "type": "seal_week_max",
-        "value": 12
+        "value": 22
       }
     },
     {
       "id": "seal_late",
       "name": "坚守到底",
-      "description": "坚持到20周封印圣所。",
+      "description": "坚持到48周封印圣所。",
       "icon": "🛡️",
       "category": "challenge",
       "hidden": false,
       "condition": {
         "type": "seal_week_min",
-        "value": 20
+        "value": 48
       }
     },
     {
@@ -379,6 +379,30 @@
       "condition": {
         "type": "archives_count",
         "value": 1
+      }
+    },
+    {
+      "id": "never_starve",
+      "name": "丰衣足食",
+      "description": "连续30周保持食物储备为正。",
+      "icon": "🍖",
+      "category": "challenge",
+      "hidden": false,
+      "condition": {
+        "type": "custom",
+        "value": "never_starve_30"
+      }
+    },
+    {
+      "id": "project_master",
+      "name": "循环大师",
+      "description": "完成所有循环维护项目各至少一次。",
+      "icon": "🔄",
+      "category": "milestone",
+      "hidden": false,
+      "condition": {
+        "type": "custom",
+        "value": "all_repeatable_projects"
       }
     },
     {

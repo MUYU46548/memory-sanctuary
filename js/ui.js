@@ -67,26 +67,34 @@ function renderSealTopbarButton() {
     const week = state.week;
     const archivedCount = state.completedArchives.length;
 
-    // week < 20: 隐藏按钮
-    if (week < 20) {
+    // week < 16: 隐藏按钮
+    if (week < 16) {
         btn.classList.add('hidden');
         return;
     }
 
     btn.classList.remove('hidden');
-    btn.classList.remove('sealable-ready', 'sealable-warning');
+    btn.classList.remove('sealable-preview', 'sealable-ready', 'sealable-warning');
 
     // 判断状态
     if (week >= 45) {
         // 接近终局 — 红色警告脉冲
         btn.classList.add('sealable-warning');
-        btn.textContent = `⚠ 封印圣所（${archivedCount} 条）`;
+        btn.textContent = `⚠ 封印（${archivedCount} 条）`;
         btn.title = '终局将至！点击封印圣所以保存记忆';
+        btn.disabled = false;
     } else if (week >= 20) {
         // 可封印 — 琥珀色脉冲
         btn.classList.add('sealable-ready');
-        btn.textContent = `封印圣所（${archivedCount} 条）`;
+        btn.textContent = `封印（${archivedCount} 条）`;
         btn.title = '点击封印圣所，结束当前周目并解锁多周目奖励';
+        btn.disabled = false;
+    } else {
+        // 预览 — 灰色不可点击
+        btn.classList.add('sealable-preview');
+        btn.textContent = `封印圣所`;
+        btn.title = `再运行 ${20 - week} 周即可开启封印`;
+        btn.disabled = true;
     }
 }
 
@@ -316,6 +324,16 @@ function renderWeekDisplay() {
             progressEl.style.background = 'var(--amber-primary)';
         }
     }
+    
+    // 士气轻量指示器（独立于周数显示）
+    const moraleDisplay = document.getElementById('morale-display');
+    if (moraleDisplay && MemorySanctuary.state) {
+        const morale = getMoraleLevel();
+        const moraleTag = document.getElementById('morale-tag');
+        if (moraleTag) moraleTag.textContent = morale.label;
+        moraleDisplay.className = 'morale-display morale-' + morale.level;
+        moraleDisplay.title = `平均士气: ${getAverageMood().toFixed(1)}\n效率修正: ${((morale.bonus - 1) * 100).toFixed(0)}%`;
+    }
 }
 
 // ==========================================
@@ -378,6 +396,19 @@ function renderResources() {
             resFood.classList.add('food-warning');
         }
     }
+    
+    // 资源危急警告（任一资源低于10时红色脉冲）
+    const resEls = ['res-energy', 'res-media', 'res-environment', 'res-food'];
+    resEls.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const val = resources[id.replace('res-', '')];
+        if (val < 10) {
+            el.classList.add('critical');
+        } else {
+            el.classList.remove('critical');
+        }
+    });
 }
 
 function getResourceStatus() {
@@ -908,8 +939,9 @@ function renderCodexEndings() {
         const item = document.createElement('div');
         item.className = `codex-ending-item ${isUnlocked ? 'unlocked' : 'locked'}`;
         
-        const iconMatch = ending.title.match(/^./);
-        const icon = isUnlocked ? (iconMatch ? iconMatch[0] : '📜') : '🔒';
+        // 使用 Array.from 正确处理 emoji（部分 emoji 是代理对）
+        const chars = Array.from(ending.title);
+        const icon = isUnlocked ? (chars[0] || '📜') : '🔒';
         const title = isUnlocked ? ending.title : '???';
         const desc = isUnlocked ? ending.description : '未解锁 — 条件：' + (ending.condition?.description || '未知');
         
@@ -967,12 +999,32 @@ function renderCodexGuardians() {
             historyHtml = `<div class="codex-guardian-history"><span class="codex-guardian-no-history">暂无记录 — 完成一次游戏后查看</span></div>`;
         }
         
+        // 计算历史最高好感度等级
+        const tierRank = { hostile: 0, cold: 1, neutral: 2, friendly: 3, intimate: 4 };
+        let bestTier = null;
+        for (const h of moodHistory) {
+            if (!bestTier || tierRank[h.tier] > tierRank[bestTier]) {
+                bestTier = h.tier;
+            }
+        }
+        
+        let statusText;
+        if (isSeen) {
+            statusText = '💕 专属结局已解锁';
+        } else if (bestTier === 'intimate') {
+            statusText = '🔒 未解锁 — 特定事件未触发';
+        } else if (bestTier === 'friendly') {
+            statusText = '🔒 未解锁 — 达到亲密关系';
+        } else {
+            statusText = '🔒 未解锁 — 达到亲密关系';
+        }
+        
         item.innerHTML = `
             <div class="codex-guardian-avatar">${g.avatar}</div>
             <div class="codex-guardian-info">
                 <div class="codex-guardian-name">${g.name} <span class="codex-guardian-title">${g.title || ''}</span></div>
                 <div class="codex-guardian-role">${g.role}</div>
-                <div class="codex-guardian-status">${isSeen ? '💕 专属结局已解锁' : '🔒 未解锁 — 达到亲密关系'}</div>
+                <div class="codex-guardian-status">${statusText}</div>
                 ${historyHtml}
             </div>
         `;
@@ -1004,6 +1056,20 @@ function renderCodexEntries() {
     
     container.innerHTML = '';
     
+    // Track which archive IDs the player has seen at least once
+    const seenIds = new Set();
+    for (const run of (ngData.archiveHistory || [])) {
+        for (const id of (run.archives || [])) {
+            seenIds.add(id);
+        }
+    }
+    // Also include current run
+    if (MemorySanctuary.state && MemorySanctuary.state.completedArchives) {
+        for (const id of MemorySanctuary.state.completedArchives) {
+            seenIds.add(String(id));
+        }
+    }
+    
     // Group by vault
     const vaults = MemorySanctuary.data.vaults || [];
     for (const vault of vaults) {
@@ -1018,14 +1084,56 @@ function renderCodexEntries() {
         grid.className = 'codex-entries-grid';
         
         for (const entry of vaultArchives) {
+            const isSeen = seenIds.has(String(entry.id));
             const entryDiv = document.createElement('div');
-            entryDiv.className = 'codex-entry-item';
-            entryDiv.textContent = entry.title;
+            entryDiv.className = `codex-entry-item ${isSeen ? 'seen' : 'unseen'}`;
+            entryDiv.textContent = isSeen ? entry.title : '???';
+            entryDiv.title = isSeen ? '点击查看内容' : '未发现';
+            
+            if (isSeen && entry.content) {
+                entryDiv.style.cursor = 'pointer';
+                entryDiv.addEventListener('click', () => showArchiveDetail(entry));
+            }
+            
             grid.appendChild(entryDiv);
         }
         
         vaultDiv.appendChild(grid);
         container.appendChild(vaultDiv);
+    }
+}
+
+function showArchiveDetail(entry) {
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    const closeBtn = document.getElementById('modal-close');
+    
+    if (!overlay || !title || !content) return;
+    
+    title.textContent = entry.title;
+    
+    let html = '';
+    if (entry.content) {
+        html += `<div class="archive-detail-content">${entry.content}</div>`;
+    }
+    if (entry.guardianReactions) {
+        html += '<div class="archive-detail-reactions">';
+        for (const [gid, reaction] of Object.entries(entry.guardianReactions)) {
+            const guardian = getGuardianById(gid);
+            if (guardian) {
+                html += `<div class="archive-reaction"><span class="archive-reaction-avatar">${guardian.avatar}</span> <span class="archive-reaction-name">${guardian.name}：</span>「${reaction}」</div>`;
+            }
+        }
+        html += '</div>';
+    }
+    
+    content.innerHTML = html;
+    overlay.classList.remove('hidden');
+    
+    if (closeBtn) {
+        closeBtn.textContent = '关闭';
+        closeBtn.onclick = () => overlay.classList.add('hidden');
     }
 }
 
@@ -1092,6 +1200,14 @@ function getResourceBreakdown(resourceKey) {
         breakdowns.push({ amount: -decay[resourceKey], source: '自然衰减' });
     }
     
+    // 季节性效果（食物）
+    if (resourceKey === 'food' && typeof getCurrentSeason === 'function') {
+        const season = getCurrentSeason();
+        if (season.foodMod !== 0) {
+            breakdowns.push({ amount: season.foodMod, source: '季节变化' });
+        }
+    }
+    
     // 腐败度额外衰减（作用于能源/介质/环境，不作用于食物）
     if (state.emergencyCorruption > 0 && resourceKey !== 'food') {
         const corruptionPenalty = Math.floor(state.emergencyCorruption / 20) * 0.5;
@@ -1129,21 +1245,6 @@ function getResourceBreakdown(resourceKey) {
                 breakdowns.push({ amount: 3, source: '永久增益' });
             } else if (bonus === 'energy_per_turn_2' && resourceKey === 'energy') {
                 breakdowns.push({ amount: 2, source: '永久增益' });
-            }
-        });
-    }
-    
-    // 项目衰减减免（decayReduction 类型）
-    if (state.completedProjects && resourceKey !== 'food') {
-        state.completedProjects.forEach(pid => {
-            const proj = (typeof getProjectById === 'function') ? getProjectById(pid) : null;
-            if (proj && proj.effect && proj.effect.type === 'decayReduction' && proj.effect.resource === resourceKey) {
-                // 计算减免量（基于当前衰减值）
-                const decay = (typeof getWeeklyDecay === 'function') ? getWeeklyDecay() : null;
-                if (decay && decay[resourceKey]) {
-                    // 不显示实际减免值，因为 tooltip 显示的是分解项
-                    // 衰减减少会在自然衰减项中体现
-                }
             }
         });
     }
@@ -1193,5 +1294,61 @@ function hideTooltip() {
     if (tooltip) {
         tooltip.classList.remove('visible');
     }
+}
+
+// 章节标题数据
+const CHAPTER_DATA = {
+    1: { number: '一', title: '奠基', subtitle: '灾难第9个月 · 圣所初建' },
+    2: { number: '二', title: '调试', subtitle: '灾难第10个月 · 系统调试' },
+    3: { number: '三', title: '运行', subtitle: '灾难第11个月 · 全面运行' },
+    4: { number: '四', title: '裂痕', subtitle: '灾难第12个月 · 首次危机' },
+    5: { number: '五', title: '衰退', subtitle: '灾难第13个月 · 地表恶化' },
+    6: { number: '六', title: '灰绿', subtitle: '灾难第14个月 · 生态崩溃' },
+    7: { number: '七', title: '沉默', subtitle: '灾难第15个月 · 海洋死寂' },
+    8: { number: '八', title: '尘暴', subtitle: '灾难第16个月 · 土壤粉末化' },
+    9: { number: '九', title: '病变', subtitle: '灾难第17个月 · 羽毛病变' },
+    10: { number: '十', title: '暴动', subtitle: '灾难第18个月 · 配给暴动' },
+    11: { number: '十一', title: '瓦解', subtitle: '灾难第19个月 · 共享公约瓦解' },
+    12: { number: '十二', title: '终章', subtitle: '灾难第20个月 · 最终封存' }
+};
+
+function showChapterTitle(chapterNum) {
+    const data = CHAPTER_DATA[chapterNum];
+    if (!data) return;
+    
+    // 章节提示条放在画面顶部
+    const gameContainer = document.getElementById('game-container');
+    if (!gameContainer) return;
+    
+    // 查找或创建章节提示条
+    let banner = document.getElementById('chapter-banner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'chapter-banner';
+        banner.className = 'chapter-banner';
+        // 插入为 game-container 的第一个子元素
+        gameContainer.insertBefore(banner, gameContainer.firstChild);
+    }
+    
+    // 设置内容
+    banner.innerHTML = `
+        <span class="chapter-banner-text">第 ${data.number} 章 · ${data.title}</span>
+        <span class="chapter-banner-sub">${data.subtitle || ''}</span>
+    `;
+    
+    // 重置动画
+    banner.classList.remove('show');
+    void banner.offsetWidth;
+    banner.classList.add('show');
+    
+    // 同时触发 Canvas 衰败效果
+    if (typeof triggerChapterTransitionEffect === 'function') {
+        triggerChapterTransitionEffect();
+    }
+    
+    // 3秒后淡出
+    setTimeout(() => {
+        banner.classList.remove('show');
+    }, 3000);
 }
 

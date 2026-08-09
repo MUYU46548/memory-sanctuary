@@ -2719,6 +2719,148 @@
         "arch_ng_finn_loop_theory",
         "arch_v2_045"
       ]
+    },
+    {
+      "id": "arch_encrypted_001",
+      "title": "加密记录：第七圣所的最后通讯",
+      "vault": 4,
+      "type": "document",
+      "dataCost": 12,
+      "energyCost": 15,
+      "description": "从已毁灭的第七圣所发出的最后通讯记录。",
+      "content": "……他们来了。不是从外面，是从内部。圣所的墙壁在呼吸。我们不是守护者，我们是食物。——第七圣所，最后日志，第47周",
+      "guardianReactions": {
+        "finn": "……第七圣所。他们比我们更早开始。",
+        "misa": "这是警告，还是预言？",
+        "edel": "愿他们的灵魂安息。",
+        "tika": "我不想变成食物。",
+        "lorn": "……有趣。"
+      },
+      "relatedArchives": [
+        "arch_emergency_004",
+        "arch_emergency_005"
+      ],
+      "expiresAfter": 44,
+      "discoveryMethod": "project_unlock",
+      "availableAfter": 36
+    },
+    {
+      "id": "arch_encrypted_002",
+      "title": "加密记录：幸存者的请求",
+      "vault": 4,
+      "type": "document",
+      "dataCost": 15,
+      "energyCost": 18,
+      "description": "地表最后一批幸存者的通讯信号，请求圣所保存他们的故事。",
+      "content": "……这里是地表，第43周。我们还有12人。请保存我们的名字。我们是：艾伦、苏珊、马克、……（后续信号中断）",
+      "guardianReactions": {
+        "finn": "他们直到最后都在记录。",
+        "misa": "他们没有放弃希望。",
+        "edel": "愿星辰指引他们的道路。",
+        "tika": "我会记住他们的名字。",
+        "lorn": "地表应该已经没有活人了。"
+      },
+      "relatedArchives": [
+        "arch_encrypted_001"
+      ],
+      "expiresAfter": 48,
+      "discoveryMethod": "project_unlock",
+      "availableAfter": 36
+    },
+    {
+      "id": "arch_ng_memory_echo",
+      "title": "记忆回响",
+      "vault": 5,
+      "type": "document",
+      "dataCost": 18,
+      "energyCost": 20,
+      "description": "来自上一个周目的记忆碎片，记录着前任守护者的故事。",
+      "content": "\"……我们又回到了起点。圣所依旧，守护者依旧，但我们都已不同。\n\n上一个周目的芬恩说：'时间是一条蛇，咬住了自己的尾巴。'\n\n上一个周目的缇卡说：'但每一圈蛇鳞的排列都不同。'\n\n我们是在重复，还是在进化？\"\n\n——摘自上一周目圣所日志，第47周",
+      "guardianReactions": {
+        "finn": "……我们确实在循环，但每一次都留下了不同的痕迹。",
+        "tika": "上一个我唱过同样的歌，但旋律稍有不同。",
+        "misa": "时间之蛇……我喜欢这个比喻。",
+        "edel": "无论循环多少次，我们的祈祷都是真实的。",
+        "lorn": "数据在迭代中优化。这是工程的美学。"
+      },
+      "relatedArchives": [
+        "arch_ng_final_message",
+        "arch_ng_previous_keeper_log"
+      ],
+      "expiresAfter": 48,
+      "discoveryMethod": "ng_plus_event",
+      "ngPlusExclusive": true,
+      "availableAfter": 1
+    },
+    {
+      "id": "arch_final_001",
+      "title": "「最终封印协议」",
+      "vault": 4,
+      "type": "document",
+      "dataCost": 15,
+      "energyCost": 18,
+      "description": "圣所最终封印的完整协议文档，记录着封印的每一个步骤。",
+      "content": "\"……封印协议第17条：当所有归档完成，守护者需共同吟唱「终焉之歌」，将圣所核心冷却至绝对零度。\n\n封印协议第18条：封印后，进入永久休眠模式，等待后世发现。\n\n封印协议第19条：若圣所永远不被发现，则封印即为永恒。\"\n\n——圣所封印委员会",
+      "guardianReactions": {
+        "tika": "终焉之歌……我会用生命去唱。",
+        "finn": "历史会记住这一刻。",
+        "misha": "圣所会沉睡，但生命会继续。",
+        "ethel": "愿我们的祈祷穿越时间。",
+        "lorn": "协议已确认。准备执行。"
+      },
+      "relatedArchives": [
+        "arch_final_002",
+        "arch_final_003"
+      ],
+      "expiresAfter": 48,
+      "discoveryMethod": "project_final_seal"
+    },
+    {
+      "id": "arch_final_002",
+      "title": "「守护者誓言」",
+      "vault": 5,
+      "type": "document",
+      "dataCost": 12,
+      "energyCost": 15,
+      "description": "五位守护者在封印前的最后誓言。",
+      "content": "\"……我们守护的不仅是文明，更是希望。\n\n我们铭记的不仅是历史，更是未来。\n\n我们封印的不仅是圣所，更是时间的礼物。\n\n愿后世打开圣所之日，能听到我们的歌声。\"\n\n——缇卡、芬恩、米莎、洛恩、埃塞尔，第47周",
+      "guardianReactions": {
+        "tika": "这是我听过的最美的誓言。",
+        "finn": "（眼含热泪）我们会记住这一刻。",
+        "misha": "我们是一个整体。永远。",
+        "ethel": "这是我们的荣耀。",
+        "lorn": "誓言已记录。永恒保存。"
+      },
+      "relatedArchives": [
+        "arch_final_001",
+        "arch_final_003"
+      ],
+      "expiresAfter": 48,
+      "discoveryMethod": "project_final_seal"
+    },
+    {
+      "id": "arch_final_003",
+      "title": "「给下一个轮回的信」",
+      "vault": 5,
+      "type": "letter",
+      "dataCost": 18,
+      "energyCost": 20,
+      "description": "上一周目守护者写给下一轮回的信。",
+      "content": "\"……亲爱的下一轮回的你们：\n\n当你们读到这封信时，我们已经完成了封印。\n\n不要悲伤。每一次封印都是新的开始。\n\n你们会面临同样的困难，同样的抉择。但你们也会有我们不曾拥有的——我们的记忆。\n\n利用它们。超越我们。\n\n我们曾存在，我们曾相爱，我们曾一起仰望星辰。\n\n现在，轮到你们了。\"\n\n——上一周目守护者，于最终封印前夜",
+      "guardianReactions": {
+        "tika": "……我们确实在循环，但每一次都留下了不同的痕迹。",
+        "finn": "时间是一条蛇，咬住了自己的尾巴。",
+        "misha": "但每一圈蛇鳞的排列都不同。",
+        "ethel": "无论循环多少次，我们的祈祷都是真实的。",
+        "lorn": "数据在迭代中优化。这是工程的美学。"
+      },
+      "relatedArchives": [
+        "arch_final_001",
+        "arch_final_002"
+      ],
+      "expiresAfter": 48,
+      "discoveryMethod": "project_final_seal",
+      "ngPlusExclusive": true
     }
   ]
 }

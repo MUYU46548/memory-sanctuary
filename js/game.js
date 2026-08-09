@@ -40,16 +40,6 @@ function hasResources(energy, media, food) {
     return state.resources.energy >= energy * energyMultiplier && state.resources.media >= media;
 }
 
-function getResourceStatus() {
-    const state = MemorySanctuary.state;
-    return {
-        energy: state.resources.energy,
-        media: state.resources.media,
-        environment: state.resources.environment,
-        food: state.resources.food
-    };
-}
-
 function adjustResource(resource, amount) {
     const state = MemorySanctuary.state;
     if (!state) return;
@@ -182,8 +172,31 @@ function archiveEntry(archiveId) {
     // 归档后可能触发事件
     if (typeof checkRandomEvent === 'function') checkRandomEvent();
     
+    // 归档成功士气奖励
+    applyArchiveMoraleBonus(entry);
+    
     renderAll();
     return true;
+}
+
+// ==========================================
+// 归档士气奖励
+// ============================================================
+function applyArchiveMoraleBonus(entry) {
+    const state = MemorySanctuary.state;
+    if (!state.guardianMoods) return;
+    
+    // 基础归档奖励：所有守护者 +0.5
+    const baseGain = 0.5;
+    Object.keys(state.guardianMoods).forEach(gid => {
+        state.guardianMoods[gid] = Math.min(10, (state.guardianMoods[gid] || 0) + baseGain);
+    });
+    
+    // 如果条目关联特定守护者，该守护者额外 +1
+    const guardianId = Object.keys(entry.guardianReactions || {})[0];
+    if (guardianId && state.guardianMoods[guardianId] !== undefined) {
+        state.guardianMoods[guardianId] = Math.min(10, state.guardianMoods[guardianId] + 1);
+    }
 }
 
 // ==========================================
@@ -198,8 +211,15 @@ function advanceTime(weeks) {
     }
     if (weeks <= 0) return; // 已经到达上限，不再推进
     
+    const previousChapter = MemorySanctuary.state.chapter;
     MemorySanctuary.state.week += weeks;
     MemorySanctuary.state.chapter = Math.ceil(MemorySanctuary.state.week / 4);
+    
+    // 章节过渡动画
+    if (previousChapter !== MemorySanctuary.state.chapter && typeof showChapterTitle === 'function') {
+        showChapterTitle(MemorySanctuary.state.chapter);
+    }
+    
     onTimeAdvanced(weeks);
 }
 
@@ -233,10 +253,17 @@ function onTimeAdvanced(weeks) {
     // 应用持续效果（如：每回合额外能源）
     applySustainedBonuses();
     
-    // 腐败度系统：自然衰减 -2/周
+    // 士气持续压力（资源/环境影响心情）
+    applyMoralePressure();
     if (state.emergencyCorruption > 0) {
         state.emergencyCorruption = Math.max(0, state.emergencyCorruption - 2);
     }
+    
+    // 季节影响食物产出（每12周一个季节循环）
+    if (typeof applySeasonalEffects === 'function') applySeasonalEffects();
+    
+    // 食物充裕/枯竭奖惩
+    if (typeof checkFoodAbundancePenalty === 'function') checkFoodAbundancePenalty();
     
     // 腐败度惩罚：每20点，所有资源额外 -0.5/周（食物受影响但减半）
     if (state.emergencyCorruption > 0) {
@@ -323,16 +350,21 @@ function applySustainedBonuses() {
     const state = MemorySanctuary.state;
     if (!state.unlockedBonuses) return;
     
+    // 士气效率修正
+    const moraleModifier = getMoraleEfficiencyBonus();
+    
     // 应用持续效果
     state.unlockedBonuses.forEach(bonus => {
         if (bonus === 'energy_per_turn_3') {
+            const gain = Math.round(3 * moraleModifier * 10) / 10; // 保留一位小数
             const before = state.resources.energy;
-            state.resources.energy = Math.min(150, state.resources.energy + 3);
+            state.resources.energy = Math.min(150, state.resources.energy + gain);
             const actualGain = state.resources.energy - before;
             state.resourceChanges.energy = (state.resourceChanges.energy || 0) + actualGain;
         } else if (bonus === 'energy_per_turn_2') {
+            const gain = Math.round(2 * moraleModifier * 10) / 10;
             const before = state.resources.energy;
-            state.resources.energy = Math.min(150, state.resources.energy + 2);
+            state.resources.energy = Math.min(150, state.resources.energy + gain);
             const actualGain = state.resources.energy - before;
             state.resourceChanges.energy = (state.resourceChanges.energy || 0) + actualGain;
         }
@@ -365,6 +397,47 @@ function processOngoingEffects() {
         }
     }
     state.ongoingEffects = stillActive;
+}
+
+// ============================================================
+// 士气持续压力系统（资源/环境/时间 → 心情）
+// ============================================================
+function applyMoralePressure() {
+    const state = MemorySanctuary.state;
+    if (!state.guardianMoods) return;
+    
+    // 初始化每位守护者的心情（仅首次）
+    Object.keys(state.guardianMoods).forEach(gid => {
+        if (typeof state.guardianMoods[gid] !== 'number') {
+            state.guardianMoods[gid] = 0;
+        }
+    });
+    
+    const food = state.resources.food;
+    const energy = state.resources.energy;
+    const environment = state.resources.environment;
+    const weights = getFoodMoodWeight();
+    
+    // 计算资源紧张度 (0..1)
+    const foodTension = Math.max(0, (30 - food) / 30);      // 食物<30开始紧张
+    const energyTension = Math.max(0, (30 - energy) / 30);
+    const envTension = Math.max(0, (50 - environment) / 50);
+    
+    // 时间压力：越到后期越紧张 (week 1..48 → 0..0.3)
+    const timeTension = Math.min(0.3, (state.week / 48) * 0.3);
+    
+    // 综合压力 = max(资源紧张) + 时间压力（封顶 1.0）
+    const totalPressure = Math.min(1.0, Math.max(foodTension, energyTension, envTension) + timeTension);
+    
+    // 压力转化为心情下降（每回合 -0.2 ~ -1.0）
+    const pressureDelta = -Math.round(totalPressure * 10) / 10; // 0.1步长
+    
+    Object.keys(state.guardianMoods).forEach(gid => {
+        const weight = weights[gid] || 1;
+        const before = state.guardianMoods[gid];
+        const delta = pressureDelta * weight;
+        state.guardianMoods[gid] = Math.max(-10, Math.min(10, before + delta));
+    });
 }
 
 // ==========================================
@@ -441,11 +514,17 @@ function getWeeklyDecay() {
         multiplier = 2; // 已衰竭两种资源，剩余资源加速衰减
     }
     
+    // 士气效率修正：高士气减少衰减，低士气增加衰减
+    // bonus: 1.15(excellent) … 0.85(critical)
+    // 衰减修正公式: decay * (2 - bonus)，使 1.15→0.85（减衰减），0.85→1.15（加衰减）
+    const moraleBonus = getMoraleEfficiencyBonus();
+    const decayModifier = 2 - moraleBonus;
+    
     // 基础衰减值
-    let energyDecay = 1.0 * multiplier;
-    let mediaDecay = 0.5 * multiplier;
-    let environmentDecay = 0.5 * multiplier;
-    const foodDecay = 0.3 * multiplier;
+    let energyDecay = 1.0 * multiplier * decayModifier;
+    let mediaDecay = 0.5 * multiplier * decayModifier;
+    let environmentDecay = 0.5 * multiplier * decayModifier;
+    const foodDecay = 0.3 * multiplier * decayModifier;
     
     // 应用项目衰减减免（decayReduction 类型）
     if (state.completedProjects) {
@@ -512,6 +591,16 @@ function checkSanctuaryDeterioration() {
         det.environment = false;
         addLog('环境控制系统恢复，条目保存条件改善。', 'system');
     }
+    
+    // 资源危急警告（任一资源低于10）
+    const critical = res.energy < 10 || res.media < 10 || res.environment < 10 || res.food < 10;
+    const wasCritical = state.resourceCritical || false;
+    if (critical && !wasCritical) {
+        state.resourceCritical = true;
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playHeartbeatAlert();
+    } else if (!critical && wasCritical) {
+        state.resourceCritical = false;
+    }
 }
 
 // ==========================================
@@ -563,18 +652,19 @@ function checkStuckState() {
         else if (lowMedia) reason = '介质已耗尽';
         else reason = '资源不足以归档任何条目';
         
+        const canSeal = canSealSanctuary();
         banner.innerHTML = `
             <span>⚠️ ${reason}。</span>
-            <span>可选择<a href="#" id="stuck-skip">跳过回合</a>恢复资源，或<a href="#" id="stuck-seal">封印圣所</a>结束游戏。</span>
+            <span>可选择<a href="#" id="stuck-skip">跳过回合</a>恢复资源${canSeal ? '，或<a href="#" id="stuck-seal">封印圣所</a>结束游戏' : ''}。</span>
         `;
         banner.className = 'stuck-banner warning';
         
         // Bind events immediately (DOM is already updated via innerHTML)
         const skipLink = document.getElementById('stuck-skip');
-        const sealLink = document.getElementById('stuck-seal');
         if (skipLink) {
             skipLink.onclick = (e) => { e.preventDefault(); skipTurn(true); };
         }
+        const sealLink = document.getElementById('stuck-seal');
         if (sealLink) {
             sealLink.onclick = (e) => { e.preventDefault(); if (canSealSanctuary()) sealSanctuary(); };
         }
@@ -627,13 +717,32 @@ function checkFailureCondition() {
 function checkStarvation() {
     const state = MemorySanctuary.state;
     if (state.resources.food <= 0) {
-        // 食物耗尽时：守护者每回合心情 -2
+        // 连续饥饿周计数
+        state.starvationWeeks = (state.starvationWeeks || 0) + 1;
+        
+        // 食物耗尽时：守护者每回合心情下降（性格加权）
         if (!state.starvationLogged) {
-            addLog('食物耗尽...守护者士气低沉。', 'warning');
+            addLog('⚠️ 食物耗尽...守护者士气低沉。', 'warning');
             state.starvationLogged = true;
         }
+        
+        // 饥饿警告：第1周轻度，第2周中度，第3周严重
+        if (state.starvationWeeks === 1) {
+            addLog('🍂 食物储备为零。守护者们开始节食。', 'warning');
+        } else if (state.starvationWeeks === 2) {
+            addLog('🍂 连续两周饥饿。守护者身体虚弱，效率下降。', 'warning');
+        } else if (state.starvationWeeks >= 3) {
+            // 连续3周饥饿 → 圣所崩溃
+            addLog('💀 长期饥饿导致圣所系统崩溃！', 'warning');
+            triggerGameOver('starvation');
+            return;
+        }
+        
+        const foodWeight = getFoodMoodWeight();
         Object.keys(state.guardianMoods || {}).forEach(gid => {
-            state.guardianMoods[gid] = (state.guardianMoods[gid] || 0) - 2;
+            const weight = foodWeight[gid] || 1;
+            const penalty = state.starvationWeeks >= 2 ? 3 * weight : 2 * weight;
+            state.guardianMoods[gid] = (state.guardianMoods[gid] || 0) - penalty;
         });
         // 食物归零额外惩罚：勘探成功率下降（通过 fatigue 模拟）
         if (state.exploration && state.exploration.fatigue) {
@@ -642,7 +751,97 @@ function checkStarvation() {
             });
         }
     } else {
+        if (state.starvationLogged) {
+            addLog('🍖 食物恢复，守护者松了一口气。', 'success');
+        }
         state.starvationLogged = false;
+        state.starvationWeeks = 0;
+        state.weeksWithoutStarvation = (state.weeksWithoutStarvation || 0) + 1;
+    }
+}
+
+// 食物-心情权重（性格差异化反应）
+function getFoodMoodWeight() {
+    return {
+        'misha': 1.5,   // 生态学家：对食物短缺最敏感
+        'tika': 1.3,    // 歌者：情绪化，容易焦虑
+        'finn': 1.0,    // 历史学者：中等
+        'ethel': 0.8,   // 祭司：能忍耐
+        'lorn': 0.7     // 工程师：理性，不太受影响
+    };
+}
+
+// ============================================================
+// 季节系统
+// ============================================================
+
+const SEASONS = [
+    { name: '初春', foodMod: 0, desc: '新绿初现，圣所外微光闪烁。' },
+    { name: '盛夏', foodMod: 1, desc: '炎热干燥，储备消耗加快。' },
+    { name: '深秋', foodMod: -1, desc: '万物凋零，食物愈发珍贵。' },
+    { name: '严冬', foodMod: -2, desc: '冰封大地，圣所陷入死寂。' }
+];
+
+function getCurrentSeason() {
+    const state = MemorySanctuary.state;
+    if (!state.season) state.season = { index: 0, weekEntered: 1 };
+    
+    const weeksPassed = state.week - state.season.weekEntered;
+    if (weeksPassed >= 12) {
+        state.season.index = (state.season.index + 1) % 4;
+        state.season.weekEntered = state.week;
+    }
+    return SEASONS[state.season.index];
+}
+
+function applySeasonalEffects() {
+    const state = MemorySanctuary.state;
+    const season = getCurrentSeason();
+    
+    if (season.foodMod !== 0) {
+        const change = season.foodMod;
+        state.resources.food = Math.max(0, Math.min(80, state.resources.food + change));
+        state.resourceChanges.food = (state.resourceChanges.food || 0) + change;
+        
+        // 季节变化时记录日志
+        if (state.week === state.season.weekEntered) {
+            const icon = change > 0 ? '🌱' : '🍂';
+            addLog(`${icon} ${season.name}降临。${season.desc}`, 'system');
+        }
+    }
+}
+
+function checkFoodAbundancePenalty() {
+    const state = MemorySanctuary.state;
+    const food = state.resources.food;
+    const cap = 80;
+    const ratio = food / cap;
+    const weights = getFoodMoodWeight();
+    
+    // 食物充裕（>80%）：守护者心情+1（性格加权）
+    if (ratio >= 0.8 && !state.foodBonusLogged) {
+        addLog('🍖 食物充裕，守护者感到欣慰。', 'success');
+        state.foodBonusLogged = true;
+        Object.keys(state.guardianMoods || {}).forEach(gid => {
+            const weight = weights[gid] || 1;
+            state.guardianMoods[gid] = Math.min(10, (state.guardianMoods[gid] || 0) + 1 * weight);
+        });
+    }
+    // 食物中等：清除状态
+    else if (ratio >= 0.4 && ratio < 0.8) {
+        state.foodBonusLogged = false;
+    }
+    
+    // 食物危机（<20%）：守护者心情-1（性格加权）
+    if (ratio < 0.2 && !state.foodCrisisLogged) {
+        addLog('⚠️ 食物储备告急！守护者开始焦虑。', 'warning');
+        state.foodCrisisLogged = true;
+        Object.keys(state.guardianMoods || {}).forEach(gid => {
+            const weight = weights[gid] || 1;
+            state.guardianMoods[gid] = (state.guardianMoods[gid] || 0) - 1 * weight;
+        });
+    } else if (ratio >= 0.2) {
+        state.foodCrisisLogged = false;
     }
 }
 
@@ -682,7 +881,13 @@ function triggerGameOver(reason) {
     contentText += `• 文明完整度：${Math.round((archivedCount / totalCount) * 100)}%\n`;
 
     // ─── 崩溃结局：走 VN 演出 ───
-    if (reason === 'collapse') {
+    if (reason === 'collapse' || reason === 'starvation') {
+        // 饥饿崩溃使用特殊结局描述
+        if (reason === 'starvation') {
+            titleText = '🍂 饥荒降临';
+            contentText = '连续三周的饥饿摧毁了圣所。\n\n守护者们一个接一个倒下，圣所的核心停止了运转。没有食物，没有希望。\n\n后世永远不会知道萨拉达斯曾存在过——因为没有人活下来讲述这个故事。\n\n「饥饿是最古老的死刑。」';
+        }
+        
         // 检查是否有可触发的结局
         const ending = (typeof checkHiddenEndings === 'function') ? checkHiddenEndings() : null;
         const endingSceneId = ending ? ending.id : 'silent_sanctuary';
@@ -726,12 +931,7 @@ function triggerGameOver(reason) {
         return;
     }
 
-    // ─── 时间耗尽结局：直接跳转到结算页面 ───
-    if (reason === 'timeup') {
-        sealSanctuary();
-        return;
-    }
-
+    // ─── 其他崩溃：直接显示 modal ───
     title.textContent = titleText;
     content.innerHTML = contentText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
     overlay.classList.remove('hidden');
@@ -1098,6 +1298,7 @@ function skipTurn(forceFromStuck = false) {
     state.resources.energy = Math.min(150, state.resources.energy + 18);
     state.resources.media = Math.min(150, state.resources.media + 12);
     state.resources.environment = Math.min(100, state.resources.environment + 8);
+    state.turnsSkipped = (state.turnsSkipped || 0) + 1;
     
     addLog('维护完成：能源+18，介质+12，环境+8。', 'success');
     
@@ -1108,7 +1309,8 @@ function skipTurn(forceFromStuck = false) {
     if (typeof checkRandomEvent === 'function') checkRandomEvent();
     
     // 守护者可能对此有反应
-    const guardians = MemorySanctuary.data.guardians;
+    const guardians = getAvailableGuardians();
+    if (guardians.length === 0) return;
     const randomGuardian = guardians[Math.floor(Math.random() * guardians.length)];
     const skipDialogues = [
         '短暂的休憩……也许这是明智的。',
@@ -1197,6 +1399,19 @@ function getGuardianById(id) {
 function getGuardianName(id) {
     const g = getGuardianById(id);
     return g ? g.name : id;
+}
+
+// 获取可用的守护者列表（排除已离队的）
+function getAvailableGuardians() {
+    const all = MemorySanctuary.data.guardians;
+    const departed = MemorySanctuary.state.departedGuardians || [];
+    return all.filter(g => !departed.includes(g.id));
+}
+
+// 获取有对话的可用守护者列表（排除已离队的）
+function getAvailableGuardiansWithDialogue(type) {
+    const available = getAvailableGuardians();
+    return available.filter(g => g.dialogues && g.dialogues[type]);
 }
 
 function showGuardianDialogue(guardianId, type) {
@@ -1312,11 +1527,6 @@ function getMoodDialogue(guardianId) {
     return guardian.moodDialogues[tier] || guardian.dialogues.idle || ['……'];
 }
 
-function getMoodColorClass(guardianId) {
-    const tier = getMoodTier(guardianId);
-    return 'mood-' + tier;
-}
-
 function adjustGuardianMood(guardianId, delta) {
     if (!MemorySanctuary.state.guardianMoods) {
         MemorySanctuary.state.guardianMoods = {};
@@ -1403,6 +1613,15 @@ function initGuardianInteraction() {
             menu.classList.add('hidden');
         });
     }
+    
+    // 分发补给品按钮
+    const boostBtn = document.getElementById('guardian-boost');
+    if (boostBtn) {
+        boostBtn.addEventListener('click', () => {
+            guardianBoostSupply();
+            menu.classList.add('hidden');
+        });
+    }
 }
 
 function getCurrentGuardianId() {
@@ -1412,6 +1631,41 @@ function getCurrentGuardianId() {
     const name = nameEl.textContent;
     const guardian = MemorySanctuary.data.guardians.find(g => g.name === name);
     return guardian ? guardian.id : 'tika';
+}
+
+function guardianBoostSupply() {
+    const state = MemorySanctuary.state;
+    const foodCost = 8;
+    if (state.resources.food < foodCost) {
+        addLog(`食物不足 ${foodCost}，无法分发补给品。`, 'system');
+        return;
+    }
+    
+    state.resources.food -= foodCost;
+    state.resourceChanges.food = (state.resourceChanges.food || 0) - foodCost;
+    
+    // 所有守护者心情 +2（封顶10），性格权重影响
+    const weights = getFoodMoodWeight();
+    Object.keys(state.guardianMoods || {}).forEach(gid => {
+        const weight = weights[gid] || 1;
+        const gain = Math.round(2 * weight * 10) / 10;
+        state.guardianMoods[gid] = Math.min(10, (state.guardianMoods[gid] || 0) + gain);
+    });
+    
+    addLog(`🎁 分发补给品：所有守护者心情提升（-${foodCost}食物）`, 'success');
+    
+    // 守护者反应
+    const guardianId = getCurrentGuardianId();
+    const reactions = [
+        '谢谢你。我感觉好多了。',
+        '这是……给我的吗？',
+        '食物虽然不多，但你的心意让这一切都值得。',
+        '我们还有希望。',
+        '在这黑暗里，还有人关心我们。谢谢。'
+    ];
+    addLog(`${getGuardianName(guardianId)}：「${reactions[Math.floor(Math.random() * reactions.length)]}」`, 'guardian');
+    
+    if (typeof renderAll === 'function') renderAll();
 }
 
 function guardianRecommendArchive() {
@@ -1766,6 +2020,15 @@ function checkRandomEvent() {
             if (ngData.playthroughCount < e.trigger.playthroughMin) return false;
         }
         
+        // Mood tier filtering for guardian-specific events
+        if (e.trigger.moodTier) {
+            const guardianId = e.guardianId || e.trigger.guardianId;
+            if (guardianId) {
+                const tier = getMoodTier(guardianId);
+                if (tier !== e.trigger.moodTier) return false;
+            }
+        }
+        
         return week >= e.trigger.weekMin && week <= e.trigger.weekMax;
     });
     
@@ -1945,6 +2208,27 @@ function resolveEvent(choiceIndex) {
         }
     }
     
+    // Handle guardian departure
+    if (choice.effect.guardianDeparture) {
+        const gid = choice.effect.guardianDeparture;
+        if (!MemorySanctuary.state.departedGuardians.includes(gid)) {
+            MemorySanctuary.state.departedGuardians.push(gid);
+        }
+        const guardian = getGuardianById(gid);
+        const name = guardian ? guardian.name : gid;
+        addLog(`💫 ${name} 暂时离开了圣所。`, 'warning');
+    }
+
+    // Handle guardian sacrifice
+    if (choice.effect.guardianSacrifice) {
+        MemorySanctuary.state.guardianSacrifice = true;
+        MemorySanctuary.state.sacrificedGuardian = choice.effect.guardianSacrifice;
+        if (!MemorySanctuary.state.departedGuardians.includes(choice.effect.guardianSacrifice)) {
+            MemorySanctuary.state.departedGuardians.push(choice.effect.guardianSacrifice);
+        }
+        addLog(`💫 ${choice.effect.guardianSacrifice} 选择了牺牲。`, 'warning');
+    }
+    
     // Handle triggerEnding feedback (for true ending)
     if (choice.feedback && choice.feedback.triggerEnding) {
         MemorySanctuary.state.pendingEnding = choice.feedback.triggerEnding;
@@ -1960,7 +2244,7 @@ function resolveEvent(choiceIndex) {
     MemorySanctuary.activeEvent = null;
     
     // Random guardian response
-    const guardiansWithDialogue = MemorySanctuary.data.guardians.filter(g => g.dialogues.event);
+    const guardiansWithDialogue = getAvailableGuardiansWithDialogue('event');
     if (guardiansWithDialogue.length > 0) {
         const randomGuardian = guardiansWithDialogue[Math.floor(Math.random() * guardiansWithDialogue.length)];
         showGuardianDialogue(randomGuardian.id, 'event');
@@ -1980,6 +2264,7 @@ let logPanelOpen = false;
 function initLogSystem() {
     const toggle = document.getElementById('log-toggle');
     const closeBtn = document.getElementById('log-close');
+    const copyBtn = document.getElementById('log-copy');
     const panel = document.getElementById('log-panel');
 
     if (toggle) {
@@ -2000,6 +2285,37 @@ function initLogSystem() {
         closeBtn.addEventListener('click', () => {
             panel.classList.add('hidden');
             logPanelOpen = false;
+        });
+    }
+    
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            const logContent = document.getElementById('log-content');
+            if (!logContent) return;
+            
+            const entries = logContent.querySelectorAll('.log-entry');
+            const text = Array.from(entries).map(e => e.textContent).join('\n');
+            
+            navigator.clipboard.writeText(text).then(() => {
+                copyBtn.textContent = '✓ 已复制';
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 复制';
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                copyBtn.textContent = '✓ 已复制';
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 复制';
+                }, 2000);
+            });
         });
     }
 }
@@ -2217,13 +2533,10 @@ function initFuncBar() {
     const aboutBtn = document.getElementById('about-btn');
     const exploreBtn = document.getElementById('explore-btn');
 
-    // 帮助按钮：重新播放新手引导
+    // 帮助按钮：显示帮助弹窗
     if (helpBtn) {
         helpBtn.addEventListener('click', () => {
-            localStorage.removeItem('memory-sanctuary-tutorial');
-            tutorialActive = true;
-            tutorialStep = 0;
-            showTutorialStep();
+            showHelpModal();
         });
     }
 
@@ -2863,8 +3176,8 @@ const EMERGENCY_PROTOCOLS = [
         extraEffect: (state) => {
             const guardians = MemorySanctuary.data.guardians;
             guardians.forEach(g => {
-                if (state.exploration.fatigue && state.exploration.fatigue[g.id]) {
-                    state.exploration.fatigue[g.id] += 2;
+                if (state.exploration.fatigue) {
+                    state.exploration.fatigue[g.id] = (state.exploration.fatigue[g.id] || 0) + 2;
                 }
             });
         }
@@ -2881,6 +3194,7 @@ const EMERGENCY_PROTOCOLS = [
         available: (state) => true,
         execute: (state) => {
             state.emergencyArchiveActive = true;
+            state.emergencyArchiveUsed = (state.emergencyArchiveUsed || 0) + 1;
         }
     }
 ];
@@ -3044,7 +3358,8 @@ function activateEmergencyProtocol(protocol) {
     
     // 守护者反应（50% 概率）
     if (Math.random() < 0.5) {
-        const guardians = MemorySanctuary.data.guardians;
+        const guardians = getAvailableGuardians();
+        if (guardians.length === 0) return;
         const guardian = guardians[Math.floor(Math.random() * guardians.length)];
         const reaction = EMERGENCY_GUARDIAN_REACTIONS[Math.floor(Math.random() * EMERGENCY_GUARDIAN_REACTIONS.length)];
         addLog(`${guardian.name}：「${reaction}」`, 'guardian');
@@ -3071,7 +3386,7 @@ function showAboutModal() {
 
     let aboutContent = '记忆圣所 (Nar-Sil-Veth)\n';
     aboutContent += '终来之刻，何物当存？\n\n';
-    aboutContent += '版本：MVP v1.0\n';
+    aboutContent += `版本：v${GAME_VERSION}\n`;
     aboutContent += '技术：HTML5 + CSS3 + Canvas 2D + Vanilla JavaScript\n\n';
     aboutContent += '— 绒花计划 系列IP —\n\n';
     aboutContent += '守护者：\n';
@@ -3080,11 +3395,58 @@ function showAboutModal() {
     aboutContent += '  米莎 · 生态学家\n';
     aboutContent += '  洛恩 · 前航天工程师\n';
     aboutContent += '  埃塞尔 · 前祭司\n\n';
+    aboutContent += '━━━━━━━━━━━━━━━━━━\n';
+    aboutContent += `当前存档：第 ${MemorySanctuary.state ? MemorySanctuary.state.week : '--'} 周\n`;
+    aboutContent += `已归档：${MemorySanctuary.state ? MemorySanctuary.state.completedArchives.length : '--'} 条\n`;
+    aboutContent += '━━━━━━━━━━━━━━━━━━\n\n';
     aboutContent += '「我们曾存在，我们曾仰望，我们曾渴望触碰你们。」';
 
     content.textContent = aboutContent;
     overlay.classList.remove('hidden');
 
+    if (closeBtn) closeBtn.onclick = () => overlay.classList.add('hidden');
+}
+
+// ==========================================
+// 帮助弹窗
+// ============================================================
+function showHelpModal() {
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    const closeBtn = document.getElementById('modal-close');
+    
+    if (!overlay || !title || !content) return;
+    
+    title.textContent = '游戏帮助';
+    
+    let helpContent = '欢迎来到「记忆圣所」。\n\n';
+    helpContent += '【游戏目标】\n';
+    helpContent += '在有限的 48 周内，尽可能多地归档文明碎片，为后世保存萨拉达斯文明的记忆。\n\n';
+    helpContent += '【核心操作】\n';
+    helpContent += '• 选择存储室 → 查看可归档条目 → 点击「录入归档」\n';
+    helpContent += '• 归档消耗能源与存储介质，同时推进时间\n\n';
+    helpContent += '【资源管理】\n';
+    helpContent += '• 能源：归档的基础消耗，归零后归档能耗加倍\n';
+    helpContent += '• 存储介质：归档必需品，归零后无法录入新条目\n';
+    helpContent += '• 环境稳定：影响条目保存条件，归零后条目过期速度翻倍\n';
+    helpContent += '• 食物：维持守护者士气，影响资源衰减效率\n\n';
+    helpContent += '【进阶系统】\n';
+    helpContent += '• 封印圣所（16 周起可预览，20 周后可触发）\n';
+    helpContent += '• 多周目奖励：继承奖励随周目递增\n';
+    helpContent += '• 圣所项目：投入资源换取持续增益\n';
+    helpContent += '• 地表勘探：派出守护者获取资源\n';
+    helpContent += '• 应急协议：危急时使用非常规手段\n\n';
+    helpContent += '【士气系统】\n';
+    helpContent += '• 守护者士气会影响资源衰减效率\n';
+    helpContent += '• 资源越紧张、时间越靠后，士气压力越大\n';
+    helpContent += '• 归档成功可提升士气\n';
+    helpContent += '• 通过守护者菜单分发补给品可鼓舞士气\n\n';
+    helpContent += '「——终来之刻，何物当存？」';
+    
+    content.textContent = helpContent;
+    overlay.classList.remove('hidden');
+    
     if (closeBtn) closeBtn.onclick = () => overlay.classList.add('hidden');
 }
 
@@ -3450,6 +3812,17 @@ function checkAchievements(context) {
                 if (unlockedCount >= c.value) earned = true;
                 break;
             }
+            case 'custom': {
+                // 丰衣足食：连续30周食物>0
+                if (c.value === 'never_starve_30' && state.weeksWithoutStarvation >= 30) earned = true;
+                // 循环大师：所有循环项目各完成至少一次
+                if (c.value === 'all_repeatable_projects') {
+                    const repeatableIds = MemorySanctuary.data.projects.filter(p => p.repeatable).map(p => p.id);
+                    const completedSet = new Set(state.completedProjects);
+                    if (repeatableIds.length > 0 && repeatableIds.every(id => completedSet.has(id))) earned = true;
+                }
+                break;
+            }
         }
         
         if (earned) unlockAchievement(ach.id);
@@ -3489,8 +3862,17 @@ function checkSealAchievements(endingId, week) {
         }
     }
     
-    if (week <= 12) unlockAchievement('seal_early');
-    if (week >= 40) unlockAchievement('seal_late');
+    // 速战速决：22周或更早封印（鼓励尽早行动）
+    if (week <= 22) unlockAchievement('seal_early');
+    // 坚守到底：坚持到48周封印（最终周上限）
+    if (week >= 48) unlockAchievement('seal_late');
+    
+    // 争分夺秒：不跳过任何回合
+    const state = MemorySanctuary.state;
+    if (state && state.turnsSkipped === 0) unlockAchievement('no_skip');
+    
+    // 从容不迫：不使用应急协议
+    if (state && state.emergencyArchiveUsed === 0) unlockAchievement('no_emergency');
     
     // Check all guardian finales
     const ngData = getNGPlusData();
@@ -3538,6 +3920,19 @@ function startNewGame(slot, isNGPlus) {
         addLog(`第 ${ngData.playthroughCount} 周目开始。继承奖励已应用。`, 'system');
     } else {
         addLog('新游戏开始。愿你的选择得到善待。', 'system');
+        
+        // 首次游玩自动弹出帮助
+        const hasSeenTutorial = localStorage.getItem('memory-sanctuary-tutorial');
+        if (!hasSeenTutorial) {
+            localStorage.setItem('memory-sanctuary-tutorial', 'seen');
+            // 延迟一帧后再弹窗，让玩家先看到游戏画面
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    if (typeof showHelpModal === 'function') showHelpModal();
+                    addLog('点击底部「帮助」可随时查看操作指南。', 'system');
+                }, 300);
+            });
+        }
     }
 }
 
@@ -3780,9 +4175,33 @@ function checkChapterCompletion() {
     }
 }
 
-// ==========================================
-// 文明图谱系统
-// ==========================================
+// ============================================================
+// 士气系统（守护者心情联动）
+// ============================================================
+
+// 获取整体士气平均值
+function getAverageMood() {
+    const state = MemorySanctuary.state;
+    const moods = state.guardianMoods || {};
+    const values = Object.values(moods);
+    if (values.length === 0) return 0;
+    return values.reduce((a, b) => a + b, 0) / values.length;
+}
+
+// 获取士气等级描述
+function getMoraleLevel() {
+    const avg = getAverageMood();
+    if (avg >= 6) return { level: 'excellent', label: '高昂', bonus: 1.15 };
+    if (avg >= 3) return { level: 'good', label: '良好', bonus: 1.05 };
+    if (avg >= 0) return { level: 'normal', label: '平稳', bonus: 1.0 };
+    if (avg >= -3) return { level: 'low', label: '低落', bonus: 0.95 }
+    return { level: 'critical', label: '崩溃', bonus: 0.85 };
+}
+
+// 士气对资源效率的影响
+function getMoraleEfficiencyBonus() {
+    return getMoraleLevel().bonus;
+}
 
 function initCivilizationAtlas() {
     const atlasBtn = document.getElementById('atlas-btn');
@@ -4087,6 +4506,22 @@ function checkEndingCondition(condition) {
             return a && !a.ngPlusExclusive;
         }).length === 0 && MemorySanctuary.state.week >= (condition.weekMin || 10);
     }
+    // 完美封印：所有守护者亲密 + 45%收集
+    if (condition.allGuardiansIntimate && condition.minVaultCompletion) {
+        const allIntimate = ['tika', 'finn', 'misha', 'lorn', 'ethel'].every(gid => getMoodTier(gid) === 'intimate');
+        if (!allIntimate) return false;
+        const vaults = MemorySanctuary.data.vaults;
+        return vaults.every(v => getVaultCompletion(v.id).ratio >= condition.minVaultCompletion);
+    }
+    // 牺牲结局：任意守护者选择牺牲
+    if (condition.anyGuardianSacrifice) {
+        return MemorySanctuary.state.guardianSacrifice === true;
+    }
+    // 遗忘结局：无成就 + 第48周
+    if (condition.noAchievementsUnlocked) {
+        const achievements = getUnlockedAchievements();
+        return achievements.length === 0 && MemorySanctuary.state.week >= (condition.weekMin || 48);
+    }
     return false;
 }
 
@@ -4150,6 +4585,20 @@ function checkHiddenEndings() {
         return { ...guardianEndings[0], priority: 90 };
     }
 
+    // Check sacrifice ending (priority 95)
+    if (MemorySanctuary.state.guardianSacrifice && MemorySanctuary.state.week >= 40) {
+        const ending = (data.endings || []).find(e => e.id === 'sacrifice');
+        if (ending) {
+            return {
+                id: 'sacrifice',
+                title: ending.title,
+                description: ending.description,
+                priority: ending.priority,
+                sacrificedGuardian: MemorySanctuary.state.sacrificedGuardian
+            };
+        }
+    }
+    
     // 3. Vault组合结局 & 百分比结局（按priority排序）
     const sortedEndings = [...(data.endings || [])].sort((a, b) => (b.priority || 0) - (a.priority || 0));
     for (const ending of sortedEndings) {
@@ -4287,7 +4736,14 @@ function sealSanctuary() {
     startNewGamePlus();
     
     // Show ending VN if scene exists, otherwise show modal directly
-    const endingSceneId = ending ? ending.id : 'silent_sanctuary';
+    let endingSceneId = ending ? ending.id : 'silent_sanctuary';
+    // For sacrifice endings, use guardian-specific scene
+    if (ending && ending.id === 'sacrifice' && ending.sacrificedGuardian) {
+        const sacSceneId = `sacrifice_${ending.sacrificedGuardian}`;
+        if (typeof VN !== 'undefined' && VN.getEndingScene(sacSceneId)) {
+            endingSceneId = sacSceneId;
+        }
+    }
     if (typeof VN !== 'undefined' && VN.getEndingScene(endingSceneId)) {
         VN.showEnding(endingSceneId, () => {
             // After VN completes, show stats modal
@@ -4500,6 +4956,7 @@ function startProject(projectId) {
         if (project.cost.energy) state.resources.energy -= project.cost.energy;
         if (project.cost.media) state.resources.media -= project.cost.media;
         if (project.cost.environment) state.resources.environment -= project.cost.environment;
+        if (project.cost.food) state.resources.food -= project.cost.food;
     }
 
     // Add to active projects

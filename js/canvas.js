@@ -15,6 +15,14 @@ let crackLines = [];
 let sceneTransition = 0;
 let currentSceneId = 1;
 
+// 章节过渡效果状态
+let chapterTransitionEffect = {
+    active: false,
+    startTime: 0,
+    duration: 3000,
+    intensity: 0
+};
+
 const SANCTUARY_CONFIG = {
     width: 600,
     height: 400,
@@ -994,4 +1002,46 @@ function drawDecayOverlay(ctx, config, theme, scene) {
         ctx.fillStyle = `rgba(80, 20, 20, ${weekPulse})`;
         ctx.fillRect(0, 0, w, h);
     }
+    
+    // 章节过渡强化效果
+    if (chapterTransitionEffect.active) {
+        const elapsed = Date.now() - chapterTransitionEffect.startTime;
+        const progress = Math.min(1, elapsed / chapterTransitionEffect.duration);
+        
+        // 前30%：衰败效果突然加重
+        // 40%-70%：保持高峰
+        // 70%-100%：缓慢消退
+        let surgeIntensity;
+        if (progress < 0.3) {
+            surgeIntensity = progress / 0.3;
+        } else if (progress < 0.7) {
+            surgeIntensity = 1;
+        } else {
+            surgeIntensity = 1 - (progress - 0.7) / 0.3;
+        }
+        
+        const surge = surgeIntensity * 0.25;
+        ctx.fillStyle = `rgba(120, 30, 30, ${surge})`;
+        ctx.fillRect(0, 0, w, h);
+        
+        // 边缘暗角脉冲
+        const vignetteGradient = ctx.createRadialGradient(
+            w / 2, h / 2, w * 0.1,
+            w / 2, h / 2, w * 0.5
+        );
+        vignetteGradient.addColorStop(0, 'transparent');
+        vignetteGradient.addColorStop(1, `rgba(60, 10, 10, ${surge * 0.8})`);
+        ctx.fillStyle = vignetteGradient;
+        ctx.fillRect(0, 0, w, h);
+        
+        if (progress >= 1) {
+            chapterTransitionEffect.active = false;
+        }
+    }
+}
+
+// 触发章节过渡效果
+function triggerChapterTransitionEffect() {
+    chapterTransitionEffect.active = true;
+    chapterTransitionEffect.startTime = Date.now();
 }

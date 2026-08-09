@@ -3,16 +3,18 @@
     {
       "id": "proj_generator",
       "name": "修复备用发电机",
-      "description": "修复圣所的主能源系统，稳定供电。",
+      "description": "修复圣所的主能源系统。持续5周，每周稳定供电，是长期投资。",
       "availableAfter": 1,
-      "duration": 3,
+      "duration": 5,
+      "repeatable": false,
       "cost": {
-        "energy": 15
+        "energy": 12,
+        "food": 7
       },
       "effect": {
         "type": "resourceBoost",
         "resource": "energy",
-        "amount": 3
+        "amount": 5
       }
     },
     {
@@ -76,8 +78,8 @@
       "effect": {
         "type": "unlockArchives",
         "archiveIds": [
-          "arch_med_001",
-          "arch_med_002"
+          "arch_v2_021",
+          "arch_v2_022"
         ]
       }
     },
@@ -87,6 +89,7 @@
       "description": "在圣所内种植食物，补充储备。",
       "availableAfter": 2,
       "duration": 5,
+      "repeatable": true,
       "cost": {
         "energy": 15,
         "media": 10
@@ -95,7 +98,53 @@
         "type": "foodBoost",
         "amount": 4
       }
-    },
+      },
+      {
+      "id": "proj_hunting",
+      "name": "定期狩猎",
+      "description": "派遣小队外出狩猎，每周补充食物。可重复进行。",
+      "availableAfter": 10,
+      "duration": 3,
+      "repeatable": true,
+      "cost": {
+        "energy": 8
+      },
+      "effect": {
+        "type": "foodBoost",
+        "amount": 3
+      }
+      },
+      {
+      "id": "proj_rainwater",
+      "name": "收集雨水",
+      "description": "利用圣所屋顶收集雨水并净化，补充环境与食物。",
+      "availableAfter": 18,
+      "duration": 4,
+      "repeatable": true,
+      "cost": {
+        "energy": 6
+      },
+      "effect": {
+        "type": "foodBoost",
+        "amount": 2
+      }
+      },
+      {
+      "id": "proj_scavenge",
+      "name": "废墟搜寻",
+      "description": "派遣小队搜寻废弃建筑中的物资。可重复进行。",
+      "availableAfter": 24,
+      "duration": 3,
+      "repeatable": true,
+      "cost": {
+        "energy": 12
+      },
+      "effect": {
+        "type": "resourceBoost",
+        "resource": "food",
+        "amount": 5
+      }
+      },
     {
       "id": "proj_kitchen",
       "name": "共享食堂",
@@ -109,6 +158,24 @@
       "effect": {
         "type": "foodBoost",
         "amount": 3
+      }
+    },
+    {
+      "id": "proj_communication",
+      "name": "修复通讯阵列",
+      "description": "重建与外界的微弱联系，解锁加密记录。",
+      "availableAfter": 36,
+      "duration": 3,
+      "cost": {
+        "energy": 25,
+        "media": 20
+      },
+      "effect": {
+        "type": "unlockArchives",
+        "archiveIds": [
+          "arch_encrypted_001",
+          "arch_encrypted_002"
+        ]
       }
     },
     {

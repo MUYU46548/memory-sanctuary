@@ -38,13 +38,23 @@
                 <div class="title-sub">终来之刻，何物当存？</div>
             </div>
             <div id="title-menu">
-                <button class="title-btn" id="title-new">新建游戏</button>
-                <button class="title-btn" id="title-load">读取存档</button>
-                <button class="title-btn" id="title-achievements">🏆 成就</button>
-                <button class="title-btn" id="title-codex">📖 回顾</button>
-                <button class="title-btn" id="title-settings">⚙️ 设置</button>
-                <button class="title-btn" id="title-help">帮助</button>
-                <button class="title-btn" id="title-about">关于</button>
+                <div class="title-row">
+                    <button class="title-btn" id="title-new">新建游戏</button>
+                    <button class="title-btn" id="title-load">读取存档</button>
+                </div>
+                <div class="title-row">
+                    <button class="title-btn" id="title-achievements">🏆 成就</button>
+                    <button class="title-btn" id="title-codex">📖 回顾</button>
+                </div>
+                <div class="title-row">
+                    <button class="title-btn" id="title-settings">⚙️ 设置</button>
+                    <button class="title-btn" id="title-help">帮助</button>
+                </div>
+                <div class="title-row">
+                    <button class="title-btn" id="title-about">关于</button>
+                    <button class="title-btn" id="title-theme-toggle" title="切换亮/暗色模式">◐ 主题</button>
+                </div>
+                <div id="title-version">v1.6.0</div>
             </div>
             <div id="title-ngplus"></div>
         </div>
@@ -65,6 +75,10 @@
                 <div id="week-progress-container">
                     <div id="week-progress"></div>
                 </div>
+            </div>
+            <div id="morale-display" title="平均士气影响资源衰减效率">
+                <span class="morale-icon">◆</span>
+                <span class="morale-label" id="morale-tag">平稳</span>
             </div>
             <div id="resource-panel">
                 <div class="resource" id="res-energy">
@@ -132,6 +146,7 @@
                     <div id="guardian-menu" class="hidden">
                         <button class="guardian-menu-item" id="guardian-talk">💬 交谈</button>
                         <button class="guardian-menu-item" id="guardian-recommend">📌 推荐归档</button>
+                        <button class="guardian-menu-item" id="guardian-boost" title="消耗 8 食物为所有守护者提供额外补给，可提升其心情">🎁 分发补给品</button>
                         <button class="guardian-menu-item" id="guardian-detail">📖 详情</button>
                     </div>
                     <!-- 守护者详情展开区 -->
@@ -166,7 +181,10 @@
         <div id="log-panel" class="hidden">
             <div id="log-panel-header">
                 <span>系统日志</span>
-                <button id="log-close">✕</button>
+                <div id="log-panel-actions">
+                    <button id="log-copy" title="复制全部日志">📋 复制</button>
+                    <button id="log-close">✕</button>
+                </div>
             </div>
             <div id="log-content">
                 <p class="log-entry system">系统启动。圣所主厅已激活。</p>
@@ -346,6 +364,23 @@
                         <span>守护者对话使用视觉小说演出</span>
                     </label>
                     <div class="settings-desc">开启后，守护者对话将以视觉小说风格逐字显示（章节过渡与结局始终启用）。</div>
+                </div>
+                <div class="settings-item">
+                    <label class="settings-label">
+                        <span>音效音量</span>
+                    </label>
+                    <div class="settings-volume-row">
+                        <input type="range" id="setting-sfx-volume" min="0" max="100" value="100" class="settings-slider">
+                        <span class="settings-volume-value" id="sfx-volume-value">100%</span>
+                        <button class="settings-mute-btn" id="setting-sfx-mute" title="音效静音">🔊</button>
+                    </div>
+                    <div class="settings-desc">调整音效音量。点击 🔊 可单独静音/取消音效。</div>
+                </div>
+                <div class="settings-item">
+                    <label class="settings-label">
+                        <button class="settings-mute-btn global-mute" id="setting-global-mute" title="全局静音">🔇 全局静音</button>
+                    </label>
+                    <div class="settings-desc">一键静音所有音频（BGM + 音效）。</div>
                 </div>
                 <div class="settings-item">
                     <label class="settings-label">

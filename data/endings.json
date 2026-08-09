@@ -6,7 +6,10 @@
       "title": "🌟 永恒记忆",
       "description": "你保存了萨拉达斯文明的每一片碎片。\n\n后世将看到一个完整的文明——它的语言、历史、灾难、艺术、信仰、科学、生态、法律、生活、建筑、医学与星空。\n\n这是你对时间最彻底的反抗。\n\n「我们曾存在，我们曾仰望，我们曾渴望触碰你们。」",
       "type": "vault_completion",
-      "condition": { "allVaults": true, "minVaultCompletion": 1.0 },
+      "condition": {
+        "allVaults": true,
+        "minVaultCompletion": 1.0
+      },
       "unlockMessage": "全收集达成！文明完整度：100%"
     },
     {
@@ -16,7 +19,9 @@
       "description": "缇卡用歌声为圣所唱响安眠曲，声音被编码进晶体。\n\n「你知道吗，我已经把你当作我最后的听众了。」\n\n她的歌声穿越万年，在星空中回响。当后世破译这段音频时，他们会听到一个文明最后的温柔。\n\n「若星辰之上仍有倾听者——请带走我们的名字。」",
       "type": "guardian_finale",
       "guardianId": "tika",
-      "condition": { "moodTier": "intimate" },
+      "condition": {
+        "moodTier": "intimate"
+      },
       "unlockEntry": "arch_ng_tika_lullaby",
       "unlockMessage": "缇卡的好感度已满。解锁专属结局与条目「缇卡的摇篮曲」。"
     },
@@ -27,7 +32,9 @@
       "description": "芬恩完成最后编年史，将自己写入历史。\n\n「我已经把你写进了编年史。不是作为守护者，而是作为……我的挚友。」\n\n后世将看到一段真实的历史——不是冰冷的记录，而是两个灵魂在末日中的相遇与信任。\n\n「历史会记住这一切——如果我们能把它保存下来的话。」",
       "type": "guardian_finale",
       "guardianId": "finn",
-      "condition": { "moodTier": "intimate" },
+      "condition": {
+        "moodTier": "intimate"
+      },
       "unlockEntry": "arch_ng_finn_chronicle",
       "unlockMessage": "芬恩的好感度已满。解锁专属结局与条目「芬恩的编年史」。"
     },
@@ -38,7 +45,9 @@
       "description": "米莎将最后一颗种子封存在圣所核心。\n\n「你知道吗，我已经不害怕上去了。因为我知道有人在等我回来。」\n\n那颗种子在黑暗中沉睡万年，等待着某一天被重新唤醒。当世界重新变绿时，它会第一个告诉你。\n\n「生命不会真正消失，它只是去了别的地方。」",
       "type": "guardian_finale",
       "guardianId": "misha",
-      "condition": { "moodTier": "intimate" },
+      "condition": {
+        "moodTier": "intimate"
+      },
       "unlockEntry": "arch_ng_seed_vault",
       "unlockMessage": "米莎的好感度已满。解锁专属结局与条目「种子库」。"
     },
@@ -49,7 +58,9 @@
       "description": "洛恩改造能源系统，让圣所维持千年运转。\n\n「你知道吗，我已经把圣所当作我的第二个引擎了。」\n\n他的设计图纸被后世发现时，工程师们惊叹于这种超越时代的智慧。圣所的光芒在黑暗中持续照耀，成为永恒的信标。\n\n「知识就是力量。我们选择把力量留给未来。」",
       "type": "guardian_finale",
       "guardianId": "lorn",
-      "condition": { "moodTier": "intimate" },
+      "condition": {
+        "moodTier": "intimate"
+      },
       "unlockEntry": "arch_ng_lorn_engine",
       "unlockMessage": "洛恩的好感度已满。解锁专属结局与条目「洛恩的引擎」。"
     },
@@ -60,7 +71,9 @@
       "description": "埃塞尔不再向神祈祷，而是向未来祈祷。\n\n「我已经不向神祈祷了。我向你祈祷。」\n\n她的祷文被编码进圣所的墙壁，每一块石头都承载着对后世的祝福。当后人触摸这些墙壁时，他们会感受到一种超越时空的温暖。\n\n「如果宇宙有意志，它一定很高兴有你在这里。」",
       "type": "guardian_finale",
       "guardianId": "ethel",
-      "condition": { "moodTier": "intimate" },
+      "condition": {
+        "moodTier": "intimate"
+      },
       "unlockEntry": "arch_ng_ethel_prayer",
       "unlockMessage": "埃塞尔的好感度已满。解锁专属结局与条目「埃塞尔的祷文」。"
     },
@@ -71,7 +84,10 @@
       "description": "你保存了萨拉达斯最黑暗的记忆与最美的艺术。\n\n灾难记录与艺术作品的交织——这是一种奇异的组合，却揭示了一个文明的本质：即使在末日面前，他们依然在创作。\n\n后世将看到一个用歌声回应死刑判决的文明，一个在黑暗中依然仰望星空的文明。\n\n「没有歌词。只有声音。笛声代表风，鼓声代表心跳，弦声代表光。」",
       "type": "vault_combination",
       "condition": {
-        "vaults": [3, 4],
+        "vaults": [
+          3,
+          4
+        ],
         "minCompletion": 0.8,
         "description": "灾难纪实(3) + 艺术与音乐(4) 完成度≥80%"
       }
@@ -83,7 +99,11 @@
       "description": "你保存了萨拉达斯的语言、历史与法律。\n\n这是一个文明的结构——它的语言定义了它的思想，它的历史塑造了它的身份，它的法律维系了它的秩序。\n\n后世将看到一个在混乱中坚守秩序的文明，一个用制度对抗遗忘的文明。\n\n「第一条：每个人都有权仰望星空。第二条：每个人都有权记住过去。」",
       "type": "vault_combination",
       "condition": {
-        "vaults": [1, 2, 8],
+        "vaults": [
+          1,
+          2,
+          8
+        ],
         "minCompletion": 0.7,
         "description": "语言与语法(1) + 历史编年(2) + 法律与治理(8) 完成度≥70%"
       }
@@ -95,7 +115,11 @@
       "description": "你保存了萨拉达斯的科学、天文与生态。\n\n这是一个试图理解宇宙的文明——它的科学揭示了自然的奥秘，它的天文测量了宇宙的尺度，它的生态记录了与星球共生的智慧。\n\n后世将看到一个仰望星空的文明，一个将知识视为最高价值的文明。\n\n「实验目的：证明光可以被储存。实验结果：可以，但储存的光会在一万年后慢慢消散。」",
       "type": "vault_combination",
       "condition": {
-        "vaults": [6, 7, 12],
+        "vaults": [
+          6,
+          7,
+          12
+        ],
         "minCompletion": 0.7,
         "description": "科学与技术(6) + 生态与自然(7) + 星象与天文(12) 完成度≥70%"
       }
@@ -107,7 +131,11 @@
       "description": "你保存了萨拉达斯的生态、医学与艺术。\n\n这是一个尊重生命的文明——它的生态记录了星球的呼吸，它的医学守护了身体的健康，它的艺术歌颂了生命的美。\n\n后世将看到一个与星球共生的文明，一个在末日面前依然热爱生命的文明。\n\n「一个孩子需要三颗种子才能诞生：父亲的光，母亲的光，和大地的光。」",
       "type": "vault_combination",
       "condition": {
-        "vaults": [4, 7, 11],
+        "vaults": [
+          4,
+          7,
+          11
+        ],
         "minCompletion": 0.7,
         "description": "艺术与音乐(4) + 生态与自然(7) + 医学与生命(11) 完成度≥70%"
       }
@@ -119,7 +147,11 @@
       "description": "你保存了萨拉达斯的哲学、天文与艺术。\n\n这是一个追问存在意义的文明——它的哲学探索了生与死，它的天文测量了宇宙的边界，它的艺术表达了对永恒的渴望。\n\n后世将看到一个仰望星空的文明，一个不断追问「为什么」的文明。\n\n「如果没有人记住我们，我们真的存在过吗？」",
       "type": "vault_combination",
       "condition": {
-        "vaults": [4, 5, 12],
+        "vaults": [
+          4,
+          5,
+          12
+        ],
         "minCompletion": 0.7,
         "description": "艺术与音乐(4) + 哲学与宗教(5) + 星象与天文(12) 完成度≥70%"
       }
@@ -131,7 +163,11 @@
       "description": "你保存了萨拉达斯的灾难、历史与法律。\n\n这是一个面对终结的文明——它的灾难记录了末日的降临，它的历史保存了兴衰的教训，它的法律定义了最后的秩序。\n\n后世将看到一个在末日面前记录一切的文明，一个用档案对抗遗忘的文明。\n\n「我们选择被记住，即使这意味着记住痛苦。」",
       "type": "vault_combination",
       "condition": {
-        "vaults": [2, 3, 8],
+        "vaults": [
+          2,
+          3,
+          8
+        ],
         "minCompletion": 0.7,
         "description": "历史编年(2) + 灾难纪实(3) + 法律与治理(8) 完成度≥70%"
       }
@@ -143,7 +179,11 @@
       "description": "你保存了萨拉达斯的日常生活、建筑与医学。\n\n这是一个普通人的文明——它的日常记录了平凡的幸福，它的建筑守护了家庭的健康，它的医学治愈了身体的伤痛。\n\n后世将看到一个用日常抵抗遗忘的文明，一个在末日面前依然热爱生活的文明。\n\n「画中，一家人围坐在一起，分享一碗光粥。那是末日前的最后一个夜晚。」",
       "type": "vault_combination",
       "condition": {
-        "vaults": [9, 10, 11],
+        "vaults": [
+          9,
+          10,
+          11
+        ],
         "minCompletion": 0.7,
         "description": "日常生活(9) + 建筑与工程(10) + 医学与生命(11) 完成度≥70%"
       }
@@ -154,7 +194,10 @@
       "title": "碎片收集者",
       "description": "你保存了萨拉达斯的部分碎片。\n\n虽然后世看到的只是冰山一角，但每一片都是真实的。你的选择决定了后世「看到」怎样的萨拉达斯文明。\n\n「你的选择决定了后世看到怎样的文明。」",
       "type": "percentage_completion",
-      "condition": { "minPercent": 0.3, "maxPercent": 0.99 }
+      "condition": {
+        "minPercent": 0.3,
+        "maxPercent": 0.99
+      }
     },
     {
       "id": "finale_whisper_keeper",
@@ -162,7 +205,10 @@
       "title": "微光守护者",
       "description": "你保存了少量记忆碎片。\n\n虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。\n\n「至少他们知道这里曾经存在过一个文明。」",
       "type": "percentage_completion",
-      "condition": { "minPercent": 0.05, "maxPercent": 0.29 }
+      "condition": {
+        "minPercent": 0.05,
+        "maxPercent": 0.29
+      }
     },
     {
       "id": "finale_silent_sanctuary",
@@ -170,7 +216,9 @@
       "title": "🖤 寂静圣所",
       "description": "你选择了沉默。\n\n圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。没有语言、没有历史、没有歌声、没有星空。\n\n也许遗忘也是一种慈悲——让文明不必承受被遗忘的痛苦。\n\n也许未来有一天，会有另一个文明发现这座空荡荡的圣所，然后问：「这里曾经住着谁？」\n\n但没有人会回答。",
       "type": "zero_completion",
-      "condition": { "weekMin": 10 }
+      "condition": {
+        "weekMin": 10
+      }
     },
     {
       "id": "true_ending",
@@ -178,8 +226,58 @@
       "title": "✨ 超越时间",
       "description": "你打破了循环。\n\n圣所的光芒消散后，你站在一片绿草地上。阳光温暖而真实，微风带来泥土和花朵的气息。远处，一座新的城市正在建造——不是萨拉达斯，而是她的继承者。\n\n守护者们站在你身边，眼中满是泪水。缇卡轻声说：'这是新的开始。'\n\n你微笑着，牵起她的手。循环被打破，而记忆将成为新世界的种子。\n\n「我们曾存在，我们曾仰望，我们曾渴望触碰你们。现在，我们终于触碰到了未来。」",
       "type": "special",
-      "condition": { "playthroughMin": 5, "special": "true_ending" },
+      "condition": {
+        "playthroughMin": 5,
+        "special": "true_ending"
+      },
       "unlockMessage": "真结局解锁：超越时间"
+    },
+    {
+      "id": "perfect_seal",
+      "priority": 110,
+      "title": "🌟 完美封印",
+      "description": "你不仅保存了文明的碎片，更守护了守护者的心。\n\n五位守护者手牵手走入永恒，他们的故事与文明一起被永远铭记。\n\n这是最完美的终章——不是悲剧，不是遗憾，而是一个文明对另一个文明最温柔的告别。\n\n「我们曾相爱，我们曾存在，我们曾一起仰望星辰。」",
+      "type": "special",
+      "condition": {
+        "allGuardiansIntimate": true,
+        "minVaultCompletion": 0.45
+      },
+      "unlockMessage": "完美封印！所有守护者好感度满 + 45%以上收集完成！"
+      },
+      {
+      "id": "sacrifice",
+      "priority": 95,
+      "title": "💫 牺牲",
+      "description": "在最终封印之前，一位守护者选择了牺牲。\n\n他们将自身的生命力注入圣所核心，让圣所再多存续一千年。\n\n其余四位守护者含泪封印了圣所，也封印了他们的朋友。\n\n「不要哭。我只是先一步去往星辰。在那里，我会继续为你们歌唱。」",
+      "type": "special",
+      "condition": {
+        "anyGuardianSacrifice": true,
+        "weekMin": 40
+      },
+      "unlockMessage": "牺牲结局解锁"
+    },
+    {
+      "id": "forgotten",
+      "priority": 5,
+      "title": "🌫️ 遗忘",
+      "description": "圣所被封印了。\n\n但千年之后，没有人发现这里。\n\n文明的歌声消失在时间的长河中，守护者的名字被永远遗忘。\n\n也许，这就是大多数圣所的命运。也许，这就是大多数文明的结局。\n\n「我们存在过，但无人知晓。」",
+      "type": "special",
+      "condition": {
+        "noAchievementsUnlocked": true,
+        "weekMin": 48
+      },
+      "unlockMessage": "遗忘结局解锁"
+    },
+    {
+      "id": "starvation",
+      "priority": 1,
+      "title": "💀 饥荒降临",
+      "description": "食物耗尽的第三周，圣所系统全面崩溃。\n\n守护者们在饥饿中一个接一个倒下，再也没能站起来。\n\n没有能量的录入机停止运转，没有介质的记忆碎片化为尘埃。\n\n当千年后的探索者打开圣所大门，只看到一具具白骨围坐在控制台前。\n\n他们用尽生命守护的文明，最终与他们一同消逝在黑暗中。",
+      "type": "bad",
+      "condition": {
+        "trigger": "starvation"
+      },
+      "unlockMessage": "圣所崩溃结局解锁"
     }
   ]
 }
