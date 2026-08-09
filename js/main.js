@@ -207,7 +207,8 @@ function initGameState() {
         completedProjects: [],
         chaptersCompleted: [],
         pendingEnding: null,
-        instantArchiveChances: 0
+        instantArchiveChances: 0,
+        lastSupplyWeek: 0
     };
     
     MemorySanctuary.data.vaults.forEach(vault => {

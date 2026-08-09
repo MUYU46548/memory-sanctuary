@@ -80,6 +80,70 @@
     --ng-glow: #a07a30;
 }
 
+/* ========== Z-index 层级系统 ========== */
+:root {
+    --z-base: 1;
+    --z-topbar: 100;
+    --z-panel: 500;
+    --z-overlay: 1000;
+    --z-modal: 1100;
+    --z-highest: 10000;
+    --z-toast: 10001;
+}
+
+/* ========== 状态色 — 硬编码值转 CSS 变量 ========== */
+:root {
+    /* 危险红（应急协议、警告边框、腐败条） */
+    --danger-hard: #e74c3c;
+    --danger-deep: #c0392b;
+    /* 安全绿（成功、可开始按钮高亮） */
+    --success-hard: #27ae60;
+    /* 警告橙（冷却中、食物危机） */
+    --warning-hard: #e67e22;
+    /* 信息蓝（守护者概览边框） */
+    --info-blue: #6bb8c9;
+    /* 项目按钮深色文字 */
+    --btn-dark-text: #000;
+    /* 项目按钮紫色边框 */
+    --project-purple: #8b6bb5;
+    --project-purple-deep: #a04040;
+    /* 成就提示正绿/负红 */
+    --change-positive: #5aae5a;
+    --change-negative: #d44a3a;
+    /* 白色（按钮反白文字） */
+    --white: #fff;
+    /* 琥珀色背景（勘探日志） */
+    --amber-bg: #c9a87c;
+    /* 结局守护者等级色 */
+    --tier-cold: #5dade2;
+    --tier-neutral: #aaa;
+    --tier-friendly: #f39c12;
+    --tier-intimate: #e91e63;
+}
+
+/* ========== 动画降级 — 尊重用户偏好 ========== */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .stuck-banner,
+    .chapter-banner,
+    #achievement-toast,
+    .resource.critical,
+    .resource.deterioration,
+    .resource.food-warning,
+    .resource.food-critical,
+    #morale-display.morale-critical {
+        animation: none !important;
+    }
+}
+
 /* ========== 字号基准 ========== */
 html {
     /* 霞鹜文楷 x-height 较小，基准字号从默认 16px 微升至 17px，提升正文可读性 */
@@ -115,6 +179,31 @@ body {
 
 .hidden {
     display: none !important;
+}
+
+/* ============================================
+   焦点样式 — 键盘导航支持
+   ============================================ */
+
+:focus-visible {
+    outline: 2px solid var(--amber-primary);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+button:focus-visible,
+.project-btn:focus-visible,
+.event-choice:focus-visible,
+.guardian-menu-item:focus-visible,
+.archive-btn:focus-visible,
+.vault-item:focus-visible {
+    outline: 2px solid var(--amber-primary);
+    outline-offset: 2px;
+    box-shadow: 0 0 8px rgba(212, 160, 74, 0.4);
 }
 
 /* ============================================
@@ -1036,10 +1125,16 @@ body {
     text-align: left;
 }
 
-.guardian-menu-item:hover {
+.guardian-menu-item:hover:not(:disabled) {
     border-color: var(--amber-primary);
     color: var(--amber-primary);
     background: var(--bg-panel-hover);
+}
+
+.guardian-menu-item:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: transparent;
 }
 
 /* 推荐条目高亮 */
@@ -1136,12 +1231,39 @@ button.archive-btn.recommended {
    事件通知
    ============================================ */
 
+#event-panel {
+    width: 100%;
+    opacity: 0;
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease, height 0.3s ease;
+}
+
+#event-panel:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+    height: auto;
+}
+
+#event-panel.hidden {
+    display: block !important;
+}
+
 #event-banner {
     background: var(--bg-panel);
     border: 1px solid var(--warning);
     border-radius: 6px;
     padding: 12px 14px;
     animation: eventPulse 2s ease-in-out infinite;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#event-panel:not(.hidden) #event-banner {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 @keyframes eventPulse {
@@ -1765,7 +1887,7 @@ button.archive-btn.recommended {
 }
 
 #explore-result.result-narrative {
-    border-color: #6bb8c9;
+    border-color: var(--info-blue);
     background: rgba(107, 184, 201, 0.05);
 }
 
@@ -1912,7 +2034,7 @@ button.archive-btn.recommended {
     right: -6px;
     font-size: 0.45rem;
     background: var(--danger);
-    color: #fff;
+    color: var(--white);
     padding: 1px 4px;
     border-radius: 2px;
     line-height: 1;
@@ -2118,11 +2240,21 @@ button.archive-btn.recommended {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 1100;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.35s ease, visibility 0.35s ease;
 }
 
 #modal-overlay.hidden {
-    display: none;
+    visibility: hidden;
+    opacity: 0;
+    display: flex !important;
+}
+
+#modal-overlay:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
 }
 
 #modal {
@@ -2135,6 +2267,12 @@ button.archive-btn.recommended {
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 0 60px rgba(212, 160, 74, 0.2);
+    transform: scale(0.95);
+    transition: transform 0.35s ease;
+}
+
+#modal-overlay:not(.hidden) #modal {
+    transform: scale(1);
 }
 
 #modal-title {
@@ -2894,7 +3032,7 @@ button.archive-btn.recommended {
 
 #emergency-panel-header h2 {
     font-size: 1rem;
-    color: #e74c3c;
+    color: var(--danger-hard);
     margin: 0;
 }
 
@@ -2908,7 +3046,7 @@ button.archive-btn.recommended {
 }
 
 #emergency-close:hover {
-    color: #e74c3c;
+    color: var(--danger-hard);
 }
 
 /* 腐败度 */
@@ -2936,7 +3074,7 @@ button.archive-btn.recommended {
 .corruption-bar {
     height: 100%;
     width: 0%;
-    background: #c9a87c;
+    background: var(--amber-bg);
     border-radius: 4px;
     transition: width 0.3s ease, background 0.3s ease;
 }
@@ -2968,12 +3106,12 @@ button.archive-btn.recommended {
 }
 
 .emergency-item.usable {
-    border-color: #c0392b;
+    border-color: var(--danger-deep);
     background: rgba(192, 57, 43, 0.05);
 }
 
 .emergency-item.usable:hover {
-    border-color: #e74c3c;
+    border-color: var(--danger-hard);
     background: rgba(192, 57, 43, 0.1);
 }
 
@@ -3007,7 +3145,7 @@ button.archive-btn.recommended {
 
 .cooldown-badge {
     font-size: 0.7rem;
-    color: #e67e22;
+    color: var(--warning-hard);
     background: rgba(230, 126, 34, 0.15);
     padding: 2px 6px;
     border-radius: 3px;
@@ -3027,15 +3165,15 @@ button.archive-btn.recommended {
 }
 
 .effect-cost {
-    color: #e74c3c;
+    color: var(--danger-hard);
 }
 
 .effect-gain {
-    color: #27ae60;
+    color: var(--success-hard);
 }
 
 .effect-corruption {
-    color: #e67e22;
+    color: var(--warning-hard);
 }
 
 .emergency-activate {
@@ -3067,14 +3205,14 @@ button.archive-btn.recommended {
     border: 1px solid #e74c3c;
     border-radius: 4px;
     font-size: 0.8rem;
-    color: #e74c3c;
+    color: var(--danger-hard);
     text-align: center;
 }
 
 .emergency-warning.moderate {
     background: rgba(230, 126, 34, 0.1);
-    border-color: #e67e22;
-    color: #e67e22;
+    border-color: var(--warning-hard);
+    color: var(--warning-hard);
 }
 
 /* 应急按钮脉冲动画 */
@@ -3105,6 +3243,15 @@ button.archive-btn.recommended {
 
 .project-item.completed {
     opacity: 0.6;
+}
+
+.project-item.repeatable-done {
+    border-color: var(--success);
+    opacity: 0.8;
+}
+
+.project-item.repeatable-done .project-name {
+    color: var(--success);
 }
 
 .project-name {
@@ -3154,20 +3301,21 @@ button.archive-btn.recommended {
 
 .project-btn:not([disabled]):hover {
     background: var(--amber-primary);
-    color: #000;
+    color: var(--btn-dark-text);
     border-color: var(--amber-primary);
 }
 
 .project-btn[disabled] {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
-    background: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.03) 4px, rgba(255,255,255,0.03) 8px);
+    background: repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.08) 4px, rgba(255,255,255,0.08) 8px);
+    border-color: rgba(255,255,255,0.15);
 }
 
 /* 项目按钮底部栏样式 */
 #func-bar button#project-btn {
     background: linear-gradient(135deg, #6b4c9a 0%, #8b6bb5 100%);
-    border-color: #8b6bb5;
+    border-color: var(--project-purple);
 }
 
 #func-bar button#project-btn.ready {
@@ -3183,8 +3331,8 @@ button.archive-btn.recommended {
 /* 应急协议按钮底部栏样式 */
 #func-bar button#emergency-btn {
     background: linear-gradient(135deg, #8b3a3a 0%, #a04040 100%);
-    border-color: #a04040;
-    color: #fff;
+    border-color: var(--project-purple-deep);
+    color: var(--white);
 }
 
 #func-bar button#emergency-btn.emergency-ready {
@@ -3256,7 +3404,7 @@ button.archive-btn.recommended {
     display: flex;
     align-items: center;
     gap: 12px;
-    z-index: 1000;
+    z-index: 10001;
     transition: transform 0.3s ease, opacity 0.3s ease;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     opacity: 0;
@@ -4160,7 +4308,7 @@ button.archive-btn.recommended {
 
 #resource-tooltip {
     position: fixed;
-    z-index: 10000;
+    z-index: 1100;
     background: var(--bg-panel);
     border: 1px solid var(--border-strong);
     border-radius: 6px;
@@ -4195,12 +4343,12 @@ button.archive-btn.recommended {
 }
 
 .rt-total.gain {
-    color: #5aae5a;
+    color: var(--change-positive);
     text-shadow: 0 0 6px rgba(90, 174, 90, 0.4);
 }
 
 .rt-total.loss {
-    color: #d44a3a;
+    color: var(--change-negative);
     text-shadow: 0 0 6px rgba(212, 74, 58, 0.4);
 }
 
@@ -4218,11 +4366,11 @@ button.archive-btn.recommended {
 }
 
 .rt-item.gain {
-    color: #5aae5a;
+    color: var(--change-positive);
 }
 
 .rt-item.loss {
-    color: #d44a3a;
+    color: var(--change-negative);
 }
 
 .rt-capacity {
@@ -4411,11 +4559,11 @@ button.archive-btn.recommended {
     border-radius: 3px;
 }
 
-.ending-guardian-tier.hostile { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
-.ending-guardian-tier.cold { background: rgba(93, 173, 226, 0.2); color: #5dade2; }
-.ending-guardian-tier.neutral { background: rgba(170, 170, 170, 0.2); color: #aaa; }
-.ending-guardian-tier.friendly { background: rgba(243, 156, 18, 0.2); color: #f39c12; }
-.ending-guardian-tier.intimate { background: rgba(233, 30, 99, 0.2); color: #e91e63; }
+.ending-guardian-tier.hostile { background: rgba(231, 76, 60, 0.2); color: var(--danger-hard); }
+.ending-guardian-tier.cold { background: rgba(93, 173, 226, 0.2); color: var(--tier-cold); }
+.ending-guardian-tier.neutral { background: rgba(170, 170, 170, 0.2); color: var(--tier-neutral); }
+.ending-guardian-tier.friendly { background: rgba(243, 156, 18, 0.2); color: var(--tier-friendly); }
+.ending-guardian-tier.intimate { background: rgba(233, 30, 99, 0.2); color: var(--tier-intimate); }
 
 #ending-ng {
     background: var(--bg-deep);
@@ -4483,7 +4631,7 @@ button.archive-btn.recommended {
     background: linear-gradient(135deg, #5a8a3a 0%, #6b9a4a 100%);
     border: 1px solid #6b9a4a;
     border-radius: 6px;
-    color: #fff;
+    color: var(--white);
     cursor: pointer;
     width: 100%;
     text-align: left;

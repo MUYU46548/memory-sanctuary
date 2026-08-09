@@ -1551,7 +1551,19 @@ function initGuardianInteraction() {
         avatar.addEventListener('click', (e) => {
             e.stopPropagation();
             menu.classList.toggle('hidden');
+            updateBoostButtonState();
         });
+    }
+    
+    // 按钮状态更新函数
+    function updateBoostButtonState() {
+        const boostBtn = document.getElementById('guardian-boost');
+        if (!boostBtn || !MemorySanctuary.state) return;
+        const state = MemorySanctuary.state;
+        const onCooldown = state.lastSupplyWeek && state.lastSupplyWeek === state.week;
+        boostBtn.disabled = onCooldown;
+        boostBtn.textContent = onCooldown ? '🎁 分发补给品（本周已分发）' : '🎁 分发补给品';
+        boostBtn.title = onCooldown ? '补给品本周已分发，下周再来吧' : '消耗 8 食物为所有守护者提供额外补给，每周限一次';
     }
     
     // 点击其他地方关闭菜单
@@ -1619,6 +1631,7 @@ function initGuardianInteraction() {
     if (boostBtn) {
         boostBtn.addEventListener('click', () => {
             guardianBoostSupply();
+            updateBoostButtonState();
             menu.classList.add('hidden');
         });
     }
@@ -1636,13 +1649,21 @@ function getCurrentGuardianId() {
 function guardianBoostSupply() {
     const state = MemorySanctuary.state;
     const foodCost = 8;
+    
+    // 检查冷却：每周限一次
+    if (state.lastSupplyWeek && state.lastSupplyWeek === state.week) {
+        addLog(`补给品本周已分发过，下周再来吧。`, 'system');
+        return false;
+    }
+    
     if (state.resources.food < foodCost) {
         addLog(`食物不足 ${foodCost}，无法分发补给品。`, 'system');
-        return;
+        return false;
     }
     
     state.resources.food -= foodCost;
     state.resourceChanges.food = (state.resourceChanges.food || 0) - foodCost;
+    state.lastSupplyWeek = state.week;
     
     // 所有守护者心情 +2（封顶10），性格权重影响
     const weights = getFoodMoodWeight();
@@ -1666,6 +1687,7 @@ function guardianBoostSupply() {
     addLog(`${getGuardianName(guardianId)}：「${reactions[Math.floor(Math.random() * reactions.length)]}」`, 'guardian');
     
     if (typeof renderAll === 'function') renderAll();
+    return true;
 }
 
 function guardianRecommendArchive() {
@@ -2135,10 +2157,13 @@ function renderEvent(event) {
         const btn = document.createElement('button');
         btn.className = 'event-choice';
         btn.textContent = choice.text;
+        btn.setAttribute('role', 'button');
         btn.addEventListener('click', () => resolveEvent(index));
         choicesEl.appendChild(btn);
     });
     
+    // 强制重排以触发过渡动画
+    void panel.offsetHeight;
     panel.classList.remove('hidden');
 }
 
@@ -2349,7 +2374,7 @@ function addLog(message, type = 'system') {
     logContent.scrollTop = logContent.scrollHeight;
 
     const entries = logContent.querySelectorAll('.log-entry');
-    if (entries.length > 50) entries[0].remove();
+    if (entries.length > 200) entries[0].remove();
 
     // 如果面板关闭，增加未读计数
     if (!logPanelOpen) {

@@ -638,9 +638,10 @@ function renderProjectList() {
         const isCompleted = state.completedProjects.includes(project.id);
         const canStart = canStartProject(project);
         const isLocked = week < project.availableAfter;
+        const isRepeatableDone = isCompleted && project.repeatable;
 
         const item = document.createElement('div');
-        item.className = `project-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''} ${canStart ? 'can-start' : ''} ${isLocked ? 'locked' : ''}`;
+        item.className = `project-item ${isActive ? 'active' : ''} ${isRepeatableDone ? 'repeatable-done' : ''} ${isCompleted && !project.repeatable ? 'completed' : ''} ${canStart ? 'can-start' : ''} ${isLocked ? 'locked' : ''}`;
 
         const costHtml = project.cost ? `<div class="project-cost">${project.cost.energy ? `<span>◈ ${project.cost.energy}</span>` : ''}${project.cost.media ? `<span>◇ ${project.cost.media}</span>` : ''}</div>` : '';
         const effectHtml = `<div class="project-effect">${getProjectEffectText(project)}</div>`;
@@ -653,6 +654,10 @@ function renderProjectList() {
             buttonHtml = `<button class="project-btn" disabled>进行中 (${active.remainingWeeks}周)</button>`;
         } else if (isCompleted && !project.repeatable) {
             buttonHtml = `<button class="project-btn" disabled>已完成</button>`;
+        } else if (isRepeatableDone && canStart) {
+            buttonHtml = `<button class="project-btn" data-project-id="${project.id}">再次开始</button>`;
+        } else if (isRepeatableDone && !canStart) {
+            buttonHtml = `<button class="project-btn" disabled>已完成（资源不足）</button>`;
         } else if (canStart) {
             buttonHtml = `<button class="project-btn" data-project-id="${project.id}">开始项目</button>`;
         } else {

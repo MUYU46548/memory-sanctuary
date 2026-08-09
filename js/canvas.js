@@ -78,9 +78,49 @@ function initCanvas() {
         return;
     }
     
+    // 响应式自适应
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
     sanctuaryCtx = sanctuaryCanvas.getContext('2d');
     animate();
     console.log('[Canvas] 圣所主厅初始化完成');
+}
+
+function resizeCanvas() {
+    if (!sanctuaryCanvas) return;
+    const container = sanctuaryCanvas.parentElement;
+    if (!container) return;
+    
+    const rect = container.getBoundingClientRect();
+    // 保持 3:2 宽高比
+    const width = Math.min(rect.width, 600);
+    const height = width * (2 / 3);
+    
+    // 计算缩放比例
+    const scaleX = width / SANCTUARY_CONFIG.width;
+    const scaleY = height / SANCTUARY_CONFIG.height;
+    
+    sanctuaryCanvas.width = width;
+    sanctuaryCanvas.height = height;
+    
+    // 更新配置中的动态值
+    SANCTUARY_CONFIG.width = width;
+    SANCTUARY_CONFIG.height = height;
+    
+    // 按比例更新定位值
+    SANCTUARY_CONFIG.dome.centerX = 300 * scaleX;
+    SANCTUARY_CONFIG.dome.centerY = 200 * scaleY;
+    SANCTUARY_CONFIG.dome.radius = 170 * Math.min(scaleX, scaleY);
+    
+    SANCTUARY_CONFIG.singerSeat.centerX = 300 * scaleX;
+    SANCTUARY_CONFIG.singerSeat.centerY = 280 * scaleY;
+    SANCTUARY_CONFIG.singerSeat.radius = 35 * Math.min(scaleX, scaleY);
+    SANCTUARY_CONFIG.singerSeat.glowRadius = 55 * Math.min(scaleX, scaleY);
+    
+    SANCTUARY_CONFIG.soundWaves.maxRadius = 140 * Math.min(scaleX, scaleY);
+    SANCTUARY_CONFIG.vaultDoors.orbitRadius = 145 * Math.min(scaleX, scaleY);
+    SANCTUARY_CONFIG.vaultDoors.radius = 11 * Math.min(scaleX, scaleY);
 }
 
 function animate() {
