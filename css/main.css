@@ -618,13 +618,16 @@ button:focus-visible,
     gap: 8px;
     margin-bottom: 32px;
     align-items: center;
+    width: 100%;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .title-row {
     display: flex;
     gap: 8px;
     width: 100%;
-    max-width: 400px;
 }
 
 .title-row .title-btn {
@@ -643,6 +646,14 @@ button:focus-visible,
     cursor: pointer;
     transition: all 0.2s ease;
     letter-spacing: 0.15em;
+    width: 100%;
+}
+
+.title-btn-full {
+    display: block;
+    width: 100%;
+    margin-bottom: 0;
+    text-align: center;
 }
 
 .title-btn:hover {
@@ -1398,9 +1409,39 @@ button.archive-btn.recommended {
 }
 
 #log-panel-header span {
-    font-size: 0.8rem;
-    color: var(--amber-primary);
-    letter-spacing: 0.1em;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+#log-filter-bar {
+    display: flex;
+    gap: 4px;
+    padding: 8px 24px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-panel);
+}
+
+.log-filter {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.log-filter:hover {
+    border-color: var(--amber-dim);
+    color: var(--text-secondary);
+}
+
+.log-filter.active {
+    background: var(--amber-primary);
+    border-color: var(--amber-primary);
+    color: var(--bg-panel);
 }
 
 #log-panel-actions {
@@ -1755,6 +1796,20 @@ button.archive-btn.recommended {
     text-align: center;
 }
 
+.current-food {
+    font-size: 0.65rem;
+    margin-left: 4px;
+}
+
+.current-food.ok {
+    color: var(--success);
+}
+
+.current-food.low {
+    color: var(--danger);
+    font-weight: bold;
+}
+
 .dispatch-guardians-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -1808,6 +1863,18 @@ button.archive-btn.recommended {
     background: rgba(243, 156, 18, 0.15);
     color: var(--amber-primary);
     border-radius: 2px;
+}
+
+.guardian-skill.matched {
+    background: rgba(90, 168, 110, 0.25);
+    color: var(--explore-green, #5aa86e);
+    border: 1px solid var(--explore-green, #5aa86e);
+}
+
+.guardian-bonus {
+    font-size: 0.55rem;
+    color: var(--explore-green, #5aa86e);
+    font-weight: bold;
 }
 
 #dispatch-outcomes {
@@ -2214,6 +2281,206 @@ button.archive-btn.recommended {
 .log-entry.guardian { color: var(--amber-dim); font-style: italic; }
 .log-entry.success { color: var(--success); }
 .log-entry.event { color: var(--warning); }
+.log-entry.warning { color: var(--danger); }
+.log-entry.filtered-out { display: none; }
+.log-entry.pinned::before {
+    content: '📌 ';
+    font-size: 0.65rem;
+    opacity: 0.7;
+}
+
+/* ============================================
+   调试面板
+   ============================================ */
+
+#debug-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#debug-overlay.hidden {
+    display: none;
+}
+
+#debug-panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    width: 500px;
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+#debug-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-panel-hover);
+}
+
+#debug-header h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+#debug-close {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+#debug-close:hover {
+    background: var(--danger);
+    color: white;
+}
+
+#debug-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-panel);
+}
+
+.debug-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 10px 0;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.debug-tab:hover {
+    color: var(--text-secondary);
+    background: var(--bg-panel-hover);
+}
+
+.debug-tab.active {
+    color: var(--amber-primary);
+    border-bottom-color: var(--amber-primary);
+}
+
+#debug-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.debug-tab-content {
+    display: none;
+}
+
+.debug-tab-content.active {
+    display: block;
+}
+
+.debug-tab-content h4 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 0 0 12px 0;
+}
+
+.debug-control {
+    margin-bottom: 12px;
+}
+
+.debug-control label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+}
+
+.debug-control input[type="range"] {
+    width: 100%;
+}
+
+.debug-control input[type="number"],
+.debug-control select,
+.debug-control textarea {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    font-family: monospace;
+}
+
+.debug-control textarea {
+    resize: vertical;
+}
+
+.debug-btn {
+    background: var(--amber-primary);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 0.75rem;
+    color: var(--bg-panel);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 4px;
+}
+
+.debug-btn:hover {
+    background: var(--amber-glow, #e8b85c);
+}
+
+.debug-btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.debug-btn-danger:hover {
+    background: #c44a3a;
+}
+
+.debug-btn-row {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.debug-btn-row .debug-btn {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+}
+
+#debug-footer {
+    padding: 8px 16px;
+    border-top: 1px solid var(--border-subtle);
+    text-align: center;
+}
+
+#debug-footer span {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+}
 
 /* ============================================
    弹窗
@@ -3121,7 +3388,7 @@ button.archive-btn.recommended {
 #emergency-corruption {
     padding: 12px 16px;
     border-bottom: 1px solid var(--border-subtle);
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--bg-elevated);
 }
 
 .corruption-label {
@@ -3133,7 +3400,8 @@ button.archive-btn.recommended {
 .corruption-bar-container {
     width: 100%;
     height: 8px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
     border-radius: 4px;
     overflow: hidden;
     margin-bottom: 6px;
@@ -3142,9 +3410,9 @@ button.archive-btn.recommended {
 .corruption-bar {
     height: 100%;
     width: 0%;
-    background: var(--amber-bg);
-    border-radius: 4px;
-    transition: width 0.3s ease, background 0.3s ease;
+    background: linear-gradient(90deg, var(--success) 0%, var(--warning) 50%, var(--danger) 100%);
+    border-radius: 3px;
+    transition: width 0.3s ease;
 }
 
 .corruption-text {
@@ -4592,6 +4860,18 @@ button.archive-btn.recommended {
 
 #ending-guardians {
     margin-bottom: 20px;
+    animation: fadeSlideIn 0.8s ease-out both;
+}
+
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 #ending-guardians h3 {
@@ -4639,6 +4919,7 @@ button.archive-btn.recommended {
     border-radius: 8px;
     padding: 16px;
     margin-bottom: 20px;
+    animation: fadeSlideIn 0.8s ease-out 0.3s both;
 }
 
 #ending-ng h3 {

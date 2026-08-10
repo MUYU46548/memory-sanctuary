@@ -9,6 +9,10 @@
  * - 终局层：第36-48周逐渐加入心跳声，频率随week增加
  */
 
+// 调试模式开关：发布时设为 false，开发时设为 true
+var DEBUG = false;
+
+
 window.AudioSystem = (() => {
     let ctx = null;
     let masterGain = null;
@@ -35,7 +39,7 @@ window.AudioSystem = (() => {
     let bgmAudio = new Audio();  // 单一 Audio 元素，复用不重建
     let bgmCurrentScene = null;    // 当前 BGM 场景 ID
     let bgmMuted = false;          // BGM 静音（独立于音效）
-    let bgmVolume = 1.0;           // BGM 音量倍率 (0-1)
+    let bgmVolume = 0.8;           // BGM 音量倍率 (0-1)，默认80%
     let bgmFadeTimer = null;       // 淡入淡出定时器
     let bgmFailedScenes = {};      // 记录加载失败的场景，避免重复请求
     let bgmPendingScene = null;    // 等待用户交互后播放的场景
@@ -95,7 +99,7 @@ window.AudioSystem = (() => {
     function playBGM(sceneId) {
         const config = BGM_CONFIG[sceneId];
         if (!config) {
-            console.warn(`[BGM] 未知场景: ${sceneId}`);
+            if (DEBUG) console.warn(`[BGM] 未知场景: ${sceneId}`);
             return;
         }
 
@@ -104,7 +108,7 @@ window.AudioSystem = (() => {
 
         // 已记录为不可用 → 跳过
         if (bgmFailedScenes[sceneId]) {
-            console.warn(`[BGM] 场景 ${sceneId} 已记录为不可用，跳过`);
+            if (DEBUG) console.warn(`[BGM] 场景 ${sceneId} 已记录为不可用，跳过`);
             return;
         }
 
@@ -134,11 +138,11 @@ window.AudioSystem = (() => {
                 }
                 bgmIsPlaying = true;
                 fadeInBGM(config.volume);
-                console.log(`[BGM] 开始播放: ${sceneId}`);
+                if (DEBUG) console.log(`[BGM] 开始播放: ${sceneId}`);
             })
             .catch(e => {
                 if (e.name === 'NotAllowedError') {
-                    console.log(`[BGM] 等待用户交互后播放: ${sceneId}`);
+                    if (DEBUG) console.log(`[BGM] 等待用户交互后播放: ${sceneId}`);
                     bgmPendingScene = sceneId;
                     bgmCurrentScene = null;
                     bgmIsPlaying = false;
@@ -146,10 +150,10 @@ window.AudioSystem = (() => {
                 }
                 // AbortError / interrupted 是切换 BGM 时的正常竞争，静默忽略
                 if (e.name === 'AbortError' || e.message?.includes('interrupted')) {
-                    console.log(`[BGM] 播放被新请求打断: ${sceneId}`);
+                    if (DEBUG) console.log(`[BGM] 播放被新请求打断: ${sceneId}`);
                     return;
                 }
-                console.warn(`[BGM] 播放失败: ${e.message}`);
+                if (DEBUG) console.warn(`[BGM] 播放失败: ${e.message}`);
                 bgmFailedScenes[sceneId] = true;
                 bgmCurrentScene = null;
                 bgmIsPlaying = false;
@@ -185,21 +189,21 @@ window.AudioSystem = (() => {
                 }
                 bgmIsPlaying = true;
                 fadeInBGM(config.volume);
-                console.log(`[BGM] 开始播放: ${sceneId}`);
+                if (DEBUG) console.log(`[BGM] 开始播放: ${sceneId}`);
             })
             .catch(e => {
                 if (e.name === 'NotAllowedError') {
-                    console.log(`[BGM] 等待用户交互后播放: ${sceneId}`);
+                    if (DEBUG) console.log(`[BGM] 等待用户交互后播放: ${sceneId}`);
                     bgmPendingScene = sceneId;
                     bgmCurrentScene = null;
                     bgmIsPlaying = false;
                     return;
                 }
                 if (e.name === 'AbortError' || e.message?.includes('interrupted')) {
-                    console.log(`[BGM] 播放被新请求打断: ${sceneId}`);
+                    if (DEBUG) console.log(`[BGM] 播放被新请求打断: ${sceneId}`);
                     return;
                 }
-                console.warn(`[BGM] 播放失败: ${e.message}`);
+                if (DEBUG) console.warn(`[BGM] 播放失败: ${e.message}`);
                 bgmFailedScenes[sceneId] = true;
                 bgmCurrentScene = null;
                 bgmIsPlaying = false;
@@ -289,13 +293,13 @@ window.AudioSystem = (() => {
             
             startDrone();
             isInitialized = true;
-            console.log('[Audio] 系统初始化完成');
+            if (DEBUG) console.log('[Audio] 系统初始化完成');
         
             if (ctx.state === 'suspended') {
-                ctx.resume().then(() => console.log('[Audio] AudioContext resumed'));
+                ctx.resume().then(() => { if (DEBUG) console.log('[Audio] AudioContext resumed'); });
             }
         } catch (e) {
-            console.warn('[Audio] Web Audio 不可用:', e);
+            if (DEBUG) console.warn('[Audio] Web Audio 不可用:', e);
         }
     }
 

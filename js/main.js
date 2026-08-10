@@ -2,6 +2,10 @@
  * main.js - 入口与初始化
  */
 
+// 调试模式开关：发布时设为 false，开发时设为 true
+var DEBUG = false;
+
+
 // ============================================================
 // 全局常量
 // ============================================================
@@ -11,7 +15,7 @@ const GAME_VERSION = '1.6.0';
 // 全局错误处理：防止加载失败白屏
 // ============================================================
 window.addEventListener('unhandledrejection', (event) => {
-    console.error('[记忆圣所] 未处理的Promise异常:', event.reason);
+    if (DEBUG) console.error('[记忆圣所] 未处理的Promise异常:', event.reason);
     const statusText = document.getElementById('boot-status');
     if (statusText && statusText.textContent && statusText.textContent.includes('加载失败')) {
         // 已经在显示错误信息，不重复
@@ -77,7 +81,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return; // 阻止后续初始化
     }
     
-    console.log('[记忆圣所] 启动中...');
+    if (DEBUG) console.log('[记忆圣所] 启动中...');
     
     const bootScreen = document.getElementById('boot-screen');
     const progressBar = document.getElementById('boot-progress-bar');
@@ -161,9 +165,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         }, 300);
         
-        console.log('[记忆圣所] 初始化完成');
+        if (DEBUG) console.log('[记忆圣所] 初始化完成');
     } catch (error) {
-        console.error('[记忆圣所] 初始化失败:', error);
+        if (DEBUG) console.error('[记忆圣所] 初始化失败:', error);
         if (statusText) statusText.textContent = '加载失败，请刷新页面';
     }
 });
@@ -188,42 +192,42 @@ async function loadGameData() {
         const endingsRes = await fetch('data/endings.json');
         MemorySanctuary.data.endings = (await endingsRes.json()).endings || [];
     } catch (e) {
-        console.warn('[数据] endings.json 加载失败，使用内置结局');
+        if (DEBUG) console.warn('[数据] endings.json 加载失败，使用内置结局');
         MemorySanctuary.data.endings = [];
     }
     try {
         const achievementsRes = await fetch('data/achievements.json');
         MemorySanctuary.data.achievements = (await achievementsRes.json()).achievements || [];
     } catch (e) {
-        console.warn('[数据] achievements.json 加载失败');
+        if (DEBUG) console.warn('[数据] achievements.json 加载失败');
         MemorySanctuary.data.achievements = [];
     }
     try {
         const scenesRes = await fetch('data/scenes.json');
         MemorySanctuary.data.scenes = await scenesRes.json();
-        console.log(`[数据] ${Object.keys(MemorySanctuary.data.scenes).length} 个剧情场景`);
+        if (DEBUG) console.log(`[数据] ${Object.keys(MemorySanctuary.data.scenes).length} 个剧情场景`);
     } catch (e) {
-        console.warn('[数据] scenes.json 加载失败，VN系统不可用');
+        if (DEBUG) console.warn('[数据] scenes.json 加载失败，VN系统不可用');
         MemorySanctuary.data.scenes = {};
     }
     try {
         const endingScenesRes = await fetch('data/ending_scenes.json');
         MemorySanctuary.data.endingScenes = await endingScenesRes.json();
-        console.log(`[数据] ${Object.keys(MemorySanctuary.data.endingScenes).length} 个结局场景`);
+        if (DEBUG) console.log(`[数据] ${Object.keys(MemorySanctuary.data.endingScenes).length} 个结局场景`);
     } catch (e) {
-        console.warn('[数据] ending_scenes.json 加载失败');
+        if (DEBUG) console.warn('[数据] ending_scenes.json 加载失败');
         MemorySanctuary.data.endingScenes = {};
     }
     try {
         const guardianEventsRes = await fetch('data/guardian_events.json');
         MemorySanctuary.data.guardianEvents = (await guardianEventsRes.json()).guardian_events || [];
-        console.log(`[数据] ${MemorySanctuary.data.guardianEvents.length} 个守护者事件`);
+        if (DEBUG) console.log(`[数据] ${MemorySanctuary.data.guardianEvents.length} 个守护者事件`);
     } catch (e) {
-        console.warn('[数据] guardian_events.json 加载失败');
+        if (DEBUG) console.warn('[数据] guardian_events.json 加载失败');
         MemorySanctuary.data.guardianEvents = [];
     }
 
-    console.log(`[数据] ${MemorySanctuary.data.archives.length}条目, ${MemorySanctuary.data.vaults.length}存储室, ${MemorySanctuary.data.guardians.length}守护者, ${MemorySanctuary.data.events.length}随机事件, ${MemorySanctuary.data.scheduledEvents.length}调度事件, ${MemorySanctuary.data.explorations.length}勘探点, ${MemorySanctuary.data.projects.length}项目`);
+    if (DEBUG) console.log(`[数据] ${MemorySanctuary.data.archives.length}条目, ${MemorySanctuary.data.vaults.length}存储室, ${MemorySanctuary.data.guardians.length}守护者, ${MemorySanctuary.data.events.length}随机事件, ${MemorySanctuary.data.scheduledEvents.length}调度事件, ${MemorySanctuary.data.explorations.length}勘探点, ${MemorySanctuary.data.projects.length}项目`);
 }
 
 function initGameState() {

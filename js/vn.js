@@ -9,6 +9,10 @@
  * 首次观看保护：第一次游玩某段剧情时，跳过按钮灰色不可点击
  * 跳过确认：非首次观看时，点击跳过需确认
  */
+
+// 调试模式开关：发布时设为 false，开发时设为 true
+var DEBUG = false;
+
 const VN = (() => {
     'use strict';
 
@@ -54,7 +58,7 @@ const VN = (() => {
     function init(sceneData) {
         overlay = document.getElementById('vn-overlay');
         if (!overlay) {
-            console.error('[VN] #vn-overlay 未找到');
+            if (DEBUG) console.error('[VN] #vn-overlay 未找到');
             return false;
         }
 
@@ -88,7 +92,7 @@ const VN = (() => {
         // Keyboard support
         document.addEventListener('keydown', handleKeydown);
 
-        console.log('[VN] 初始化完成');
+        if (DEBUG) console.log('[VN] 初始化完成');
         return true;
     }
 
@@ -150,7 +154,7 @@ const VN = (() => {
     function show(sceneId, completeCallback) {
         const scene = scenes[sceneId];
         if (!scene) {
-            console.warn(`[VN] 场景未找到: ${sceneId}`);
+            if (DEBUG) console.warn(`[VN] 场景未找到: ${sceneId}`);
             if (completeCallback) completeCallback();
             return;
         }
@@ -179,7 +183,7 @@ const VN = (() => {
     function showEnding(sceneId, completeCallback) {
         const scene = endingScenes[sceneId];
         if (!scene) {
-            console.warn(`[VN] 结局场景未找到: ${sceneId}`);
+            if (DEBUG) console.warn(`[VN] 结局场景未找到: ${sceneId}`);
             if (completeCallback) completeCallback();
             return;
         }

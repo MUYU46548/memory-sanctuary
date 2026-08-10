@@ -1,0 +1,610 @@
+/**
+ * game-save.js - 从 game.js 拆分的模块
+ * 包含: saveGame, tryRecoverFromBackup, loadGame...
+ */
+
+function saveGame(slot) {
+    if (slot < 1 || slot > SAVE_SLOT_COUNT) return false;
+    
+    const ngData = getNGPlusData();
+
+    const saveData = {
+        version: 1,
+        slot: slot,
+        savedAt: Date.now(),
+        playthrough: ngData.playthroughCount,
+        state: {
+            resources: { ...MemorySanctuary.state.resources },
+            week: MemorySanctuary.state.week,
+            chapter: MemorySanctuary.state.chapter,
+            completedArchives: [...MemorySanctuary.state.completedArchives],
+            vaultUsage: { ...MemorySanctuary.state.vaultUsage },
+            narrativeFlags: [...MemorySanctuary.state.narrativeFlags],
+            deterioration: { ...MemorySanctuary.state.deterioration },
+            emergencyCorruption: MemorySanctuary.state.emergencyCorruption,
+            emergencyCooldowns: { ...MemorySanctuary.state.emergencyCooldowns },
+            activeEvents: [],
+            activeEventIds: [...MemorySanctuary.state.activeEventIds],
+            guardianMoods: { ...MemorySanctuary.state.guardianMoods },
+            scheduledEvents: [...MemorySanctuary.state.scheduledEvents],
+            unlockedBonuses: [...MemorySanctuary.state.unlockedBonuses],
+            exploration: { ...MemorySanctuary.state.exploration },
+            activeProjects: [...MemorySanctuary.state.activeProjects],
+            completedProjects: [...MemorySanctuary.state.completedProjects],
+            ongoingEffects: [...(MemorySanctuary.state.ongoingEffects || [])],
+            resourceChanges: { ...(MemorySanctuary.state.resourceChanges || { energy: 0, media: 0, environment: 0, food: 0 }) }
+        },
+        currentVaultId: MemorySanctuary.currentVaultId
+    };
+
+    try {
+        const serialized = JSON.stringify(saveData);
+        localStorage.setItem(SAVE_KEY_PREFIX + slot, serialized);
+        localStorage.setItem(CURRENT_SLOT_KEY, String(slot));
+        
+        // 定期自动备份
+        saveCounter++;
+        if (saveCounter % BACKUP_INTERVAL === 0) {
+            localStorage.setItem(BACKUP_KEY_PREFIX + slot, serialized);
+        }
+        
+        addLog(`游戏已保存至存档槽 ${slot}。`, 'system');
+        return true;
+    } catch (e) {
+        if (DEBUG) console.error('[存档] 保存失败:', e);
+        addLog('存档失败：存储空间不足。', 'system');
+        return false;
+    }
+}
+
+
+function tryRecoverFromBackup(slot) {
+    const backup = localStorage.getItem(BACKUP_KEY_PREFIX + slot);
+    if (!backup) return null;
+    try {
+        const data = JSON.parse(backup);
+        if (data && data.state && data.version) {
+            return data;
+        }
+    } catch (e) {
+        if (DEBUG) console.warn('[备份] 备份文件也损坏:', e);
+    }
+    return null;
+}
+
+
+function loadGame(slot) {
+    if (slot < 1 || slot > SAVE_SLOT_COUNT) return false;
+
+    const raw = localStorage.getItem(SAVE_KEY_PREFIX + slot);
+    if (!raw) return false;
+
+    let saveData = null;
+    try {
+        saveData = JSON.parse(raw);
+    } catch (e) {
+        if (DEBUG) console.error(`[存档] 槽位 ${slot} 数据损坏:`, e);
+        // 尝试从备份恢复
+        const backup = tryRecoverFromBackup(slot);
+        if (backup) {
+            if (confirm(`检测到槽位 ${slot} 的存档损坏，但发现自动备份。是否从备份恢复？\n\n注意：备份最多保留到上次保存后 ${BACKUP_INTERVAL} 次操作前的状态。`)) {
+                saveData = backup;
+                // 立即用备份覆盖损坏的存档
+                localStorage.setItem(SAVE_KEY_PREFIX + slot, JSON.stringify(backup));
+            } else {
+                return false;
+            }
+        } else {
+            alert(`槽位 ${slot} 的存档已损坏且无可用备份。请删除并新建。`);
+            return false;
+        }
+    }
+    
+    // 校验数据完整性
+    if (!saveData || !saveData.state || !saveData.state.resources) {
+        const backup = tryRecoverFromBackup(slot);
+        if (backup) {
+            if (confirm(`检测到槽位 ${slot} 的存档结构异常。是否从备份恢复？`)) {
+                saveData = backup;
+                localStorage.setItem(SAVE_KEY_PREFIX + slot, JSON.stringify(backup));
+            } else {
+                return false;
+            }
+        } else {
+            alert(`槽位 ${slot} 的存档无效且无可用备份。请删除并新建。`);
+            return false;
+        }
+    }
+
+    try {
+        // Initialize fresh state before loading
+        initGameState();
+
+        MemorySanctuary.state.resources = { ...saveData.state.resources };
+        MemorySanctuary.state.week = saveData.state.week || 1;
+        MemorySanctuary.state.chapter = saveData.state.chapter || 1;
+        MemorySanctuary.state.completedArchives = [...(saveData.state.completedArchives || [])];
+        MemorySanctuary.state.vaultUsage = { ...(saveData.state.vaultUsage || {}) };
+        MemorySanctuary.state.narrativeFlags = [...(saveData.state.narrativeFlags || [])];
+        MemorySanctuary.state.deterioration = { ...(saveData.state.deterioration || { energy: false, media: false, environment: false }) };
+        MemorySanctuary.state.emergencyCorruption = saveData.state.emergencyCorruption || 0;
+        MemorySanctuary.state.emergencyCooldowns = { ...(saveData.state.emergencyCooldowns || {}) };
+        MemorySanctuary.state.activeEventIds = [...(saveData.state.activeEventIds || [])];
+        MemorySanctuary.state.guardianMoods = { ...(saveData.state.guardianMoods || {}) };
+        MemorySanctuary.state.scheduledEvents = [...(saveData.state.scheduledEvents || [])];
+        MemorySanctuary.state.unlockedBonuses = [...(saveData.state.unlockedBonuses || [])];
+        MemorySanctuary.state.exploration = { ...(saveData.state.exploration || {}) };
+        MemorySanctuary.state.activeProjects = [...(saveData.state.activeProjects || [])];
+        MemorySanctuary.state.completedProjects = [...(saveData.state.completedProjects || [])];
+        MemorySanctuary.state.ongoingEffects = [...(saveData.state.ongoingEffects || [])];
+        MemorySanctuary.state.resourceChanges = { ...(saveData.state.resourceChanges || { energy: 0, media: 0, environment: 0, food: 0 }) };
+        
+        MemorySanctuary.state.gameOver = false;
+        
+        if (saveData.currentVaultId) {
+            MemorySanctuary.currentVaultId = saveData.currentVaultId;
+        }
+
+        localStorage.setItem(CURRENT_SLOT_KEY, String(slot));
+        
+        // 读取后也创建一次备份（确保备份是最新的有效版本）
+        localStorage.setItem(BACKUP_KEY_PREFIX + slot, JSON.stringify(saveData));
+        
+        addLog(`已从存档槽 ${slot} 读取。`, 'system');
+        return true;
+    } catch (error) {
+        if (DEBUG) console.error('[存档] 读取失败:', error);
+        addLog('读取存档失败。', 'system');
+        return false;
+    }
+}
+
+
+function getSaveSlotInfo(slot) {
+    const raw = localStorage.getItem(SAVE_KEY_PREFIX + slot);
+    if (!raw) return null;
+    try {
+        const data = JSON.parse(raw);
+        // 检查是否有备份
+        const hasBackup = !!localStorage.getItem(BACKUP_KEY_PREFIX + slot);
+        return {
+            slot: data.slot || slot,
+            savedAt: data.savedAt || 0,
+            playthrough: data.playthrough || 1,
+            week: data.state?.week || 1,
+            chapter: data.state?.chapter || 1,
+            archivedCount: data.state?.completedArchives?.length || 0,
+            hasBackup: hasBackup
+        };
+    } catch (e) {
+        return { corrupted: true };
+    }
+}
+
+
+function getAllSaveSlots() {
+    const slots = [];
+    for (let i = 1; i <= SAVE_SLOT_COUNT; i++) {
+        slots.push(getSaveSlotInfo(i));
+    }
+    return slots;
+}
+
+
+function deleteSaveSlot(slot) {
+    if (slot < 1 || slot > SAVE_SLOT_COUNT) return;
+    localStorage.removeItem(SAVE_KEY_PREFIX + slot);
+    localStorage.removeItem(BACKUP_KEY_PREFIX + slot);
+}
+
+
+function hasAnySave() {
+    for (let i = 1; i <= SAVE_SLOT_COUNT; i++) {
+        if (localStorage.getItem(SAVE_KEY_PREFIX + i)) return true;
+    }
+    return false;
+}
+
+
+function getCurrentSlot() {
+    return parseInt(localStorage.getItem(CURRENT_SLOT_KEY) || '0');
+}
+
+
+function getNGPlusData() {
+    const raw = localStorage.getItem(NG_PLUS_KEY);
+    if (!raw) {
+        return {
+            playthroughCount: 0,
+            totalArchivesSaved: 0,
+            bonuses: [],
+            unlockedEntries: [],
+            guardianFinalesSeen: [],
+            guardianHistory: [],
+            seenScenes: []
+        };
+    }
+    try {
+        const data = JSON.parse(raw);
+        // Ensure new fields exist
+        if (!data.unlockedEntries) data.unlockedEntries = [];
+        if (!data.guardianFinalesSeen) data.guardianFinalesSeen = [];
+        if (!data.guardianHistory) data.guardianHistory = [];
+        if (!data.seenScenes) data.seenScenes = [];
+        return data;
+    } catch (e) {
+        return {
+            playthroughCount: 0,
+            totalArchivesSaved: 0,
+            bonuses: [],
+            unlockedEntries: [],
+            guardianFinalesSeen: [],
+            guardianHistory: [],
+            seenScenes: []
+        };
+    }
+}
+
+
+function saveNGPlusData(data) {
+    localStorage.setItem(NG_PLUS_KEY, JSON.stringify(data));
+}
+
+
+function startNewGamePlus() {
+    const ngData = getNGPlusData();
+    ngData.playthroughCount++;
+    ngData.bonuses = calculateNGPlusBonuses(ngData.playthroughCount);
+    saveNGPlusData(ngData);
+    return ngData;
+}
+
+
+function calculateNGPlusBonuses(playthrough) {
+    const bonuses = [];
+    if (playthrough >= 2) bonuses.push({ type: 'resource', resource: 'energy', value: 20, label: '起始能源+20' });
+    if (playthrough >= 2) bonuses.push({ type: 'resource', resource: 'media', value: 15, label: '起始介质+15' });
+    if (playthrough >= 3) bonuses.push({ type: 'resource', resource: 'energy', value: 30, label: '起始能源+30' });
+    if (playthrough >= 3) bonuses.push({ type: 'resource', resource: 'media', value: 25, label: '起始介质+25' });
+    if (playthrough >= 4) bonuses.push({ type: 'resource', resource: 'environment', value: 10, label: '起始环境+10' });
+    if (playthrough >= 5) bonuses.push({ type: 'resource', resource: 'energy', value: 50, label: '起始能源+50' });
+    
+    // Add mood bonuses from previous run
+    const ngData = getNGPlusData();
+    if (ngData.bonuses) {
+        ngData.bonuses.forEach(b => {
+            if (b.type === 'mood_bonus') {
+                bonuses.push({ type: 'resource', resource: 'energy', value: 10, label: '守护者信任+10能源' });
+            }
+        });
+    }
+    
+    return bonuses;
+}
+
+
+function applyNGPlusBonuses() {
+    const ngData = getNGPlusData();
+    if (!ngData.bonuses || ngData.bonuses.length === 0) return;
+
+    ngData.bonuses.forEach(bonus => {
+        if (bonus.type === 'resource') {
+            MemorySanctuary.state.resources[bonus.resource] = Math.min(
+                100,
+                MemorySanctuary.state.resources[bonus.resource] + bonus.value
+            );
+        }
+    });
+}
+
+
+function startNewGame(slot, isNGPlus) {
+    if (isNGPlus) {
+        startNewGamePlus();
+    }
+
+    initGameState();
+
+    if (isNGPlus) {
+        applyNGPlusBonuses();
+    }
+
+    const logContent = document.getElementById('log-content');
+    if (logContent) logContent.innerHTML = '';
+
+    localStorage.setItem(CURRENT_SLOT_KEY, String(slot));
+
+    renderAll();
+    if (typeof initCanvas === 'function') initCanvas();
+
+    showGuardianDialogue('tika', 'idle');
+
+    saveGame(slot);
+
+    const ngData = getNGPlusData();
+    if (isNGPlus && ngData.playthroughCount > 1) {
+        addLog(`第 ${ngData.playthroughCount} 周目开始。继承奖励已应用。`, 'system');
+    } else {
+        addLog('新游戏开始。愿你的选择得到善待。', 'system');
+        
+        // 首次游玩自动弹出帮助
+        const hasSeenTutorial = localStorage.getItem('memory-sanctuary-tutorial');
+        if (!hasSeenTutorial) {
+            localStorage.setItem('memory-sanctuary-tutorial', 'seen');
+            // 延迟一帧后再弹窗，让玩家先看到游戏画面
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    if (typeof showHelpModal === 'function') showHelpModal();
+                    addLog('点击底部「帮助」可随时查看操作指南。', 'system');
+                }, 300);
+            });
+        }
+    }
+}
+
+
+function openSaveScreen(mode) {
+    const overlay = document.getElementById('save-overlay');
+    const title = document.getElementById('save-panel-title');
+    if (!overlay) return;
+
+    if (title) {
+        if (mode === 'load') {
+            title.textContent = '记忆圣所 · 读档';
+        } else if (mode === 'new') {
+            title.textContent = '记忆圣所 · 新建游戏';
+        } else {
+            title.textContent = '记忆圣所 · 存档';
+        }
+    }
+
+    renderSaveSlots(mode);
+    overlay.classList.remove('hidden');
+}
+
+
+function closeSaveScreen() {
+    const overlay = document.getElementById('save-overlay');
+    if (overlay) overlay.classList.add('hidden');
+}
+
+
+function renderSaveSlots(mode) {
+    const container = document.getElementById('save-slots');
+    if (!container) return;
+
+    container.innerHTML = '';
+    const slots = getAllSaveSlots();
+    const currentSlot = getCurrentSlot();
+
+    slots.forEach((info, index) => {
+        const slotNum = index + 1;
+        const card = document.createElement('div');
+        card.className = 'save-slot-card';
+
+        if (info) {
+            const date = new Date(info.savedAt);
+            const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+
+            card.innerHTML = `
+                <div class="save-slot-header">
+                    <span class="save-slot-number">存档 ${slotNum}</span>
+                    ${slotNum === currentSlot ? '<span class="save-slot-current">当前</span>' : ''}
+                    <span class="save-slot-playthrough">第${info.playthrough}周目</span>
+                </div>
+                <div class="save-slot-info">
+                    <div class="save-slot-week">第 ${info.week}周 · 第 ${info.chapter}章</div>
+                    <div class="save-slot-archived">已归档: ${info.archivedCount} 条</div>
+                    <div class="save-slot-date">${dateStr}</div>
+                </div>
+                <div class="save-slot-actions">
+                    <button class="save-slot-btn load" data-slot="${slotNum}">读取</button>
+                    ${mode === 'save' ? `<button class="save-slot-btn overwrite" data-slot="${slotNum}">覆盖</button>` : ''}
+                    <button class="save-slot-btn delete" data-slot="${slotNum}">删除</button>
+                </div>
+            `;
+        } else {
+            card.innerHTML = `
+                <div class="save-slot-header">
+                    <span class="save-slot-number">存档 ${slotNum}</span>
+                </div>
+                <div class="save-slot-info">
+                    <div class="save-slot-empty">空槽位</div>
+                </div>
+                <div class="save-slot-actions">
+                    <button class="save-slot-btn new" data-slot="${slotNum}">新游戏</button>
+                </div>
+            `;
+        }
+
+        container.appendChild(card);
+    });
+
+    container.querySelectorAll('.save-slot-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const slot = parseInt(e.target.dataset.slot);
+            const action = e.target.classList.contains('load') ? 'load' :
+                          e.target.classList.contains('overwrite') ? 'overwrite' :
+                          e.target.classList.contains('delete') ? 'delete' :
+                          e.target.classList.contains('new') ? 'new' : null;
+
+            handleSaveAction(slot, action, mode);
+        });
+    });
+}
+
+
+function handleSaveAction(slot, action, mode) {
+    const titleScreen = document.getElementById('title-screen');
+    const gameContainer = document.getElementById('game-container');
+    
+    switch (action) {
+        case 'load':
+            closeSaveScreen();
+            // Always ensure title is hidden and game container visible
+            if (titleScreen) titleScreen.classList.add('hidden');
+            if (gameContainer) gameContainer.classList.remove('hidden');
+            loadGame(slot);
+            break;
+        case 'overwrite':
+            if (confirm(`确定要覆盖存档槽 ${slot} 吗？`)) {
+                if (saveGame(slot)) {
+                    closeSaveScreen();
+                }
+            }
+            break;
+        case 'delete':
+            if (confirm(`确定要删除存档槽 ${slot} 吗？`)) {
+                deleteSaveSlot(slot);
+                renderSaveSlots(mode);
+            }
+            break;
+        case 'new': {
+            const ngData = getNGPlusData();
+            const isNGPlus = ngData.playthroughCount > 0;
+            
+            closeSaveScreen();
+            if (titleScreen) titleScreen.classList.add('hidden');
+            if (gameContainer) gameContainer.classList.remove('hidden');
+            startNewGame(slot, isNGPlus);
+            break;
+        }
+    }
+}
+
+
+function exportSaveToClipboard(slot) {
+    const raw = localStorage.getItem(SAVE_KEY_PREFIX + slot);
+    if (!raw) {
+        alert('该存档槽为空！');
+        return;
+    }
+    
+    try {
+        const saveData = JSON.parse(raw);
+        const jsonStr = JSON.stringify(saveData);
+        const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(encoded).then(() => {
+                alert(`存档 ${slot} 已导出到剪贴板！\n将此文本发送给他人即可分享。`);
+            }).catch(() => {
+                prompt(`存档 ${slot} 导出文本（全选复制）：`, encoded);
+            });
+        } else {
+            prompt(`存档 ${slot} 导出文本（全选复制）：`, encoded);
+        }
+        
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playButtonClick();
+    } catch (e) {
+        alert('导出失败：' + e.message);
+    }
+}
+
+
+function importSaveFromClipboard() {
+    const input = prompt('粘贴导入文本：');
+    if (!input || !input.trim()) return;
+    
+    try {
+        const jsonStr = decodeURIComponent(escape(atob(input.trim())));
+        const saveData = JSON.parse(jsonStr);
+        
+        if (!saveData || !saveData.state || !saveData.version) {
+            alert('无效的存档文本！');
+            return;
+        }
+        
+        const slots = getAllSaveSlots();
+        let targetSlot = slots.findIndex(s => s === null) + 1;
+        
+        if (targetSlot === 0) {
+            const slotStr = prompt(`所有存档槽已满。输入槽位号 (1-${SAVE_SLOT_COUNT}) 覆盖：`);
+            targetSlot = parseInt(slotStr);
+            if (isNaN(targetSlot) || targetSlot < 1 || targetSlot > SAVE_SLOT_COUNT) {
+                alert('无效的槽位号。');
+                return;
+            }
+            if (!confirm(`确定要覆盖存档槽 ${targetSlot} 吗？`)) return;
+        }
+        
+        localStorage.setItem(SAVE_KEY_PREFIX + targetSlot, JSON.stringify(saveData));
+        alert(`存档已导入到槽位 ${targetSlot}！`);
+        
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playGuardianEventTrigger();
+        
+        const saveOverlay = document.getElementById('save-overlay');
+        if (saveOverlay && !saveOverlay.classList.contains('hidden')) {
+            renderSaveSlots('save');
+        }
+    } catch (e) {
+        alert('导入失败：存档文本已损坏。\n' + e.message);
+    }
+}
+
+
+function initExportImport() {
+    const exportBtn = document.getElementById('save-export-btn');
+    const importBtn = document.getElementById('save-import-btn');
+    
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            const currentSlot = getCurrentSlot();
+            if (currentSlot >= 1) {
+                exportSaveToClipboard(currentSlot);
+            } else {
+                alert('没有活跃的存档。请先保存或读取一个存档。');
+            }
+        });
+    }
+    
+    if (importBtn) {
+        importBtn.addEventListener('click', () => {
+            importSaveFromClipboard();
+        });
+    }
+}
+
+
+function initSaveSystem() {
+    const loadBtn = document.getElementById('load-btn');
+    const saveCloseBtn = document.getElementById('save-close');
+
+    // Load button: open slot selection panel
+    if (loadBtn) {
+        loadBtn.addEventListener('click', () => {
+            if (typeof AudioSystem !== 'undefined') AudioSystem.playButtonClick();
+            openSaveScreen('load');
+        });
+    }
+
+    if (saveCloseBtn) {
+        saveCloseBtn.addEventListener('click', closeSaveScreen);
+    }
+
+    const overlay = document.getElementById('save-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeSaveScreen();
+        });
+    }
+}
+
+
+function startGameAfterLoad(slot) {
+    const titleScreen = document.getElementById('title-screen');
+    const gameContainer = document.getElementById('game-container');
+    
+    titleScreen.classList.add('hidden');
+    gameContainer.classList.remove('hidden');
+    
+    loadGame(slot);
+    
+    // Show tutorial for first-time players
+    const savedTutorial = localStorage.getItem('memory-sanctuary-tutorial');
+    if (!savedTutorial) {
+        setTimeout(() => {
+            if (typeof initTutorial === 'function') initTutorial();
+        }, 500);
+    }
+}

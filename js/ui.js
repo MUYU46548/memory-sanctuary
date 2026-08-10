@@ -3,6 +3,10 @@
  * 资源面板、存储室标签、归档条目、守护者面板
  */
 
+// 调试模式开关：发布时设为 false，开发时设为 true
+var DEBUG = false;
+
+
 function initUI() {
     const overlay = document.getElementById('modal-overlay');
     if (overlay) {
@@ -21,7 +25,7 @@ function initUI() {
     initProjectPanel();
     initResourceTooltips();
 
-    console.log('[UI] 初始化完成');
+    if (DEBUG) console.log('[UI] 初始化完成');
 }
 
 function initProjectPanel() {
@@ -54,6 +58,9 @@ function renderAll() {
     updateProjectButton();
     updateEmergencyButton();
     renderSealTopbarButton();
+    
+    // Always keep resource changes up-to-date
+    if (typeof recalculateResourceChanges === 'function') recalculateResourceChanges();
 }
 
 // ============================================================

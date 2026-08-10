@@ -38,10 +38,8 @@
                 <div class="title-sub">终来之刻，何物当存？</div>
             </div>
             <div id="title-menu">
-                <div class="title-row">
-                    <button class="title-btn" id="title-new">新建游戏</button>
-                    <button class="title-btn" id="title-load">读取存档</button>
-                </div>
+                <button class="title-btn title-btn-full" id="title-new">新建游戏</button>
+                <button class="title-btn title-btn-full" id="title-load">读取存档</button>
                 <div class="title-row">
                     <button class="title-btn" id="title-achievements">🏆 成就</button>
                     <button class="title-btn" id="title-codex">📖 回顾</button>
@@ -54,7 +52,7 @@
                     <button class="title-btn" id="title-about">关于</button>
                     <button class="title-btn" id="title-theme-toggle" title="切换亮/暗色模式">◐ 主题</button>
                 </div>
-                <div id="title-version">v1.6.0</div>
+                <div id="title-version">v1.6.0-beta</div>
             </div>
             <div id="title-ngplus"></div>
         </div>
@@ -185,6 +183,14 @@
                     <button id="log-copy" title="复制全部日志">📋 复制</button>
                     <button id="log-close">✕</button>
                 </div>
+            </div>
+            <div id="log-filter-bar">
+                <button class="log-filter active" data-filter="all">全部</button>
+                <button class="log-filter" data-filter="system">系统</button>
+                <button class="log-filter" data-filter="guardian">守护者</button>
+                <button class="log-filter" data-filter="success">成功</button>
+                <button class="log-filter" data-filter="event">事件</button>
+                <button class="log-filter" data-filter="warning">警告</button>
             </div>
             <div id="log-content">
                 <p class="log-entry system">系统启动。圣所主厅已激活。</p>
@@ -382,6 +388,17 @@
                 </div>
                 <div class="settings-item">
                     <label class="settings-label">
+                        <span>BGM 音量</span>
+                    </label>
+                    <div class="settings-volume-row">
+                        <input type="range" id="setting-bgm-volume" min="0" max="100" value="80" class="settings-slider">
+                        <span class="settings-volume-value" id="bgm-volume-value">80%</span>
+                        <button class="settings-mute-btn" id="setting-bgm-mute" title="BGM 静音">🎵</button>
+                    </div>
+                    <div class="settings-desc">调整背景音乐音量。点击 🎵 可单独静音/取消 BGM。</div>
+                </div>
+                <div class="settings-item">
+                    <label class="settings-label">
                         <button class="settings-mute-btn global-mute" id="setting-global-mute" title="全局静音">🔇 全局静音</button>
                     </label>
                     <div class="settings-desc">一键静音所有音频（BGM + 音效）。</div>
@@ -395,17 +412,6 @@
                         <button class="settings-theme-btn" id="theme-light" data-theme="light">☀️ 亮色</button>
                     </div>
                     <div class="settings-desc">切换界面主题。当前主题将高亮显示。</div>
-                </div>
-                <div class="settings-item">
-                    <label class="settings-label">
-                        <span>BGM 音量</span>
-                    </label>
-                    <div class="settings-volume-row">
-                        <input type="range" id="setting-bgm-volume" min="0" max="100" value="100" class="settings-slider">
-                        <span class="settings-volume-value" id="bgm-volume-value">100%</span>
-                        <button class="settings-mute-btn" id="setting-bgm-mute" title="BGM 静音">🎵</button>
-                    </div>
-                    <div class="settings-desc">调整背景音乐音量。点击 🎵 可单独静音/取消 BGM。</div>
                 </div>
             </div>
         </div>
@@ -520,7 +526,104 @@
         </div>
     </div>
 
-    <!-- 视觉小说引擎覆盖层 -->
+    <!-- 调试面板 -->
+    <div id="debug-overlay" class="hidden">
+        <div id="debug-panel">
+            <div id="debug-header">
+                <h3>🛠️ 调试面板</h3>
+                <button id="debug-close">✕</button>
+            </div>
+            <div id="debug-tabs">
+                <button class="debug-tab active" data-tab="resources">资源</button>
+                <button class="debug-tab" data-tab="time">时间</button>
+                <button class="debug-tab" data-tab="events">事件</button>
+                <button class="debug-tab" data-tab="achievements">成就</button>
+                <button class="debug-tab" data-tab="state">状态</button>
+            </div>
+            <div id="debug-content">
+                <!-- 资源面板 -->
+                <div id="debug-tab-resources" class="debug-tab-content active">
+                    <h4>资源修改</h4>
+                    <div class="debug-control">
+                        <label>能源: <span id="debug-energy-val">150</span></label>
+                        <input type="range" id="debug-energy" min="0" max="150" value="150">
+                    </div>
+                    <div class="debug-control">
+                        <label>介质: <span id="debug-media-val">100</span></label>
+                        <input type="range" id="debug-media" min="0" max="150" value="100">
+                    </div>
+                    <div class="debug-control">
+                        <label>环境: <span id="debug-environment-val">95</span></label>
+                        <input type="range" id="debug-environment" min="0" max="100" value="95">
+                    </div>
+                    <div class="debug-control">
+                        <label>食物: <span id="debug-food-val">50</span></label>
+                        <input type="range" id="debug-food" min="0" max="80" value="50">
+                    </div>
+                    <button id="debug-apply-resources" class="debug-btn">应用修改</button>
+                </div>
+                <!-- 时间面板 -->
+                <div id="debug-tab-time" class="debug-tab-content">
+                    <h4>时间跳转</h4>
+                    <div class="debug-control">
+                        <label>跳转到周数:</label>
+                        <input type="number" id="debug-week-input" min="1" max="48" value="1">
+                    </div>
+                    <button id="debug-jump-week" class="debug-btn">跳转</button>
+                    <div class="debug-control">
+                        <label>快速跳转:</label>
+                        <div class="debug-btn-row">
+                            <button class="debug-btn debug-jump-btn" data-week="1">第1周</button>
+                            <button class="debug-btn debug-jump-btn" data-week="10">第10周</button>
+                            <button class="debug-btn debug-jump-btn" data-week="20">第20周</button>
+                            <button class="debug-btn debug-jump-btn" data-week="30">第30周</button>
+                            <button class="debug-btn debug-jump-btn" data-week="40">第40周</button>
+                            <button class="debug-btn debug-jump-btn" data-week="48">第48周</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- 事件面板 -->
+                <div id="debug-tab-events" class="debug-tab-content">
+                    <h4>事件触发</h4>
+                    <div class="debug-control">
+                        <label>选择事件:</label>
+                        <select id="debug-event-select"></select>
+                    </div>
+                    <button id="debug-trigger-event" class="debug-btn">触发事件</button>
+                    <div class="debug-control">
+                        <label>随机事件:</label>
+                        <button id="debug-random-event" class="debug-btn">强制随机事件</button>
+                    </div>
+                </div>
+                <!-- 成就面板 -->
+                <div id="debug-tab-achievements" class="debug-tab-content">
+                    <h4>成就操作</h4>
+                    <div class="debug-control">
+                        <label>选择成就:</label>
+                        <select id="debug-achievement-select"></select>
+                    </div>
+                    <button id="debug-unlock-achievement" class="debug-btn">解锁成就</button>
+                    <button id="debug-reset-achievements" class="debug-btn debug-btn-danger">重置所有成就</button>
+                </div>
+                <!-- 状态面板 -->
+                <div id="debug-tab-state" class="debug-tab-content">
+                    <h4>状态导入/导出</h4>
+                    <div class="debug-control">
+                        <label>当前状态 (JSON):</label>
+                        <textarea id="debug-state-json" rows="8"></textarea>
+                    </div>
+                    <button id="debug-export-state" class="debug-btn">导出状态</button>
+                    <button id="debug-import-state" class="debug-btn">导入状态</button>
+                    <button id="debug-clear-state" class="debug-btn debug-btn-danger">清除存档</button>
+                </div>
+            </div>
+            <div id="debug-footer">
+                <span>按 Ctrl+Shift+D 切换调试面板</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- VN 视觉小说覆盖层 -->
     <div id="vn-overlay" class="hidden">
         <div id="vn-portraits"></div>
         <div id="vn-dialogue-box">
@@ -544,6 +647,16 @@
     <script src="js/font-loader.js"></script>
     <script src="js/main.js"></script>
     <script src="js/game.js"></script>
+    <script src="js/game-log.js"></script>
+    <script src="js/game-events.js"></script>
+    <script src="js/game-exploration.js"></script>
+    <script src="js/game-projects.js"></script>
+    <script src="js/game-emergency.js"></script>
+    <script src="js/game-save.js"></script>
+    <script src="js/game-ending.js"></script>
+    <script src="js/game-archive.js"></script>
+    <script src="js/game-tutorial.js"></script>
+    <script src="js/debug-panel.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/canvas.js"></script>
     <script src="js/audio.js"></script>
@@ -563,7 +676,7 @@
                 <div id="ending-ng"></div>
             </div>
             <div id="ending-footer">
-                <button id="ending-ng-btn" class="hidden">开始 NG+</button>
+                <button id="ending-ng-btn" class="hidden">开始新周目</button>
                 <button id="ending-return-btn">返回标题</button>
             </div>
         </div>

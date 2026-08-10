@@ -3,6 +3,10 @@
  * 圣所主厅：圆形穹顶、歌者之座、声波可视化、多闸门
  */
 
+// 调试模式开关：发布时设为 false，开发时设为 true
+var DEBUG = false;
+
+
 let sanctuaryCanvas = null;
 let sanctuaryCtx = null;
 let animationId = null;
@@ -74,7 +78,7 @@ const SYMBOL_LIBRARY = {
 function initCanvas() {
     sanctuaryCanvas = document.getElementById('sanctuary-canvas');
     if (!sanctuaryCanvas) {
-        console.error('[Canvas] 找不到圣所画布');
+        if (DEBUG) console.error('[Canvas] 找不到圣所画布');
         return;
     }
     
@@ -96,7 +100,7 @@ function initCanvas() {
     particles = [];
     floatingSymbols = [];
     animate();
-    console.log('[Canvas] 圣所主厅初始化完成');
+    if (DEBUG) console.log('[Canvas] 圣所主厅初始化完成');
 }
 
 function resizeCanvas() {

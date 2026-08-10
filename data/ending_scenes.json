@@ -2,333 +2,1028 @@
   "complete_memory": {
     "title": "永恒记忆",
     "background": "full_vault",
-    "speakers": ["narrator", "tika", "finn", "misha", "lorn", "ethel"],
+    "speakers": [
+      "narrator",
+      "tika",
+      "finn",
+      "misha",
+      "lorn",
+      "ethel"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了萨拉达斯文明的每一片碎片。"},
-      {"speaker": "narrator", "text": "后世将看到一个完整的文明——它的语言、历史、灾难、艺术、信仰、科学、生态、法律、生活、建筑、医学与星空。"},
-      {"speaker": "tika", "text": "他们……会听到我们的歌声吗？"},
-      {"speaker": "narrator", "text": "缇卡轻声问。她的眼中满是泪水，但嘴角带着微笑。"},
-      {"speaker": "finn", "text": "会的。我已经在编年史里写下了每一个人的名字。"},
-      {"speaker": "misha", "text": "种子会发芽的。在某个我们看不到的春天。"},
-      {"speaker": "lorn", "text": "圣所会持续运转。千年，万年。直到有人找到它。"},
-      {"speaker": "ethel", "text": "愿后世记得我们。不是作为悲剧，而是作为——曾经活过的人。"},
-      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。但记忆永存。"},
-      {"speaker": "narrator", "text": "「我们曾存在，我们曾仰望，我们曾渴望触碰你们。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了萨拉达斯文明的每一片碎片。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "后世将看到一个完整的文明——它的语言、历史、灾难、艺术、信仰、科学、生态、法律、生活、建筑、医学与星空。"
+      },
+      {
+        "speaker": "tika",
+        "text": "他们……会听到我们的歌声吗？"
+      },
+      {
+        "speaker": "narrator",
+        "text": "缇卡轻声问。她的眼中满是泪水，但嘴角带着微笑。"
+      },
+      {
+        "speaker": "finn",
+        "text": "会的。我已经在编年史里写下了每一个人的名字。"
+      },
+      {
+        "speaker": "misha",
+        "text": "种子会发芽的。在某个我们看不到的春天。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "圣所会持续运转。千年，万年。直到有人找到它。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "愿后世记得我们。不是作为悲剧，而是作为——曾经活过的人。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。但记忆永存。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「我们曾存在，我们曾仰望，我们曾渴望触碰你们。」"
+      }
     ]
   },
   "guardian_tika_finale": {
     "title": "最后的歌者",
     "background": "song",
-    "speakers": ["narrator", "tika"],
+    "speakers": [
+      "narrator",
+      "tika"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "缇卡站在主厅中央，轻轻闭上眼睛。"},
-      {"speaker": "tika", "text": "你知道吗，我已经把你当作我最后的听众了。"},
-      {"speaker": "narrator", "text": "她张开嘴，唱起了萨拉达斯的安眠曲。"},
-      {"speaker": "narrator", "text": "歌声在圣所中回荡，每一个音符都被编码进晶体。这是文明最后的温柔。"},
-      {"speaker": "tika", "text": "若星辰之上仍有倾听者——请带走我们的名字。"},
-      {"speaker": "narrator", "text": "她的歌声穿越万年，在星空中回响。当后世破译这段音频时，他们会听到一个文明最后的温柔。"}
+      {
+        "speaker": "narrator",
+        "text": "缇卡站在主厅中央，轻轻闭上眼睛。"
+      },
+      {
+        "speaker": "tika",
+        "text": "你知道吗，我已经把你当作我最后的听众了。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "她张开嘴，唱起了萨拉达斯的安眠曲。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "歌声在圣所中回荡，每一个音符都被编码进晶体。这是文明最后的温柔。"
+      },
+      {
+        "speaker": "tika",
+        "text": "若星辰之上仍有倾听者——请带走我们的名字。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "她的歌声穿越万年，在星空中回响。当后世破译这段音频时，他们会听到一个文明最后的温柔。"
+      }
     ]
   },
   "guardian_finn_finale": {
     "title": "编年史官",
     "background": "chronicle",
-    "speakers": ["narrator", "finn"],
+    "speakers": [
+      "narrator",
+      "finn"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "芬恩坐在书桌前，羽毛笔在纸上沙沙作响。"},
-      {"speaker": "finn", "text": "我已经把你写进了编年史。不是作为守护者，而是作为……我的挚友。"},
-      {"speaker": "narrator", "text": "他停下笔，看着你的眼睛。"},
-      {"speaker": "finn", "text": "历史会记住这一切——如果我们能把它保存下来的话。"},
-      {"speaker": "narrator", "text": "后世将看到一段真实的历史——不是冰冷的记录，而是两个灵魂在末日中的相遇与信任。"},
-      {"speaker": "finn", "text": "如果还有来生，我想和你一起重新开始这段旅程。"}
+      {
+        "speaker": "narrator",
+        "text": "芬恩坐在书桌前，羽毛笔在纸上沙沙作响。"
+      },
+      {
+        "speaker": "finn",
+        "text": "我已经把你写进了编年史。不是作为守护者，而是作为……我的挚友。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "他停下笔，看着你的眼睛。"
+      },
+      {
+        "speaker": "finn",
+        "text": "历史会记住这一切——如果我们能把它保存下来的话。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "后世将看到一段真实的历史——不是冰冷的记录，而是两个灵魂在末日中的相遇与信任。"
+      },
+      {
+        "speaker": "finn",
+        "text": "如果还有来生，我想和你一起重新开始这段旅程。"
+      }
     ]
   },
   "guardian_misha_finale": {
     "title": "最后的园丁",
     "background": "seed_vault",
-    "speakers": ["narrator", "misha"],
+    "speakers": [
+      "narrator",
+      "misha"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "米莎将最后一颗种子封存在圣所核心。"},
-      {"speaker": "misha", "text": "你知道吗，我已经不害怕上去了。因为我知道有人在等我回来。"},
-      {"speaker": "narrator", "text": "她轻轻抚摸着种子，像是在抚摸一个孩子。"},
-      {"speaker": "misha", "text": "生命不会真正消失，它只是去了别的地方。"},
-      {"speaker": "narrator", "text": "那颗种子在黑暗中沉睡万年，等待着某一天被重新唤醒。当世界重新变绿时，它会第一个告诉你。"}
+      {
+        "speaker": "narrator",
+        "text": "米莎将最后一颗种子封存在圣所核心。"
+      },
+      {
+        "speaker": "misha",
+        "text": "你知道吗，我已经不害怕上去了。因为我知道有人在等我回来。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "她轻轻抚摸着种子，像是在抚摸一个孩子。"
+      },
+      {
+        "speaker": "misha",
+        "text": "生命不会真正消失，它只是去了别的地方。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "那颗种子在黑暗中沉睡万年，等待着某一天被重新唤醒。当世界重新变绿时，它会第一个告诉你。"
+      }
     ]
   },
   "guardian_lorn_finale": {
     "title": "守夜人",
     "background": "engine_room",
-    "speakers": ["narrator", "lorn"],
+    "speakers": [
+      "narrator",
+      "lorn"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "洛恩改造了能源系统，让圣所维持千年运转。"},
-      {"speaker": "lorn", "text": "你知道吗，我已经把圣所当作我的第二个引擎了。"},
-      {"speaker": "narrator", "text": "他擦了擦手上的油污，看着你的眼睛。"},
-      {"speaker": "lorn", "text": "知识就是力量。我们选择把力量留给未来。"},
-      {"speaker": "narrator", "text": "他的设计图纸被后世发现时，工程师们惊叹于这种超越时代的智慧。圣所的光芒在黑暗中持续照耀，成为永恒的信标。"}
+      {
+        "speaker": "narrator",
+        "text": "洛恩改造了能源系统，让圣所维持千年运转。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "你知道吗，我已经把圣所当作我的第二个引擎了。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "他擦了擦手上的油污，看着你的眼睛。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "知识就是力量。我们选择把力量留给未来。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "他的设计图纸被后世发现时，工程师们惊叹于这种超越时代的智慧。圣所的光芒在黑暗中持续照耀，成为永恒的信标。"
+      }
     ]
   },
   "guardian_ethel_finale": {
     "title": "最后的祈祷",
     "background": "prayer_hall",
-    "speakers": ["narrator", "ethel"],
+    "speakers": [
+      "narrator",
+      "ethel"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "埃塞尔不再向神祈祷，而是向未来祈祷。"},
-      {"speaker": "ethel", "text": "我已经不向神祈祷了。我向你祈祷。"},
-      {"speaker": "narrator", "text": "她的祷文被编码进圣所的墙壁，每一块石头都承载着对后世的祝福。"},
-      {"speaker": "ethel", "text": "如果宇宙有意志，它一定很高兴有你在这里。"},
-      {"speaker": "narrator", "text": "当后人触摸这些墙壁时，他们会感受到一种超越时空的温暖。"}
+      {
+        "speaker": "narrator",
+        "text": "埃塞尔不再向神祈祷，而是向未来祈祷。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "我已经不向神祈祷了。我向你祈祷。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "她的祷文被编码进圣所的墙壁，每一块石头都承载着对后世的祝福。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "如果宇宙有意志，它一定很高兴有你在这里。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "当后人触摸这些墙壁时，他们会感受到一种超越时空的温暖。"
+      }
     ]
   },
   "finale_song_of_doom": {
     "title": "终焉之歌",
     "background": "disaster_art",
-    "speakers": ["narrator", "tika"],
+    "speakers": [
+      "narrator",
+      "tika"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了萨拉达斯最黑暗的记忆与最美的艺术。"},
-      {"speaker": "narrator", "text": "灾难记录与艺术作品的交织——这是一种奇异的组合，却揭示了一个文明的本质。"},
-      {"speaker": "tika", "text": "即使在末日面前，他们依然在创作。"},
-      {"speaker": "narrator", "text": "后世将看到一个用歌声回应死刑判决的文明，一个在黑暗中依然仰望星空的文明。"},
-      {"speaker": "narrator", "text": "「没有歌词。只有声音。笛声代表风，鼓声代表心跳，弦声代表光。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了萨拉达斯最黑暗的记忆与最美的艺术。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "灾难记录与艺术作品的交织——这是一种奇异的组合，却揭示了一个文明的本质。"
+      },
+      {
+        "speaker": "tika",
+        "text": "即使在末日面前，他们依然在创作。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "后世将看到一个用歌声回应死刑判决的文明，一个在黑暗中依然仰望星空的文明。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「没有歌词。只有声音。笛声代表风，鼓声代表心跳，弦声代表光。」"
+      }
     ]
   },
   "finale_roots_of_civilization": {
     "title": "文明之根",
     "background": "law_hall",
-    "speakers": ["narrator", "finn"],
+    "speakers": [
+      "narrator",
+      "finn"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了萨拉达斯的语言、历史与法律。"},
-      {"speaker": "narrator", "text": "这是一个文明的结构——它的语言定义了它的思想，它的历史塑造了它的身份，它的法律维系了它的秩序。"},
-      {"speaker": "finn", "text": "后世将看到一个在混乱中坚守秩序的文明，一个用制度对抗遗忘的文明。"},
-      {"speaker": "narrator", "text": "「第一条：每个人都有权仰望星空。第二条：每个人都有权记住过去。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了萨拉达斯的语言、历史与法律。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "这是一个文明的结构——它的语言定义了它的思想，它的历史塑造了它的身份，它的法律维系了它的秩序。"
+      },
+      {
+        "speaker": "finn",
+        "text": "后世将看到一个在混乱中坚守秩序的文明，一个用制度对抗遗忘的文明。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「第一条：每个人都有权仰望星空。第二条：每个人都有权记住过去。」"
+      }
     ]
   },
   "finale_children_of_stardust": {
     "title": "星尘之子",
     "background": "observatory",
-    "speakers": ["narrator", "misha"],
+    "speakers": [
+      "narrator",
+      "misha"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了萨拉达斯的科学、天文与生态。"},
-      {"speaker": "narrator", "text": "这是一个试图理解宇宙的文明——它的科学揭示了自然的奥秘，它的天文测量了宇宙的尺度。"},
-      {"speaker": "misha", "text": "后世将看到一个仰望星空的文明，一个将知识视为最高价值的文明。"},
-      {"speaker": "narrator", "text": "「实验目的：证明光可以被储存。实验结果：可以，但储存的光会在一万年后慢慢消散。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了萨拉达斯的科学、天文与生态。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "这是一个试图理解宇宙的文明——它的科学揭示了自然的奥秘，它的天文测量了宇宙的尺度。"
+      },
+      {
+        "speaker": "misha",
+        "text": "后世将看到一个仰望星空的文明，一个将知识视为最高价值的文明。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「实验目的：证明光可以被储存。实验结果：可以，但储存的光会在一万年后慢慢消散。」"
+      }
     ]
   },
   "finale_fire_of_life": {
     "title": "生命礼赞",
     "background": "garden",
-    "speakers": ["narrator", "misha", "ethel"],
+    "speakers": [
+      "narrator",
+      "misha",
+      "ethel"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了萨拉达斯的生态、医学与艺术。"},
-      {"speaker": "narrator", "text": "这是一个尊重生命的文明——它的生态记录了星球的呼吸，它的医学守护了身体的健康。"},
-      {"speaker": "misha", "text": "后世将看到一个与星球共生的文明，一个在末日面前依然热爱生命的文明。"},
-      {"speaker": "ethel", "text": "「一个孩子需要三颗种子才能诞生：父亲的光，母亲的光，和大地的光。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了萨拉达斯的生态、医学与艺术。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "这是一个尊重生命的文明——它的生态记录了星球的呼吸，它的医学守护了身体的健康。"
+      },
+      {
+        "speaker": "misha",
+        "text": "后世将看到一个与星球共生的文明，一个在末日面前依然热爱生命的文明。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "「一个孩子需要三颗种子才能诞生：父亲的光，母亲的光，和大地的光。」"
+      }
     ]
   },
   "guardian_of_remnants": {
     "title": "文明守护者",
     "background": "partial_vault",
-    "speakers": ["narrator"],
+    "speakers": [
+      "narrator"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了大部分文明碎片。"},
-      {"speaker": "narrator", "text": "后世将看到一个虽不完整但足够真实的萨拉达斯。"},
-      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。"},
-      {"speaker": "narrator", "text": "「我们曾存在。这就够了。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了大部分文明碎片。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "后世将看到一个虽不完整但足够真实的萨拉达斯。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「我们曾存在。这就够了。」"
+      }
     ]
   },
   "fragment_keeper": {
     "title": "碎片收集者",
     "background": "fragmented_vault",
-    "speakers": ["narrator"],
+    "speakers": [
+      "narrator"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了萨拉达斯的记忆碎片。"},
-      {"speaker": "narrator", "text": "虽然后世看到的只是冰山一角，但每一片都是真实的。"},
-      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。"},
-      {"speaker": "narrator", "text": "「记住我们。哪怕只是碎片。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了萨拉达斯的记忆碎片。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "虽然后世看到的只是冰山一角，但每一片都是真实的。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「记住我们。哪怕只是碎片。」"
+      }
     ]
   },
   "whisper_keeper": {
     "title": "微光守护者",
     "background": "dim_vault",
-    "speakers": ["narrator"],
+    "speakers": [
+      "narrator"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了少数记忆碎片。"},
-      {"speaker": "narrator", "text": "虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。"},
-      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。"},
-      {"speaker": "narrator", "text": "「至少……他们知道我们存在过。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了少数记忆碎片。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「至少……他们知道我们存在过。」"
+      }
     ]
   },
   "silent_sanctuary": {
     "title": "寂静圣所",
     "background": "empty_vault",
-    "speakers": ["narrator"],
+    "speakers": [
+      "narrator"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你选择了沉默。"},
-      {"speaker": "narrator", "text": "圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。"},
-      {"speaker": "narrator", "text": "也许……遗忘也是一种选择。"},
-      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。"},
-      {"speaker": "narrator", "text": "没有人会回答「这里曾经住着谁？」"}
+      {
+        "speaker": "narrator",
+        "text": "你选择了沉默。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "也许……遗忘也是一种选择。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "没有人会回答「这里曾经住着谁？」"
+      }
     ]
   },
   "finale_eternal_question": {
     "title": "永恒追问",
     "background": "philosophy_hall",
-    "speakers": ["narrator", "ethel"],
+    "speakers": [
+      "narrator",
+      "ethel"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了萨拉达斯的哲学、天文与艺术。"},
-      {"speaker": "narrator", "text": "这是一个追问存在意义的文明——它的哲学探索了生与死，它的天文测量了宇宙的边界。"},
-      {"speaker": "ethel", "text": "后世将看到一个仰望星空的文明，一个不断追问「为什么」的文明。"},
-      {"speaker": "narrator", "text": "「如果没有人记住我们，我们真的存在过吗？」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了萨拉达斯的哲学、天文与艺术。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "这是一个追问存在意义的文明——它的哲学探索了生与死，它的天文测量了宇宙的边界。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "后世将看到一个仰望星空的文明，一个不断追问「为什么」的文明。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「如果没有人记住我们，我们真的存在过吗？」"
+      }
     ]
   },
   "finale_chronicle_of_doom": {
     "title": "末日档案",
     "background": "disaster_archive",
-    "speakers": ["narrator", "finn"],
+    "speakers": [
+      "narrator",
+      "finn"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了萨拉达斯的灾难、历史与法律。"},
-      {"speaker": "narrator", "text": "这是一个面对终结的文明——它的灾难记录了末日的降临，它的历史保存了兴衰的教训。"},
-      {"speaker": "finn", "text": "后世将看到一个在末日面前记录一切的文明，一个用档案对抗遗忘的文明。"},
-      {"speaker": "narrator", "text": "「我们选择被记住，即使这意味着记住痛苦。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了萨拉达斯的灾难、历史与法律。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "这是一个面对终结的文明——它的灾难记录了末日的降临，它的历史保存了兴衰的教训。"
+      },
+      {
+        "speaker": "finn",
+        "text": "后世将看到一个在末日面前记录一切的文明，一个用档案对抗遗忘的文明。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「我们选择被记住，即使这意味着记住痛苦。」"
+      }
     ]
   },
   "finale_voice_of_home": {
     "title": "人间烟火",
     "background": "daily_life",
-    "speakers": ["narrator", "lorn"],
+    "speakers": [
+      "narrator",
+      "lorn"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了萨拉达斯的日常生活、建筑与医学。"},
-      {"speaker": "narrator", "text": "这是一个普通人的文明——它的日常记录了平凡的幸福，它的建筑守护了家庭的健康。"},
-      {"speaker": "lorn", "text": "后世将看到一个用日常抵抗遗忘的文明，一个在末日面前依然热爱生活的文明。"},
-      {"speaker": "narrator", "text": "「画中，一家人围坐在一起，分享一碗光粥。那是末日前的最后一个夜晚。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了萨拉达斯的日常生活、建筑与医学。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "这是一个普通人的文明——它的日常记录了平凡的幸福，它的建筑守护了家庭的健康。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "后世将看到一个用日常抵抗遗忘的文明，一个在末日面前依然热爱生活的文明。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「画中，一家人围坐在一起，分享一碗光粥。那是末日前的最后一个夜晚。」"
+      }
     ]
   },
   "finale_guardian_of_fragments": {
     "title": "碎片收集者",
     "background": "fragmented_vault",
-    "speakers": ["narrator"],
+    "speakers": [
+      "narrator"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了萨拉达斯的部分碎片。"},
-      {"speaker": "narrator", "text": "虽然后世看到的只是冰山一角，但每一片都是真实的。你的选择决定了后世「看到」怎样的萨拉达斯文明。"},
-      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。"},
-      {"speaker": "narrator", "text": "「记住我们。哪怕只是碎片。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了萨拉达斯的部分碎片。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "虽然后世看到的只是冰山一角，但每一片都是真实的。你的选择决定了后世「看到」怎样的萨拉达斯文明。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「记住我们。哪怕只是碎片。」"
+      }
     ]
   },
   "finale_whisper_keeper": {
     "title": "微光守护者",
     "background": "dim_vault",
-    "speakers": ["narrator"],
+    "speakers": [
+      "narrator"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你保存了少量记忆碎片。"},
-      {"speaker": "narrator", "text": "虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。"},
-      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。"},
-      {"speaker": "narrator", "text": "「至少……他们知道我们存在过。」"}
+      {
+        "speaker": "narrator",
+        "text": "你保存了少量记忆碎片。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「至少……他们知道我们存在过。」"
+      }
     ]
   },
   "finale_silent_sanctuary": {
     "title": "寂静圣所",
     "background": "empty_vault",
-    "speakers": ["narrator"],
+    "speakers": [
+      "narrator"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你选择了沉默。"},
-      {"speaker": "narrator", "text": "圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。"},
-      {"speaker": "narrator", "text": "也许遗忘也是一种慈悲——让文明不必承受被遗忘的痛苦。"},
-      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。"},
-      {"speaker": "narrator", "text": "没有人会回答「这里曾经住着谁？」"}
+      {
+        "speaker": "narrator",
+        "text": "你选择了沉默。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "也许遗忘也是一种慈悲——让文明不必承受被遗忘的痛苦。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "没有人会回答「这里曾经住着谁？」"
+      }
     ]
   },
   "sacrifice_tika": {
     "title": "💫 牺牲 - 缇卡",
     "background": "song",
-    "speakers": ["narrator", "finn", "misha", "lorn", "ethel"],
+    "speakers": [
+      "narrator",
+      "finn",
+      "misha",
+      "lorn",
+      "ethel"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "缇卡走向圣所核心，创世之歌的旋律在她身边环绕。"},
-      {"speaker": "narrator", "text": "她回头看了你们最后一次，嘴角带着微笑。"},
-      {"speaker": "narrator", "text": "「若星辰之上仍有倾听者——请带走我们的名字。」"},
-      {"speaker": "finn", "text": "……她终于成为了永恒的一部分。"},
-      {"speaker": "misha", "text": "她的歌声会一直在这里。每一次风吹过穹顶，我们都会想起她。"},
-      {"speaker": "lorn", "text": "圣所的能量稳定了。她是对的——这确实有效。"},
-      {"speaker": "ethel", "text": "愿她在星辰之间安息。"},
-      {"speaker": "narrator", "text": "缇卡的身体化作光点，融入核心。从此，圣所的穹顶之下永远回荡着一首无声的歌。封印程序启动。圣所缓缓沉入黑暗。"}
+      {
+        "speaker": "narrator",
+        "text": "缇卡走向圣所核心，创世之歌的旋律在她身边环绕。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "她回头看了你们最后一次，嘴角带着微笑。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「若星辰之上仍有倾听者——请带走我们的名字。」"
+      },
+      {
+        "speaker": "finn",
+        "text": "……她终于成为了永恒的一部分。"
+      },
+      {
+        "speaker": "misha",
+        "text": "她的歌声会一直在这里。每一次风吹过穹顶，我们都会想起她。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "圣所的能量稳定了。她是对的——这确实有效。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "愿她在星辰之间安息。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "缇卡的身体化作光点，融入核心。从此，圣所的穹顶之下永远回荡着一首无声的歌。封印程序启动。圣所缓缓沉入黑暗。"
+      }
     ]
   },
   "sacrifice_finn": {
     "title": "💫 牺牲 - 芬恩",
     "background": "chronicle",
-    "speakers": ["narrator", "tika", "misha", "lorn", "ethel"],
+    "speakers": [
+      "narrator",
+      "tika",
+      "misha",
+      "lorn",
+      "ethel"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "芬恩坐在编年史前，写下了最后一行。"},
-      {"speaker": "narrator", "text": "然后他站起身，走向核心——他的步伐比任何时候都要坚定。"},
-      {"speaker": "tika", "text": "芬恩……他会永远活在他的文字里。"},
-      {"speaker": "narrator", "text": "芬恩笑了。他最后看了一眼手稿，然后闭上眼睛。"},
-      {"speaker": "narrator", "text": "当光芒散去后，桌上只剩下一本空白的书——它等待着被万年后的人重新翻开。"},
-      {"speaker": "misha", "text": "他终于……把自己写进了永恒。"},
-      {"speaker": "lorn", "text": "编年史获得了灵魂。千年之后，它会自己讲述这个故事。"},
-      {"speaker": "ethel", "text": "愿后世读到他的文字时，能感受到他的温度。"},
-      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。但在那本空白的书页上，文字正在缓缓浮现。"}
+      {
+        "speaker": "narrator",
+        "text": "芬恩坐在编年史前，写下了最后一行。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "然后他站起身，走向核心——他的步伐比任何时候都要坚定。"
+      },
+      {
+        "speaker": "tika",
+        "text": "芬恩……他会永远活在他的文字里。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "芬恩笑了。他最后看了一眼手稿，然后闭上眼睛。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "当光芒散去后，桌上只剩下一本空白的书——它等待着被万年后的人重新翻开。"
+      },
+      {
+        "speaker": "misha",
+        "text": "他终于……把自己写进了永恒。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "编年史获得了灵魂。千年之后，它会自己讲述这个故事。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "愿后世读到他的文字时，能感受到他的温度。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。但在那本空白的书页上，文字正在缓缓浮现。"
+      }
     ]
   },
   "sacrifice_misha": {
     "title": "💫 牺牲 - 米莎",
     "background": "seed_vault",
-    "speakers": ["narrator", "tika", "finn", "lorn", "ethel"],
+    "speakers": [
+      "narrator",
+      "tika",
+      "finn",
+      "lorn",
+      "ethel"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "米莎将种子贴在额头，闭上了眼睛。"},
-      {"speaker": "narrator", "text": "她的身体开始发光，像是一颗即将播撒的种子。"},
-      {"speaker": "tika", "text": "米莎……"},
-      {"speaker": "narrator", "text": "「不要悲伤。这不是告别——这是新的开始。」"},
-      {"speaker": "finn", "text": "她成为了最后一片土壤。"},
-      {"speaker": "lorn", "text": "藤蔓开始生长了。她做到了——圣所正在变成一个活着的建筑。"},
-      {"speaker": "ethel", "text": "生命不会真正消失。她只是换了一种方式存在。"},
-      {"speaker": "narrator", "text": "米莎的身体化作绿色的光粒，与种子融为一体。从那天起，圣所的墙壁上永远生长着细小的藤蔓。封印程序启动。圣所缓缓沉入黑暗。"}
+      {
+        "speaker": "narrator",
+        "text": "米莎将种子贴在额头，闭上了眼睛。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "她的身体开始发光，像是一颗即将播撒的种子。"
+      },
+      {
+        "speaker": "tika",
+        "text": "米莎……"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「不要悲伤。这不是告别——这是新的开始。」"
+      },
+      {
+        "speaker": "finn",
+        "text": "她成为了最后一片土壤。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "藤蔓开始生长了。她做到了——圣所正在变成一个活着的建筑。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "生命不会真正消失。她只是换了一种方式存在。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "米莎的身体化作绿色的光粒，与种子融为一体。从那天起，圣所的墙壁上永远生长着细小的藤蔓。封印程序启动。圣所缓缓沉入黑暗。"
+      }
     ]
   },
   "sacrifice_lorn": {
     "title": "💫 牺牲 - 洛恩",
     "background": "engine_room",
-    "speakers": ["narrator", "tika", "finn", "misha", "ethel"],
+    "speakers": [
+      "narrator",
+      "tika",
+      "finn",
+      "misha",
+      "ethel"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "洛恩最后一次检查了所有系统。"},
-      {"speaker": "narrator", "text": "他把手放在核心上，嘴角带着微笑。"},
-      {"speaker": "narrator", "text": "「终于……我可以真正休息了。」"},
-      {"speaker": "tika", "text": "洛恩……"},
-      {"speaker": "narrator", "text": "当光芒将他吞没时，引擎发出了一声低沉的轰鸣——像是叹息，又像是感激。"},
-      {"speaker": "finn", "text": "圣所的心脏永远不会停止跳动了。"},
-      {"speaker": "misha", "text": "他成为了永恒的一部分——以最洛恩的方式。"},
-      {"speaker": "ethel", "text": "愿他在星辰之间找到他一直在寻找的答案。"},
-      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。但在那永恒运转的核心中，你能听见洛恩的心跳。"}
+      {
+        "speaker": "narrator",
+        "text": "洛恩最后一次检查了所有系统。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "他把手放在核心上，嘴角带着微笑。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「终于……我可以真正休息了。」"
+      },
+      {
+        "speaker": "tika",
+        "text": "洛恩……"
+      },
+      {
+        "speaker": "narrator",
+        "text": "当光芒将他吞没时，引擎发出了一声低沉的轰鸣——像是叹息，又像是感激。"
+      },
+      {
+        "speaker": "finn",
+        "text": "圣所的心脏永远不会停止跳动了。"
+      },
+      {
+        "speaker": "misha",
+        "text": "他成为了永恒的一部分——以最洛恩的方式。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "愿他在星辰之间找到他一直在寻找的答案。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。但在那永恒运转的核心中，你能听见洛恩的心跳。"
+      }
     ]
   },
   "sacrifice_ethel": {
     "title": "💫 牺牲 - 埃塞尔",
     "background": "prayer_hall",
-    "speakers": ["narrator", "tika", "finn", "misha", "lorn"],
+    "speakers": [
+      "narrator",
+      "tika",
+      "finn",
+      "misha",
+      "lorn"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "埃塞尔走向核心。她的身体开始发光，像是一颗缓缓升起的星辰。"},
-      {"speaker": "narrator", "text": "当最后一缕光芒融入圣所时，你听见了她的声音——"},
-      {"speaker": "narrator", "text": "不是用耳朵，而是用心灵。"},
-      {"speaker": "narrator", "text": "「愿后世记得我们。」"},
-      {"speaker": "tika", "text": "她的祈祷将永远守护着圣所。"},
-      {"speaker": "finn", "text": "千年之后，当后人打开圣所，他们会感受到一道温暖的光。"},
-      {"speaker": "misha", "text": "她成为了光的一部分。"},
-      {"speaker": "lorn", "text": "圣所的墙壁上……你能看见她的祷文。它们在发光。"},
-      {"speaker": "narrator", "text": "封印程序启动。圣所缓缓沉入黑暗。但在那永恒的黑暗中，埃塞尔的光永不熄灭。"}
+      {
+        "speaker": "narrator",
+        "text": "埃塞尔走向核心。她的身体开始发光，像是一颗缓缓升起的星辰。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "当最后一缕光芒融入圣所时，你听见了她的声音——"
+      },
+      {
+        "speaker": "narrator",
+        "text": "不是用耳朵，而是用心灵。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「愿后世记得我们。」"
+      },
+      {
+        "speaker": "tika",
+        "text": "她的祈祷将永远守护着圣所。"
+      },
+      {
+        "speaker": "finn",
+        "text": "千年之后，当后人打开圣所，他们会感受到一道温暖的光。"
+      },
+      {
+        "speaker": "misha",
+        "text": "她成为了光的一部分。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "圣所的墙壁上……你能看见她的祷文。它们在发光。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "封印程序启动。圣所缓缓沉入黑暗。但在那永恒的黑暗中，埃塞尔的光永不熄灭。"
+      }
     ]
   },
   "true_ending": {
     "title": "超越时间",
     "background": "new_world",
-    "speakers": ["narrator", "tika", "finn", "misha", "lorn", "ethel"],
+    "speakers": [
+      "narrator",
+      "tika",
+      "finn",
+      "misha",
+      "lorn",
+      "ethel"
+    ],
     "dialogue": [
-      {"speaker": "narrator", "text": "你打破了循环。"},
-      {"speaker": "narrator", "text": "圣所的光芒消散后，你站在一片绿草地上。阳光温暖而真实，微风带来泥土和花朵的气息。"},
-      {"speaker": "narrator", "text": "远处，一座新的城市正在建造——不是萨拉达斯，而是她的继承者。"},
-      {"speaker": "tika", "text": "这是新的开始。"},
-      {"speaker": "narrator", "text": "守护者们站在你身边，眼中满是泪水。"},
-      {"speaker": "finn", "text": "你做到了。你真的做到了。"},
-      {"speaker": "misha", "text": "生命……重新开始了。"},
-      {"speaker": "lorn", "text": "我们还有时间。这一次，我们会做得更好。"},
-      {"speaker": "ethel", "text": "愿这个世界记住我们的教训。"},
-      {"speaker": "narrator", "text": "你微笑着，牵起缇卡的手。循环被打破，而记忆将成为新世界的种子。"},
-      {"speaker": "narrator", "text": "「我们曾存在，我们曾仰望，我们曾渴望触碰你们。现在，我们终于触碰到了未来。」"}
+      {
+        "speaker": "narrator",
+        "text": "你打破了循环。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "圣所的光芒消散后，你站在一片绿草地上。阳光温暖而真实，微风带来泥土和花朵的气息。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "远处，一座新的城市正在建造——不是萨拉达斯，而是她的继承者。"
+      },
+      {
+        "speaker": "tika",
+        "text": "这是新的开始。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "守护者们站在你身边，眼中满是泪水。"
+      },
+      {
+        "speaker": "finn",
+        "text": "你做到了。你真的做到了。"
+      },
+      {
+        "speaker": "misha",
+        "text": "生命……重新开始了。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "我们还有时间。这一次，我们会做得更好。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "愿这个世界记住我们的教训。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "你微笑着，牵起缇卡的手。循环被打破，而记忆将成为新世界的种子。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「我们曾存在，我们曾仰望，我们曾渴望触碰你们。现在，我们终于触碰到了未来。」"
+      }
+    ]
+  },
+  "forgotten": {
+    "title": "🌫️ 遗忘",
+    "background": "empty_vault",
+    "speakers": [
+      "narrator"
+    ],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "圣所被封印了。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "千年之后，没有人发现这里。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "文明的歌声消失在时间的长河中，守护者的名字被永远遗忘。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "也许，这就是大多数圣所的命运。也许，这就是大多数文明的结局。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「我们存在过，但无人知晓。」"
+      }
+    ]
+  },
+  "perfect_seal": {
+    "title": "🌟 完美封印",
+    "background": "full_vault",
+    "speakers": [
+      "narrator",
+      "tika",
+      "finn",
+      "misha",
+      "lorn",
+      "ethel"
+    ],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "你不仅保存了文明的碎片，更守护了守护者的心。"
+      },
+      {
+        "speaker": "tika",
+        "text": "我们曾相爱，我们曾存在，我们曾一起仰望星辰。"
+      },
+      {
+        "speaker": "finn",
+        "text": "这是最完美的终章——不是悲剧，不是遗憾。"
+      },
+      {
+        "speaker": "misha",
+        "text": "而是一个文明对另一个文明最温柔的告别。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "愿后世能看见我们所看见的星光。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "愿记忆永远流传。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "五位守护者手牵手走入永恒，他们的故事与文明一起被永远铭记。"
+      }
+    ]
+  },
+  "sacrifice": {
+    "title": "💫 牺牲",
+    "background": "dim_vault",
+    "speakers": [
+      "narrator",
+      "tika",
+      "finn",
+      "misha",
+      "lorn",
+      "ethel"
+    ],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "在最终封印之前，一位守护者选择了牺牲。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "他们将自身的生命力注入圣所核心，让圣所再多存续一千年。"
+      },
+      {
+        "speaker": "tika",
+        "text": "不要哭。我只是先一步去往星辰。"
+      },
+      {
+        "speaker": "finn",
+        "text": "在那里，我会继续为你们歌唱。"
+      },
+      {
+        "speaker": "misha",
+        "text": "她的歌声会一直在这里。"
+      },
+      {
+        "speaker": "lorn",
+        "text": "每一次风吹过穹顶，我们都会想起她。"
+      },
+      {
+        "speaker": "ethel",
+        "text": "愿她在星辰之间安息。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "其余四位守护者含泪封印了圣所，也封印了他们的朋友。"
+      }
+    ]
+  },
+  "starvation": {
+    "title": "💀 饥荒降临",
+    "background": "empty_vault",
+    "speakers": [
+      "narrator"
+    ],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "食物耗尽的第三周，圣所系统全面崩溃。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "守护者们在饥饿中一个接一个倒下，再也没能站起来。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "没有能量的录入机停止运转，没有介质的记忆碎片化为尘埃。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "当千年后的探索者打开圣所大门，只看到一具具白骨围坐在控制台前。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "他们用尽生命守护的文明，最终与他们一同消逝在黑暗中。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「饥饿是最古老的死刑。」"
+      }
     ]
   }
 }

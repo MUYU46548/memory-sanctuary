@@ -8,6 +8,10 @@
  * 4. 后续访问命中缓存，无需重复下载
  */
 
+// 调试模式开关：发布时设为 false，开发时设为 true
+var DEBUG = false;
+
+
 const FONT_CACHE_NAME = 'memory-sanctuary-fonts-v1';
 
 class FontLoader {
@@ -61,7 +65,7 @@ class FontLoader {
 
     // ===== 从缓存加载 =====
     async _loadFromCache(onProgress) {
-        console.log('[FontLoader] 从缓存加载字体');
+        if (DEBUG) console.log('[FontLoader] 从缓存加载字体');
         this.fromCache = true;
         
         const cache = await caches.open(FONT_CACHE_NAME);
@@ -84,9 +88,9 @@ class FontLoader {
                 const pct = 5 + (this.loaded / this.total) * 90;
                 onProgress(pct, `正在载入霞鹜文楷... (${this.loaded}/${this.total})`);
                 
-                console.log(`[FontLoader] ${font.family} (${font.weight}) 从缓存加载`);
+                if (DEBUG) console.log(`[FontLoader] ${font.family} (${font.weight}) 从缓存加载`);
             } catch (err) {
-                console.warn(`[FontLoader] 缓存加载失败 ${font.url}:`, err);
+                if (DEBUG) console.warn(`[FontLoader] 缓存加载失败 ${font.url}:`, err);
                 // 回退到网络
                 await this._downloadFont(font, onProgress);
             }
@@ -97,7 +101,7 @@ class FontLoader {
 
     // ===== 从网络加载 =====
     async _loadFromNetwork(onProgress) {
-        console.log('[FontLoader] 从网络下载字体');
+        if (DEBUG) console.log('[FontLoader] 从网络下载字体');
         const promises = this.fonts.map(font => this._downloadFont(font, onProgress));
         await Promise.all(promises);
     }
@@ -121,9 +125,9 @@ class FontLoader {
             const pct = 5 + (this.loaded / this.total) * 90;
             onProgress(pct, `正在载入霞鹜文楷... (${this.loaded}/${this.total})`);
             
-            console.log(`[FontLoader] ${font.family} (${font.weight}) 下载完成`);
+            if (DEBUG) console.log(`[FontLoader] ${font.family} (${font.weight}) 下载完成`);
         } catch (err) {
-            console.warn(`[FontLoader] ${font.url} 加载失败:`, err);
+            if (DEBUG) console.warn(`[FontLoader] ${font.url} 加载失败:`, err);
         }
     }
 
@@ -140,7 +144,7 @@ class FontLoader {
             const cache = await caches.open(FONT_CACHE_NAME);
             await cache.put(url, response.clone());
         } catch (err) {
-            console.warn('[FontLoader] 缓存写入失败:', err);
+            if (DEBUG) console.warn('[FontLoader] 缓存写入失败:', err);
         }
     }
 
@@ -149,7 +153,7 @@ class FontLoader {
         root.style.setProperty('--font-cn', '"WenKai", "Noto Serif SC", "Source Han Serif SC", serif');
         root.style.setProperty('--font-ui', '"WenKai", "Noto Sans SC", "Source Han Sans SC", sans-serif');
         root.style.setProperty('--font-en', '"WenKai", "Courier New", monospace');
-        console.log('[FontLoader] 字体已应用到 CSS 变量');
+        if (DEBUG) console.log('[FontLoader] 字体已应用到 CSS 变量');
     }
 
     _delay(ms) {
@@ -161,9 +165,9 @@ class FontLoader {
         if (!('caches' in window)) return;
         try {
             await caches.delete(FONT_CACHE_NAME);
-            console.log('[FontLoader] 字体缓存已清除');
+            if (DEBUG) console.log('[FontLoader] 字体缓存已清除');
         } catch (err) {
-            console.warn('[FontLoader] 清除缓存失败:', err);
+            if (DEBUG) console.warn('[FontLoader] 清除缓存失败:', err);
         }
     }
 }
