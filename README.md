@@ -1,6 +1,6 @@
 # 记忆圣所 (Memory Sanctuary)
 
-![Version](https://img.shields.io/badge/version-v1.6.0--beta-blue)
+![Version](https://img.shields.io/badge/version-v0.1.0--beta-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tech](https://img.shields.io/badge/tech-HTML5%20%2B%20CSS3%20%2B%20Vanilla%20JS-orange)
 
@@ -187,6 +187,8 @@ const amber = style.getPropertyValue('--amber-primary').trim();
 4. **成就操作**：解锁指定成就、重置所有成就
 5. **状态导入/导出**：导出当前 state JSON、导入状态、清除存档
 
+> 发布版（`DEBUG=false`）调试面板已锁定，需输入调试密码 `sanctuary-dev-2026`（见 `js/debug-panel.js` 的 `DEBUG_PASSWORD_HASH`）。开发调试请将 `js/main.js` 顶部 `DEBUG` 设为 `true` 免密打开。
+
 ### 语法检查
 
 ```bash
@@ -290,7 +292,7 @@ memory-sanctuary/
 
 ## 版本历史
 
-### v1.6.0-beta (2026-08-10)
+### v0.1.0-beta (2026-08-11)
 
 - ✅ 游戏核心系统完整可用
 - ✅ 17 个结局场景（含 4 个新结局）

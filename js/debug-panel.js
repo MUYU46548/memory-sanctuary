@@ -73,9 +73,45 @@ function initDebugPanel() {
     initDebugButtons();
 }
 
+// 调试面板密码哈希（明文 "sanctuary-dev-2026" 的 simpleHash 值）
+const DEBUG_PASSWORD_HASH = "1d93f63d";
+const DEBUG_PASSWORD_HINT = "提示：见开发文档附录";
+
+// 简易哈希函数（用于客户端比对）
+function simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash).toString(16).padStart(8, '0');
+}
+
 function toggleDebugPanel() {
     const overlay = document.getElementById('debug-overlay');
     if (!overlay) return;
+    
+    // DEBUG 模式下无需密码
+    if (typeof DEBUG !== 'undefined' && DEBUG) {
+        debugPanelOpen = !debugPanelOpen;
+        overlay.classList.toggle('hidden', !debugPanelOpen);
+        if (debugPanelOpen) {
+            refreshDebugUI();
+        }
+        return;
+    }
+    
+    // 生产模式：需要密码
+    const input = window.prompt(`🔐 调试面板已锁定\n请输入调试密码：\n(${DEBUG_PASSWORD_HINT})`);
+    
+    if (input === null) return; // 用户取消
+    
+    const inputHash = simpleHash(input);
+    if (inputHash !== DEBUG_PASSWORD_HASH) {
+        alert('❌ 密码错误！');
+        return;
+    }
     
     debugPanelOpen = !debugPanelOpen;
     overlay.classList.toggle('hidden', !debugPanelOpen);

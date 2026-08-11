@@ -9,7 +9,7 @@ var DEBUG = false;
 // ============================================================
 // 全局常量
 // ============================================================
-const GAME_VERSION = '1.6.0';
+const GAME_VERSION = '0.1.0';
 
 // ============================================================
 // 全局错误处理：防止加载失败白屏
@@ -328,6 +328,12 @@ function initTitleScreen() {
     const titleHelp = document.getElementById('title-help');
     const titleAbout = document.getElementById('title-about');
     const titleBtn = document.getElementById('title-btn');
+
+    // 版本号：单一来源 GAME_VERSION，统一显示
+    const titleVersionEl = document.getElementById('title-version');
+    if (titleVersionEl) {
+        titleVersionEl.textContent = `v${GAME_VERSION}`;
+    }
 
     // Update NG+ display
     const ngData = getNGPlusData();

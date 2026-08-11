@@ -445,6 +445,9 @@ function handleSaveAction(slot, action, mode) {
             if (titleScreen) titleScreen.classList.add('hidden');
             if (gameContainer) gameContainer.classList.remove('hidden');
             loadGame(slot);
+            // 读档后必须刷新 UI，否则界面停留在 index.html 静态初始值
+            renderAll();
+            if (typeof checkStuckState === 'function') checkStuckState();
             break;
         case 'overwrite':
             if (confirm(`确定要覆盖存档槽 ${slot} 吗？`)) {
