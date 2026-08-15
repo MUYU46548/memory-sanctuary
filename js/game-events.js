@@ -23,12 +23,29 @@ function checkRandomEvent() {
     }
     
     // 饥荒预警事件（条件触发，食物低于15时）
-    const famineWarning = MemorySanctuary.data.events.find(e => e.id === 'event_famine_warning_01');
+    // 注意：scheduled 类型事件被 loadGameData 过滤进 data.scheduledEvents（main.js:187-188），必须从这里查找
+    const famineWarning = MemorySanctuary.data.scheduledEvents.find(e => e.id === 'event_famine_warning_01') || MemorySanctuary.data.events.find(e => e.id === 'event_famine_warning_01');
     if (famineWarning && MemorySanctuary.state.resources.food <= 15 && !MemorySanctuary.state.activeEventIds.includes(famineWarning.id)) {
         if (week >= famineWarning.trigger.weekMin && week <= famineWarning.trigger.weekMax) {
             triggerEvent(famineWarning);
             return;
         }
+    }
+    
+    // 士气仪式事件（条件触发）：连续 3 周崩溃 → 低语时刻；连续 3 周高昂 → 合唱回响
+    // 与饥荒预警同理：scheduled 类型事件存于 data.scheduledEvents
+    const moraleStreak = MemorySanctuary.state.moraleStreak || { critical: 0, excellent: 0 };
+    const whisperEvent = MemorySanctuary.data.scheduledEvents.find(e => e.id === 'event_morale_whisper') || MemorySanctuary.data.events.find(e => e.id === 'event_morale_whisper');
+    if (whisperEvent && (moraleStreak.critical || 0) >= 3 && !MemorySanctuary.state.activeEventIds.includes(whisperEvent.id)) {
+        moraleStreak.critical = 0;
+        triggerEvent(whisperEvent);
+        return;
+    }
+    const chorusEvent = MemorySanctuary.data.scheduledEvents.find(e => e.id === 'event_morale_chorus') || MemorySanctuary.data.events.find(e => e.id === 'event_morale_chorus');
+    if (chorusEvent && (moraleStreak.excellent || 0) >= 3 && !MemorySanctuary.state.activeEventIds.includes(chorusEvent.id)) {
+        moraleStreak.excellent = 0;
+        triggerEvent(chorusEvent);
+        return;
     }
     
     // 先处理章节过渡事件
@@ -97,11 +114,60 @@ function checkRandomEvent() {
         return week >= e.trigger.weekMin && week <= e.trigger.weekMax;
     });
     
+    // 士气修正（希望值联动，v1.11）：频率修正 × 倾向修正
+    // 士气高昂 → 事件更少且偏正面；士气崩溃 → 事件更多且偏负面
+    const mods = getMoraleEventMods();
+    
     for (const event of availableEvents) {
-        if (Math.random() < event.trigger.probability) {
+        let prob = event.trigger.probability || 0.15;
+        prob *= mods.freq;
+        if (event.tone === 'positive') prob *= mods.positive;
+        else if (event.tone === 'negative') prob *= mods.negative;
+        prob = Math.max(0, Math.min(1, prob));
+        if (Math.random() < prob) {
             triggerEvent(event);
             break;
         }
+    }
+}
+
+/**
+ * 士气对随机事件的修正（寒霜朋克「希望值」式联动，v1.11）
+ * 频率修正：士气高昂 → 事件更少（×0.8）；崩溃 → 事件更多（×1.3）
+ * 倾向修正：士气高昂 → 正面事件更易出现、负面更难；崩溃 → 反向
+ */
+function getMoraleEventMods() {
+    const morale = (typeof getMoraleLevel === 'function') ? getMoraleLevel() : { level: 'normal' };
+    const mods = {
+        excellent: { freq: 0.8, positive: 1.5, negative: 0.5 },
+        good:      { freq: 0.9, positive: 1.2, negative: 0.8 },
+        normal:    { freq: 1.0, positive: 1.0, negative: 1.0 },
+        low:       { freq: 1.15, positive: 0.8, negative: 1.2 },
+        critical:  { freq: 1.3, positive: 0.5, negative: 1.5 },
+    };
+    return mods[morale.level] || mods.normal;
+}
+
+/**
+ * 士气极端状态连续追踪（每周推进时由 onTimeAdvanced 调用）
+ * 连续 3 周崩溃 → 触发「低语时刻」；连续 3 周高昂 → 触发「合唱回响」
+ * 状态字段 state.moraleStreak { critical, excellent } 已随存档同步
+ */
+function updateMoraleStreak() {
+    const state = MemorySanctuary.state;
+    if (!state) return;
+    if (!state.moraleStreak) state.moraleStreak = { critical: 0, excellent: 0 };
+    const morale = (typeof getMoraleLevel === 'function') ? getMoraleLevel() : { level: 'normal' };
+    const s = state.moraleStreak;
+    if (morale.level === 'critical') {
+        s.critical = (s.critical || 0) + 1;
+        s.excellent = 0;
+    } else if (morale.level === 'excellent') {
+        s.excellent = (s.excellent || 0) + 1;
+        s.critical = 0;
+    } else {
+        s.critical = 0;
+        s.excellent = 0;
     }
 }
 

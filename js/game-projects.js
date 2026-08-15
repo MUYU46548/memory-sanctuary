@@ -80,6 +80,9 @@ function processActiveProjects() {
         const project = getProjectById(active.id);
         if (!project) continue;
 
+        // 先发放本周收益（修复 off-by-one：duration 内每一周都应有收益）
+        applyProjectEffect(project, false);
+
         active.remainingWeeks--;
 
         if (active.remainingWeeks <= 0) {
@@ -91,8 +94,6 @@ function processActiveProjects() {
                 AudioSystem.playProjectComplete();
             }
         } else {
-            // Project still active, apply ongoing effect
-            applyProjectEffect(project, false);
             stillActive.push(active);
         }
     }
@@ -109,7 +110,7 @@ function applyProjectEffect(project, isCompletion) {
     switch (effect.type) {
         case 'resourceBoost':
             if (!isCompletion && effect.amount) {
-                const cap = effect.resource === 'media' ? 150 : (effect.resource === 'food' ? 80 : 150);
+                const cap = effect.resource === 'media' ? 150 : (effect.resource === 'food' ? 80 : (effect.resource === 'environment' ? 100 : 150));
                 const before = state.resources[effect.resource];
                 state.resources[effect.resource] = Math.min(
                     cap,
@@ -139,6 +140,13 @@ function applyProjectEffect(project, isCompletion) {
                         archive.availableAfter = Math.min(archive.availableAfter || 999, state.week);
                     }
                 });
+            }
+            break;
+        case 'aiAssistant':
+            // 完成时永久解锁 AI 助理辅助归档
+            if (isCompletion) {
+                state.aiAssistantActive = true;
+                addLog('🤖 档案AI助理已上线：每回合可请求它辅助归档一条（费用减半，环境稳定度 -5）。', 'success');
             }
             break;
     }
@@ -174,6 +182,11 @@ function openProjectPanel() {
         overlay.offsetHeight;
         renderProjectList();
         if (typeof AudioSystem !== 'undefined') AudioSystem.playMechanicalEngage();
+        // 首次打开面板级引导
+        if (typeof showPanelHint === 'function') {
+            showPanelHint('project', document.getElementById('project-list'),
+                '💡 圣所维护项目：修建水培农场、修复发电机等项目可提供持续资源；部分项目完成后会解锁加密档案。');
+        }
     }
 }
 

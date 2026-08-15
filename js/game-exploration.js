@@ -44,6 +44,34 @@ function openExplorePanel() {
     if (overlay) {
         overlay.classList.remove('hidden');
         renderExploreList();
+
+        // 首次打开面板级引导
+        if (typeof showPanelHint === 'function') {
+            showPanelHint('explore', document.querySelector('.explore-body'),
+                '💡 地表勘探：左侧选择地点，右侧挑选擅长对应技能的守护者派遣。勘探队带回资源，但会消耗食物并积累疲劳。');
+        }
+
+        // 默认选中第一个可用地点（避免玩家需要滑到列表底部才发现派遣区）
+        const placeholder = document.getElementById('explore-placeholder');
+        const dispatchEl = document.getElementById('explore-dispatch');
+        const firstAvailable = (MemorySanctuary.data.explorations || []).find(e => {
+            const now = MemorySanctuary.state.week;
+            const completed = isExplorationCompleted(e.id);
+            const exp = MemorySanctuary.state.exploration;
+            return !(exp.deployedUntil > now) && !completed && (!e.availableAfter || now >= e.availableAfter);
+        });
+        if (firstAvailable) {
+            const item = document.querySelector(`.explore-item[data-exp-id="${firstAvailable.id}"]`);
+            if (item) {
+                selectExploration(firstAvailable, item);
+            } else {
+                // 列表尚未渲染完成，直接调用选择逻辑（用数据）
+                selectExploration(firstAvailable, null);
+            }
+        } else if (placeholder && dispatchEl) {
+            placeholder.classList.remove('hidden');
+            dispatchEl.classList.add('hidden');
+        }
     }
 }
 
@@ -80,6 +108,7 @@ function renderExploreList() {
     data.explorations.forEach((expData) => {
         const item = document.createElement('div');
         item.className = 'explore-item';
+        item.dataset.expId = expData.id;
         if (isDeployed) item.classList.add('disabled');
 
         const completed = isExplorationCompleted(expData.id);
@@ -152,10 +181,12 @@ function selectExploration(expData, element) {
     selectedGuardians.clear();
 
     document.querySelectorAll('.explore-item').forEach(el => el.style.borderColor = '');
-    element.style.borderColor = 'var(--explore-green, #5aa86e)';
+    if (element) element.style.borderColor = 'var(--explore-green, #5aa86e)';
 
     const dispatchEl = document.getElementById('explore-dispatch');
     dispatchEl.classList.remove('hidden');
+    const placeholder = document.getElementById('explore-placeholder');
+    if (placeholder) placeholder.classList.add('hidden');
 
     document.getElementById('dispatch-title').textContent = `派遣至：${expData.name}`;
     document.getElementById('dispatch-desc').textContent = expData.description;
@@ -163,12 +194,15 @@ function selectExploration(expData, element) {
     renderDispatchGuardians(expData);
     renderOutcomeBars(expData);
     
-    // Check food sufficiency and disable button if needed
+    // Check food sufficiency and disable button if needed（紧急勘探免食物额度时不禁用）
     const foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
     const dispatchBtn = document.getElementById('dispatch-btn');
     const currentFood = MemorySanctuary.state.resources.food;
-    dispatchBtn.disabled = currentFood < foodCost;
-    if (currentFood < foodCost) {
+    const foodFree = !!MemorySanctuary.state.emergencyExploreFoodFree;
+    dispatchBtn.disabled = !foodFree && currentFood < foodCost;
+    if (foodFree) {
+        dispatchBtn.textContent = '派遣勘探队（免食物）';
+    } else if (currentFood < foodCost) {
         dispatchBtn.textContent = `食物不足 (${currentFood}/${foodCost})`;
     } else {
         dispatchBtn.textContent = '派遣勘探队';
@@ -308,10 +342,16 @@ function executeExploration() {
     const expData = data.explorations.find(e => e.id === selectedExplorationId);
     if (!expData) return;
 
-    // 食物消耗：按难度分档，默认 0
-    const foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
+    // 食物消耗：按难度分档，默认 0（紧急勘探激活时本次免食物）
+    let foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
+    const state = MemorySanctuary.state;
+    if (state.emergencyExploreFoodFree) {
+        foodCost = 0;
+        state.emergencyExploreFoodFree = false;
+        addLog('🔭 紧急勘探的免食物额度已使用（腐败的代价换来的机会）。', 'system');
+    }
     
-    if (!hasResources(0, 0, foodCost)) {
+    if (foodCost > 0 && !hasResources(0, 0, foodCost)) {
         addLog('食物不足，无法派出勘探队。', 'system');
         return;
     }

@@ -190,35 +190,37 @@ function canSealSanctuary() {
 }
 
 
-function sealSanctuary() {
-    MemorySanctuary.state.gameOver = true;
-    const archivedCount = MemorySanctuary.state.completedArchives.length;
-    const totalCount = MemorySanctuary.data.archives.length;
+/**
+ * 周目结算（封印 / 崩溃 / 饥荒结局统一调用）：
+ * 累计归档条目、记录守护者历史与亲密度结局、递增周目数。
+ */
+function finalizePlaythrough() {
+    const state = MemorySanctuary.state;
+    if (!state) return;
+    const archivedCount = state.completedArchives.length;
     const ngData = getNGPlusData();
 
-    // Update NG+ data
     ngData.totalArchivesSaved = (ngData.totalArchivesSaved || 0) + archivedCount;
     if (!ngData.bestRun || archivedCount > ngData.bestRun.count) {
-        ngData.bestRun = { count: archivedCount, week: MemorySanctuary.state.week };
+        ngData.bestRun = { count: archivedCount, week: state.week };
     }
-    
+
     // Check if all guardians have high moods (bonus)
-    const state = MemorySanctuary.state;
     const allGuardiansHappy = Object.keys(state.guardianMoods || {}).length >= 3 &&
         Object.values(state.guardianMoods).filter(mood => mood >= 3).length >= 3;
-    
+
     if (allGuardiansHappy) {
         ngData.bonuses.push({ type: 'mood_bonus', label: '守护者信任 +10能源' });
         addLog('💖 守护者们的信任带来了额外奖励！', 'success');
     }
-    
+
     // Record guardian finales seen
     for (const gid of ['tika', 'finn', 'misha', 'lorn', 'ethel']) {
         if (getMoodTier(gid) === 'intimate') {
             recordGuardianFinale(gid);
         }
     }
-    
+
     // Record guardian moods for history
     const currentMoods = {};
     for (const gid of ['tika', 'finn', 'misha', 'lorn', 'ethel']) {
@@ -233,8 +235,28 @@ function sealSanctuary() {
         week: state.week,
         moods: currentMoods
     });
-    
+
+    // 记录本周目归档条目（供图鉴「已见条目」判断——否则历史归档条目在回顾里全是 ???）
+    if (!ngData.archiveHistory) ngData.archiveHistory = [];
+    ngData.archiveHistory.push({
+        playthrough: ngData.playthroughCount + 1,
+        week: state.week,
+        archives: [...state.completedArchives]
+    });
+
     saveNGPlusData(ngData);
+
+    // 计入已完成周目数
+    startNewGamePlus();
+}
+
+
+function sealSanctuary() {
+    MemorySanctuary.state.gameOver = true;
+    const state = MemorySanctuary.state;
+
+    // NG+ 结算：累计归档、守护者记录、周目递增（与崩溃/饥荒结局共用）
+    finalizePlaythrough();
 
     // Check for hidden endings first
     const ending = checkHiddenEndings();
@@ -252,9 +274,6 @@ function sealSanctuary() {
     if (typeof checkSealAchievements === 'function') {
         checkSealAchievements(ending ? ending.id : null, state.week);
     }
-    
-    // Apply NG+ count
-    startNewGamePlus();
     
     // Show ending VN if scene exists, otherwise show modal directly
     let endingSceneId = ending ? ending.id : 'silent_sanctuary';
@@ -405,7 +424,7 @@ function showEndingSummaryPage(ending, isGameOver = false) {
 
 
 function renderSealButton() {
-    const container = document.getElementById('save-info');
+    const container = document.getElementById('save-seal-container');
     if (!container) return;
 
     // Only show seal button if game is active (state exists)

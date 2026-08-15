@@ -141,6 +141,7 @@
                     <!-- 守护者全局视图 -->
                     <div class="guardian-overview" id="guardian-overview"></div>
                     <!-- 守护者互动菜单 -->
+                    <div id="guardian-boost-hint" class="guardian-boost-hint hidden">🎁 补给品可分发：消耗 8 食物，全员士气 +2（每周一次）。点击头像打开菜单。</div>
                     <div id="guardian-menu" class="hidden">
                         <button class="guardian-menu-item" id="guardian-talk">💬 交谈</button>
                         <button class="guardian-menu-item" id="guardian-recommend">📌 推荐归档</button>
@@ -281,6 +282,7 @@
             </div>
             <div id="save-slots"></div>
             <div id="save-info"></div>
+            <div id="save-seal-container"></div>
             <div id="save-export-import">
                 <button id="save-export-btn" class="save-action-btn">📤 导出存档</button>
                 <button id="save-import-btn" class="save-action-btn">📥 导入存档</button>
@@ -311,24 +313,31 @@
                 <button class="explore-tab active" data-tab="list">📍 地点</button>
                 <button class="explore-tab" data-tab="log">📋 日志</button>
             </div>
-            <div id="explore-list-container">
-                <div id="explore-list"></div>
+            <div class="explore-body">
+                <div class="explore-left">
+                    <div id="explore-list-container">
+                        <div id="explore-list"></div>
+                    </div>
+                </div>
+                <div class="explore-right">
+                    <div id="explore-placeholder" class="explore-placeholder">← 选择左侧地点，预览详情并派遣勘探队</div>
+                    <div id="explore-dispatch" class="hidden">
+                        <div id="dispatch-title"></div>
+                        <div id="dispatch-desc"></div>
+                        <div id="dispatch-guardians"></div>
+                        <div id="dispatch-outcomes"></div>
+                        <button id="dispatch-btn" disabled>派遣勘探队</button>
+                    </div>
+                    <div id="explore-result" class="hidden">
+                        <div id="result-icon"></div>
+                        <div id="result-header"></div>
+                        <div id="result-text"></div>
+                        <div id="result-effects"></div>
+                        <button id="result-close-btn">确认</button>
+                    </div>
+                </div>
             </div>
             <div id="explore-log-container" class="hidden"></div>
-            <div id="explore-dispatch" class="hidden">
-                <div id="dispatch-title"></div>
-                <div id="dispatch-desc"></div>
-                <div id="dispatch-guardians"></div>
-                <div id="dispatch-outcomes"></div>
-                <button id="dispatch-btn" disabled>派遣勘探队</button>
-            </div>
-            <div id="explore-result" class="hidden">
-                <div id="result-icon"></div>
-                <div id="result-header"></div>
-                <div id="result-text"></div>
-                <div id="result-effects"></div>
-                <button id="result-close-btn">确认</button>
-            </div>
         </div>
     </div>
 

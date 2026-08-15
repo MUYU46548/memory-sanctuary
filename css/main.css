@@ -118,7 +118,7 @@
     --tier-cold: #5dade2;
     --tier-neutral: #aaa;
     --tier-friendly: #f39c12;
-    --tier-intimate: #e91e63;
+    --tier-intimate: #2e8b57;
 }
 
 /* ========== 动画降级 — 尊重用户偏好 ========== */
@@ -911,6 +911,28 @@ button:focus-visible,
     color: var(--text-dim);
 }
 
+/* 归档按钮行：主按钮 + AI辅助 同行对齐 */
+.entry-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.entry-actions .archive-btn {
+    flex: 1;
+    margin-top: 0;
+}
+
+button.archive-btn.ai-assist-btn {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+button.archive-btn.ai-assist-btn:hover {
+    background: rgba(58, 138, 90, 0.12);
+    box-shadow: 0 0 10px rgba(58, 138, 90, 0.25);
+}
+
 /* ============================================
    守护者面板
    ============================================ */
@@ -968,27 +990,27 @@ button:focus-visible,
 .guardian-mood {
     font-size: 0.9rem;
     transition: all 0.3s ease;
-    filter: grayscale(0%);
 }
 
+/* 心形 emoji 自带语义色（💔💙🤍💛💚），无需 hue-rotate；仅做亮度/光晕微调 */
 .guardian-mood.mood-hostile {
-    filter: hue-rotate(180deg) brightness(0.8);
+    opacity: 0.9;
 }
 
 .guardian-mood.mood-cold {
-    filter: hue-rotate(200deg) brightness(0.9);
+    opacity: 0.85;
 }
 
 .guardian-mood.mood-neutral {
-    opacity: 0.7;
+    opacity: 0.6;
 }
 
 .guardian-mood.mood-friendly {
-    filter: hue-rotate(30deg) brightness(1.1);
+    filter: brightness(1.05) saturate(1.1);
 }
 
 .guardian-mood.mood-intimate {
-    filter: hue-rotate(15deg) brightness(1.2) drop-shadow(0 0 4px var(--amber-glow));
+    filter: drop-shadow(0 0 4px var(--success));
 }
 
 /* 对话区边框随好感度变化 */
@@ -1005,8 +1027,8 @@ button:focus-visible,
 }
 
 #guardian-panel.mood-intimate {
-    border-color: var(--amber-primary);
-    box-shadow: 0 0 12px rgba(212, 160, 74, 0.2);
+    border-color: var(--success);
+    box-shadow: 0 0 12px rgba(58, 138, 90, 0.25);
 }
 
 .guardian-dialogue {
@@ -1094,6 +1116,58 @@ button:focus-visible,
     line-height: 1.4;
 }
 
+.guardian-detail-value.history-tier {
+    margin-top: 4px;
+    color: var(--amber-primary);
+    font-size: 0.75rem;
+}
+
+/* 背景档案 */
+.guardian-detail-value.lore-text {
+    font-size: 0.72rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    white-space: pre-line;
+}
+
+.guardian-detail-value.lore-locked {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-style: italic;
+}
+
+/* 回忆片段 */
+.guardian-detail-memories {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.guardian-memory-btn {
+    padding: 7px 10px;
+    background: var(--bg-deep);
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-family: var(--font-cn);
+    font-size: 0.72rem;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+}
+
+.guardian-memory-btn:hover:not(:disabled) {
+    border-color: var(--amber-primary);
+    color: var(--amber-primary);
+    background: var(--bg-panel-hover);
+}
+
+.guardian-memory-btn.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+    font-style: italic;
+}
+
 .guardian-detail-skills {
     display: flex;
     gap: 3px;
@@ -1148,12 +1222,66 @@ button:focus-visible,
     background: transparent;
 }
 
+/* 补给品可分发时的脉冲提示 */
+#guardian-boost.boost-available {
+    border-color: var(--success);
+    color: var(--success);
+    animation: boostPulse 1.6s ease-in-out infinite;
+}
+
+#guardian-boost.boost-available:hover:not(:disabled) {
+    background: rgba(58, 138, 90, 0.12);
+}
+
+@keyframes boostPulse {
+    0%, 100% { box-shadow: 0 0 6px rgba(58, 138, 90, 0.2); }
+    50% { box-shadow: 0 0 16px rgba(58, 138, 90, 0.45); }
+}
+
+/* 补给品提示气泡 */
+.guardian-boost-hint {
+    margin-top: 10px;
+    padding: 7px 10px;
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: var(--success);
+    background: rgba(58, 138, 90, 0.1);
+    border: 1px dashed var(--success);
+    border-radius: 4px;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.guardian-boost-hint.hidden {
+    display: none;
+}
+
 /* 推荐条目高亮 */
 button.archive-btn.recommended {
     border-color: var(--success);
     color: var(--success);
     animation: recommendPulse 1.5s ease-in-out infinite;
     box-shadow: 0 0 12px rgba(58, 138, 90, 0.3);
+}
+
+/* AI 助理辅助归档 */
+.ai-assist-banner {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+
+.ai-assist-banner.ready {
+    color: var(--success);
+    background: rgba(58, 138, 90, 0.1);
+    border: 1px dashed var(--success);
+}
+
+.ai-assist-banner.used {
+    color: var(--text-dim);
+    background: var(--bg-panel-hover);
+    border: 1px solid var(--border-subtle);
 }
 
 @keyframes recommendPulse {
@@ -1176,7 +1304,9 @@ button.archive-btn.recommended {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.7);
+    /* 背景透明：遮罩由 #tutorial-highlight 的 9999px 大阴影「聚光灯」实现，
+       只暗化目标外区域，避免整屏黑片挡住游戏画面 */
+    background: transparent;
     z-index: 9000;
     display: flex;
     align-items: center;
@@ -1191,10 +1321,16 @@ button.archive-btn.recommended {
     position: absolute;
     border: 2px solid var(--amber-primary);
     border-radius: 8px;
-    box-shadow: 0 0 20px rgba(212, 160, 74, 0.3);
+    box-shadow: 0 0 0 3px rgba(212, 160, 74, 0.25), 0 0 0 9999px rgba(0, 0, 0, 0.55), 0 0 24px var(--amber-glow);
+    animation: tutorialGlow 1.6s ease-in-out infinite;
     transition: all 0.3s ease;
     pointer-events: none;
     z-index: 9001;
+}
+
+@keyframes tutorialGlow {
+    0%, 100% { box-shadow: 0 0 0 3px rgba(212, 160, 74, 0.22), 0 0 0 9999px rgba(0, 0, 0, 0.55), 0 0 12px rgba(212, 160, 74, 0.35); }
+    50% { box-shadow: 0 0 0 5px rgba(212, 160, 74, 0.4), 0 0 0 9999px rgba(0, 0, 0, 0.55), 0 0 30px rgba(212, 160, 74, 0.65); }
 }
 
 #tutorial-highlight.hidden {
@@ -1210,6 +1346,51 @@ button.archive-btn.recommended {
     padding: 20px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     z-index: 9002;
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* 引导箭头：指向被高亮的区域 */
+.tutorial-tip::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+.tutorial-tip.tip-below::before {   /* 提示框在目标下方 → 箭头朝上指向目标 */
+    top: -10px;
+    left: 28px;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid var(--amber-primary);
+}
+
+.tutorial-tip.tip-above::before {   /* 提示框在目标上方 → 箭头朝下指向目标 */
+    bottom: -10px;
+    left: 28px;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid var(--amber-primary);
+}
+
+.tutorial-tip.tip-left::before {    /* 提示框在目标左侧 → 箭头朝右指向目标 */
+    right: -10px;
+    top: 28px;
+    border-top: 10px solid transparent;
+    border-bottom: 10px solid transparent;
+    border-left: 10px solid var(--amber-primary);
+}
+
+/* 面板首次打开时的引导提示条 */
+.panel-hint {
+    padding: 8px 12px;
+    margin-bottom: 12px;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--amber-primary);
+    background: rgba(212, 160, 74, 0.08);
+    border: 1px dashed var(--amber-dim);
+    border-radius: 6px;
     animation: fadeIn 0.3s ease-out;
 }
 
@@ -1599,11 +1780,52 @@ button.archive-btn.recommended {
     border: 1px solid var(--border-subtle);
     border-radius: 8px;
     padding: 24px;
-    width: 90%;
-    max-width: 700px;
-    max-height: 80vh;
+    width: 94%;
+    max-width: 1000px;
+    max-height: 84vh;
     overflow-y: auto;
     position: relative;
+}
+
+/* 左右分栏：左侧地点列表 / 右侧预览与派遣 */
+.explore-body {
+    display: grid;
+    grid-template-columns: minmax(300px, 40%) 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+/* 显式指定 grid 位置：绕过 auto-placement 异常（避免左右列颠倒/错行） */
+.explore-left {
+    grid-column: 1 / 2;
+    grid-row: 1;
+    min-height: 320px;
+    max-height: 55vh;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.explore-right {
+    grid-column: 2 / 3;
+    grid-row: 1;
+    min-height: 320px;
+    max-height: 55vh;
+    overflow-y: auto;
+    padding: 0 4px;
+}
+
+.explore-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 280px;
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    border: 1px dashed var(--border-subtle);
+    border-radius: 6px;
+    text-align: center;
+    padding: 20px;
 }
 
 /* Scroll hint for exploration panel */
@@ -1652,9 +1874,9 @@ button.archive-btn.recommended {
 }
 
 #explore-list {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .explore-item {
@@ -1728,23 +1950,17 @@ button.archive-btn.recommended {
     color: var(--explore-green, #5aa86e);
 }
 
-/* 派遣界面 */
+/* 派遣界面（右侧常驻，无需滚动提示） */
 #explore-dispatch {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border-subtle);
-    /* Hint that more content may be below */
-    background: linear-gradient(to bottom, var(--bg-panel) 60%, transparent);
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+    background: none;
 }
 
-#explore-dispatch::before {
-    content: '↕ 向下滚动查看更多';
-    display: block;
-    text-align: center;
-    font-size: 0.65rem;
-    color: var(--text-dim);
-    margin-bottom: 12px;
-    font-style: italic;
+#explore-dispatch.hidden,
+#explore-result.hidden {
+    display: none;
 }
 
 /* 滚动提示：勘探地点列表开头 */
@@ -1753,10 +1969,10 @@ button.archive-btn.recommended {
 }
 
 #explore-list-container::before {
-    content: '↕ 向下滚动查看更多地点';
+    content: '点击地点预览详情并派遣';
     display: block;
     text-align: center;
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     color: var(--text-dim);
     margin-bottom: 12px;
     font-style: italic;
@@ -2810,6 +3026,34 @@ button.archive-btn.recommended {
 
 #save-info:empty {
     display: none;
+}
+
+.save-storage-warning,
+.save-storage-hint,
+.save-storage-ok {
+    font-size: 0.75rem;
+    line-height: 1.5;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+}
+
+.save-storage-warning {
+    background: rgba(231, 76, 60, 0.12);
+    border: 1px solid var(--danger);
+    color: var(--danger-hard);
+}
+
+.save-storage-hint {
+    background: rgba(212, 160, 74, 0.1);
+    border: 1px solid var(--amber-dim);
+    color: var(--amber-primary);
+}
+
+.save-storage-ok {
+    background: rgba(58, 138, 90, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
 }
 
 #seal-btn {
@@ -4911,7 +5155,7 @@ button.archive-btn.recommended {
 .ending-guardian-tier.cold { background: rgba(93, 173, 226, 0.2); color: var(--tier-cold); }
 .ending-guardian-tier.neutral { background: rgba(170, 170, 170, 0.2); color: var(--tier-neutral); }
 .ending-guardian-tier.friendly { background: rgba(243, 156, 18, 0.2); color: var(--tier-friendly); }
-.ending-guardian-tier.intimate { background: rgba(233, 30, 99, 0.2); color: var(--tier-intimate); }
+.ending-guardian-tier.intimate { background: rgba(46, 139, 87, 0.2); color: var(--tier-intimate); }
 
 #ending-ng {
     background: var(--bg-deep);

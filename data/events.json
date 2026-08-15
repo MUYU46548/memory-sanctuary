@@ -44,7 +44,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_power_surge_01",
@@ -87,7 +88,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_exploration_find_01",
@@ -128,7 +130,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "positive"
     },
     {
       "id": "event_guardian_conflict_01",
@@ -191,7 +194,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "neutral"
     },
     {
       "id": "event_surface_exploration_01",
@@ -253,7 +257,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "positive"
     },
     {
       "id": "event_guardian_donation_01",
@@ -299,7 +304,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "positive"
     },
     {
       "id": "event_geothermal_surge_01",
@@ -352,7 +358,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "neutral"
     },
     {
       "id": "event_equipment_failure_01",
@@ -403,7 +410,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_first_crisis",
@@ -462,7 +470,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_surface_deterioration",
@@ -514,7 +523,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_ocean_turns_gray",
@@ -569,7 +579,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_soil_powder_25",
@@ -628,7 +639,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_feather_plague_29",
@@ -685,7 +697,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_ration_riot_33",
@@ -744,7 +757,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "neutral"
     },
     {
       "id": "event_covenant_collapse_37",
@@ -797,7 +811,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_final_preparation_41",
@@ -852,7 +867,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "neutral"
     },
     {
       "id": "event_last_transmission_43",
@@ -901,7 +917,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "neutral"
     },
     {
       "id": "event_final_farewell_45",
@@ -957,7 +974,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "positive"
     },
     {
       "id": "event_surface_echo",
@@ -2351,7 +2369,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "neutral"
     },
     {
       "id": "event_bumper_crop_01",
@@ -2392,7 +2411,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "positive"
     },
     {
       "id": "event_food_contamination_01",
@@ -2419,7 +2439,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_hunting_party_01",
@@ -2457,7 +2478,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "positive"
     },
     {
       "id": "event_rationing_01",
@@ -2498,7 +2520,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_mushroom_bloom_01",
@@ -2539,7 +2562,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "positive"
     },
     {
       "id": "event_supply_cache_01",
@@ -2576,7 +2600,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "positive"
     },
     {
       "id": "event_infestation_01",
@@ -2617,7 +2642,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_trader_01",
@@ -2653,7 +2679,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "neutral"
     },
     {
       "id": "event_blight_01",
@@ -2693,7 +2720,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "negative"
     },
     {
       "id": "event_feast_01",
@@ -2735,7 +2763,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "positive"
     },
     {
       "id": "event_seed_gift_01",
@@ -2780,7 +2809,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "positive"
     },
     {
       "id": "event_hunting_season_01",
@@ -2822,7 +2852,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "positive"
     },
     {
       "id": "event_food_trader_02",
@@ -2864,7 +2895,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "neutral"
     },
     {
       "id": "event_storage_inspection_01",
@@ -2907,7 +2939,8 @@
           }
         }
       ],
-      "type": "random"
+      "type": "random",
+      "tone": "neutral"
     },
     {
       "id": "event_famine_warning_01",
@@ -3175,6 +3208,102 @@
           }
         }
       ]
+    },
+    {
+      "id": "event_morale_whisper",
+      "title": "低语时刻",
+      "description": "连续三周的绝望让圣所的墙壁开始「说话」。守护者们说听见墙里有人呼唤他们的名字——但那只是管道里的风声，以及他们自己的恐惧。",
+      "trigger": {
+        "type": "scheduled",
+        "weekMin": 4,
+        "weekMax": 48,
+        "probability": 1.0,
+        "condition": "morale_critical_3w"
+      },
+      "choices": [
+        {
+          "text": "消耗10食物，举行安抚仪式",
+          "effect": {
+            "food": -10
+          },
+          "result": "埃塞尔主持了一场古老的安抚仪式。低语渐渐平息，守护者们终于睡了个整觉。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 2,
+              "finn": 2,
+              "misha": 2,
+              "lorn": 2,
+              "ethel": 2
+            },
+            "message": "埃塞尔：「声音不是墙里的。是我们的心在害怕。」"
+          }
+        },
+        {
+          "text": "不予理会，继续工作",
+          "effect": {},
+          "result": "低语仍在。芬恩在日志里写道：「我们听见的，或许是我们自己的恐惧。」",
+          "feedback": {
+            "guardianMood": {
+              "tika": -1,
+              "finn": -1,
+              "misha": -1,
+              "lorn": -1,
+              "ethel": -1
+            },
+            "message": "没有人愿意承认自己听见了什么。"
+          }
+        }
+      ],
+      "type": "scheduled"
+    },
+    {
+      "id": "event_morale_chorus",
+      "title": "合唱回响",
+      "description": "不知从哪间存储室传出一段录音：萨拉达斯最后一次丰收节的全场齐唱。守护者们停下工作，听完，然后继续——脚步轻快了些。",
+      "trigger": {
+        "type": "scheduled",
+        "weekMin": 4,
+        "weekMax": 48,
+        "probability": 1.0,
+        "condition": "morale_excellent_3w"
+      },
+      "choices": [
+        {
+          "text": "设为常驻广播（消耗5能源）",
+          "effect": {
+            "energy": -5
+          },
+          "result": "合唱在每个角落回响。圣所的空气似乎都温暖了几分。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 2,
+              "finn": 2,
+              "misha": 2,
+              "lorn": 2,
+              "ethel": 2
+            },
+            "message": "洛恩调试好广播设备后，在走廊里多站了一会儿。"
+          }
+        },
+        {
+          "text": "将录音编入档案馆",
+          "effect": {
+            "media": -2
+          },
+          "result": "这段丰收节的合唱被编入档案馆。编号：回声-01。",
+          "feedback": {
+            "guardianMood": {
+              "tika": 1,
+              "finn": 1,
+              "misha": 1,
+              "lorn": 1,
+              "ethel": 1
+            },
+            "message": "芬恩：「若干年后，会有人听到它，并知道我们曾经快乐过。」"
+          }
+        }
+      ],
+      "type": "scheduled"
     }
   ]
 }

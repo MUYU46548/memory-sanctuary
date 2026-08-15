@@ -3,6 +3,9 @@
  * 包含: openEmergencyProtocol, activateEmergencyProtocol
  */
 
+// 守护者临时协助：30 食物作为加急报酬，换取 1 次立即归档机会
+const GUARDIAN_AID_FOOD_COST = 30;
+
 function openEmergencyProtocol() {
     const state = MemorySanctuary.state;
     const overlay = document.getElementById('emergency-overlay');
@@ -42,6 +45,13 @@ function openEmergencyProtocol() {
     
     // 渲染协议列表
     list.innerHTML = '';
+    
+    // 首次打开面板级引导
+    if (typeof showPanelHint === 'function') {
+        showPanelHint('emergency', list,
+            '⚠️ 应急协议是最后手段：激活会提升圣所腐败度，腐败度越高资源衰减越快。仅在常规手段耗尽时使用。');
+    }
+    
     EMERGENCY_PROTOCOLS.forEach(protocol => {
         const isOnCooldown = state.emergencyCooldowns && state.emergencyCooldowns[protocol.id] > 0;
         const cooldownRemaining = isOnCooldown ? state.emergencyCooldowns[protocol.id] : 0;
@@ -100,23 +110,23 @@ function openEmergencyProtocol() {
         if (e.target === overlay) overlay.classList.add('hidden');
     };
     
-    // 食物换归档按钮
+    // 守护者临时协助按钮（叙事化：「食物换归档」→ 守护者加急报酬）
     const buyArchiveBtn = document.createElement('button');
     buyArchiveBtn.className = 'emergency-btn instant-archive-buy';
     buyArchiveBtn.innerHTML = `
         <span class="emergency-btn-icon">🍖</span>
-        <span class="emergency-btn-label">食物换归档</span>
-        <span class="emergency-btn-desc">消耗30食物换取1次立即归档机会</span>
-        <span class="emergency-btn-cost">30 食物</span>
+        <span class="emergency-btn-label">守护者临时协助</span>
+        <span class="emergency-btn-desc">以 ${GUARDIAN_AID_FOOD_COST} 食物作为加急报酬，恳请守护者临时协助归档</span>
+        <span class="emergency-btn-cost">${GUARDIAN_AID_FOOD_COST} 食物</span>
     `;
     
     const currentChances = state.instantArchiveChances || 0;
     buyArchiveBtn.addEventListener('click', () => {
-        if ((state.resources.food || 0) < 30) {
-            addLog('食物不足，需要30食物兑换1次立即归档机会。', 'system');
+        if ((state.resources.food || 0) < GUARDIAN_AID_FOOD_COST) {
+            addLog(`食物不足：守护者临时协助需要 ${GUARDIAN_AID_FOOD_COST} 食物作为加急报酬。`, 'system');
             return;
         }
-        if (confirm(`确定消耗30食物换取1次立即归档机会？（当前：${currentChances}次）`)) {
+        if (confirm(`以 ${GUARDIAN_AID_FOOD_COST} 食物作为报酬，邀请守护者临时协助归档？（当前可协助次数：${currentChances}）`)) {
             buyInstantArchiveWithFood();
             openEmergencyProtocol(); // refresh
         }
@@ -164,4 +174,11 @@ function activateEmergencyProtocol(protocol) {
     renderAll();
     if (typeof checkStuckState === 'function') checkStuckState();
     if (typeof updateEmergencyButton === 'function') updateEmergencyButton();
+
+    // 紧急勘探：自动打开勘探面板，让玩家立刻使用免食物额度（提升存在感）
+    if (protocol.id === 'emergency_explore' && typeof openExplorePanel === 'function') {
+        state.emergencyExploreUsed = true;
+        addLog('🔭 紧急勘探已就绪：勘探冷却已清零，下一次派遣免食物。', 'system');
+        setTimeout(() => openExplorePanel(), 200);
+    }
 }

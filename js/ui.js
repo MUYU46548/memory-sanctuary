@@ -61,6 +61,33 @@ function renderAll() {
     
     // Always keep resource changes up-to-date
     if (typeof recalculateResourceChanges === 'function') recalculateResourceChanges();
+
+    // 项目面板打开时同步刷新（进行中项目的剩余周数实时更新）
+    const projectOverlay = document.getElementById('project-overlay');
+    if (projectOverlay && !projectOverlay.classList.contains('hidden') && typeof renderProjectList === 'function') {
+        renderProjectList();
+    }
+
+    // 守护者补给按钮状态同步（可分发时脉冲提示 + 首次提示气泡）
+    const boostBtn = document.getElementById('guardian-boost');
+    if (boostBtn && MemorySanctuary.state) {
+        const st = MemorySanctuary.state;
+        const onCooldown = st.lastSupplyWeek && st.lastSupplyWeek === st.week;
+        const hasFood = (st.resources.food || 0) >= 8;
+        boostBtn.classList.toggle('boost-available', !onCooldown && hasFood);
+        boostBtn.disabled = onCooldown;
+        boostBtn.textContent = onCooldown ? '🎁 分发补给品（本周已分发）' : '🎁 分发补给品';
+        boostBtn.title = onCooldown ? '补给品本周已分发，下周再来吧'
+            : hasFood ? '消耗 8 食物为所有守护者提供额外补给，每周限一次'
+            : '食物不足（需要 8 食物）';
+
+        const hint = document.getElementById('guardian-boost-hint');
+        if (hint) {
+            const showHint = !onCooldown && hasFood && st.guardianBoostHintWeek !== st.week;
+            hint.classList.toggle('hidden', !showHint);
+            if (showHint) st.guardianBoostHintWeek = st.week;
+        }
+    }
 }
 
 // ============================================================
@@ -279,10 +306,58 @@ function renderGuardianDetail() {
     const tier = getMoodTier(guardian.id);
     const tierNames = { hostile: '疏离', cold: '冷淡', neutral: '平和', friendly: '友好', intimate: '亲密' };
     const moodLevel = getMoodLevel(guardian.id);
-    
+
+    // 下一档进度（阈值：hostile ≤ -3，cold < 0，neutral ≤ 2，friendly ≤ 4，intimate > 4）
+    let progressHtml = '';
+    if (tier === 'intimate') {
+        progressHtml = `<div class="guardian-detail-value" style="color: var(--success);">已达最高档 —— 亲密关系带来归档案加成与专属结局。</div>`;
+    } else {
+        const nextThreshold = tier === 'hostile' ? 0 : (tier === 'cold' ? 3 : (tier === 'neutral' ? 5 : 7));
+        const need = nextThreshold - moodLevel;
+        progressHtml = `<div class="guardian-detail-value">距「${tierNames[tier === 'hostile' ? 'cold' : tier === 'cold' ? 'neutral' : tier === 'neutral' ? 'friendly' : 'intimate']}」还需 ${need} 点</div>`;
+    }
+
+    // 历史最高好感度（跨周目）：让标签有深度，玩家能感知羁绊沉淀
+    let historyHtml = '';
+    const maxTierInfo = (typeof getGuardianMaxTier === 'function') ? getGuardianMaxTier(guardian.id) : null;
+    if (maxTierInfo) {
+        historyHtml = `<div class="guardian-detail-value history-tier">历史最深羁绊：${tierNames[maxTierInfo.tier]}${maxTierInfo.playthrough ? `（第${maxTierInfo.playthrough}周目）` : ''}</div>`;
+    }
+
     const skillsHtml = guardian.skills?.map(s => 
         `<span class="guardian-detail-skill">${SKILL_NAMES[s] || s}</span>`
     ).join('') || '';
+
+    // 背景档案（解锁条件：历史最高亲密 + 第 2 周目起）
+    let loreHtml = '';
+    const ngData = (typeof getNGPlusData === 'function') ? getNGPlusData() : null;
+    const ptCount = ngData ? (ngData.playthroughCount || 0) : 0;
+    if (guardian.lore) {
+        const loreUnlocked = maxTierInfo && maxTierInfo.tier === 'intimate' && ptCount >= 2;
+        loreHtml = `
+            <div class="guardian-detail-section">
+                <div class="guardian-detail-label">📖 背景档案</div>
+                ${loreUnlocked
+                    ? `<div class="guardian-detail-value lore-text">${guardian.lore}</div>`
+                    : `<div class="guardian-detail-value lore-locked">？？？—— 羁绊尚浅，往事未显${ptCount < 2 ? '（需第 2 周目，且曾达到亲密）' : '（需曾达到亲密）'}</div>`}
+            </div>`;
+    }
+
+    // 回忆片段（按陪伴周目数逐步解锁）
+    let memoriesHtml = '';
+    if (guardian.memories && guardian.memories.length > 0) {
+        const memItems = guardian.memories.map(mem => {
+            const unlocked = ptCount >= (mem.unlockPlaythrough || 1);
+            return unlocked
+                ? `<button class="guardian-memory-btn" data-mem-id="${mem.id}" data-gid="${guardian.id}">🌌 ${mem.title}</button>`
+                : `<button class="guardian-memory-btn locked" disabled>🌌 ？？？（第 ${mem.unlockPlaythrough} 周目解锁）</button>`;
+        }).join('');
+        memoriesHtml = `
+            <div class="guardian-detail-section">
+                <div class="guardian-detail-label">🌌 回忆片段</div>
+                <div class="guardian-detail-memories">${memItems}</div>
+            </div>`;
+    }
     
     detailPanel.innerHTML = `
         <div class="guardian-detail-section">
@@ -292,12 +367,50 @@ function renderGuardianDetail() {
         <div class="guardian-detail-section">
             <div class="guardian-detail-label">关系等级</div>
             <div class="guardian-detail-value">${tierNames[tier]} (${moodLevel > 0 ? '+' : ''}${moodLevel})</div>
+            ${progressHtml}
+            ${historyHtml}
         </div>
         <div class="guardian-detail-section">
             <div class="guardian-detail-label">职责</div>
             <div class="guardian-detail-value">${guardian.role}</div>
         </div>
+        ${loreHtml}
+        ${memoriesHtml}
     `;
+
+    // 绑定回忆片段点击
+    detailPanel.querySelectorAll('.guardian-memory-btn[data-mem-id]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            showGuardianMemory(btn.dataset.gid, btn.dataset.memId);
+        });
+    });
+}
+
+/**
+ * 查看守护者回忆片段（弹窗演出）
+ */
+function showGuardianMemory(guardianId, memId) {
+    const guardian = (typeof getGuardianById === 'function') ? getGuardianById(guardianId) : null;
+    const mem = guardian && guardian.memories ? guardian.memories.find(m => m.id === memId) : null;
+    if (!mem) return;
+
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    const closeBtn = document.getElementById('modal-close');
+    if (!overlay || !title || !content) return;
+
+    title.textContent = `${guardian.name} · ${mem.title}`;
+    content.innerHTML = mem.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+    overlay.classList.remove('hidden');
+
+    if (closeBtn) {
+        closeBtn.textContent = '关闭';
+        closeBtn.onclick = () => overlay.classList.add('hidden');
+    }
+    if (typeof AudioSystem !== 'undefined' && AudioSystem.playButtonClick) {
+        AudioSystem.playButtonClick();
+    }
 }
 
 // ==========================================
@@ -533,13 +646,28 @@ function renderArchiveEntries() {
         container.appendChild(expiringDiv);
     }
     
+    // AI 助理辅助归档状态提示（顶部）
+    const stAI = MemorySanctuary.state;
+    if (stAI.aiAssistantActive) {
+        const aiBanner = document.createElement('div');
+        aiBanner.className = 'ai-assist-banner';
+        if (stAI.aiAssistUsedThisWeek) {
+            aiBanner.textContent = '🤖 档案AI助理本周已完成一次辅助归档，下周再来。';
+            aiBanner.classList.add('used');
+        } else {
+            aiBanner.textContent = '🤖 档案AI助理在线：每回合可辅助归档一条（费用减半，环境稳定度 -5）。';
+            aiBanner.classList.add('ready');
+        }
+        container.appendChild(aiBanner);
+    }
+
     entries.forEach(entry => {
         // Filter out entries not yet available
         if (entry.availableAfter && MemorySanctuary.state.week < entry.availableAfter) return;
 
         const isCompleted = isArchiveCompleted(entry.id);
         const isExpired = entry.expired;
-        const canArchive = !isCompleted && !isExpired && hasResources(entry.energyCost, entry.dataCost);
+        const canArchive = canArchiveEntry(entry);
         
         const item = document.createElement('div');
         item.className = `entry-item ${isCompleted ? 'archived' : ''} ${isExpired ? 'expired' : ''} ${entry.emergency ? 'emergency' : ''}`;
@@ -558,16 +686,26 @@ function renderArchiveEntries() {
             </div>
         `;
         
-        let buttonHtml = '';
+        let mainBtnHtml = '';
         if (isCompleted) {
-            buttonHtml = `<button class="archive-btn" disabled>已归档</button>`;
+            mainBtnHtml = `<button class="archive-btn" disabled>已归档</button>`;
         } else if (isExpired) {
-            buttonHtml = `<button class="archive-btn" disabled>已消失</button>`;
+            mainBtnHtml = `<button class="archive-btn" disabled>已消失</button>`;
         } else if (!canArchive) {
-            buttonHtml = `<button class="archive-btn" disabled>资源不足</button>`;
+            // 紧急归档模式下按钮不可用只可能是能源不足；常规模式是资源不足
+            const disabledLabel = (MemorySanctuary.state.emergencyArchiveActive) ? '能源不足' : '资源不足';
+            mainBtnHtml = `<button class="archive-btn" disabled>${disabledLabel}</button>`;
         } else {
-            buttonHtml = `<button class="archive-btn" data-archive-id="${entry.id}">录入归档</button>`;
+            mainBtnHtml = `<button class="archive-btn" data-archive-id="${entry.id}">录入归档</button>`;
         }
+
+        // AI 助理辅助归档按钮（独立于常规归档，不占用行动；与主按钮同行对齐）
+        let aiBtnHtml = '';
+        if (typeof canAiAssistArchive === 'function' && canAiAssistArchive(entry)) {
+            const halfCost = `(◈${Math.ceil((entry.energyCost || 0) / 2)} ◇${Math.ceil((entry.dataCost || 0) / 2)})`;
+            aiBtnHtml = `<button class="archive-btn ai-assist-btn" data-archive-id="${entry.id}" title="请求AI助理辅助归档：费用减半${halfCost}，环境稳定度 -5，不推进时间">🤖 AI辅助</button>`;
+        }
+        const buttonHtml = `<div class="entry-actions">${mainBtnHtml}${aiBtnHtml}</div>`;
         
         item.innerHTML = `
             <div class="entry-title">${entry.title}${chainIndicator}${isExpiringSoon ? ' <span style="color:var(--danger);font-size:0.7rem">⚠ 即将消失</span>' : ''}</div>
@@ -579,13 +717,23 @@ function renderArchiveEntries() {
         container.appendChild(item);
     });
     
-    container.querySelectorAll('.archive-btn:not([disabled])').forEach(btn => {
+    container.querySelectorAll('.archive-btn:not(.ai-assist-btn):not([disabled])').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const archiveId = e.target.dataset.archiveId;
             if (typeof confirmArchive === 'function') {
                 confirmArchive(archiveId);
             } else {
                 archiveEntry(archiveId);
+            }
+        });
+    });
+
+    // AI 助理辅助归档按钮（独立事件，直接执行，不弹确认）
+    container.querySelectorAll('.ai-assist-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const archiveId = e.target.dataset.archiveId;
+            if (typeof aiAssistArchive === 'function') {
+                aiAssistArchive(archiveId);
             }
         });
     });
@@ -613,12 +761,6 @@ function updateProjectButton() {
         btn.title = '圣所维护项目（第 8 周解锁）';
         btn.classList.remove('ready');
     }
-}
-
-function openProjectPanel() {
-    renderProjectList();
-    const overlay = document.getElementById('project-overlay');
-    if (overlay) overlay.classList.remove('hidden');
 }
 
 function closeProjectPanel() {
@@ -658,9 +800,11 @@ function renderProjectList() {
             buttonHtml = `<button class="project-btn" disabled>第${project.availableAfter}周解锁</button>`;
         } else if (isActive) {
             const active = state.activeProjects.find(p => p.id === project.id);
-            buttonHtml = `<button class="project-btn" disabled>进行中 (${active.remainingWeeks}周)</button>`;
+            buttonHtml = `<button class="project-btn" disabled>建设中 · 还需 ${active.remainingWeeks} 周</button>`;
         } else if (isCompleted && !project.repeatable) {
-            buttonHtml = `<button class="project-btn" disabled>已完成</button>`;
+            // 解锁类项目标注「已生效」，其余显示「已完成」
+            const isUnlock = project.effect && project.effect.type === 'unlockArchives';
+            buttonHtml = `<button class="project-btn" disabled>${isUnlock ? '已生效' : '已完成'}</button>`;
         } else if (isRepeatableDone && canStart) {
             buttonHtml = `<button class="project-btn" data-project-id="${project.id}">再次开始</button>`;
         } else if (isRepeatableDone && !canStart) {
@@ -706,6 +850,8 @@ function getProjectEffectText(project) {
             return `${getResourceName(e.resource)} 衰减降低 ${Math.round(e.percent * 100)}%`;
         case 'unlockArchives':
             return `解锁 ${e.archiveIds.length} 条加密记录`;
+        case 'aiAssistant':
+            return `解锁 AI 助理辅助归档（每回合可减半费用额外归档一条）`;
         default:
             return '';
     }

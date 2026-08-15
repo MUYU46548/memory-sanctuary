@@ -262,7 +262,17 @@ function initGameState() {
         chaptersCompleted: [],
         pendingEnding: null,
         instantArchiveChances: 0,
-        lastSupplyWeek: 0
+        lastSupplyWeek: 0,
+        aiAssistantActive: false,
+        aiAssistUsedThisWeek: false,
+        finalPrepHintShown: false,
+        panelHints: { project: false, explore: false, emergency: false },
+        emergencyExploreFoodFree: false,
+        aiAssistCount: 0,
+        guardianAidCount: 0,
+        emergencyExploreUsed: false,
+        famineSurvived: false,
+        moraleStreak: { critical: 0, excellent: 0 }
     };
     
     MemorySanctuary.data.vaults.forEach(vault => {
@@ -734,48 +744,3 @@ function closeSettingsPanel() {
     if (overlay) overlay.classList.add('hidden');
 }
 
-// ==========================================
-// 启动游戏
-// ==========================================
-
-function startNewGame(slot, isNGPlus) {
-    if (isNGPlus) {
-        startNewGamePlus();
-    }
-
-    initGameState();
-
-    if (isNGPlus) {
-        applyNGPlusBonuses();
-    }
-
-    const logContent = document.getElementById('log-content');
-    if (logContent) logContent.innerHTML = '';
-
-    localStorage.setItem(CURRENT_SLOT_KEY, String(slot));
-
-    renderAll();
-    if (typeof initCanvas === 'function') initCanvas();
-    if (typeof checkStuckState === 'function') checkStuckState();
-
-    showGuardianDialogue('tika', 'idle');
-
-    saveGame(slot);
-
-    const ngData = getNGPlusData();
-    if (isNGPlus && ngData.playthroughCount > 1) {
-        addLog(`第 ${ngData.playthroughCount} 周目开始。继承奖励已应用。`, 'system');
-    } else {
-        addLog('新游戏开始。愿你的选择得到善待。', 'system');
-    }
-    
-    // 新游戏开始：播放游戏 BGM
-    if (typeof AudioSystem !== 'undefined') {
-        AudioSystem.playBGM('game');
-    }
-
-    // Start tutorial for first play
-    setTimeout(() => {
-        if (typeof initTutorial === 'function') initTutorial();
-    }, 500);
-}

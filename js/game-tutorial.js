@@ -13,6 +13,24 @@ function initTutorial() {
 }
 
 
+/**
+ * 面板级引导：各功能面板首次打开时在面板顶部显示一条提示（仅一次）
+ * key: project / explore / emergency
+ */
+function showPanelHint(key, container, text) {
+    const st = MemorySanctuary.state;
+    if (!st || !container) return;
+    if (!st.panelHints) st.panelHints = { project: false, explore: false, emergency: false };
+    if (st.panelHints[key]) return;
+    st.panelHints[key] = true;
+
+    const hint = document.createElement('div');
+    hint.className = 'panel-hint';
+    hint.textContent = text;
+    container.prepend(hint);
+}
+
+
 function showTutorialStep() {
     const overlay = document.getElementById('tutorial-overlay');
     const highlight = document.getElementById('tutorial-highlight');
@@ -24,30 +42,6 @@ function showTutorialStep() {
 
     const step = TUTORIAL_STEPS[tutorialStep];
 
-    if (step.target) {
-        const target = document.querySelector(step.target);
-        if (target) {
-            const rect = target.getBoundingClientRect();
-            highlight.style.left = rect.left - 4 + 'px';
-            highlight.style.top = rect.top - 4 + 'px';
-            highlight.style.width = rect.width + 8 + 'px';
-            highlight.style.height = rect.height + 8 + 'px';
-            highlight.classList.remove('hidden');
-
-            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-            highlight.classList.add('hidden');
-        }
-    } else {
-        highlight.classList.add('hidden');
-    }
-
-    // 提示始终居中显示，跟随步骤切换内容
-    tip.style.top = '50%';
-    tip.style.left = '50%';
-    tip.style.transform = 'translate(-50%, -50%)';
-    tip.className = 'tutorial-tip';
-
     text.textContent = step.text;
 
     if (tutorialStep === TUTORIAL_STEPS.length - 1) {
@@ -56,7 +50,75 @@ function showTutorialStep() {
         nextBtn.textContent = '下一步';
     }
 
+    // 高亮目标（先滚动到目标，再测量位置，避免 scrollIntoView 改变坐标）
+    let rect = null;
+    if (step.target) {
+        const target = document.querySelector(step.target);
+        if (target) {
+            try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+            rect = target.getBoundingClientRect();
+            highlight.style.left = rect.left - 4 + 'px';
+            highlight.style.top = rect.top - 4 + 'px';
+            highlight.style.width = rect.width + 8 + 'px';
+            highlight.style.height = rect.height + 8 + 'px';
+            highlight.classList.remove('hidden');
+        } else {
+            highlight.classList.add('hidden');
+        }
+    } else {
+        highlight.classList.add('hidden');
+    }
+
     overlay.classList.remove('hidden');
+
+    // 提示框定位：默认跟随目标（带箭头指向），无目标时居中
+    tip.classList.remove('tip-below', 'tip-above', 'tip-left');
+    tip.style.left = 'auto';
+    tip.style.right = 'auto';
+    tip.style.top = 'auto';
+    tip.style.bottom = 'auto';
+    tip.style.transform = '';
+
+    const tipW = tip.offsetWidth || 320;
+    const tipH = tip.offsetHeight || 180;
+    const pad = 16;
+    const viewW = window.innerWidth;
+    const viewH = window.innerHeight;
+    const clampX = (x) => Math.max(12, Math.min(x, viewW - tipW - 12));
+    const clampY = (y) => Math.max(12, Math.min(y, viewH - tipH - 12));
+
+    if (rect && step.position && step.position !== 'center') {
+        if (step.position === 'left') {
+            // 目标左侧；放不下则移到右侧
+            let left = rect.left - tipW - pad;
+            let arrowClass = 'tip-left';
+            if (left < 12) { left = rect.right + pad; arrowClass = 'tip-below'; }
+            tip.style.left = clampX(left) + 'px';
+            tip.style.top = clampY(rect.top) + 'px';
+            tip.classList.add(arrowClass);
+        } else if (step.position === 'top') {
+            // 目标上方；放不下则移到下方
+            let top = rect.top - tipH - pad;
+            let arrowClass = 'tip-above';
+            if (top < 12) { top = rect.bottom + pad; arrowClass = 'tip-below'; }
+            tip.style.left = clampX(rect.left) + 'px';
+            tip.style.top = clampY(top) + 'px';
+            tip.classList.add(arrowClass);
+        } else {
+            // bottom（默认）：目标下方；放不下则移到上方
+            let top = rect.bottom + pad;
+            let arrowClass = 'tip-below';
+            if (top + tipH > viewH - 12) { top = Math.max(12, rect.top - tipH - pad); arrowClass = 'tip-above'; }
+            tip.style.left = clampX(rect.left) + 'px';
+            tip.style.top = clampY(top) + 'px';
+            tip.classList.add(arrowClass);
+        }
+    } else {
+        // 居中显示（无目标 / center）
+        tip.style.left = '50%';
+        tip.style.top = '50%';
+        tip.style.transform = 'translate(-50%, -50%)';
+    }
 }
 
 
@@ -76,6 +138,19 @@ function endTutorial() {
     tutorialActive = false;
     localStorage.setItem('memory-sanctuary-tutorial', 'completed');
     addLog('新手引导已完成。愿你的选择得到善待。', 'system');
+
+    // 所有引导视觉提示结束后，再弹出游戏帮助弹窗（仅首次游玩）
+    // 时序保证：引导 overlay 已隐藏（display:none），帮助弹窗（z-index 1100）不再被聚光灯阴影遮挡
+    const hasSeenHelp = localStorage.getItem('memory-sanctuary-help-seen');
+    if (!hasSeenHelp) {
+        localStorage.setItem('memory-sanctuary-help-seen', 'seen');
+        if (typeof showHelpModal === 'function') {
+            setTimeout(() => {
+                showHelpModal();
+                addLog('点击底部「帮助」可随时查看操作指南。', 'system');
+            }, 300);
+        }
+    }
 }
 
 

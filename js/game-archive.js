@@ -18,6 +18,23 @@ function isArchiveCompleted(id) {
 }
 
 
+/**
+ * 统一归档可行性判断（供列表渲染 / 困局检测 / 推荐逻辑共用）
+ * 紧急归档激活时：跳过介质与容量检查，只需能源 ≥ energyCost × 2
+ */
+function canArchiveEntry(entry) {
+    const state = MemorySanctuary.state;
+    if (!state || !entry) return false;
+    if (isArchiveCompleted(entry.id)) return false;
+    if (entry.expired) return false;
+    if (state.deterioration && state.deterioration.media) return false;
+    if (state.emergencyArchiveActive) {
+        return state.resources.energy >= (entry.energyCost || 0) * 2;
+    }
+    return hasResources(entry.energyCost || 0, entry.dataCost || 0);
+}
+
+
 function archiveEntry(archiveId) {
     const entry = getArchiveById(archiveId);
     const state = MemorySanctuary.state;
@@ -44,8 +61,8 @@ function archiveEntry(archiveId) {
     // 紧急归档协议：跳过介质检查
     if (isEmergencyArchive) {
         if (state.resources.energy < entry.energyCost * 2) {
-            addLog(`能源不足，无法紧急归档 "${entry.title}"。`, 'system');
-            // 归档失败时关闭紧急归档，避免影响后续正常归档
+            addLog(`能源不足，无法介质豁免 "${entry.title}"。`, 'system');
+            // 归档失败时关闭介质豁免，避免影响后续正常归档
             MemorySanctuary.state.emergencyArchiveActive = false;
             return false;
         }
@@ -86,10 +103,10 @@ function archiveEntry(archiveId) {
         }
     }
     
-    // 紧急归档协议激活后立即关闭
+    // 介质豁免协议激活后立即关闭
     if (MemorySanctuary.state.emergencyArchiveActive) {
         MemorySanctuary.state.emergencyArchiveActive = false;
-        addLog('📦 紧急归档协议已关闭（一次性效果已使用）。', 'system');
+        addLog('📼 介质豁免已结束（本回合效果已使用）。', 'system');
     }
     
     MemorySanctuary.state.completedArchives.push(archiveId);
@@ -341,6 +358,12 @@ function useInstantArchive(archiveId) {
     if (guardianId && entry.guardianReactions[guardianId]) {
         addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
     }
+
+    // 归档后展示剧情文本（与正常归档一致，遵循「归档后展示内容」设置）
+    const settings = (typeof getSettings === 'function') ? getSettings() : { showResult: true };
+    if (settings.showResult) {
+        showArchiveCompleteModal(entry);
+    }
     
     // 检查叙事线索链
     if (typeof checkNarrativeChains === 'function') checkNarrativeChains(archiveId);
@@ -352,15 +375,122 @@ function useInstantArchive(archiveId) {
 
 function buyInstantArchiveWithFood() {
     const state = MemorySanctuary.state;
-    const cost = 30; // 30食物 = 1次机会
+    const cost = (typeof GUARDIAN_AID_FOOD_COST !== 'undefined') ? GUARDIAN_AID_FOOD_COST : 30; // 30食物 = 1次机会
     if ((state.resources.food || 0) < cost) {
-        addLog(`食物不足，需要 ${cost} 食物兑换1次立即归档机会。`, 'system');
+        addLog(`食物不足：守护者临时协助需要 ${cost} 食物作为加急报酬。`, 'system');
         return false;
     }
     state.resources.food -= cost;
     state.instantArchiveChances++;
-    addLog(`🍖 消耗 ${cost} 食物，获得1次立即归档机会（当前：${state.instantArchiveChances}次）。`, 'success');
+    state.guardianAidCount = (state.guardianAidCount || 0) + 1;
+    addLog(`🍖 以 ${cost} 食物作为报酬，守护者答应临时协助归档（当前可协助次数：${state.instantArchiveChances}）。`, 'success');
     if (typeof AudioSystem !== 'undefined') AudioSystem.playExploreDeploy();
+    renderAll();
+    return true;
+}
+
+
+// ==========================================
+// AI 助理辅助归档（新机制：proj_ai_assistant 解锁）
+// ==========================================
+const AI_ASSIST_ENV_COST = 5;   // 每次 AI 辅助归档牺牲的环境稳定度（v1.11 由 2 上调：半价+不推进时间的收益值得更高无序度代价）
+
+/** 判断某条目当前是否可请求 AI 助理辅助归档 */
+function canAiAssistArchive(entry) {
+    const state = MemorySanctuary.state;
+    if (!state || !entry) return false;
+    if (!state.aiAssistantActive || state.aiAssistUsedThisWeek) return false;
+    if (isArchiveCompleted(entry.id) || entry.expired) return false;
+    if (state.deterioration && state.deterioration.media) return false;
+    if ((state.resources.environment || 0) < AI_ASSIST_ENV_COST) return false;
+
+    const vault = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
+    if (!vault) return false;
+    if ((state.vaultUsage[vault.id] || 0) + entry.dataCost > vault.capacity) return false;
+
+    const energyCost = Math.ceil((entry.energyCost || 0) / 2);
+    const dataCost = Math.ceil((entry.dataCost || 0) / 2);
+    return (state.resources.energy || 0) >= energyCost && (state.resources.media || 0) >= dataCost;
+}
+
+/**
+ * 每回合最多一次：请求 AI 助理辅助归档
+ * 费用减半（能源/介质各取半向上取整），不推进时间，环境稳定度 -5
+ */
+function aiAssistArchive(archiveId) {
+    const state = MemorySanctuary.state;
+    const entry = getArchiveById(archiveId);
+    if (!state || !entry) return false;
+    if (!state.aiAssistantActive) {
+        addLog('档案AI助理尚未上线。请先在「维护项目」中搭建。', 'system');
+        return false;
+    }
+    if (state.aiAssistUsedThisWeek) {
+        addLog('AI 助理本周已完成一次辅助归档，下周再来吧。', 'system');
+        return false;
+    }
+    if (isArchiveCompleted(archiveId)) {
+        addLog('该条目已被归档。', 'system');
+        return false;
+    }
+    if (state.deterioration && state.deterioration.media) {
+        addLog('存储介质耗尽，AI 助理也无法录入新条目。', 'system');
+        return false;
+    }
+    if ((state.resources.environment || 0) < AI_ASSIST_ENV_COST) {
+        addLog('环境稳定度不足，无法承受 AI 辅助归档带来的无序度。', 'system');
+        return false;
+    }
+
+    const vault = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
+    if (!vault) return false;
+
+    const currentUsage = state.vaultUsage[vault.id] || 0;
+    if (currentUsage + entry.dataCost > vault.capacity) {
+        addLog(`存储室「${vault.name}」容量不足。`, 'system');
+        return false;
+    }
+
+    // 半价费用（向上取整）
+    const energyCost = Math.ceil((entry.energyCost || 0) / 2);
+    const dataCost = Math.ceil((entry.dataCost || 0) / 2);
+    if ((state.resources.energy || 0) < energyCost || (state.resources.media || 0) < dataCost) {
+        addLog(`资源不足，无法请求 AI 助理辅助归档「${entry.title}」。`, 'system');
+        return false;
+    }
+
+    // 执行：消耗半价资源 + 环境稳定度下降，不推进时间
+    state.resources.energy -= energyCost;
+    state.resources.media -= dataCost;
+    state.resources.environment = Math.max(0, state.resources.environment - AI_ASSIST_ENV_COST);
+    state.aiAssistUsedThisWeek = true;
+    state.aiAssistCount = (state.aiAssistCount || 0) + 1;
+    state.completedArchives.push(archiveId);
+    state.vaultUsage[vault.id] = currentUsage + entry.dataCost;
+
+    addLog(`🤖 AI 助理辅助归档：「${entry.title}」（费用减半 ◈${energyCost} ◇${dataCost}，环境稳定度 -${AI_ASSIST_ENV_COST}）`, 'success');
+
+    // 音效
+    if (typeof AudioSystem !== 'undefined') {
+        if (AudioSystem.playArchiveChime) AudioSystem.playArchiveChime();
+        if (AudioSystem.playInstantArchive) AudioSystem.playInstantArchive();
+    }
+
+    // 叙事线索链
+    if (typeof checkNarrativeChains === 'function') checkNarrativeChains(archiveId);
+
+    // 守护者反应（与正常归档一致）
+    const guardianId = Object.keys(entry.guardianReactions || {})[0];
+    if (guardianId && entry.guardianReactions[guardianId]) {
+        addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
+    }
+
+    // 归档后展示剧情文本（与正常归档一致，遵循「归档后展示内容」设置）
+    const settings = (typeof getSettings === 'function') ? getSettings() : { showResult: true };
+    if (settings.showResult) {
+        showArchiveCompleteModal(entry);
+    }
+
     renderAll();
     return true;
 }

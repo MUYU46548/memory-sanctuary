@@ -179,6 +179,20 @@
       }
     },
     {
+      "id": "proj_ai_assistant",
+      "name": "搭建档案AI助理",
+      "description": "修复圣所服务器中遗留的计算核心，训练出一位档案助理。完成后每回合可请求它辅助归档一条（费用减半），但会让环境稳定度小幅下降。",
+      "availableAfter": 12,
+      "duration": 4,
+      "cost": {
+        "energy": 20,
+        "media": 15
+      },
+      "effect": {
+        "type": "aiAssistant"
+      }
+    },
+    {
       "id": "proj_final_seal",
       "name": "最终封印准备",
       "description": "为圣所做最终封印准备，解锁封印相关档案。",

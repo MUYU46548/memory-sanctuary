@@ -32,7 +32,17 @@ function saveGame(slot) {
             activeProjects: [...MemorySanctuary.state.activeProjects],
             completedProjects: [...MemorySanctuary.state.completedProjects],
             ongoingEffects: [...(MemorySanctuary.state.ongoingEffects || [])],
-            resourceChanges: { ...(MemorySanctuary.state.resourceChanges || { energy: 0, media: 0, environment: 0, food: 0 }) }
+            resourceChanges: { ...(MemorySanctuary.state.resourceChanges || { energy: 0, media: 0, environment: 0, food: 0 }) },
+            aiAssistantActive: !!MemorySanctuary.state.aiAssistantActive,
+            aiAssistUsedThisWeek: !!MemorySanctuary.state.aiAssistUsedThisWeek,
+            finalPrepHintShown: !!MemorySanctuary.state.finalPrepHintShown,
+            panelHints: { ...(MemorySanctuary.state.panelHints || { project: false, explore: false, emergency: false }) },
+            emergencyExploreFoodFree: !!MemorySanctuary.state.emergencyExploreFoodFree,
+            aiAssistCount: MemorySanctuary.state.aiAssistCount || 0,
+            guardianAidCount: MemorySanctuary.state.guardianAidCount || 0,
+            emergencyExploreUsed: !!MemorySanctuary.state.emergencyExploreUsed,
+            famineSurvived: !!MemorySanctuary.state.famineSurvived,
+            moraleStreak: { ...(MemorySanctuary.state.moraleStreak || { critical: 0, excellent: 0 }) }
         },
         currentVaultId: MemorySanctuary.currentVaultId
     };
@@ -138,6 +148,16 @@ function loadGame(slot) {
         MemorySanctuary.state.completedProjects = [...(saveData.state.completedProjects || [])];
         MemorySanctuary.state.ongoingEffects = [...(saveData.state.ongoingEffects || [])];
         MemorySanctuary.state.resourceChanges = { ...(saveData.state.resourceChanges || { energy: 0, media: 0, environment: 0, food: 0 }) };
+        MemorySanctuary.state.aiAssistantActive = !!saveData.state.aiAssistantActive;
+        MemorySanctuary.state.aiAssistUsedThisWeek = !!saveData.state.aiAssistUsedThisWeek;
+        MemorySanctuary.state.finalPrepHintShown = !!saveData.state.finalPrepHintShown;
+        MemorySanctuary.state.panelHints = { ...(saveData.state.panelHints || { project: false, explore: false, emergency: false }) };
+        MemorySanctuary.state.emergencyExploreFoodFree = !!saveData.state.emergencyExploreFoodFree;
+        MemorySanctuary.state.aiAssistCount = saveData.state.aiAssistCount || 0;
+        MemorySanctuary.state.guardianAidCount = saveData.state.guardianAidCount || 0;
+        MemorySanctuary.state.emergencyExploreUsed = !!saveData.state.emergencyExploreUsed;
+        MemorySanctuary.state.famineSurvived = !!saveData.state.famineSurvived;
+        MemorySanctuary.state.moraleStreak = { ...(saveData.state.moraleStreak || { critical: 0, excellent: 0 }) };
         
         MemorySanctuary.state.gameOver = false;
         
@@ -221,6 +241,7 @@ function getNGPlusData() {
             unlockedEntries: [],
             guardianFinalesSeen: [],
             guardianHistory: [],
+            archiveHistory: [],
             seenScenes: []
         };
     }
@@ -230,6 +251,7 @@ function getNGPlusData() {
         if (!data.unlockedEntries) data.unlockedEntries = [];
         if (!data.guardianFinalesSeen) data.guardianFinalesSeen = [];
         if (!data.guardianHistory) data.guardianHistory = [];
+        if (!data.archiveHistory) data.archiveHistory = [];
         if (!data.seenScenes) data.seenScenes = [];
         return data;
     } catch (e) {
@@ -240,6 +262,7 @@ function getNGPlusData() {
             unlockedEntries: [],
             guardianFinalesSeen: [],
             guardianHistory: [],
+            archiveHistory: [],
             seenScenes: []
         };
     }
@@ -287,10 +310,14 @@ function applyNGPlusBonuses() {
     const ngData = getNGPlusData();
     if (!ngData.bonuses || ngData.bonuses.length === 0) return;
 
+    // 各资源真实上限（与 game.js 资源 cap 保持一致）
+    const RESOURCE_CAPS = { energy: 150, media: 150, environment: 100, food: 80 };
+
     ngData.bonuses.forEach(bonus => {
         if (bonus.type === 'resource') {
+            const cap = RESOURCE_CAPS[bonus.resource] || 100;
             MemorySanctuary.state.resources[bonus.resource] = Math.min(
-                100,
+                cap,
                 MemorySanctuary.state.resources[bonus.resource] + bonus.value
             );
         }
@@ -316,6 +343,7 @@ function startNewGame(slot, isNGPlus) {
 
     renderAll();
     if (typeof initCanvas === 'function') initCanvas();
+    if (typeof checkStuckState === 'function') checkStuckState();
 
     showGuardianDialogue('tika', 'idle');
 
@@ -326,20 +354,17 @@ function startNewGame(slot, isNGPlus) {
         addLog(`第 ${ngData.playthroughCount} 周目开始。继承奖励已应用。`, 'system');
     } else {
         addLog('新游戏开始。愿你的选择得到善待。', 'system');
-        
-        // 首次游玩自动弹出帮助
-        const hasSeenTutorial = localStorage.getItem('memory-sanctuary-tutorial');
-        if (!hasSeenTutorial) {
-            localStorage.setItem('memory-sanctuary-tutorial', 'seen');
-            // 延迟一帧后再弹窗，让玩家先看到游戏画面
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    if (typeof showHelpModal === 'function') showHelpModal();
-                    addLog('点击底部「帮助」可随时查看操作指南。', 'system');
-                }, 300);
-            });
-        }
     }
+
+    // 新游戏开始：播放游戏 BGM
+    if (typeof AudioSystem !== 'undefined') {
+        AudioSystem.playBGM('game');
+    }
+
+    // 新手引导（光标高亮版）：仅在从未完成引导时触发
+    setTimeout(() => {
+        if (typeof initTutorial === 'function') initTutorial();
+    }, 500);
 }
 
 
@@ -358,8 +383,44 @@ function openSaveScreen(mode) {
         }
     }
 
+    // 存储环境自检：file:// 直开 / 隐私模式 / 存储满都会导致「重启后存档消失」
+    renderStorageInfo();
+
     renderSaveSlots(mode);
     overlay.classList.remove('hidden');
+}
+
+
+/**
+ * 检测浏览器存储环境，并在存档面板给出可操作的提示
+ * （打包版 / file:// 直开 / 隐私模式 / 存储配额满 是「重启后存档消失」的常见原因）
+ */
+function checkStorageEnvironment() {
+    try {
+        const testKey = 'memory-sanctuary-storage-test';
+        localStorage.setItem(testKey, '1');
+        localStorage.removeItem(testKey);
+        return { ok: true };
+    } catch (e) {
+        return { ok: false, error: e.name === 'QuotaExceededError' ? '存储空间已满' : (e.message || '不可用') };
+    }
+}
+
+function renderStorageInfo() {
+    const infoEl = document.getElementById('save-info');
+    if (!infoEl) return;
+    const env = checkStorageEnvironment();
+    const isFileProtocol = window.location.protocol === 'file:';
+
+    let html = '';
+    if (!env.ok) {
+        html = `<div class="save-storage-warning">⚠️ 浏览器存储不可用（${env.error}），存档将无法保存。建议：① 使用本地服务器打开（python -m http.server 8099）；② 退出浏览器隐私模式。也可用下方「📤 导出存档」手动备份。</div>`;
+    } else if (isFileProtocol) {
+        html = `<div class="save-storage-hint">ℹ️ 当前以 file:// 方式打开：不同浏览器 / 不同入口打开时，存储可能互相隔离，导致存档看似「消失」。推荐使用本地服务器访问（项目根目录运行 python -m http.server 8099）。建议定期用「📤 导出存档」备份。</div>`;
+    } else {
+        html = `<div class="save-storage-ok">✓ 本地存储可用，存档保存在本机浏览器中，正常重启不会丢失。</div>`;
+    }
+    infoEl.innerHTML = html;
 }
 
 
@@ -431,6 +492,15 @@ function renderSaveSlots(mode) {
             handleSaveAction(slot, action, mode);
         });
     });
+
+    // 存档面板底部：游戏进行中时显示封印按钮（替代原 game.js 末尾失效的 override）
+    if (typeof renderSealButton === 'function') {
+        try {
+            renderSealButton();
+        } catch (e) {
+            if (DEBUG) console.warn('[存档] renderSealButton 渲染失败:', e);
+        }
+    }
 }
 
 

@@ -123,6 +123,8 @@ function onTimeAdvanced(weeks) {
         
         // 士气持续压力（资源/环境影响心情）
         applyMoralePressure();
+        // 士气极端状态连续追踪（触发仪式事件用）
+        if (typeof updateMoraleStreak === 'function') updateMoraleStreak();
         if (state.emergencyCorruption > 0) {
             state.emergencyCorruption = Math.max(0, state.emergencyCorruption - 2);
         }
@@ -208,7 +210,23 @@ function onTimeAdvanced(weeks) {
         
         // 检查周数上限
         if (typeof checkWeekLimit === 'function') checkWeekLimit();
-        
+
+        // 处理进行中的项目（发放周收益 / 完成判定）
+        // 注：曾用「末尾 override onTimeAdvanced」实现，但因 game.js 先于 game-save.js 加载、
+        // 且原 override 段引用未定义的 renderSaveSlots 抛 ReferenceError 导致整个 override 失效——
+        // processActiveProjects 从未被调用，项目永远「建设中」。故改为函数体内直接调用。
+        if (typeof processActiveProjects === 'function') processActiveProjects();
+        if (typeof processFinaleEvents === 'function') processFinaleEvents();
+        if (weeks > 0 && typeof checkNGPlusPersonalEvents === 'function') checkNGPlusPersonalEvents();
+
+        // AI 助理辅助归档：每周重置使用标记
+        state.aiAssistUsedThisWeek = false;
+
+        // 最终封存准备引导：第 40 周一次性提示（引导玩家启动项目 / 留意终局会议）
+        if (state.week >= 40 && !state.finalPrepHintShown) {
+            state.finalPrepHintShown = true;
+            addLog('🗝️ 第 40 周：最终封印准备已就绪——前往「项目」面板启动「最终封印准备」项目，可解锁封印档案，为终局会议做准备。', 'system');
+        }
     } catch (err) {
         if (DEBUG) console.error('[onTimeAdvanced] 子系统异常:', err);
         // 继续执行 renderAll — UI 不会白屏
@@ -312,10 +330,14 @@ function recalculateResourceChanges() {
             const proj = getProjectById(p.id);
             if (!proj || !proj.effect) return;
             const e = proj.effect;
+            // 注意：实际收益会被资源上限截断，悬停提示必须反映「当前储量下的实际可增益」
             if (e.type === 'resourceBoost' && e.resource && e.amount) {
-                state.resourceChanges[e.resource] += e.amount;
+                const cap = e.resource === 'food' ? 80 : (e.resource === 'environment' ? 100 : 150);
+                const cur = state.resources[e.resource] || 0;
+                state.resourceChanges[e.resource] += Math.max(0, Math.min(cap, cur + e.amount) - cur);
             } else if (e.type === 'foodBoost' && e.amount) {
-                state.resourceChanges.food += e.amount;
+                const cur = state.resources.food || 0;
+                state.resourceChanges.food += Math.max(0, Math.min(80, cur + e.amount) - cur);
             }
         });
     }
@@ -504,9 +526,9 @@ function checkStuckState() {
         a.availableAfter <= week && !isArchiveCompleted(a.id) && !a.expired
     );
     
-    // Count actionable entries (visible + has resources)
-    const actionable = visible.filter(a => 
-        hasResources(a.energyCost, a.dataCost)
+    // Count actionable entries (visible + can be archived right now, 紧急归档同样视为可行动)
+    const actionable = visible.filter(a =>
+        canArchiveEntry(a)
     ).length;
     
     // Count entries that could be archived if we had resources (only currently visible)
@@ -526,7 +548,10 @@ function checkStuckState() {
         const lowEnergy = state.resources.energy <= 0;
         const lowMedia = state.resources.media <= 0;
         let reason = '';
-        if (lowEnergy && lowMedia) reason = '能源与介质均已耗尽';
+        if (state.emergencyArchiveActive) {
+            // 介质豁免只依赖能源
+            reason = lowEnergy ? '能源已耗尽，无法介质豁免' : '能源不足，无法介质豁免任何条目';
+        } else if (lowEnergy && lowMedia) reason = '能源与介质均已耗尽';
         else if (lowEnergy) reason = '能源已耗尽';
         else if (lowMedia) reason = '介质已耗尽';
         else reason = '资源不足以归档任何条目';
@@ -632,6 +657,8 @@ function checkStarvation() {
     } else {
         if (state.starvationLogged) {
             addLog('🍖 食物恢复，守护者松了一口气。', 'success');
+            // 劫后余生：食物归零后成功恢复（成就追踪）
+            state.famineSurvived = true;
         }
         state.starvationLogged = false;
         state.starvationWeeks = 0;
@@ -761,6 +788,9 @@ function triggerGameOver(reason) {
 
     // ─── 崩溃结局：走 VN 演出 ───
     if (reason === 'collapse' || reason === 'starvation') {
+        // 崩溃/饥荒同样是完整的周目结算：累计归档条目、递增周目数
+        if (typeof finalizePlaythrough === 'function') finalizePlaythrough();
+
         // 饥饿崩溃使用专属结局
         let ending = null;
         let endingSceneId = 'silent_sanctuary';
@@ -1072,7 +1102,31 @@ function getMoodIndicator(guardianId) {
     if (mood < 0) return '💙';
     if (mood <= 2) return '🤍';
     if (mood <= 4) return '💛';
-    return '❤️';
+    return '💚';
+}
+
+
+/**
+ * 跨周目「历史最高好感度」：从 guardianHistory 推导每位守护者曾达到的最高关系档
+ */
+function getGuardianMaxTier(guardianId) {
+    const ngData = (typeof getNGPlusData === 'function') ? getNGPlusData() : null;
+    if (!ngData || !ngData.guardianHistory) return null;
+    const tierRank = { hostile: 1, cold: 2, neutral: 3, friendly: 4, intimate: 5 };
+    let maxTier = null, maxRank = 0, maxPlaythrough = null;
+    for (const run of ngData.guardianHistory) {
+        const m = run.moods && run.moods[guardianId];
+        if (m && m.tier) {
+            const rank = tierRank[m.tier] || 0;
+            if (rank > maxRank) {
+                maxRank = rank;
+                maxTier = m.tier;
+                maxPlaythrough = run.playthrough;
+            }
+        }
+    }
+    if (!maxTier) return null;
+    return { tier: maxTier, playthrough: maxPlaythrough };
 }
 
 function getMoodDialogue(guardianId) {
@@ -1146,6 +1200,17 @@ function initGuardianInteraction() {
             e.stopPropagation();
             menu.classList.toggle('hidden');
             updateBoostButtonState();
+        });
+    }
+
+    // 点击心形图标 → 打开好感度详情（优化⑩：让发光的「心」有实际反馈）
+    const moodEl = document.getElementById('guardian-mood');
+    if (moodEl) {
+        moodEl.style.cursor = 'pointer';
+        moodEl.title = '点击查看好感度详情与下一档进度';
+        moodEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (typeof toggleGuardianDetail === 'function') toggleGuardianDetail();
         });
     }
     
@@ -1345,8 +1410,8 @@ function guardianRecommendArchive() {
         return;
     }
     
-    // 按资源是否足够分组
-    const affordable = available.filter(e => hasResources({ energy: e.energyCost || 0, media: e.dataCost || 0 }));
+    // 按资源是否足够分组（紧急归档激活时按紧急条件判断）
+    const affordable = available.filter(e => canArchiveEntry(e));
     
     let recommended;
     let isAffordable = true;
@@ -1643,23 +1708,38 @@ const TUTORIAL_STEPS = [
     },
     {
         target: '#vault-tabs',
-        text: '圣所共有3间存储室：\n\n• 语言与语法 — 记录文明的语言遗产\n• 历史编年 — 保存历史时间线\n• 灾难纪实 — 记录末日经过\n\n点击标签切换存储室。',
+        text: '圣所共有 12 间存储室，记录着萨拉达斯文明的不同侧面：\n\n语言、历史、灾难、艺术、哲学、科学、生态、法律、生活、建筑、医学与星象。\n\n点击标签切换存储室，查看各室的待归档条目。',
         position: 'bottom'
     },
     {
         target: '#guardian-panel',
-        text: '这是守护者面板。\n\n5名守护者各司其职——歌者缇卡、学者芬恩、生态学家米莎、工程师洛恩、前祭司埃塞尔。\n\n💡 点击守护者头像可以互动：交谈或获取归档建议。',
+        text: '这是守护者面板。\n\n5 名守护者各司其职——歌者缇卡、学者芬恩、生态学家米莎、工程师洛恩、前祭司埃塞尔。\n\n💡 点击守护者头像可以互动：交谈、获取归档建议，或分发补给品提升士气。',
         position: 'left'
     },
     {
         target: '#res-energy',
-        text: '圣所运作依赖三种资源：\n\n◈ 能源 — 维持圣所运转\n◇ 存储介质 — 存储归档数据\n○ 环境稳定 — 保护设备正常运作\n\n归档条目需要消耗资源和介质。',
+        text: '圣所运作依赖四种资源：\n\n◈ 能源 — 维持圣所运转\n◇ 存储介质 — 存储归档数据\n○ 环境稳定 — 保护设备正常运作\n🍖 食物 — 守护者生存所需\n\n归档条目需要消耗能源和介质。',
         position: 'bottom'
     },
     {
         target: '#entry-list',
         text: '这里是待归档条目列表。\n\n每条条目都有录入成本（能源+介质）和过期时间。资源充足时请点击「录入归档」保存它们。\n\n⚠️ 过期的条目将永远消失！',
         position: 'left'
+    },
+    {
+        target: '#project-btn',
+        text: '这是圣所维护项目。\n\n修建水培农场、修复发电机等项目可以持续提供资源。\n\n部分项目完成后还会解锁新的加密档案。',
+        position: 'top'
+    },
+    {
+        target: '#explore-btn',
+        text: '地表勘探可以派遣守护者外出搜寻物资与遗迹。\n\n不同地点产出不同资源，记得选择擅长对应技能的守护者。',
+        position: 'top'
+    },
+    {
+        target: '#emergency-btn',
+        text: '应急协议是最后的手段。\n\n代价是圣所腐败度上升——腐败度越高，资源衰减越快。谨慎使用。',
+        position: 'top'
     },
     {
         target: null,
@@ -1834,13 +1914,13 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.explore-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             const tabName = tab.dataset.tab;
-            const listContainer = document.getElementById('explore-list-container');
+            const body = document.querySelector('.explore-body');
             const logContainer = document.getElementById('explore-log-container');
             if (tabName === 'list') {
-                listContainer.classList.remove('hidden');
+                if (body) body.classList.remove('hidden');
                 logContainer.classList.add('hidden');
             } else {
-                listContainer.classList.add('hidden');
+                if (body) body.classList.add('hidden');
                 logContainer.classList.remove('hidden');
                 renderExploreLog();
             }
@@ -1888,33 +1968,35 @@ const EMERGENCY_PROTOCOLS = [
         id: 'emergency_explore',
         name: '紧急勘探',
         icon: '🔭',
-        desc: '立即派遣勘探队（无视冷却），但守护者疲劳+2周',
-        cost: '无',
-        gain: '立即派遣',
+        desc: '立即派遣勘探队（无视冷却、免食物消耗），守护者疲劳仅+1周',
+        cost: '腐败 +15',
+        gain: '立即派遣 · 免食物 · 疲劳轻',
         cooldown: 4,
-        corruption: 20,
+        corruption: 15,
         available: (state) => true,
         execute: (state) => {
             if (state.exploration) {
                 state.exploration.cooldownUntil = 0;
             }
+            // 下一次勘探免食物消耗（真实价值：食物紧张时也能出动）
+            state.emergencyExploreFoodFree = true;
         },
         extraEffect: (state) => {
             const guardians = MemorySanctuary.data.guardians;
             guardians.forEach(g => {
                 if (state.exploration.fatigue) {
-                    state.exploration.fatigue[g.id] = (state.exploration.fatigue[g.id] || 0) + 2;
+                    state.exploration.fatigue[g.id] = (state.exploration.fatigue[g.id] || 0) + 1;
                 }
             });
         }
     },
     {
         id: 'emergency_archive',
-        name: '紧急归档',
-        icon: '📦',
-        desc: '本回合归档不消耗介质（能源消耗加倍）',
+        name: '介质豁免',
+        icon: '📼',
+        desc: '豁免本次归档的介质消耗（能源消耗加倍）',
         cost: '本回合生效',
-        gain: '介质消耗 0',
+        gain: '介质 0 消耗',
         cooldown: 2,
         corruption: 10,
         available: (state) => true,
@@ -2007,7 +2089,9 @@ function showHelpModal() {
     helpContent += '• 守护者士气会影响资源衰减效率\n';
     helpContent += '• 资源越紧张、时间越靠后，士气压力越大\n';
     helpContent += '• 归档成功可提升士气\n';
-    helpContent += '• 通过守护者菜单分发补给品可鼓舞士气\n\n';
+    helpContent += '• 通过守护者菜单分发补给品可鼓舞士气\n';
+    helpContent += '• 士气高低还会左右突发事件：高昂时风波更少、馈赠更多；崩溃时危机频发\n';
+    helpContent += '• 士气持续极端（高昂或崩溃）可能触发特殊的仪式事件\n';
     helpContent += '「——终来之刻，何物当存？」';
     
     content.textContent = helpContent;
@@ -2161,6 +2245,28 @@ function checkAchievements(context) {
                     const completedSet = new Set(state.completedProjects);
                     if (repeatableIds.length > 0 && repeatableIds.every(id => completedSet.has(id))) earned = true;
                 }
+                // 机魂共呜 / 人机协作：AI 助理辅助归档次数
+                if ((c.value === 'ai_assist_count' && (state.aiAssistCount || 0) >= 1)) earned = true;
+                if ((c.value === 'ai_assist_10' && (state.aiAssistCount || 0) >= 10)) earned = true;
+                // 临时援手：守护者临时协助（食物换归档）次数
+                if (c.value === 'guardian_aid_count' && (state.guardianAidCount || 0) >= 1) earned = true;
+                // 步履不停：单周目完成 10 次勘探
+                if (c.value === 'exploration_count') {
+                    const expDone = state.exploration && state.exploration.completedExplorations
+                        ? Object.values(state.exploration.completedExplorations).reduce((a, b) => a + b, 0) : 0;
+                    if (expDone >= 10) earned = true;
+                }
+                // 地表全图：完成全部勘探点
+                if (c.value === 'all_explorations') {
+                    const total = (MemorySanctuary.data.explorations || []).length;
+                    const done = state.exploration && state.exploration.completedExplorations
+                        ? Object.keys(state.exploration.completedExplorations).length : 0;
+                    if (total > 0 && done >= total) earned = true;
+                }
+                // 孤注一掷：激活过紧急勘探协议
+                if (c.value === 'emergency_explore_used' && state.emergencyExploreUsed) earned = true;
+                // 劫后余生：食物归零后成功恢复
+                if (c.value === 'survived_famine' && state.famineSurvived) earned = true;
                 break;
             }
         }
@@ -2294,13 +2400,6 @@ function checkSealAchievements(endingId, week) {
 
 
 
-// Override renderSaveSlots to also render the seal button
-const _origRenderSaveSlots = renderSaveSlots;
-renderSaveSlots = function(mode) {
-    _origRenderSaveSlots(mode);
-    renderSealButton();
-};
-
 // ==========================================
 // 圣所维护项目系统
 // ==========================================
@@ -2317,14 +2416,7 @@ renderSaveSlots = function(mode) {
 
 
 // ==========================================
-// Hook into onTimeAdvanced
+// 终局事件强制触发
 // ==========================================
 
-// Override the original onTimeAdvanced to also process projects and finale events
-const _originalOnTimeAdvanced = onTimeAdvanced;
-onTimeAdvanced = function(weeks) {
-    _originalOnTimeAdvanced(weeks);
-    processActiveProjects();
-    processFinaleEvents();
-    if (weeks > 0 && typeof checkNGPlusPersonalEvents === 'function') checkNGPlusPersonalEvents();
-};
+
