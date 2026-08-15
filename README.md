@@ -1,6 +1,6 @@
 # 记忆圣所 (Memory Sanctuary)
 
-![Version](https://img.shields.io/badge/version-v0.1.0--beta-blue)
+![Version](https://img.shields.io/badge/version-v0.2.0--beta-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tech](https://img.shields.io/badge/tech-HTML5%20%2B%20CSS3%20%2B%20Vanilla%20JS-orange)
 
@@ -307,7 +307,7 @@ memory-sanctuary/
 
 ## 版本历史
 
-### v1.11-beta (2026-08-15)
+### v0.2.0-beta (2026-08-15)
 
 - ✅ 新手引导：高亮框/气泡定位修复（同步滚动 + 字体重测 + resize 重测）；气泡样式选择器修复
 - ✅ 帮助弹窗改为引导结束后弹出（消除黑色遮罩重叠）
