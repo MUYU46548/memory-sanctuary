@@ -106,6 +106,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const dataPromise = loadGameData().then(() => {
             updateBoot(92, '正在加载数据...');
+        }).catch((err) => {
+            // 数据加载失败不阻塞启动（个别文件失败时游戏降级运行）
+            if (DEBUG) console.error('[记忆圣所] 数据加载失败:', err);
+            if (statusText) statusText.textContent = '数据加载异常（部分内容可能缺失）：' + (err && err.message ? err.message : String(err));
         });
         
         // 并行执行，但字体失败不影响数据加载
@@ -168,26 +172,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (DEBUG) console.log('[记忆圣所] 初始化完成');
     } catch (error) {
         if (DEBUG) console.error('[记忆圣所] 初始化失败:', error);
-        if (statusText) statusText.textContent = '加载失败，请刷新页面';
+        // 显示具体错误信息（Neutralino 打包排障用：区分加载失败原因）
+        if (statusText) {
+            const msg = error && error.message ? error.message : String(error);
+            statusText.textContent = '加载失败：' + msg;
+            if (error && error.stack) {
+                const line = error.stack.split('\n').find(l => l.includes('main.js') || l.includes('game') || l.includes('font'));
+                if (line) statusText.textContent += ' @ ' + line.trim().slice(0, 140);
+            }
+        }
     }
 });
 
 async function loadGameData() {
-    const archivesRes = await fetch('data/archives.json');
-    const vaultsRes = await fetch('data/vaults.json');
-    const guardiansRes = await fetch('data/guardians.json');
-    const eventsRes = await fetch('data/events.json');
-    const explorationsRes = await fetch('data/explorations.json');
-    const projectsRes = await fetch('data/projects.json');
+    // 带超时的 JSON 加载：Neutralino WebView2 等环境下 fetch 可能挂起（永不 settle），
+    // AbortController 强制中止后走 catch 降级，避免启动画面永久卡在「正在初始化」
+    const fetchJson = async (path, timeoutMs = 8000) => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            const res = await fetch(path, { signal: controller.signal });
+            clearTimeout(timer);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        } catch (e) {
+            clearTimeout(timer);
+            throw e;
+        }
+    };
+    const safe = async (path, fallback, name) => {
+        try {
+            return await fetchJson(path);
+        } catch (e) {
+            if (DEBUG) console.warn(`[数据] ${name} 加载失败:`, e);
+            return fallback;
+        }
+    };
 
-    MemorySanctuary.data.archives = (await archivesRes.json()).archives;
-    MemorySanctuary.data.vaults = (await vaultsRes.json()).vaults;
-    MemorySanctuary.data.guardians = (await guardiansRes.json()).guardians;
-    const eventsData = await eventsRes.json();
+    const archivesData = await safe('data/archives.json', { archives: [] }, 'archives.json');
+    const vaultsData = await safe('data/vaults.json', { vaults: [] }, 'vaults.json');
+    const guardiansData = await safe('data/guardians.json', { guardians: [] }, 'guardians.json');
+    const eventsData = await safe('data/events.json', { events: [] }, 'events.json');
+    const explorationsData = await safe('data/explorations.json', { explorations: [] }, 'explorations.json');
+    const projectsData = await safe('data/projects.json', { projects: [] }, 'projects.json');
+
+    MemorySanctuary.data.archives = archivesData.archives;
+    MemorySanctuary.data.vaults = vaultsData.vaults;
+    MemorySanctuary.data.guardians = guardiansData.guardians;
     MemorySanctuary.data.events = eventsData.events.filter(e => e.trigger?.type !== 'scheduled');
     MemorySanctuary.data.scheduledEvents = eventsData.events.filter(e => e.trigger?.type === 'scheduled');
-    MemorySanctuary.data.explorations = (await explorationsRes.json()).explorations || [];
-    MemorySanctuary.data.projects = (await projectsRes.json()).projects || [];
+    MemorySanctuary.data.explorations = explorationsData.explorations || [];
+    MemorySanctuary.data.projects = projectsData.projects || [];
     try {
         const endingsRes = await fetch('data/endings.json');
         MemorySanctuary.data.endings = (await endingsRes.json()).endings || [];
