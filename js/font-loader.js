@@ -31,29 +31,53 @@ class FontLoader {
         onProgress(5, '正在初始化...');
         await this._delay(30);
 
-        // 检查缓存可用性
-        const cacheAvailable = await this._checkCache();
-        
-        if (cacheAvailable) {
-            // 从缓存加载（快速）
-            await this._loadFromCache(onProgress);
-        } else {
-            // 首次下载并缓存
-            await this._loadFromNetwork(onProgress);
+        // Neutralino 桌面环境：WebView2 的 Cache Storage 可能挂起（caches.open 永不 settle），
+        // 直接跳过缓存逻辑走网络加载（本地 resources，速度快）
+        this.isNeutralino = typeof navigator !== 'undefined' && /Neutralino/i.test(navigator.userAgent);
+
+        try {
+            // 整体超时兜底：任意环节挂起（Cache API / fetch / FontFace.load）都能降级到系统字体
+            await Promise.race([
+                this._loadInternal(onProgress),
+                new Promise(resolve => setTimeout(() => {
+                    if (DEBUG) console.warn('[FontLoader] 字体加载超时，使用系统字体回退');
+                    resolve();
+                }, 8000))
+            ]);
+        } catch (err) {
+            if (DEBUG) console.warn('[FontLoader] 字体加载异常:', err);
         }
 
         if (this.loaded > 0) {
             this._applyFonts();
         }
-        
+
         onProgress(100, '完成');
+    }
+
+    async _loadInternal(onProgress) {
+        let cacheAvailable = false;
+        if (!this.isNeutralino) {
+            cacheAvailable = await this._checkCache();
+        }
+        if (cacheAvailable) {
+            // 从缓存加载（快速）
+            await this._loadFromCache(onProgress);
+        } else {
+            // 首次下载（Neutralino 下直接走这里，绕过可能挂起的 Cache API）
+            await this._loadFromNetwork(onProgress);
+        }
     }
 
     // ===== 缓存检查 =====
     async _checkCache() {
         if (!('caches' in window)) return false;
         try {
-            const cache = await caches.open(FONT_CACHE_NAME);
+            // 超时保护：部分 WebView（如 Neutralino WebView2）的 caches.open 可能永不 settle
+            const cache = await Promise.race([
+                caches.open(FONT_CACHE_NAME),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Cache API 超时')), 2000))
+            ]);
             const keys = await cache.keys();
             // 检查是否所有字体都有缓存
             const cachedUrls = keys.map(r => r.url);
@@ -140,6 +164,7 @@ class FontLoader {
 
     async _saveToCache(url, response) {
         if (!('caches' in window)) return;
+        if (this.isNeutralino) return; // Neutralino WebView2 下跳过（Cache API 可能挂起）
         try {
             const cache = await caches.open(FONT_CACHE_NAME);
             await cache.put(url, response.clone());
