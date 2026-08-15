@@ -10,12 +10,23 @@ C:\Users\47219\AppData\Local\Temp\hermes-verify-*.js
 Thumbs.db
 *.swp
 
-# 日志文档（已在原gitignore中，保留）
+# 内部开发文档（不随仓库公开）
 开发日志.md
 开发日志2.md
 IDEA.md
 临时摘要.md
 游戏章节拓展.md
 
-# 临时文件
+# 临时文件与玩家反馈
 BUG记录.md
+
+# 问卷与数据文件（样本数据不进公开仓库）
+*.xlsx
+*.xls
+
+# 发布打包产物
+*.zip
+
+# Python 缓存（headless 验证脚本）
+__pycache__/
+*.pyc
