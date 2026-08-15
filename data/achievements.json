@@ -314,13 +314,13 @@
   {
    "id": "all_vaults_50",
    "name": "均衡守护者",
-   "description": "所有存储室完成度达到50%。",
+   "description": "所有存储室完成度达到40%。",
    "icon": "⚖️",
    "category": "vault",
    "hidden": false,
    "condition": {
     "type": "all_vaults_percent",
-    "value": 0.5
+    "value": 0.4
    }
   },
   {
@@ -556,6 +556,18 @@
    "condition": {
     "type": "custom",
     "value": "survived_famine"
+   }
+  },
+  {
+   "id": "all_archives_union",
+   "name": "万卷归藏",
+   "description": "跨周目归档过全部记忆碎片（多周目累计，无需单局全收集）",
+   "icon": "📚",
+   "category": "collection",
+   "hidden": false,
+   "condition": {
+    "type": "custom",
+    "value": "all_archives_union"
    }
   }
  ]

@@ -1337,7 +1337,8 @@ button.archive-btn.recommended {
     display: none;
 }
 
-.tutorial-tip {
+/* 引导提示气泡：注意 HTML 里是 id="tutorial-tip"（无 class），选择器必须用 # 前缀，否则样式全失效 */
+#tutorial-tip {
     position: fixed;
     max-width: 320px;
     background: var(--bg-panel);
@@ -1350,14 +1351,14 @@ button.archive-btn.recommended {
 }
 
 /* 引导箭头：指向被高亮的区域 */
-.tutorial-tip::before {
+#tutorial-tip::before {
     content: '';
     position: absolute;
     width: 0;
     height: 0;
 }
 
-.tutorial-tip.tip-below::before {   /* 提示框在目标下方 → 箭头朝上指向目标 */
+#tutorial-tip.tip-below::before {   /* 提示框在目标下方 → 箭头朝上指向目标 */
     top: -10px;
     left: 28px;
     border-left: 10px solid transparent;
@@ -1365,7 +1366,7 @@ button.archive-btn.recommended {
     border-bottom: 10px solid var(--amber-primary);
 }
 
-.tutorial-tip.tip-above::before {   /* 提示框在目标上方 → 箭头朝下指向目标 */
+#tutorial-tip.tip-above::before {   /* 提示框在目标上方 → 箭头朝下指向目标 */
     bottom: -10px;
     left: 28px;
     border-left: 10px solid transparent;
@@ -1373,7 +1374,7 @@ button.archive-btn.recommended {
     border-top: 10px solid var(--amber-primary);
 }
 
-.tutorial-tip.tip-left::before {    /* 提示框在目标左侧 → 箭头朝右指向目标 */
+#tutorial-tip.tip-left::before {    /* 提示框在目标左侧 → 箭头朝右指向目标 */
     right: -10px;
     top: 28px;
     border-top: 10px solid transparent;

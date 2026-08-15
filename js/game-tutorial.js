@@ -3,6 +3,9 @@
  * 包含: initTutorial, showTutorialStep, nextTutorialStep...
  */
 
+// 一次性标志：字体就绪后只重测一次定位（防止 ready 立即 resolve 造成递归）
+let fontReadyRepositioned = false;
+
 function initTutorial() {
     const saved = localStorage.getItem('memory-sanctuary-tutorial');
     if (saved) return;
@@ -50,23 +53,39 @@ function showTutorialStep() {
         nextBtn.textContent = '下一步';
     }
 
-    // 高亮目标（先滚动到目标，再测量位置，避免 scrollIntoView 改变坐标）
+    // 高亮目标（同步滚动到目标，强制重排后再测量——smooth 异步滚动会在滚动完成前测量到旧坐标，导致高亮框/气泡错位）
     let rect = null;
     if (step.target) {
         const target = document.querySelector(step.target);
         if (target) {
-            try { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
-            rect = target.getBoundingClientRect();
-            highlight.style.left = rect.left - 4 + 'px';
-            highlight.style.top = rect.top - 4 + 'px';
-            highlight.style.width = rect.width + 8 + 'px';
-            highlight.style.height = rect.height + 8 + 'px';
-            highlight.classList.remove('hidden');
+            // 目标不可见（display:none / 零尺寸）时隐藏高亮框，避免定位到左上角「对着空气」
+            const visible = (target.offsetWidth > 0) || (target.offsetHeight > 0);
+            if (visible) {
+                try { target.scrollIntoView({ block: 'center', behavior: 'auto' }); } catch (e) { target.scrollIntoView(true); }
+                // 强制同步布局，确保滚动已结束
+                void document.documentElement.offsetHeight;
+                rect = target.getBoundingClientRect();
+                highlight.style.left = rect.left - 4 + 'px';
+                highlight.style.top = rect.top - 4 + 'px';
+                highlight.style.width = rect.width + 8 + 'px';
+                highlight.style.height = rect.height + 8 + 'px';
+                highlight.classList.remove('hidden');
+            } else {
+                highlight.classList.add('hidden');
+            }
         } else {
             highlight.classList.add('hidden');
         }
     } else {
         highlight.classList.add('hidden');
+    }
+
+    // 字体就绪后重测一次：首次游玩霞鹜文楷异步加载，字体就位后布局变化，需矫正高亮/气泡位置
+    if (document.fonts && document.fonts.ready && !fontReadyRepositioned) {
+        fontReadyRepositioned = true; // 一次性标志，避免 ready 后重测 → 再注册 → 无限递归
+        document.fonts.ready.then(() => {
+            if (tutorialActive) showTutorialStep();
+        });
     }
 
     overlay.classList.remove('hidden');
@@ -136,6 +155,7 @@ function endTutorial() {
     const overlay = document.getElementById('tutorial-overlay');
     if (overlay) overlay.classList.add('hidden');
     tutorialActive = false;
+    window.removeEventListener('resize', onTutorialResize);
     localStorage.setItem('memory-sanctuary-tutorial', 'completed');
     addLog('新手引导已完成。愿你的选择得到善待。', 'system');
 
@@ -168,4 +188,11 @@ function initTutorialListener() {
             }
         });
     }
+
+    // 窗口尺寸变化时重测高亮/气泡位置（防缩放、侧栏开合导致错位）
+    window.addEventListener('resize', onTutorialResize);
+}
+
+function onTutorialResize() {
+    if (tutorialActive) showTutorialStep();
 }

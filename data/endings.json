@@ -196,7 +196,7 @@
       "type": "percentage_completion",
       "condition": {
         "minPercent": 0.3,
-        "maxPercent": 0.99
+        "maxPercent": 0.59
       }
     },
     {
@@ -243,8 +243,8 @@
         "minVaultCompletion": 0.45
       },
       "unlockMessage": "完美封印！所有守护者好感度满 + 45%以上收集完成！"
-      },
-      {
+    },
+    {
       "id": "sacrifice",
       "priority": 95,
       "title": "💫 牺牲",

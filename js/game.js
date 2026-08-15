@@ -2267,6 +2267,13 @@ function checkAchievements(context) {
                 if (c.value === 'emergency_explore_used' && state.emergencyExploreUsed) earned = true;
                 // 劫后余生：食物归零后成功恢复
                 if (c.value === 'survived_famine' && state.famineSurvived) earned = true;
+                // 万卷归藏：跨周目累计归档过全部条目（多周目归档不同内容，archiveHistory 在结算时写入并含当前周目）
+                if (c.value === 'all_archives_union') {
+                    const union = new Set();
+                    (ngData.archiveHistory || []).forEach(run => (run.archives || []).forEach(id => union.add(id)));
+                    const total = (MemorySanctuary.data.archives || []).length;
+                    if (total > 0 && union.size >= total) earned = true;
+                }
                 break;
             }
         }
