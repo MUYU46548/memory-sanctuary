@@ -24,7 +24,7 @@ function initUI() {
     if (batchBtn) {
         batchBtn.addEventListener('click', () => {
             if (MemorySanctuary.state.batchArchiveMode) {
-                exitBatchArchiveMode();
+                showBatchExitConfirm();
             } else {
                 enterBatchArchiveMode();
             }
@@ -38,6 +38,80 @@ function initUI() {
     initResourceTooltips();
 
     if (DEBUG) console.log('[UI] 初始化完成');
+}
+
+/**
+ * 批量归档退出确认弹窗
+ */
+function showBatchExitConfirm() {
+    const state = MemorySanctuary.state;
+    if (!state || !state.batchArchiveMode) return;
+    
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    if (!overlay || !title || !content) return;
+    
+    title.textContent = '退出紧急归档';
+    
+    const count = state.batchArchiveCount || 0;
+    let text = '';
+    if (count === 0) {
+        text = '尚未归档任何条目。确定要退出吗？\n\n退出后将退回已付出的代价（环境+10、心情+2、衰减惩罚取消）。';
+    } else {
+        text = `已归档 ${count} 条。确定要退出吗？\n\n退出后将推进1周时间，且已付出的代价不予退回。`;
+    }
+    
+    content.innerHTML = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
+    overlay.classList.remove('hidden');
+    
+    // 创建确认按钮容器
+    const existingConfirm = document.getElementById('modal-confirm-container');
+    if (existingConfirm) existingConfirm.remove();
+    
+    const confirmContainer = document.createElement('div');
+    confirmContainer.id = 'modal-confirm-container';
+    confirmContainer.style.display = 'flex';
+    confirmContainer.style.gap = '12px';
+    confirmContainer.style.alignItems = 'center';
+    confirmContainer.style.marginTop = '16px';
+    
+    // 取消按钮
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = '继续归档';
+    cancelBtn.className = 'modal-btn modal-btn-cancel';
+    cancelBtn.style.padding = '8px 16px';
+    cancelBtn.style.fontSize = '0.85rem';
+    cancelBtn.style.fontFamily = 'var(--font-cn)';
+    cancelBtn.style.background = 'transparent';
+    cancelBtn.style.border = '1px solid var(--border-subtle)';
+    cancelBtn.style.borderRadius = '4px';
+    cancelBtn.style.color = 'var(--text-primary)';
+    cancelBtn.style.cursor = 'pointer';
+    cancelBtn.onclick = () => {
+        closeModal();
+    };
+    
+    // 确认退出按钮
+    const confirmBtn = document.createElement('button');
+    confirmBtn.textContent = '确认退出';
+    confirmBtn.className = 'modal-btn modal-btn-confirm';
+    confirmBtn.style.padding = '8px 16px';
+    confirmBtn.style.fontSize = '0.85rem';
+    confirmBtn.style.fontFamily = 'var(--font-cn)';
+    confirmBtn.style.background = 'var(--danger, #d44)';
+    confirmBtn.style.border = '1px solid var(--danger, #d44)';
+    confirmBtn.style.borderRadius = '4px';
+    confirmBtn.style.color = '#fff';
+    confirmBtn.style.cursor = 'pointer';
+    confirmBtn.onclick = () => {
+        closeModal();
+        exitBatchArchiveMode();
+    };
+    
+    confirmContainer.appendChild(cancelBtn);
+    confirmContainer.appendChild(confirmBtn);
+    content.appendChild(confirmContainer);
 }
 
 /**
@@ -540,6 +614,7 @@ function renderWeekDisplay() {
 
 function renderResources() {
     const resources = getResourceStatus();
+    const state = MemorySanctuary.state;
     
     const energyEl = document.getElementById('energy-value');
     const mediaEl = document.getElementById('media-value');
@@ -563,7 +638,7 @@ function renderResources() {
     }
     
     // 圣所衰竭视觉指示
-    const det = MemorySanctuary.state.deterioration;
+    const det = state.deterioration;
     const resEnergy = document.getElementById('res-energy');
     const resMedia = document.getElementById('res-media');
     const resEnv = document.getElementById('res-environment');
@@ -607,6 +682,16 @@ function renderResources() {
             el.classList.remove('critical');
         }
     });
+
+    // 衰减惩罚预警（紧急归档后下周衰减+20%）
+    const resPanel = document.getElementById('resource-panel');
+    if (resPanel) {
+        if (state.nextWeekDecayPenalty > 0) {
+            resPanel.classList.add('decay-penalty');
+        } else {
+            resPanel.classList.remove('decay-penalty');
+        }
+    }
 }
 
 function getResourceStatus() {
@@ -1449,6 +1534,15 @@ function getResourceBreakdown(resourceKey) {
         const corruptionPenalty = Math.floor(state.emergencyCorruption / 20) * 0.5;
         if (corruptionPenalty > 0) {
             breakdowns.push({ amount: -corruptionPenalty, source: '圣所腐败' });
+        }
+    }
+    
+    // 紧急归档衰减惩罚（作用于所有资源，一次性）
+    if (state.nextWeekDecayPenalty > 0) {
+        const baseDecay = resourceKey === 'energy' ? 1.0 : resourceKey === 'media' ? 0.5 : resourceKey === 'environment' ? 0.5 : 0.3;
+        const penaltyAmt = baseDecay * state.nextWeekDecayPenalty;
+        if (penaltyAmt > 0) {
+            breakdowns.push({ amount: -penaltyAmt, source: '紧急归档代价' });
         }
     }
     

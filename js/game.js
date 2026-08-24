@@ -722,9 +722,9 @@ function getFoodMoodWeight() {
 
 const SEASONS = [
     { name: '初春', foodMod: 0, desc: '新绿初现，圣所外微光闪烁。' },
-    { name: '盛夏', foodMod: 1, desc: '炎热干燥，储备消耗加快。' },
-    { name: '深秋', foodMod: -1, desc: '万物凋零，食物愈发珍贵。' },
-    { name: '严冬', foodMod: -2, desc: '冰封大地，圣所陷入死寂。' }
+    { name: '盛夏', foodMod: 2, desc: '炎热干燥，储备消耗加快。' },
+    { name: '深秋', foodMod: 0, desc: '万物凋零，食物愈发珍贵。' },
+    { name: '严冬', foodMod: -1, desc: '冰封大地，圣所陷入死寂。' }
 ];
 
 function getCurrentSeason() {

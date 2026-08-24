@@ -135,7 +135,47 @@
       "foodCost": 8
     },
     {
-      "id": "exp_hospital_04",
+      "id": "exp_abandoned_orchard_04",
+      "name": "废弃果园",
+      "description": "萨拉达斯最后的果园，果树早已枯死，但根系下埋藏着应急储备。",
+      "difficulty": 1,
+      "duration": 1,
+      "maxAttempts": 1,
+      "requiredSkills": [],
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "food",
+          "amount": 16,
+          "probability": 0.4,
+          "message": "在枯死的果树根部挖出了密封的应急食物储备。"
+        },
+        {
+          "type": "resource",
+          "resource": "media",
+          "amount": 15,
+          "probability": 0.3,
+          "message": "找到了果园管理日志和土壤分析记录。"
+        },
+        {
+          "type": "narrative",
+          "probability": 0.2,
+          "message": "果树虽死，但根系仍在等待一场不会到来的春雨。",
+          "revealsClue": "arc_orchard_dead"
+        },
+        {
+          "type": "risk",
+          "resource": "environment",
+          "amount": -8,
+          "probability": 0.1,
+          "message": "土壤污染严重，匆忙撤退中损失了部分环境储备。"
+        }
+      ],
+      "availableAfter": 1,
+      "foodCost": 5
+    },
+    {
+      "id": "exp_life_support_04",
       "name": "生命维持中心",
       "description": "末日前的医疗中心，设备已停止运转。",
       "difficulty": 1,
@@ -768,6 +808,52 @@
       "foodCost": 8
     },
     {
+      "id": "exp_greenhouse_ruins_37",
+      "name": "温室废墟",
+      "description": "末日前的生态温室，玻璃穹顶已破碎，但土壤中的种子仍在休眠。",
+      "difficulty": 2,
+      "duration": 2,
+      "maxAttempts": 1,
+      "requiredSkills": [
+        "ecology",
+        "survival"
+      ],
+      "guardianSpecials": {
+        "misha": "misha_greenhouse"
+      },
+      "availableAfter": 37,
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "food",
+          "amount": 22,
+          "probability": 0.4,
+          "message": "在温室深处找到了密封的种子库和脱水蔬菜储备。"
+        },
+        {
+          "type": "resource",
+          "resource": "media",
+          "amount": 24,
+          "probability": 0.3,
+          "message": "发现了植物学家的研究日志和物种编目。"
+        },
+        {
+          "type": "narrative",
+          "probability": 0.2,
+          "message": "一株幼苗在裂缝中顽强生长。米莎说这是末日前的物种，它不该出现在这里。",
+          "revealsClue": "arc_greenhouse_life"
+        },
+        {
+          "type": "risk",
+          "resource": "environment",
+          "amount": -12,
+          "probability": 0.1,
+          "message": "温室中有毒气体泄漏，净化设备受损。"
+        }
+      ],
+      "foodCost": 8
+    },
+    {
       "id": "exp_sanctuary_core_41",
       "name": "圣所核心",
       "description": "圣所最深处的秘密区域，建造者的私人工作室。",
@@ -809,6 +895,52 @@
         }
       ],
       "foodCost": 5
+    },
+    {
+      "id": "exp_underground_mushroom_15",
+      "name": "地下菌窟",
+      "description": "圣所下方的天然洞穴，恒温恒湿，菌丝在黑暗中蔓延。",
+      "difficulty": 2,
+      "duration": 2,
+      "maxAttempts": 1,
+      "requiredSkills": [
+        "ecology",
+        "survival"
+      ],
+      "guardianSpecials": {
+        "misha": "misha_mushroom"
+      },
+      "availableAfter": 15,
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "food",
+          "amount": 20,
+          "probability": 0.4,
+          "message": "洞穴深处发现了可食用的菌落群，菌丝在恒温中茁壮生长。"
+        },
+        {
+          "type": "resource",
+          "resource": "media",
+          "amount": 22,
+          "probability": 0.3,
+          "message": "找到了洞穴壁画和早期殖民者的生存日志。"
+        },
+        {
+          "type": "narrative",
+          "probability": 0.2,
+          "message": "米莎说这里的菌丝是末日前的物种，它们在黑暗中存活了数百年。",
+          "revealsClue": "arc_mushroom_cave"
+        },
+        {
+          "type": "risk",
+          "resource": "environment",
+          "amount": -10,
+          "probability": 0.1,
+          "message": "洞穴通风不畅，勘探队携带的净化设备受损。"
+        }
+      ],
+      "foodCost": 8
     },
     {
       "id": "exp_opera_ruins_15",
@@ -899,6 +1031,49 @@
         }
       ],
       "foodCost": 5
+    },
+    {
+      "id": "exp_hibernation_vault_18",
+      "name": "休眠保险库",
+      "description": "末日前的战略物资储备库，厚重的气密门后封存着紧急配给。",
+      "difficulty": 2,
+      "duration": 2,
+      "maxAttempts": 1,
+      "requiredSkills": [
+        "engineering",
+        "survival"
+      ],
+      "availableAfter": 18,
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "food",
+          "amount": 18,
+          "probability": 0.4,
+          "message": "在密封仓库中找到了末日前的应急口粮，保存完好。"
+        },
+        {
+          "type": "resource",
+          "resource": "media",
+          "amount": 20,
+          "probability": 0.3,
+          "message": "发现了战略储备库的管理日志和配给清单。"
+        },
+        {
+          "type": "narrative",
+          "probability": 0.2,
+          "message": "仓库墙上贴着告示：\"紧急配给仅供末日事件启动。\"事件启动了，但没有人来领取。",
+          "revealsClue": "arc_vault_sealed"
+        },
+        {
+          "type": "risk",
+          "resource": "energy",
+          "amount": -14,
+          "probability": 0.1,
+          "message": "气密门卡死，强行开启消耗了大量能源。"
+        }
+      ],
+      "foodCost": 8
     },
     {
       "id": "exp_legal_archive_22",
