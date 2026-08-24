@@ -135,6 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (typeof initSaveSystem === 'function') initSaveSystem();
         if (typeof initExportImport === 'function') initExportImport();
         if (typeof initSettings === 'function') initSettings();
+        if (typeof initDLC === 'function') initDLC();
         
         if (typeof VN !== 'undefined' && MemorySanctuary.data.scenes) {
             VN.init(MemorySanctuary.data.scenes);
@@ -307,7 +308,11 @@ function initGameState() {
         guardianAidCount: 0,
         emergencyExploreUsed: false,
         famineSurvived: false,
-        moraleStreak: { critical: 0, excellent: 0 }
+        batchArchiveMode: false,
+        batchArchiveCount: 0,
+        batchArchiveUsedThisRun: false,
+        nextWeekDecayPenalty: 0,
+        modules: {}
     };
     
     MemorySanctuary.data.vaults.forEach(vault => {
@@ -402,6 +407,30 @@ function initTitleScreen() {
             titleThemeToggle.textContent = next === 'dark' ? '◐ 主题' : '◑ 主题';
         });
     }
+    
+    // DLC 模式切换按钮
+    const titleDlcBtn = document.getElementById('title-dlc');
+    if (titleDlcBtn) {
+        titleDlcBtn.addEventListener('click', () => {
+            openDLCPanel();
+        });
+    }
+    
+    // DLC 面板关闭按钮
+    const dlcPanelClose = document.getElementById('dlc-panel-close');
+    if (dlcPanelClose) {
+        dlcPanelClose.addEventListener('click', () => {
+            closeDLCPanel();
+        });
+    }
+    
+    // 点击 DLC 面板背景关闭
+    const dlcPanel = document.getElementById('dlc-panel');
+    if (dlcPanel) {
+        dlcPanel.addEventListener('click', (e) => {
+            if (e.target === dlcPanel) closeDLCPanel();
+        });
+    }
     if (titleNew) {
         titleNew.addEventListener('click', () => {
             openSaveScreen('new');
@@ -459,7 +488,7 @@ function showTitleScreen() {
         AudioSystem.playBGM('title');
     }
     
-    // Refresh NG+ info
+    // 刷新 NG+ info
     const ng = getNGPlusData();
     if (ngplusEl && ng.playthroughCount > 0) {
         ngplusEl.innerHTML = `
@@ -469,6 +498,64 @@ function showTitleScreen() {
             </div>
         `;
     }
+    
+    // 刷新 DLC 当前模式标签
+    const dlcLabel = document.getElementById('dlc-current-label');
+    if (dlcLabel && MemorySanctuary.activeModule) {
+        const module = DLC_MODULES[MemorySanctuary.activeModule];
+        if (module) dlcLabel.textContent = module.name;
+    }
+}
+
+// ==========================================
+// DLC 选择面板
+// ==========================================
+
+function openDLCPanel() {
+    const panel = document.getElementById('dlc-panel');
+    const list = document.getElementById('dlc-list');
+    if (!panel || !list) return;
+    
+    // 填充 DLC 列表
+    list.innerHTML = '';
+    
+    for (const [id, module] of Object.entries(DLC_MODULES)) {
+        const unlocked = isModuleUnlocked(id);
+        const isActive = MemorySanctuary.activeModule === id;
+        const progress = getModuleUnlockProgress(id);
+        
+        const item = document.createElement('button');
+        item.className = 'dlc-item';
+        if (isActive) item.classList.add('dlc-active');
+        if (!unlocked) item.classList.add('dlc-locked');
+        
+        item.innerHTML = `
+            <span class="dlc-item-icon">${module.icon}</span>
+            <div class="dlc-item-info">
+                <div class="dlc-item-name">${module.name}</div>
+                <div class="dlc-item-desc">${module.description}</div>
+            </div>
+            <span class="dlc-item-status ${isActive ? 'dlc-status-active' : (unlocked ? 'dlc-status-unlocked' : 'dlc-status-locked')}">
+                ${isActive ? '当前' : (unlocked ? '已解锁' : progress)}
+            </span>
+        `;
+        
+        if (unlocked && !isActive) {
+            item.addEventListener('click', () => {
+                switchModule(id);
+                closeDLCPanel();
+            });
+        }
+        
+        list.appendChild(item);
+    }
+    
+    panel.classList.remove('hidden');
+}
+
+function closeDLCPanel() {
+    const panel = document.getElementById('dlc-panel');
+    if (panel) panel.classList.add('hidden');
 }
 
 function startNewGameWithSlotSelect() {

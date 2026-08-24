@@ -19,6 +19,18 @@ function initUI() {
         if (e.key === 'Escape') closeModal();
     });
 
+    // 批量归档模式按钮
+    const batchBtn = document.getElementById('batch-archive-btn');
+    if (batchBtn) {
+        batchBtn.addEventListener('click', () => {
+            if (MemorySanctuary.state.batchArchiveMode) {
+                exitBatchArchiveMode();
+            } else {
+                enterBatchArchiveMode();
+            }
+        });
+    }
+
     // Initialize title screen panels (must be here because ui.js loads after main.js)
     initAchievementsPanel();
     initCodexPanel();
@@ -26,6 +38,44 @@ function initUI() {
     initResourceTooltips();
 
     if (DEBUG) console.log('[UI] 初始化完成');
+}
+
+/**
+ * 更新紧急归档按钮状态
+ */
+function updateBatchArchiveBtn() {
+    const btn = document.getElementById('batch-archive-btn');
+    if (!btn) return;
+    
+    const state = MemorySanctuary.state;
+    
+    // 正在批量模式
+    if (state.batchArchiveMode) {
+        btn.textContent = `🚨 紧急归档中 (${state.batchArchiveCount || 0}/3)`;
+        btn.classList.add('active');
+        btn.classList.remove('locked');
+        return;
+    }
+    
+    // 未解锁（<30周）
+    if (state.week < 30) {
+        btn.textContent = `🚨 紧急归档 (${state.week}/30)`;
+        btn.classList.add('locked');
+        btn.classList.remove('active');
+        return;
+    }
+    
+    // 已使用过
+    if (state.batchArchiveUsedThisRun) {
+        btn.textContent = '🚨 紧急归档 (已使用)';
+        btn.classList.add('locked');
+        btn.classList.remove('active');
+        return;
+    }
+    
+    // 可用状态
+    btn.textContent = '🚨 紧急归档';
+    btn.classList.remove('locked', 'active');
 }
 
 function initProjectPanel() {
@@ -57,6 +107,7 @@ function renderAll() {
     renderExplorationButton();
     updateProjectButton();
     updateEmergencyButton();
+    updateBatchArchiveBtn();
     renderSealTopbarButton();
     
     // Always keep resource changes up-to-date
@@ -188,6 +239,7 @@ function renderGuardianMood() {
     const moodEl = document.getElementById('guardian-mood');
     const panelEl = document.getElementById('guardian-panel');
     const nameEl = document.getElementById('guardian-name');
+    const fatigueEl = document.getElementById('guardian-fatigue');
     
     if (!moodEl || !nameEl) return;
     
@@ -199,6 +251,20 @@ function renderGuardianMood() {
     const guardianId = guardian.id;
     moodEl.textContent = getMoodIndicator(guardianId);
     moodEl.className = 'guardian-mood mood-' + getMoodTier(guardianId);
+    
+    // 疲劳状态指示
+    const fatigueWeeks = getFatigueWeeksLeft(guardianId);
+    if (fatigueEl) {
+        if (fatigueWeeks > 0) {
+            fatigueEl.textContent = `💤 ${fatigueWeeks}周`;
+            fatigueEl.classList.remove('hidden');
+            moodEl.classList.add('fatigued');
+        } else {
+            fatigueEl.textContent = '';
+            fatigueEl.classList.add('hidden');
+            moodEl.classList.remove('fatigued');
+        }
+    }
     
     if (panelEl) {
         panelEl.classList.remove('mood-hostile', 'mood-cold', 'mood-neutral', 'mood-friendly', 'mood-intimate');
@@ -230,11 +296,17 @@ function renderGuardianOverview() {
         }
         
         const moodIndicator = getMoodIndicator(g.id);
+        const fatigueWeeks = getFatigueWeeksLeft(g.id);
+        
+        if (fatigueWeeks > 0) {
+            item.classList.add('fatigued');
+        }
         
         item.innerHTML = `
             <span class="guardian-overview-avatar">${g.avatar}</span>
             <span class="guardian-overview-name">${g.name}</span>
             <span class="guardian-overview-mood">${moodIndicator}</span>
+            <span class="guardian-overview-fatigue">${fatigueWeeks > 0 ? `💤${fatigueWeeks}` : ''}</span>
         `;
         
         item.addEventListener('click', () => {
@@ -243,9 +315,15 @@ function renderGuardianOverview() {
             document.getElementById('guardian-name').textContent = g.name;
             document.getElementById('guardian-role').textContent = g.role;
             
-            // 更新对话
-            const dialogues = g.dialogues?.idle || ['……'];
-            document.getElementById('guardian-dialogue').textContent = dialogues[0];
+            // 更新对话：疲劳中显示疲劳对话
+            const fatigueWeeksClick = getFatigueWeeksLeft(g.id);
+            let dialogues;
+            if (fatigueWeeksClick > 0 && g.fatigueDialogues && g.fatigueDialogues.length > 0) {
+                dialogues = g.fatigueDialogues;
+            } else {
+                dialogues = g.dialogues?.idle || ['……'];
+            }
+            document.getElementById('guardian-dialogue').textContent = dialogues[Math.floor(Math.random() * dialogues.length)];
             
             // 更新心情显示
             renderGuardianMood();

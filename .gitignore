@@ -20,6 +20,11 @@ IDEA.md
 # 临时文件与玩家反馈
 BUG记录.md
 
+# 开发期产物
+balance-report*.txt
+HANDOFF.md
+js/balance-sim*.js
+
 # 问卷与数据文件（样本数据不进公开仓库）
 *.xlsx
 *.xls

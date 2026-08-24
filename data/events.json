@@ -2989,8 +2989,8 @@
       "type": "scheduled"
     },
     {
-      "id": "ng_plus_memory_echo",
-      "title": "记忆回响",
+      "id": "ng_plus_memory_echo_2",
+      "title": "记忆回响（轮回）",
       "description": "在整理归档时，你发现了一些不属于这个轮回的记忆碎片。它们来自上一个周目的圣所……",
       "trigger": {
         "type": "ng_plus",

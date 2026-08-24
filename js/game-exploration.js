@@ -356,6 +356,22 @@ function executeExploration() {
         return;
     }
 
+    // 疲劳守护者派遣警告
+    const fatiguedGuardians = [];
+    selectedGuardians.forEach(gid => {
+        const weeks = getFatigueWeeksLeft(gid);
+        if (weeks > 0) {
+            const g = data.guardians.find(g => g.id === gid);
+            if (g) fatiguedGuardians.push({ name: g.name, weeks });
+        }
+    });
+    
+    if (fatiguedGuardians.length > 0) {
+        const names = fatiguedGuardians.map(f => `${f.name}（疲劳剩余 ${f.weeks} 周）`).join('、');
+        const confirmed = confirm(`以下守护者疲劳中，派遣后疲劳将延长：\n${names}\n\n确定要派遣吗？`);
+        if (!confirmed) return;
+    }
+
     const now = MemorySanctuary.state.week;
     MemorySanctuary.state.exploration.deployedUntil = now + expData.duration;
     
@@ -376,6 +392,10 @@ function executeExploration() {
     // Apply effects after time advance
     const checkReturn = () => {
         if (MemorySanctuary.state.week >= MemorySanctuary.state.exploration.deployedUntil) {
+            // 途中事件判定
+            if (Math.random() < 0.2) {
+                triggerMidwayEvent(expData);
+            }
             applyExplorationResult(chosen, expData);
         } else {
             setTimeout(checkReturn, 100);
@@ -438,6 +458,46 @@ function applyExplorationResult(outcome, expData) {
     }
 
     document.getElementById('result-text').textContent = outcome.message;
+
+    // 守护者专属语录（匹配 guardianSpecials）
+    const quoteEl = document.getElementById('result-guardian-quote');
+    if (quoteEl) {
+        let quoteText = '';
+        
+        // 检查是否有守护者匹配该地点的 guardianSpecials
+        if (expData.guardianSpecials) {
+            for (const gid of selectedGuardians) {
+                const specialKey = expData.guardianSpecials[gid];
+                if (specialKey) {
+                    const g = MemorySanctuary.data.guardians.find(g => g.id === gid);
+                    if (g && g.explorationDialogues && g.explorationDialogues[specialKey]) {
+                        quoteText = `${g.avatar} ${g.name}：「${g.explorationDialogues[specialKey]}」`;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // 重复勘探叙事补全：非首次勘探时追加额外背景
+        if (!quoteText) {
+            const attemptCount = MemorySanctuary.state.exploration.completedExplorations[expData.id] || 0;
+            if (attemptCount > 1 && outcome.type === 'narrative') {
+                const followUps = [
+                    `（这是第 ${attemptCount} 次回到这里。每一次，都有新的发现。）`,
+                    `（你们已经不是第一次来了。这片废墟对你们来说，渐渐变得熟悉。）`,
+                    `（第 ${attemptCount} 次勘探。每一次回来，都带着不同的心情。）`
+                ];
+                quoteText = followUps[(attemptCount - 2) % followUps.length];
+            }
+        }
+        
+        if (quoteText) {
+            quoteEl.textContent = quoteText;
+            quoteEl.classList.remove('hidden');
+        } else {
+            quoteEl.classList.add('hidden');
+        }
+    }
 
     const effectsContainer = document.getElementById('result-effects');
     effectsContainer.innerHTML = '';
@@ -551,4 +611,90 @@ function renderExploreLog() {
         `;
         container.appendChild(div);
     });
+}
+
+// ==========================================
+// 勘探途中事件系统
+// ==========================================
+
+// 途中事件池（数据驱动）
+const MIDWAY_EVENTS = [
+    {
+        id: "midway_storm",
+        condition: () => true, // 无条件触发
+        message: "勘探队途中遭遇尘暴，延误了归期。",
+        effect: (state) => { state.resources.energy = Math.max(0, state.resources.energy - 5); },
+        logType: "system"
+    },
+    {
+        id: "midway_discovery",
+        condition: () => true,
+        message: "勘探队在途中发现了额外的物资。",
+        effect: (state) => { state.resources.media = Math.min(200, state.resources.media + 8); },
+        logType: "system"
+    },
+    {
+        id: "midway_encounter",
+        condition: () => true,
+        message: "勘探队遭遇了一支迷路的野生动物，不得不绕道而行。",
+        effect: (state) => { state.resources.food = Math.max(0, state.resources.food - 3); },
+        logType: "system"
+    },
+    {
+        id: "midway_signal",
+        condition: (state) => state.week >= 20,
+        message: "勘探队收到了来自远方的微弱信号。他们记录下了坐标，但来不及追查。",
+        effect: () => {},
+        logType: "system"
+    },
+    {
+        id: "midway_collapse",
+        condition: () => true,
+        message: "通往目标的道路坍塌了，勘探队只能绕远路返回。",
+        effect: (state) => { state.exploration.deployedUntil = (state.exploration.deployedUntil || state.week) + 1; },
+        logType: "system"
+    },
+    {
+        id: "midway_ancient",
+        condition: (state) => state.week >= 30,
+        message: "勘探队在一处崩塌的墙壁上发现了古老的壁画。他们拓印了下来。",
+        effect: (state) => { state.resources.media = Math.min(200, state.resources.media + 12); },
+        logType: "system"
+    },
+    {
+        id: "midway_lost_item",
+        condition: () => true,
+        message: "勘探队不慎丢失了一部分补给。",
+        effect: (state) => { state.resources.food = Math.max(0, state.resources.food - 5); },
+        logType: "system"
+    },
+    {
+        id: "midway_abandoned_camp",
+        condition: () => true,
+        message: "勘探队发现了一处被遗弃的营地，找到了一些有用的物资。",
+        effect: (state) => { state.resources.energy = Math.min(300, state.resources.energy + 10); },
+        logType: "system"
+    }
+];
+
+/**
+ * 触发途中事件（20% 概率）
+ * 从事件池中筛选满足条件的事件，随机选择一个执行
+ */
+function triggerMidwayEvent(expData) {
+    const state = MemorySanctuary.state;
+    const availableEvents = MIDWAY_EVENTS.filter(e => {
+        try { return e.condition(state); } catch { return false; }
+    });
+    
+    if (availableEvents.length === 0) return;
+    
+    const event = availableEvents[Math.floor(Math.random() * availableEvents.length)];
+    
+    try {
+        event.effect(state);
+        addLog(`🔭 途中事件：${event.message}`, event.logType || "system");
+    } catch (e) {
+        if (DEBUG) console.warn('[triggerMidwayEvent] 效果执行失败:', e);
+    }
 }

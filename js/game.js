@@ -19,14 +19,17 @@ function consumeResources(energy, media, food) {
     
     if (state.resources.energy < actualEnergy) {
         addLog('能源不足，无法执行录入操作。', 'system');
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playArchiveFail();
         return false;
     }
     if (state.resources.media < media) {
         addLog('存储介质不足，无法执行录入操作。', 'system');
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playArchiveFail();
         return false;
     }
     if (food && state.resources.food < food) {
         addLog('食物不足，无法执行操作。', 'system');
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playArchiveFail();
         return false;
     }
     
@@ -382,12 +385,37 @@ function applyMoralePressure() {
     // 压力转化为心情下降（每回合 -0.2 ~ -1.0）
     const pressureDelta = -Math.round(totalPressure * 10) / 10; // 0.1步长
     
+    // 追踪心情变化（用于音效触发）
+    let anyMoodUp = false;
+    let anyMoodDown = false;
+    
     Object.keys(state.guardianMoods).forEach(gid => {
         const weight = weights[gid] || 1;
         const before = state.guardianMoods[gid];
         const delta = pressureDelta * weight;
-        state.guardianMoods[gid] = Math.max(-10, Math.min(10, before + delta));
+        const newMood = Math.max(-10, Math.min(10, before + delta));
+        state.guardianMoods[gid] = newMood;
+        
+        // 检测是否跨越关键阈值
+        const tierBefore = getMoodTier(before);
+        const tierAfter = getMoodTier(newMood);
+        if (tierAfter > tierBefore) anyMoodUp = true;
+        if (tierAfter < tierBefore) anyMoodDown = true;
     });
+    
+    // 触发音效（仅在心情跨越阈值时播放）
+    if (anyMoodUp && typeof AudioSystem !== 'undefined') {
+        AudioSystem.playMoodUp();
+    } else if (anyMoodDown && typeof AudioSystem !== 'undefined') {
+        AudioSystem.playMoodDown();
+    }
+}
+
+function getMoodTier(mood) {
+    if (mood >= 6) return 3;      // intimate
+    if (mood >= 3) return 2;      // friendly
+    if (mood >= -2) return 1;     // neutral
+    return 0;                      // cold/hostile
 }
 
 // ==========================================
@@ -425,7 +453,18 @@ function getWeeklyDecay() {
     let energyDecay = 1.0 * multiplier * decayModifier;
     let mediaDecay = 0.5 * multiplier * decayModifier;
     let environmentDecay = 0.5 * multiplier * decayModifier;
-    const foodDecay = 0.3 * multiplier * decayModifier;
+    let foodDecay = 0.3 * multiplier * decayModifier;
+    
+    // 紧急归档协议惩罚：下周衰减+20%
+    if (state.nextWeekDecayPenalty > 0) {
+        const penalty = state.nextWeekDecayPenalty;
+        energyDecay *= (1 + penalty);
+        mediaDecay *= (1 + penalty);
+        environmentDecay *= (1 + penalty);
+        foodDecay *= (1 + penalty);
+        // 消耗掉惩罚（仅生效一周）
+        state.nextWeekDecayPenalty = 0;
+    }
     
     // 应用项目衰减减免（decayReduction 类型）
     if (state.completedProjects) {
@@ -1098,11 +1137,23 @@ function getMoodTier(guardianId) {
 
 function getMoodIndicator(guardianId) {
     const mood = getMoodLevel(guardianId);
-    if (mood <= -3) return '💔';
-    if (mood < 0) return '💙';
-    if (mood <= 2) return '🤍';
-    if (mood <= 4) return '💛';
+    if (mood <= -3) return '❤️';
+    if (mood < 0) return '🤍';
+    if (mood <= 2) return '💛';
+    if (mood <= 4) return '🧡';
     return '💚';
+}
+
+/**
+ * 获取守护者疲劳剩余周数
+ * @returns {number} 0=不疲劳, >0=剩余疲劳周数
+ */
+function getFatigueWeeksLeft(guardianId) {
+    const exp = MemorySanctuary.state.exploration;
+    if (!exp.fatigue) return 0;
+    const until = exp.fatigue[guardianId];
+    if (!until || until <= MemorySanctuary.state.week) return 0;
+    return until - MemorySanctuary.state.week;
 }
 
 

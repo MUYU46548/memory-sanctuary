@@ -252,6 +252,14 @@ function finalizePlaythrough() {
 
 
 function sealSanctuary() {
+    // 只有圣所模式才计入周目
+    if (MemorySanctuary.activeModule !== 'sanctuary') {
+        // DLC 模式：仅标记结束，不增加周目数
+        MemorySanctuary.state.gameOver = true;
+        if (typeof showTitleScreen === 'function') showTitleScreen();
+        return;
+    }
+    
     MemorySanctuary.state.gameOver = true;
     const state = MemorySanctuary.state;
 
@@ -407,7 +415,8 @@ function showEndingSummaryPage(ending, isGameOver = false) {
             // Determine next slot
             const currentSlot = getCurrentSlot();
             const nextSlot = currentSlot >= 1 ? currentSlot : 1;
-            startNewGame(nextSlot, true);
+            const moduleId = MemorySanctuary.activeModule || 'sanctuary';
+            startNewGame(nextSlot, true, moduleId);
             if (typeof AudioSystem !== 'undefined') AudioSystem.playGuardianEventTrigger();
         };
     }

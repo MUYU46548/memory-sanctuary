@@ -9,7 +9,7 @@ function saveGame(slot) {
     const ngData = getNGPlusData();
 
     const saveData = {
-        version: 1,
+        version: 2,  // 引入 DLC 系统，版本升至 2
         slot: slot,
         savedAt: Date.now(),
         playthrough: ngData.playthroughCount,
@@ -42,7 +42,9 @@ function saveGame(slot) {
             guardianAidCount: MemorySanctuary.state.guardianAidCount || 0,
             emergencyExploreUsed: !!MemorySanctuary.state.emergencyExploreUsed,
             famineSurvived: !!MemorySanctuary.state.famineSurvived,
-            moraleStreak: { ...(MemorySanctuary.state.moraleStreak || { critical: 0, excellent: 0 }) }
+            moraleStreak: { ...(MemorySanctuary.state.moraleStreak || { critical: 0, excellent: 0 }) },
+            // DLC 模块状态隔离
+            modules: { ...(MemorySanctuary.state.modules || {}) }
         },
         currentVaultId: MemorySanctuary.currentVaultId
     };
@@ -158,6 +160,7 @@ function loadGame(slot) {
         MemorySanctuary.state.emergencyExploreUsed = !!saveData.state.emergencyExploreUsed;
         MemorySanctuary.state.famineSurvived = !!saveData.state.famineSurvived;
         MemorySanctuary.state.moraleStreak = { ...(saveData.state.moraleStreak || { critical: 0, excellent: 0 }) };
+        MemorySanctuary.state.modules = { ...(saveData.state.modules || {}) };
         
         MemorySanctuary.state.gameOver = false;
         
@@ -325,7 +328,7 @@ function applyNGPlusBonuses() {
 }
 
 
-function startNewGame(slot, isNGPlus) {
+function startNewGame(slot, isNGPlus, moduleId) {
     if (isNGPlus) {
         startNewGamePlus();
     }
@@ -336,16 +339,33 @@ function startNewGame(slot, isNGPlus) {
         applyNGPlusBonuses();
     }
 
+    // 设置当前模块
+    if (moduleId && DLC_MODULES[moduleId]) {
+        MemorySanctuary.activeModule = moduleId;
+    } else {
+        moduleId = MemorySanctuary.activeModule || 'sanctuary';
+    }
+
     const logContent = document.getElementById('log-content');
     if (logContent) logContent.innerHTML = '';
 
     localStorage.setItem(CURRENT_SLOT_KEY, String(slot));
 
-    renderAll();
-    if (typeof initCanvas === 'function') initCanvas();
-    if (typeof checkStuckState === 'function') checkStuckState();
-
-    showGuardianDialogue('tika', 'idle');
+    // 根据模块类型初始化
+    if (moduleId === 'sanctuary') {
+        renderAll();
+        if (typeof initCanvas === 'function') initCanvas();
+        if (typeof checkStuckState === 'function') checkStuckState();
+        showGuardianDialogue('tika', 'idle');
+    } else {
+        // DLC 模块初始化入口
+        if (typeof initModuleGame === 'function') {
+            initModuleGame(moduleId);
+        } else {
+            // 降级：显示 DLC 占位画面
+            renderModulePlaceholder(moduleId);
+        }
+    }
 
     saveGame(slot);
 
@@ -353,7 +373,8 @@ function startNewGame(slot, isNGPlus) {
     if (isNGPlus && ngData.playthroughCount > 1) {
         addLog(`第 ${ngData.playthroughCount} 周目开始。继承奖励已应用。`, 'system');
     } else {
-        addLog('新游戏开始。愿你的选择得到善待。', 'system');
+        const moduleName = DLC_MODULES[moduleId] ? DLC_MODULES[moduleId].name : '圣所';
+        addLog(`新游戏开始。当前模式：${moduleName}。愿你的选择得到善待。`, 'system');
     }
 
     // 新游戏开始：播放游戏 BGM
@@ -362,9 +383,47 @@ function startNewGame(slot, isNGPlus) {
     }
 
     // 新手引导（光标高亮版）：仅在从未完成引导时触发
-    setTimeout(() => {
-        if (typeof initTutorial === 'function') initTutorial();
-    }, 500);
+    if (moduleId === 'sanctuary') {
+        setTimeout(() => {
+            if (typeof initTutorial === 'function') initTutorial();
+        }, 500);
+    }
+}
+
+/**
+ * DLC 模块占位画面（开发草稿阶段使用）
+ */
+function renderModulePlaceholder(moduleId) {
+    const module = DLC_MODULES[moduleId];
+    if (!module) return;
+    
+    const container = document.getElementById('game-container');
+    if (!container) return;
+    
+    // 在主内容区显示占位信息
+    const mainContent = document.getElementById('main-content');
+    if (mainContent) {
+        mainContent.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:2rem;text-align:center;color:var(--text-primary);">
+                <div style="font-size:4rem;margin-bottom:1rem;">${module.icon}</div>
+                <div style="font-size:1.5rem;color:var(--amber-primary);margin-bottom:1rem;">${module.name}</div>
+                <div style="font-size:0.9rem;color:var(--text-dim);max-width:400px;line-height:1.6;">
+                    ${module.description}
+                </div>
+                <div style="margin-top:2rem;padding:1rem 2rem;border:1px solid var(--border-subtle);border-radius:8px;color:var(--text-dim);">
+                    🚧 开发中 — 敬请期待
+                </div>
+                <button id="btn-return-title" style="margin-top:2rem;padding:12px 32px;background:transparent;border:2px solid var(--amber-primary);border-radius:8px;color:var(--amber-primary);cursor:pointer;">
+                    返回标题
+                </button>
+            </div>
+        `;
+        
+        const returnBtn = document.getElementById('btn-return-title');
+        if (returnBtn) {
+            returnBtn.addEventListener('click', () => showTitleScreen());
+        }
+    }
 }
 
 
@@ -535,11 +594,12 @@ function handleSaveAction(slot, action, mode) {
         case 'new': {
             const ngData = getNGPlusData();
             const isNGPlus = ngData.playthroughCount > 0;
+            const moduleId = MemorySanctuary.activeModule || 'sanctuary';
             
             closeSaveScreen();
             if (titleScreen) titleScreen.classList.add('hidden');
             if (gameContainer) gameContainer.classList.remove('hidden');
-            startNewGame(slot, isNGPlus);
+            startNewGame(slot, isNGPlus, moduleId);
             break;
         }
     }

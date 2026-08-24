@@ -155,7 +155,17 @@ function activateEmergencyProtocol(protocol) {
     
     // 音效
     if (typeof AudioSystem !== 'undefined') {
-        AudioSystem.playMechanicalEngage();
+        const corruption = state.emergencyCorruption;
+        if (corruption >= 30 && corruption < 70) {
+            AudioSystem.playMechanicalEngage();
+            AudioSystem.playEmergencyCorrupt();
+        } else if (corruption >= 70) {
+            AudioSystem.playEmergencyCorrupt();
+            // 高腐败度延迟叠加一层
+            setTimeout(() => AudioSystem.playEmergencyCorrupt(), 150);
+        } else {
+            AudioSystem.playMechanicalEngage();
+        }
     }
     
     // 守护者反应（50% 概率）

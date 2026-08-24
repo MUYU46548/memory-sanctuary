@@ -675,6 +675,79 @@ window.AudioSystem = (() => {
         osc2.stop(now + 0.3);
     }
 
+    // 播放应急协议腐化音效（诡异/失谐/腐化质感）
+    function playEmergencyCorrupt() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        
+        // 失谐双锯齿波 — 不和谐颤动感
+        [80, 83].forEach((baseFreq) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(baseFreq, now);
+            osc.frequency.linearRampToValueAtTime(baseFreq * 0.7, now + 0.4);
+            gain.gain.setValueAtTime(0.08, now);
+            gain.gain.linearRampToValueAtTime(0.04, now + 0.2);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now);
+            osc.stop(now + 0.65);
+        });
+        
+        // 低频脉冲 ×3 — 腐化"心跳"
+        for (let i = 0; i < 3; i++) {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = 40;
+            const t = now + i * 0.18;
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.12, t + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(t);
+            osc.stop(t + 0.15);
+        }
+        
+        // 白噪声 burst — 碎裂质感
+        const bufferSize = ctx.sampleRate * 0.15;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.04));
+        }
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+        const noiseFilter = ctx.createBiquadFilter();
+        noiseFilter.type = 'highpass';
+        noiseFilter.frequency.value = 2000;
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.15, now + 0.05);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        noise.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(masterGain);
+        noise.start(now + 0.05);
+        
+        // 频率下滑 200→60Hz — "坠落"感
+        const fallOsc = ctx.createOscillator();
+        const fallGain = ctx.createGain();
+        fallOsc.type = 'sawtooth';
+        fallOsc.frequency.setValueAtTime(200, now);
+        fallOsc.frequency.exponentialRampToValueAtTime(60, now + 0.5);
+        fallGain.gain.setValueAtTime(0.06, now);
+        fallGain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+        fallOsc.connect(fallGain);
+        fallGain.connect(masterGain);
+        fallOsc.start(now);
+        fallOsc.stop(now + 0.6);
+    }
+
     // 播放玻璃碎裂（条目过期）
     function playShatterSound() {
         if (!ctx || isMuted) return;
@@ -707,6 +780,121 @@ window.AudioSystem = (() => {
         gain.connect(masterGain);
         
         noise.start(now);
+    }
+
+    // 播放归档失败音效（低沉拒绝音）
+    function playArchiveFail() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        
+        // 下行双音 — 拒绝/失败感
+        [300, 200].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + i * 0.12);
+            osc.frequency.linearRampToValueAtTime(freq * 0.8, now + i * 0.12 + 0.1);
+            gain.gain.setValueAtTime(0.1, now + i * 0.12);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.12 + 0.2);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now + i * 0.12);
+            osc.stop(now + i * 0.12 + 0.25);
+        });
+    }
+
+    // 播放面板打开音效（轻柔展开）
+    function playPanelOpen() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        
+        // 上升琶音 C4 → E4 → G4
+        [262, 330, 392].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, now + i * 0.05);
+            gain.gain.linearRampToValueAtTime(0.06, now + i * 0.05 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.3);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now + i * 0.05);
+            osc.stop(now + i * 0.05 + 0.35);
+        });
+    }
+
+    // 播放面板关闭音效（轻柔收拢）
+    function playPanelClose() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        
+        // 下降琶音 G4 → E4 → C4
+        [392, 330, 262].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, now + i * 0.05);
+            gain.gain.linearRampToValueAtTime(0.06, now + i * 0.05 + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.3);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now + i * 0.05);
+            osc.stop(now + i * 0.05 + 0.35);
+        });
+    }
+
+    // 播放守护者心情上升音效（温暖上行）
+    function playMoodUp() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        
+        // 大三和弦琶音 C5 → E5 → G5
+        [523, 659, 784].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, now + i * 0.08);
+            gain.gain.linearRampToValueAtTime(0.07, now + i * 0.08 + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now + i * 0.08);
+            osc.stop(now + i * 0.08 + 0.45);
+        });
+    }
+
+    // 播放守护者心情下降音效（忧郁下行）
+    function playMoodDown() {
+        if (!ctx || isMuted) return;
+        resume();
+        
+        const now = ctx.currentTime;
+        
+        // 小调下行 G4 → Eb4 → C4
+        [392, 311, 262].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0, now + i * 0.1);
+            gain.gain.linearRampToValueAtTime(0.06, now + i * 0.1 + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.35);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now + i * 0.1);
+            osc.stop(now + i * 0.1 + 0.4);
+        });
     }
 
     // 链式完成音效：上升琶音
@@ -1086,6 +1274,7 @@ window.AudioSystem = (() => {
     return {
         init,
         playArchiveChime,
+        playArchiveFail,
         playAlertTone,
         playHeartbeatAlert,
         playShatterSound,
@@ -1099,6 +1288,10 @@ window.AudioSystem = (() => {
         playExploreReturnResource,
         playExploreReturnNarrative,
         playExploreReturnRisk,
+        playPanelOpen,
+        playPanelClose,
+        playMoodUp,
+        playMoodDown,
         playSceneSound,
         playVNOpen,
         playVNAdvance,

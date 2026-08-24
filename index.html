@@ -52,9 +52,25 @@
                     <button class="title-btn" id="title-about">关于</button>
                     <button class="title-btn" id="title-theme-toggle" title="切换亮/暗色模式">◐ 主题</button>
                 </div>
+                <button class="title-btn title-btn-full title-btn-dlc" id="title-dlc">
+                    <span class="dlc-btn-label">🌌 选择模式</span>
+                    <span class="dlc-btn-current" id="dlc-current-label">圣所模式</span>
+                </button>
                 <div id="title-version"></div>
             </div>
             <div id="title-ngplus"></div>
+        </div>
+    </div>
+
+    <!-- DLC 选择面板 -->
+    <div id="dlc-panel" class="hidden" role="dialog" aria-label="选择游戏模式">
+        <div id="dlc-panel-content">
+            <h2 id="dlc-panel-title">选择模式</h2>
+            <p id="dlc-panel-subtitle">终来之刻，何物当存？</p>
+            <div id="dlc-list">
+                <!-- 由 JS 动态填充 -->
+            </div>
+            <button id="dlc-panel-close" class="title-btn">返回</button>
         </div>
     </div>
 
@@ -133,6 +149,7 @@
                             <div class="guardian-name-row">
                                 <div class="guardian-name" id="guardian-name">缇卡</div>
                                 <div class="guardian-mood" id="guardian-mood">🤍</div>
+                                <div class="guardian-fatigue hidden" id="guardian-fatigue"></div>
                             </div>
                             <div class="guardian-role" id="guardian-role">首席歌者</div>
                             <div class="guardian-dialogue" id="guardian-dialogue">……我准备好了。让我们开始吧。</div>
@@ -161,7 +178,10 @@
 
                 <!-- 待归档条目 -->
                 <div id="archive-entries" class="panel">
-                    <h2 class="panel-title">待归档条目</h2>
+                    <h2 class="panel-title">
+                        待归档条目
+                        <button id="batch-archive-btn" class="panel-title-btn locked" title="紧急归档协议：第30周后解锁，一回合可归档最多3条，但会付出代价">🚨 紧急归档 (0/30)</button>
+                    </h2>
                     <div id="entry-list"></div>
                 </div>
             </section>
@@ -332,6 +352,7 @@
                         <div id="result-icon"></div>
                         <div id="result-header"></div>
                         <div id="result-text"></div>
+                        <div id="result-guardian-quote" class="hidden"></div>
                         <div id="result-effects"></div>
                         <button id="result-close-btn">确认</button>
                     </div>
@@ -662,6 +683,7 @@
     <script src="js/game-projects.js"></script>
     <script src="js/game-emergency.js"></script>
     <script src="js/game-save.js"></script>
+    <script src="js/dlc.js"></script>
     <script src="js/game-ending.js"></script>
     <script src="js/game-archive.js"></script>
     <script src="js/game-tutorial.js"></script>

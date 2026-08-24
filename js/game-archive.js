@@ -17,6 +17,17 @@ function isArchiveCompleted(id) {
     return MemorySanctuary.state.completedArchives.includes(String(id));
 }
 
+/**
+ * 获取所有可归档的条目（未归档、未过期、未超期、已解锁）
+ */
+function getAvailableArchives(state) {
+    return MemorySanctuary.data.archives.filter(arch => {
+        if (state.completedArchives.includes(arch.id)) return false;
+        if (arch.expired) return false;
+        if (arch.expiresAfter && state.week > arch.expiresAfter) return false;
+        return true;
+    });
+}
 
 /**
  * 统一归档可行性判断（供列表渲染 / 困局检测 / 推荐逻辑共用）
@@ -27,7 +38,8 @@ function canArchiveEntry(entry) {
     if (!state || !entry) return false;
     if (isArchiveCompleted(entry.id)) return false;
     if (entry.expired) return false;
-    if (state.deterioration && state.deterioration.media) return false;
+    // 紧急归档激活时跳过衰竭介质检查
+    if (!state.emergencyArchiveActive && state.deterioration && state.deterioration.media) return false;
     if (state.emergencyArchiveActive) {
         return state.resources.energy >= (entry.energyCost || 0) * 2;
     }
@@ -50,19 +62,19 @@ function archiveEntry(archiveId) {
         return false;
     }
     
-    // 圣所衰竭：介质耗尽时无法录入
-    if (MemorySanctuary.state.deterioration && MemorySanctuary.state.deterioration.media) {
+    // 圣所衰竭：介质耗尽时无法录入（紧急归档除外）
+    if (!MemorySanctuary.state.emergencyArchiveActive && MemorySanctuary.state.deterioration && MemorySanctuary.state.deterioration.media) {
         addLog('存储介质耗尽，无法录入新条目。请补充介质后再试。', 'system');
         return false;
     }
     
     const isEmergencyArchive = MemorySanctuary.state.emergencyArchiveActive;
+    const isBatchMode = state.batchArchiveMode;
     
     // 紧急归档协议：跳过介质检查
     if (isEmergencyArchive) {
         if (state.resources.energy < entry.energyCost * 2) {
             addLog(`能源不足，无法介质豁免 "${entry.title}"。`, 'system');
-            // 归档失败时关闭介质豁免，避免影响后续正常归档
             MemorySanctuary.state.emergencyArchiveActive = false;
             return false;
         }
@@ -89,7 +101,6 @@ function archiveEntry(archiveId) {
     
     // 紧急归档协议：本回合归档不消耗介质（能源消耗加倍）
     if (isEmergencyArchive) {
-        // 紧急归档：介质消耗为 0，能源消耗加倍
         if (!consumeResources(entry.energyCost * 2, 0)) return false;
     } else {
         // 食物归零惩罚：归档能源消耗 +20%
@@ -114,6 +125,33 @@ function archiveEntry(archiveId) {
     if (!isEmergencyArchive) {
         MemorySanctuary.state.vaultUsage[vault.id] = currentUsage + entry.dataCost;
     }
+    
+    // 批量归档模式：不推进时间
+    if (isBatchMode) {
+        state.batchArchiveCount = (state.batchArchiveCount || 0) + 1;
+        addLog(`📦 批量归档 (${state.batchArchiveCount}/3)："${entry.title}"`, 'success');
+        
+        // 音效
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playArchiveChime();
+        
+        // 守护者反应（仅前2次，第3次批量结束后统一显示）
+        if (state.batchArchiveCount < 3) {
+            const guardianId = Object.keys(entry.guardianReactions || {})[0];
+            if (guardianId && entry.guardianReactions[guardianId]) {
+                addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
+            }
+        }
+        
+        // 检查是否达到批量上限
+        if (state.batchArchiveCount >= 3) {
+            finishBatchArchive();
+        }
+        
+        renderAll();
+        return true;
+    }
+    
+    // 正常模式：推进时间
     advanceTime(1);
     
     addLog(`已完成归档："${entry.title}"`, 'success');
@@ -145,6 +183,112 @@ function archiveEntry(archiveId) {
     
     renderAll();
     return true;
+}
+
+/**
+ * 进入紧急归档协议（批量归档）
+ * 第30周后解锁，可一回合归档最多3条，不消耗时间
+ * 代价：环境-10、全体守护者心情-2、下周衰减+20%
+ */
+function enterBatchArchiveMode() {
+    const state = MemorySanctuary.state;
+    if (!state) return;
+    
+    // 解锁条件：第30周后
+    if (state.week < 30) {
+        addLog('⚠️ 紧急归档协议尚未解锁（第30周后解锁）。', 'system');
+        return;
+    }
+    
+    // 检查是否有可归档的条目
+    const available = getAvailableArchives(state);
+    const affordable = available.filter(a => canArchiveEntry(a));
+    if (affordable.length === 0) {
+        addLog('当前没有可归档的条目。', 'system');
+        return;
+    }
+    
+    // 检查是否已经使用过（每局限1次）
+    if (state.batchArchiveUsedThisRun) {
+        addLog('⚠️ 紧急归档协议已在本周目中使用过。', 'system');
+        return;
+    }
+    
+    // 激活紧急归档模式
+    state.batchArchiveMode = true;
+    state.batchArchiveCount = 0;
+    
+    // 立即付出代价
+    state.resources.environment = Math.max(0, state.resources.environment - 10);
+    state.batchArchiveUsedThisRun = true;
+    
+    // 守护者心情下降
+    Object.keys(state.guardianMoods || {}).forEach(gid => {
+        state.guardianMoods[gid] = (state.guardianMoods[gid] || 0) - 2;
+    });
+    
+    // 标记下周衰减增加
+    state.nextWeekDecayPenalty = 0.2;
+    
+    addLog('🚨 紧急归档协议已激活！守护者加班加点，圣所环境急剧恶化。', 'warning');
+    addLog('⚠️ 代价：环境稳定度 -10，全体守护者心情 -2，下周衰减 +20%。', 'warning');
+    
+    // 音效
+    if (typeof AudioSystem !== 'undefined') AudioSystem.playEmergencyCorrupt();
+    
+    renderAll();
+}
+
+/**
+ * 退出紧急归档模式（手动或自动）
+ */
+function exitBatchArchiveMode() {
+    const state = MemorySanctuary.state;
+    if (!state || !state.batchArchiveMode) return;
+    
+    state.batchArchiveMode = false;
+    
+    if (state.batchArchiveCount > 0) {
+        addLog(`🚨 紧急归档结束：共归档 ${state.batchArchiveCount} 条。圣所已伤痕累累。`, 'warning');
+        advanceTime(1);
+    } else {
+        addLog('🚨 紧急归档已取消。守护者松了一口气。', 'system');
+        // 退回已付出的代价
+        state.resources.environment = Math.min(100, state.resources.environment + 10);
+        state.batchArchiveUsedThisRun = false;
+        Object.keys(state.guardianMoods || {}).forEach(gid => {
+            state.guardianMoods[gid] = (state.guardianMoods[gid] || 0) + 2;
+        });
+        state.nextWeekDecayPenalty = 0;
+    }
+    
+    state.batchArchiveCount = 0;
+    
+    // 音效
+    if (typeof AudioSystem !== 'undefined') AudioSystem.playPanelClose();
+    
+    renderAll();
+}
+
+/**
+ * 完成紧急归档（达到3条时自动调用）
+ */
+function finishBatchArchive() {
+    const state = MemorySanctuary.state;
+    if (!state) return;
+    
+    addLog(`🚨 紧急归档完成：3 条已归档。圣所环境急剧恶化，守护者身心俱疲。`, 'warning');
+    
+    // 音效
+    if (typeof AudioSystem !== 'undefined') {
+        AudioSystem.playArchiveChime();
+        AudioSystem.playEmergencyCorrupt();
+    }
+    
+    state.batchArchiveMode = false;
+    state.batchArchiveCount = 0;
+    
+    advanceTime(1);
 }
 
 
