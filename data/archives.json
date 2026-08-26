@@ -18,7 +18,9 @@
         "arch_v2_030"
       ],
       "expiresAfter": 24,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_005",
+      "hiddenContent": "在祷文的最后一页，有一行几乎看不见的小字：「我们曾试图用歌声阻止末日。歌声没有阻止末日，但歌声让我们在末日面前没有低头。」"
     },
     {
       "id": "arch_002",
@@ -75,7 +77,9 @@
         "arch_006"
       ],
       "expiresAfter": 18,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_006",
+      "hiddenContent": "语法书的夹层中藏着一张泛黄的照片：一群孩子围坐在一位老人身边，老人正在教他们一种已经没有人会说的语言。"
     },
     {
       "id": "arch_005",
@@ -91,7 +95,8 @@
       },
       "relatedArchives": [],
       "expiresAfter": 18,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_001"
     },
     {
       "id": "arch_006",
@@ -110,7 +115,8 @@
         "arch_001"
       ],
       "expiresAfter": 18,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_004"
     },
     {
       "id": "arch_007",
@@ -128,7 +134,9 @@
         "arch_008"
       ],
       "expiresAfter": 24,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_012",
+      "hiddenContent": "城邦建立记的最后一页被撕掉了。残留的纸片上只写着：「他们不知道，建立城邦的那一天，也是诅咒开始的那一天。」"
     },
     {
       "id": "arch_008",
@@ -220,7 +228,8 @@
       },
       "relatedArchives": [],
       "expiresAfter": 14,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_007"
     },
     {
       "id": "arch_013",
@@ -239,7 +248,8 @@
         "arch_v2_006"
       ],
       "expiresAfter": 24,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "hiddenContent": "目击报告的背面写着：「光雨不是自然现象。是人为的。但我们已经来不及找出是谁了。」"
     },
     {
       "id": "arch_014",
@@ -443,7 +453,9 @@
         "arch_025"
       ],
       "expiresAfter": 24,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_028",
+      "hiddenContent": "永恒之书的最后一章是空白的。只有一行字：「神没有回答。但我们在等待中找到了彼此。」"
     },
     {
       "id": "arch_025",
@@ -519,7 +531,8 @@
         "arch_027"
       ],
       "expiresAfter": 18,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_024"
     },
     {
       "id": "arch_029",
@@ -538,7 +551,9 @@
         "arch_063"
       ],
       "expiresAfter": 24,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_062",
+      "hiddenContent": "天文观测记录的最后一条：「今天，我们确认了一件事。我们的恒星正在死去。不是自然死亡。是被什么东西吃掉的。」"
     },
     {
       "id": "arch_030",
@@ -725,7 +740,9 @@
         "arch_040"
       ],
       "expiresAfter": 24,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_043",
+      "hiddenContent": "城邦法典的扉页内侧，有人用墨水写了一行小字：「法律不能拯救我们。但法律证明我们曾经试图拯救自己。」"
     },
     {
       "id": "arch_040",
@@ -799,7 +816,8 @@
         "arch_v2_031"
       ],
       "expiresAfter": 18,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_039"
     },
     {
       "id": "arch_044",
@@ -818,7 +836,8 @@
         "arch_v2_021"
       ],
       "expiresAfter": 24,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "hiddenContent": "母亲的日记最后一页：「孩子问我，人死后会去哪里。我说，去别人的记忆里。只要有人记得，就没有真正消失。」"
     },
     {
       "id": "arch_045",
@@ -1153,7 +1172,8 @@
         "arch_063"
       ],
       "expiresAfter": 18,
-      "discoveryMethod": "surface_exploration"
+      "discoveryMethod": "surface_exploration",
+      "conflictsWith": "arch_029"
     },
     {
       "id": "arch_063",
@@ -2489,7 +2509,8 @@
       "relatedArchives": [
         "arch_049",
         "arch_053"
-      ]
+      ],
+      "type": "architecture"
     },
     {
       "id": "arch_ng_sanctuary_7_transmission",
@@ -2513,7 +2534,8 @@
       "relatedArchives": [
         "arch_emergency_005",
         "arch_v2_032"
-      ]
+      ],
+      "type": "astronomy"
     },
     {
       "id": "arch_ng_green_ball_log",
@@ -2537,7 +2559,8 @@
       "relatedArchives": [
         "arch_059",
         "arch_063"
-      ]
+      ],
+      "type": "astronomy"
     },
     {
       "id": "arch_ng_tika_dream",
@@ -2563,7 +2586,8 @@
       "relatedArchives": [
         "arch_ng_tika_lullaby",
         "arch_020"
-      ]
+      ],
+      "type": "art"
     },
     {
       "id": "arch_ng_finn_loop_theory",
@@ -2589,7 +2613,8 @@
       "relatedArchives": [
         "arch_010",
         "arch_012"
-      ]
+      ],
+      "type": "document"
     },
     {
       "id": "arch_ng_misha_other_world",
@@ -2615,7 +2640,8 @@
       "relatedArchives": [
         "arch_ng_seed_vault",
         "arch_034"
-      ]
+      ],
+      "type": "ecology"
     },
     {
       "id": "arch_ng_lorn_final_design",
@@ -2641,7 +2667,8 @@
       "relatedArchives": [
         "arch_v2_040",
         "arch_051"
-      ]
+      ],
+      "type": "architecture"
     },
     {
       "id": "arch_ng_ethel_faith_question",
@@ -2667,7 +2694,8 @@
       "relatedArchives": [
         "arch_v2_034",
         "arch_027"
-      ]
+      ],
+      "type": "philosophy"
     },
     {
       "id": "arch_ng_keeper_oath",
@@ -2694,7 +2722,8 @@
       "relatedArchives": [
         "arch_ng_previous_keeper_log",
         "arch_v2_044"
-      ]
+      ],
+      "type": "astronomy"
     },
     {
       "id": "arch_ng_final_message",
@@ -2718,7 +2747,8 @@
       "relatedArchives": [
         "arch_ng_finn_loop_theory",
         "arch_v2_045"
-      ]
+      ],
+      "type": "astronomy"
     },
     {
       "id": "arch_encrypted_001",

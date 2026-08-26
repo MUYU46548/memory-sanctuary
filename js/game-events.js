@@ -205,6 +205,51 @@ function checkGuardianPersonalEvent() {
         }
     }
     
+    // 检查守护者故事线
+    const storyEvent = checkGuardianStoryEvent();
+    if (storyEvent) return storyEvent;
+    
+    return null;
+}
+
+/**
+ * 检查守护者故事线事件
+ * 碎片化暗示叙事，每个守护者有 3 个连续故事
+ */
+function checkGuardianStoryEvent() {
+    const state = MemorySanctuary.state;
+    const stories = MemorySanctuary.data.guardianStories || [];
+    
+    for (const story of stories) {
+        if (state.activeEventIds.includes(story.id)) continue;
+        
+        const trigger = story.trigger;
+        if (!trigger) continue;
+        
+        // 检查触发条件
+        if (trigger.type === 'mood_check') {
+            const tier = getMoodTier(story.guardianId);
+            if (tier !== trigger.moodTier) continue;
+            if (state.week < trigger.weekMin) continue;
+            if (Math.random() > (trigger.probability || 0.2)) continue;
+            return story;
+        }
+        
+        if (trigger.type === 'week') {
+            if (state.week !== trigger.week) continue;
+            if (Math.random() > (trigger.probability || 0.3)) continue;
+            return story;
+        }
+        
+        if (trigger.type === 'exploration_complete') {
+            const exp = state.exploration;
+            if (!exp.completedExplorations) continue;
+            if (!exp.completedExplorations[trigger.explorationId]) continue;
+            if (Math.random() > (trigger.probability || 0.4)) continue;
+            return story;
+        }
+    }
+    
     return null;
 }
 

@@ -8,9 +8,9 @@
       "type": "vault_completion",
       "condition": {
         "allVaults": true,
-        "minVaultCompletion": 1.0
+        "minVaultCompletion": 0.6
       },
-      "unlockMessage": "全收集达成！文明完整度：100%"
+      "unlockMessage": "全收集达成！文明完整度：60%+"
     },
     {
       "id": "guardian_tika_finale",
@@ -239,8 +239,9 @@
       "description": "你不仅保存了文明的碎片，更守护了守护者的心。\n\n五位守护者手牵手走入永恒，他们的故事与文明一起被永远铭记。\n\n这是最完美的终章——不是悲剧，不是遗憾，而是一个文明对另一个文明最温柔的告别。\n\n「我们曾相爱，我们曾存在，我们曾一起仰望星辰。」",
       "type": "special",
       "condition": {
-        "allGuardiansIntimate": true,
-        "minVaultCompletion": 0.45
+        "allGuardiansIntimate": false,
+        "minVaultCompletion": 0.45,
+        "minGuardiansIntimate": 4
       },
       "unlockMessage": "完美封印！所有守护者好感度满 + 45%以上收集完成！"
     },
@@ -264,7 +265,8 @@
       "type": "special",
       "condition": {
         "noAchievementsUnlocked": true,
-        "weekMin": 48
+        "weekMin": 48,
+        "notSealed": true
       },
       "unlockMessage": "遗忘结局解锁"
     },

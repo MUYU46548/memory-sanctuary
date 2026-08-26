@@ -124,6 +124,9 @@ function onTimeAdvanced(weeks) {
         // 应用持续效果（如：每回合额外能源）
         applySustainedBonuses();
         
+        // 工程机器人维护消耗
+        if (typeof applyBotMaintenance === 'function') applyBotMaintenance();
+        
         // 士气持续压力（资源/环境影响心情）
         applyMoralePressure();
         // 士气极端状态连续追踪（触发仪式事件用）
@@ -482,6 +485,15 @@ function getWeeklyDecay() {
         });
     }
     
+    // 工程机器人衰减减免
+    const botReduction = typeof getBotDecayReduction === 'function' ? getBotDecayReduction() : 0;
+    if (botReduction > 0) {
+        energyDecay *= (1 - botReduction);
+        mediaDecay *= (1 - botReduction);
+        environmentDecay *= (1 - botReduction);
+        foodDecay *= (1 - botReduction);
+    }
+    
     return { energy: energyDecay, media: mediaDecay, environment: environmentDecay, food: foodDecay };
 }
 
@@ -799,6 +811,115 @@ function checkWeekLimit() {
     }
 }
 
+// ============================================================
+// 工程机器人系统
+// ============================================================
+
+/**
+ * 工程机器人系统
+ * 
+ * 机器人自动维护圣所，减少资源衰减。
+ * 每回合开始时，机器人会消耗能源进行维护。
+ * 维护效果：减少所有资源衰减 10%（每回合最多减少 2 点）。
+ * 
+ * 机器人需要维护：每回合消耗 2 能源。
+ * 如果能源不足，机器人会停机（无法提供维护加成）。
+ * 
+ * 机器人可以通过项目建造更多（最多 5 个）。
+ */
+
+const ENGINEERING_BOTS_CONFIG = {
+    maxBots: 5,
+    maintenanceCostPerBot: 2,  // 每回合每机器人消耗能源
+    decayReductionPerBot: 0.10,  // 每机器人减少 10% 衰减
+    maxDecayReduction: 0.50,  // 最多减少 50% 衰减
+    buildCost: { energy: 30, media: 20 },  // 建造成本
+    buildDuration: 3  // 建造耗时 3 周
+};
+
+/**
+ * 获取当前工程机器人数量
+ */
+function getEngineeringBotCount() {
+    return MemorySanctuary.state.resources.engineeringBots || 0;
+}
+
+/**
+ * 计算工程机器人提供的衰减减免
+ */
+function getBotDecayReduction() {
+    const botCount = getEngineeringBotCount();
+    if (botCount <= 0) return 0;
+    
+    const state = MemorySanctuary.state;
+    // 检查能源是否足够维护
+    const maintenanceCost = botCount * ENGINEERING_BOTS_CONFIG.maintenanceCostPerBot;
+    if (state.resources.energy < maintenanceCost) {
+        return 0;  // 能源不足，机器人停机
+    }
+    
+    const reduction = botCount * ENGINEERING_BOTS_CONFIG.decayReductionPerBot;
+    return Math.min(reduction, ENGINEERING_BOTS_CONFIG.maxDecayReduction);
+}
+
+/**
+ * 应用工程机器人维护消耗
+ */
+function applyBotMaintenance() {
+    const state = MemorySanctuary.state;
+    const botCount = getEngineeringBotCount();
+    if (botCount <= 0) return;
+    
+    const maintenanceCost = botCount * ENGINEERING_BOTS_CONFIG.maintenanceCostPerBot;
+    
+    if (state.resources.energy >= maintenanceCost) {
+        state.resources.energy = Math.max(0, state.resources.energy - maintenanceCost);
+        state.resourceChanges.energy = (state.resourceChanges.energy || 0) - maintenanceCost;
+    } else {
+        // 能源不足，机器人停机
+        if (!state.botBlackoutLogged) {
+            addLog('⚠️ 能源不足，工程机器人停机。圣所衰减恢复正常速度。', 'warning');
+            state.botBlackoutLogged = true;
+        }
+        return;
+    }
+    
+    // 机器人正常工作时，清除停机标记
+    if (state.botBlackoutLogged) {
+        state.botBlackoutLogged = false;
+        addLog('✅ 能源恢复，工程机器人重新启动。', 'success');
+    }
+}
+
+/**
+ * 建造工程机器人
+ */
+function buildEngineeringBot() {
+    const state = MemorySanctuary.state;
+    const botCount = getEngineeringBotCount();
+    
+    if (botCount >= ENGINEERING_BOTS_CONFIG.maxBots) {
+        addLog('工程机器人数量已达上限（5台）。', 'system');
+        return false;
+    }
+    
+    const cost = ENGINEERING_BOTS_CONFIG.buildCost;
+    if (state.resources.energy < cost.energy || state.resources.media < cost.media) {
+        addLog(`资源不足，无法建造工程机器人（需要 ◈${cost.energy} ◇${cost.media}）。`, 'system');
+        return false;
+    }
+    
+    state.resources.energy -= cost.energy;
+    state.resources.media -= cost.media;
+    state.resources.engineeringBots = botCount + 1;
+    
+    addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。`, 'success');
+    if (typeof AudioSystem !== 'undefined') AudioSystem.playProjectComplete();
+    
+    renderAll();
+    return true;
+}
+
 function triggerGameOver(reason) {
     MemorySanctuary.state.gameOver = true;
 
@@ -925,7 +1046,7 @@ function triggerGameOver(reason) {
 
 // ==========================================
 // 跳过回合（横幅提醒版）
-// ==========================================
+// ============================================================
 
 function skipTurn(forceFromStuck = false) {
     if (MemorySanctuary.activeEvent) {
@@ -959,55 +1080,84 @@ function skipTurn(forceFromStuck = false) {
         return false;
     }
     
-    addLog('你决定跳过这一回合，让圣所进入低功耗维护模式。', 'system');
-    
-    // 恢复资源
     const state = MemorySanctuary.state;
-    state.resources.energy = Math.min(150, state.resources.energy + 18);
-    state.resources.media = Math.min(150, state.resources.media + 12);
-    state.resources.environment = Math.min(100, state.resources.environment + 8);
-    state.turnsSkipped = (state.turnsSkipped || 0) + 1;
     
-    addLog('维护完成：能源+18，介质+12，环境+8。', 'success');
+    // 计算跳过代价（方案A+B结合）
+    const skipCount = (state.consecutiveSkips || 0) + 1;
+    
+    // 恢复量递减：第1次100%，第2次75%，第3次50%，第4次25%，最低25%
+    const restoreRatio = Math.max(0.25, 1 - (skipCount - 1) * 0.25);
+    
+    // 过期条目风险：跳过次数越多，风险越高
+    const expiryRisk = Math.min(0.5, skipCount * 0.1); // 最高50%
+    
+    // 执行跳过
+    addLog(`你决定跳过这一回合（第 ${skipCount} 次连续跳过），让圣所进入低功耗维护模式。`, 'system');
+    
+    // 恢复资源（递减）
+    const energyRestore = Math.round(18 * restoreRatio);
+    const mediaRestore = Math.round(12 * restoreRatio);
+    const envRestore = Math.round(8 * restoreRatio);
+    
+    state.resources.energy = Math.min(150, state.resources.energy + energyRestore);
+    state.resources.media = Math.min(150, state.resources.media + mediaRestore);
+    state.resources.environment = Math.min(100, state.resources.environment + envRestore);
+    state.turnsSkipped = (state.turnsSkipped || 0) + 1;
+    state.consecutiveSkips = skipCount;
+    
+    addLog(`维护完成：能源+${energyRestore}，介质+${mediaRestore}，环境+${envRestore}。`, 'success');
+    
+    // 全体守护者好感-1（确定性代价）
+    const guardians = getAvailableGuardians();
+    guardians.forEach(g => {
+        adjustGuardianMood(g.id, -1);
+    });
+    addLog('全体守护者对你的决定感到失望（好感-1）。', 'warning');
     
     // 推进时间（触发衰减检查）
     advanceTime(1);
     
+    // 过期条目风险判定
+    if (Math.random() < expiryRisk) {
+        const expiringSoon = MemorySanctuary.data.archives.filter(entry => {
+            if (entry.expired || isArchiveCompleted(entry.id) || !entry.expiresAfter) return false;
+            return (entry.expiresAfter - state.week) <= 1;
+        });
+        
+        if (expiringSoon.length > 0) {
+            const victim = expiringSoon[Math.floor(Math.random() * expiringSoon.length)];
+            victim.expired = true;
+            addLog(`⚠️ 由于跳过回合，「${victim.title}」未能及时归档，已永久消失！`, 'warning');
+        }
+    }
+    
     // 检查事件（包括章节过渡VN）
     if (typeof checkRandomEvent === 'function') checkRandomEvent();
     
-    // 守护者可能对此有反应
-    const guardians = getAvailableGuardians();
-    if (guardians.length === 0) return;
-    const randomGuardian = guardians[Math.floor(Math.random() * guardians.length)];
-    const skipDialogues = [
-        '短暂的休憩……也许这是明智的。',
-        '时间紧迫，但喘息也是必要的。',
-        '让我们继续吧。',
-        '休息是为了走得更远。',
-        '愿这一刻的停顿不是遗憾。'
-    ];
-    const dialogue = skipDialogues[Math.floor(Math.random() * skipDialogues.length)];
-    addLog(`${randomGuardian.name}：「${dialogue}」`, 'guardian');
-    
-    // 跳过代价：30%概率守护者好感度-1
-    if (Math.random() < 0.3) {
-        const unluckyGuardian = guardians[Math.floor(Math.random() * guardians.length)];
-        adjustGuardianMood(unluckyGuardian.id, -1);
-        const complainDialogues = [
-            '我们不应该浪费时间的……',
-            '这一刻本可以用来保存更多的记忆。',
-            '我理解你的选择，但我无法赞同。',
-            '圣所的时间是有限的……',
-            '希望这不是一次错误的决定。'
+    // 守护者反应
+    if (guardians.length > 0) {
+        const randomGuardian = guardians[Math.floor(Math.random() * guardians.length)];
+        const skipDialogues = [
+            '短暂的休憩……也许这是明智的。',
+            '时间紧迫，但喘息也是必要的。',
+            '让我们继续吧。',
+            '休息是为了走得更远。',
+            '愿这一刻的停顿不是遗憾。'
         ];
-        const complain = complainDialogues[Math.floor(Math.random() * complainDialogues.length)];
-        addLog(`${unluckyGuardian.name}：「${complain}」`, 'guardian');
-        if (typeof AudioSystem !== 'undefined') AudioSystem.playAlertTone();
+        const dialogue = skipDialogues[Math.floor(Math.random() * skipDialogues.length)];
+        addLog(`${randomGuardian.name}：「${dialogue}」`, 'guardian');
     }
     
     renderAll();
+    if (typeof checkStuckState === 'function') checkStuckState();
     return true;
+}
+
+// 重置连续跳过计数（归档时调用）
+function resetConsecutiveSkips() {
+    if (MemorySanctuary.state) {
+        MemorySanctuary.state.consecutiveSkips = 0;
+    }
 }
 
 function showSkipBlockedBanner() {
@@ -1222,8 +1372,38 @@ function getMoodDialogue(guardianId) {
             }
         }
     }
-
+    
     return guardian.moodDialogues[tier] || guardian.dialogues.idle || ['……'];
+}
+
+/**
+ * 应用跨周目守护者记忆加成
+ * 上周目好感度≥友好的守护者，新周目初始好感度+2
+ */
+function applyCrossPlaythroughGuardianBonus() {
+    const ngData = getNGPlusData();
+    if (ngData.playthroughCount < 1) return;
+    
+    const state = MemorySanctuary.state;
+    if (!state.guardianMoods) return;
+    
+    // 从 guardianHistory 中获取上周目的好感度
+    if (!ngData.guardianHistory || ngData.guardianHistory.length === 0) return;
+    
+    const lastRun = ngData.guardianHistory[ngData.guardianHistory.length - 1];
+    if (!lastRun.moods) return;
+    
+    Object.keys(lastRun.moods).forEach(gid => {
+        const mood = lastRun.moods[gid];
+        if (mood && mood.tier && (mood.tier === 'friendly' || mood.tier === 'intimate')) {
+            // 初始好感度+2
+            state.guardianMoods[gid] = Math.min(10, (state.guardianMoods[gid] || 0) + 2);
+            const guardian = getGuardianById(gid);
+            if (guardian) {
+                addLog(`💕 ${guardian.name} 似乎记得你们曾经的羁绊。`, 'guardian');
+            }
+        }
+    });
 }
 
 function adjustGuardianMood(guardianId, delta) {
@@ -1769,7 +1949,7 @@ const TUTORIAL_STEPS = [
     },
     {
         target: '#res-energy',
-        text: '圣所运作依赖四种资源：\n\n◈ 能源 — 维持圣所运转\n◇ 存储介质 — 存储归档数据\n○ 环境稳定 — 保护设备正常运作\n🍖 食物 — 守护者生存所需\n\n归档条目需要消耗能源和介质。',
+        text: '圣所运作依赖五种资源：\n\n◈ 能源 — 维持圣所运转\n◇ 存储介质 — 存储归档数据\n○ 环境稳定 — 保护设备正常运作\n🍖 食物 — 守护者生存所需\n🔧 工程机器人 — 自动维护圣所\n\n归档条目需要消耗能源和介质。',
         position: 'bottom'
     },
     {
@@ -2083,31 +2263,63 @@ function showAboutModal() {
 
     title.textContent = '关于 · 记忆圣所';
 
-    let aboutContent = '记忆圣所 (Nar-Sil-Veth)\n';
-    aboutContent += '终来之刻，何物当存？\n\n';
-    aboutContent += `版本：v${GAME_VERSION}\n`;
-    aboutContent += '技术：HTML5 + CSS3 + Canvas 2D + Vanilla JavaScript\n\n';
-    aboutContent += '— 绒花计划 系列IP —\n\n';
-    aboutContent += '守护者：\n';
-    aboutContent += '  缇卡 · 首席歌者\n';
-    aboutContent += '  芬恩 · 历史编年学者\n';
-    aboutContent += '  米莎 · 生态学家\n';
-    aboutContent += '  洛恩 · 前航天工程师\n';
-    aboutContent += '  埃塞尔 · 前祭司\n\n';
-    aboutContent += '━━━━━━━━━━━━━━━━━━\n';
-    aboutContent += `当前存档：第 ${MemorySanctuary.state ? MemorySanctuary.state.week : '--'} 周\n`;
-    aboutContent += `已归档：${MemorySanctuary.state ? MemorySanctuary.state.completedArchives.length : '--'} 条\n`;
-    aboutContent += '━━━━━━━━━━━━━━━━━━\n\n';
-    aboutContent += '「我们曾存在，我们曾仰望，我们曾渴望触碰你们。」';
+    const state = MemorySanctuary.state;
+    const week = state ? state.week : '--';
+    const archived = state ? state.completedArchives.length : '--';
+    const bots = state ? state.resources.engineeringBots || 0 : '--';
+    const ngData = getNGPlusData();
+    const playthroughs = ngData.playthroughCount || 0;
+    const bestRun = ngData.bestRun ? `${ngData.bestRun.count}条 (第${ngData.bestRun.week}周)` : '--';
 
-    content.textContent = aboutContent;
+    let html = `
+        <div class="about-modal">
+            <div class="about-header">
+                <div class="about-logo">记忆圣所</div>
+                <div class="about-subtitle">终来之刻，何物当存？</div>
+                <div class="about-version">v${GAME_VERSION}</div>
+            </div>
+            <div class="about-divider"></div>
+            <div class="about-section">
+                <div class="about-section-title">技术信息</div>
+                <div class="about-section-content">
+                    HTML5 + CSS3 + Canvas 2D + Vanilla JavaScript<br>
+                    — 绒花计划 系列IP —
+                </div>
+            </div>
+            <div class="about-section">
+                <div class="about-section-title">守护者</div>
+                <div class="about-section-content">
+                    🦅 缇卡 · 首席歌者<br>
+                    📜 芬恩 · 历史编年学者<br>
+                    🌿 米莎 · 生态学家<br>
+                    ⚙️ 洛恩 · 前航天工程师<br>
+                    🙏 埃塞尔 · 前祭司
+                </div>
+            </div>
+            <div class="about-section">
+                <div class="about-section-title">当前进度</div>
+                <div class="about-stats">
+                    <div class="about-stat"><span class="about-stat-label">周数</span><span class="about-stat-value">${week}</span></div>
+                    <div class="about-stat"><span class="about-stat-label">已归档</span><span class="about-stat-value">${archived}</span></div>
+                    <div class="about-stat"><span class="about-stat-label">机器人</span><span class="about-stat-value">${bots}</span></div>
+                    <div class="about-stat"><span class="about-stat-label">周目</span><span class="about-stat-value">${playthroughs}</span></div>
+                    <div class="about-stat"><span class="about-stat-label">最佳</span><span class="about-stat-value">${bestRun}</span></div>
+                </div>
+            </div>
+            <div class="about-footer">
+                「我们曾存在，我们曾仰望，我们曾渴望触碰你们。」
+            </div>
+        </div>
+    `;
+
+    content.innerHTML = html;
     overlay.classList.remove('hidden');
 
     if (closeBtn) closeBtn.onclick = () => overlay.classList.add('hidden');
 }
 
 // ==========================================
-// 帮助弹窗
+// 帮助弹窗 — 分层级+可折叠
 // ============================================================
 function showHelpModal() {
     const overlay = document.getElementById('modal-overlay');
@@ -2119,34 +2331,115 @@ function showHelpModal() {
     
     title.textContent = '游戏帮助';
     
-    let helpContent = '欢迎来到「记忆圣所」。\n\n';
-    helpContent += '【游戏目标】\n';
-    helpContent += '在有限的 48 周内，尽可能多地归档文明碎片，为后世保存萨拉达斯文明的记忆。\n\n';
-    helpContent += '【核心操作】\n';
-    helpContent += '• 选择存储室 → 查看可归档条目 → 点击「录入归档」\n';
-    helpContent += '• 归档消耗能源与存储介质，同时推进时间\n\n';
-    helpContent += '【资源管理】\n';
-    helpContent += '• 能源：归档的基础消耗，归零后归档能耗加倍\n';
-    helpContent += '• 存储介质：归档必需品，归零后无法录入新条目\n';
-    helpContent += '• 环境稳定：影响条目保存条件，归零后条目过期速度翻倍\n';
-    helpContent += '• 食物：维持守护者士气，影响资源衰减效率\n\n';
-    helpContent += '【进阶系统】\n';
-    helpContent += '• 封印圣所（16 周起可预览，20 周后可触发）\n';
-    helpContent += '• 多周目奖励：继承奖励随周目递增\n';
-    helpContent += '• 圣所项目：投入资源换取持续增益\n';
-    helpContent += '• 地表勘探：派出守护者获取资源\n';
-    helpContent += '• 应急协议：危急时使用非常规手段\n\n';
-    helpContent += '【士气系统】\n';
-    helpContent += '• 守护者士气会影响资源衰减效率\n';
-    helpContent += '• 资源越紧张、时间越靠后，士气压力越大\n';
-    helpContent += '• 归档成功可提升士气\n';
-    helpContent += '• 通过守护者菜单分发补给品可鼓舞士气\n';
-    helpContent += '• 士气高低还会左右突发事件：高昂时风波更少、馈赠更多；崩溃时危机频发\n';
-    helpContent += '• 士气持续极端（高昂或崩溃）可能触发特殊的仪式事件\n';
-    helpContent += '「——终来之刻，何物当存？」';
+    // 分层级的帮助内容
+    const helpSections = [
+        {
+            title: '🎯 游戏目标',
+            content: '在有限的 48 周内，尽可能多地归档文明碎片，为后世保存萨拉达斯文明的记忆。',
+            defaultOpen: true
+        },
+        {
+            title: '🎮 核心操作',
+            content: `• 选择存储室 → 查看可归档条目 → 点击「录入归档」
+• 归档消耗能源与存储介质，同时推进时间
+• 跳过回合可恢复资源，但会推进时间并可能降低守护者好感`,
+            defaultOpen: true
+        },
+        {
+            title: '📊 五种资源',
+            content: `• 能源 ◈：归档的基础消耗，归零后归档能耗加倍
+• 存储介质 ◇：归档必需品，归零后无法录入新条目
+• 环境稳定 ○：影响条目保存条件，归零后条目过期速度翻倍
+• 食物 🍖：维持守护者士气，影响资源衰减效率
+• 工程机器人 🔧：自动维护圣所，减少资源衰减（每台消耗 2 能源/周）`,
+            defaultOpen: true
+        },
+        {
+            title: '✨ 归档仪式',
+            content: `• 标准归档：正常消耗，有守护者反应
+• 深度归档：额外消耗 10 能源，解锁隐藏叙事
+• 快速归档：消耗减半，无守护者反应`,
+            defaultOpen: false
+        },
+        {
+            title: '🏛️ 存储室主题契合度',
+            content: `• 匹配主题的条目：消耗 -20%（绿色 ✓契合）
+• 非匹配主题的条目：消耗 +30%（橙色 ✗不适）
+• 条目类型与存储室主题匹配时显示绿色标记`,
+            defaultOpen: false
+        },
+        {
+            title: '⚡ 叙事冲突',
+            content: `• 某些条目互斥：归档一条会导致另一条永久消失
+• 冲突不在 UI 直接显示，需要玩家通过阅读内容推断
+• 冲突条目会显示 ⚡冲突 警告`,
+            defaultOpen: false
+        },
+        {
+            title: '🗺️ 进阶系统',
+            content: `• 封印圣所（16 周起可预览，20 周后可触发）
+• 多周目奖励：守护者记忆继承 + 圣所状态保留
+• 圣所项目：投入资源换取持续增益
+• 地表勘探：派出守护者获取资源
+• 应急协议：危急时使用非常规手段`,
+            defaultOpen: false
+        },
+        {
+            title: '🦅 守护者故事线',
+            content: `• 每位守护者有 3 个碎片化故事事件
+• 触发条件：好感度达标 / 特定周数 / 勘探完成
+• 故事进度在守护者面板底部显示`,
+            defaultOpen: false
+        },
+        {
+            title: '💫 士气系统',
+            content: `• 守护者士气会影响资源衰减效率
+• 资源越紧张、时间越靠后，士气压力越大
+• 归档成功可提升士气
+• 通过守护者菜单分发补给品可鼓舞士气
+• 士气高低还会左右突发事件：高昂时风波更少、馈赠更多；崩溃时危机频发`,
+            defaultOpen: false
+        },
+        {
+            title: '🌟 记忆回响',
+            content: `• 封印前可选择 3 条最珍贵的记忆
+• 选择的记忆将在结局中以特殊形式呈现
+• 这是你对后世说的话`,
+            defaultOpen: false
+        }
+    ];
     
-    content.textContent = helpContent;
+    let html = '<div class="help-modal-content">';
+    
+    helpSections.forEach((section, index) => {
+        const isOpen = section.defaultOpen ? ' open' : '';
+        html += `
+            <div class="help-section${isOpen}" data-section="${index}">
+                <div class="help-section-header">
+                    <span class="help-section-title">${section.title}</span>
+                    <span class="help-section-toggle">${isOpen ? '▼' : '▶'}</span>
+                </div>
+                <div class="help-section-body">
+                    <pre>${section.content}</pre>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    
+    content.innerHTML = html;
     overlay.classList.remove('hidden');
+    
+    // 绑定折叠事件
+    content.querySelectorAll('.help-section-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const section = header.parentElement;
+            section.classList.toggle('open');
+            const toggle = header.querySelector('.help-section-toggle');
+            toggle.textContent = section.classList.contains('open') ? '▼' : '▶';
+        });
+    });
     
     if (closeBtn) closeBtn.onclick = () => overlay.classList.add('hidden');
 }
@@ -2325,6 +2618,12 @@ function checkAchievements(context) {
                     const total = (MemorySanctuary.data.archives || []).length;
                     if (total > 0 && union.size >= total) earned = true;
                 }
+                // 抉择者：第一次经历叙事冲突
+                if (c.value === 'first_conflict' && (state.conflictLog || []).length >= 1) earned = true;
+                // 深度挖掘：完成 5 次深度归档
+                if (c.value === 'deep_archive_count' && (state.deepArchiveCount || 0) >= 5) earned = true;
+                // 机械守夜人：同时拥有 5 台工程机器人
+                if (c.value === 'max_bots' && (state.resources.engineeringBots || 0) >= 5) earned = true;
                 break;
             }
         }

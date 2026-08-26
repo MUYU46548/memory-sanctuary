@@ -1,574 +1,622 @@
 {
- "achievements": [
-  {
-   "id": "first_seal",
-   "name": "初次封印",
-   "description": "第一次封印圣所。",
-   "icon": "🏛️",
-   "category": "milestone",
-   "hidden": false,
-   "condition": {
-    "type": "seal"
-   }
-  },
-  {
-   "id": "complete_memory",
-   "name": "永恒记忆",
-   "description": "达成全收集结局——保存萨拉达斯文明的每一片碎片。",
-   "icon": "🌟",
-   "category": "ending",
-   "hidden": false,
-   "condition": {
-    "type": "ending",
-    "value": "complete_memory"
-   }
-  },
-  {
-   "id": "song_of_doom",
-   "name": "终焉之歌",
-   "description": "达成「终焉之歌」结局——保存灾难与艺术的交织。",
-   "icon": "🎵",
-   "category": "ending",
-   "hidden": false,
-   "condition": {
-    "type": "ending",
-    "value": "finale_song_of_doom"
-   }
-  },
-  {
-   "id": "roots_of_civilization",
-   "name": "文明之根",
-   "description": "达成「文明之根」结局——保存语言、历史与法律。",
-   "icon": "📜",
-   "category": "ending",
-   "hidden": false,
-   "condition": {
-    "type": "ending",
-    "value": "finale_roots_of_civilization"
-   }
-  },
-  {
-   "id": "children_of_stardust",
-   "name": "星尘之子",
-   "description": "达成「星尘之子」结局——保存科学、天文与生态。",
-   "icon": "⭐",
-   "category": "ending",
-   "hidden": false,
-   "condition": {
-    "type": "ending",
-    "value": "finale_children_of_stardust"
-   }
-  },
-  {
-   "id": "fire_of_life",
-   "name": "生命礼赞",
-   "description": "达成「生命礼赞」结局——保存生态、医学与艺术。",
-   "icon": "🌿",
-   "category": "ending",
-   "hidden": false,
-   "condition": {
-    "type": "ending",
-    "value": "finale_fire_of_life"
-   }
-  },
-  {
-   "id": "eternal_question",
-   "name": "永恒追问",
-   "description": "达成「永恒追问」结局——保存哲学、天文与艺术。",
-   "icon": "🌌",
-   "category": "ending",
-   "hidden": false,
-   "condition": {
-    "type": "ending",
-    "value": "finale_eternal_question"
-   }
-  },
-  {
-   "id": "chronicle_of_doom",
-   "name": "末日档案",
-   "description": "达成「末日档案」结局——保存灾难、历史与法律。",
-   "icon": "🔥",
-   "category": "ending",
-   "hidden": false,
-   "condition": {
-    "type": "ending",
-    "value": "finale_chronicle_of_doom"
-   }
-  },
-  {
-   "id": "voice_of_home",
-   "name": "人间烟火",
-   "description": "达成「人间烟火」结局——保存日常生活、建筑与医学。",
-   "icon": "🏠",
-   "category": "ending",
-   "hidden": false,
-   "condition": {
-    "type": "ending",
-    "value": "finale_voice_of_home"
-   }
-  },
-  {
-   "id": "silent_sanctuary",
-   "name": "寂静圣所",
-   "description": "达成「寂静圣所」结局——选择沉默。",
-   "icon": "🖤",
-   "category": "ending",
-   "hidden": false,
-   "condition": {
-    "type": "ending",
-    "value": "finale_silent_sanctuary"
-   }
-  },
-  {
-   "id": "guardian_tika_love",
-   "name": "最后的歌者",
-   "description": "与缇卡达成亲密关系，解锁她的专属结局。",
-   "icon": "🦅",
-   "category": "guardian",
-   "hidden": false,
-   "condition": {
-    "type": "guardian_finale",
-    "value": "tika"
-   }
-  },
-  {
-   "id": "guardian_finn_love",
-   "name": "编年史官",
-   "description": "与芬恩达成亲密关系，解锁他的专属结局。",
-   "icon": "📜",
-   "category": "guardian",
-   "hidden": false,
-   "condition": {
-    "type": "guardian_finale",
-    "value": "finn"
-   }
-  },
-  {
-   "id": "guardian_misha_love",
-   "name": "最后的园丁",
-   "description": "与米莎达成亲密关系，解锁她的专属结局。",
-   "icon": "🌿",
-   "category": "guardian",
-   "hidden": false,
-   "condition": {
-    "type": "guardian_finale",
-    "value": "misha"
-   }
-  },
-  {
-   "id": "guardian_lorn_love",
-   "name": "守夜人",
-   "description": "与洛恩达成亲密关系，解锁他的专属结局。",
-   "icon": "⚙️",
-   "category": "guardian",
-   "hidden": false,
-   "condition": {
-    "type": "guardian_finale",
-    "value": "lorn"
-   }
-  },
-  {
-   "id": "guardian_ethel_love",
-   "name": "最后的祈祷",
-   "description": "与埃塞尔达成亲密关系，解锁她的专属结局。",
-   "icon": "🙏",
-   "category": "guardian",
-   "hidden": false,
-   "condition": {
-    "type": "guardian_finale",
-    "value": "ethel"
-   }
-  },
-  {
-   "id": "all_guardians_friendly",
-   "name": "团队之心",
-   "description": "让所有守护者达到友好或以上。",
-   "icon": "💛",
-   "category": "guardian",
-   "hidden": false,
-   "condition": {
-    "type": "all_guardians_mood",
-    "value": "friendly"
-   }
-  },
-  {
-   "id": "all_guardians_intimate",
-   "name": "灵魂共鸣",
-   "description": "让所有守护者达到亲密。",
-   "icon": "❤️",
-   "category": "guardian",
-   "hidden": false,
-   "condition": {
-    "type": "all_guardians_mood",
-    "value": "intimate"
-   }
-  },
-  {
-   "id": "ng_plus_2",
-   "name": "轮回开始",
-   "description": "开始第二次周目。",
-   "icon": "🔄",
-   "category": "playthrough",
-   "hidden": false,
-   "condition": {
-    "type": "playthrough",
-    "value": 2
-   }
-  },
-  {
-   "id": "ng_plus_3",
-   "name": "三度轮回",
-   "description": "开始第三次周目。",
-   "icon": "🔄",
-   "category": "playthrough",
-   "hidden": false,
-   "condition": {
-    "type": "playthrough",
-    "value": 3
-   }
-  },
-  {
-   "id": "ng_plus_5",
-   "name": "无尽轮回",
-   "description": "开始第五次周目。",
-   "icon": "♾️",
-   "category": "playthrough",
-   "hidden": false,
-   "condition": {
-    "type": "playthrough",
-    "value": 5
-   }
-  },
-  {
-   "id": "arch_10",
-   "name": "记忆收集者",
-   "description": "归档10条记忆。",
-   "icon": "📦",
-   "category": "collection",
-   "hidden": false,
-   "condition": {
-    "type": "archives_count",
-    "value": 10
-   }
-  },
-  {
-   "id": "arch_25",
-   "name": "文明守护者",
-   "description": "归档25条记忆。",
-   "icon": "🏺",
-   "category": "collection",
-   "hidden": false,
-   "condition": {
-    "type": "archives_count",
-    "value": 25
-   }
-  },
-  {
-   "id": "arch_50",
-   "name": "历史编织者",
-   "description": "归档50条记忆。",
-   "icon": "🧵",
-   "category": "collection",
-   "hidden": false,
-   "condition": {
-    "type": "archives_count",
-    "value": 50
-   }
-  },
-  {
-   "id": "vault_complete_1",
-   "name": "语言大师",
-   "description": "完成语言与语法存储室。",
-   "icon": "🗣️",
-   "category": "vault",
-   "hidden": false,
-   "condition": {
-    "type": "vault_complete",
-    "value": 1
-   }
-  },
-  {
-   "id": "vault_complete_3",
-   "name": "灾难记录者",
-   "description": "完成灾难纪实存储室。",
-   "icon": "🌋",
-   "category": "vault",
-   "hidden": false,
-   "condition": {
-    "type": "vault_complete",
-    "value": 3
-   }
-  },
-  {
-   "id": "vault_complete_12",
-   "name": "星空观测者",
-   "description": "完成星象与天文存储室。",
-   "icon": "🔭",
-   "category": "vault",
-   "hidden": false,
-   "condition": {
-    "type": "vault_complete",
-    "value": 12
-   }
-  },
-  {
-   "id": "all_vaults_50",
-   "name": "均衡守护者",
-   "description": "所有存储室完成度达到40%。",
-   "icon": "⚖️",
-   "category": "vault",
-   "hidden": false,
-   "condition": {
-    "type": "all_vaults_percent",
-    "value": 0.4
-   }
-  },
-  {
-   "id": "seal_early",
-   "name": "速战速决",
-   "description": "在22周或更早封印圣所。",
-   "icon": "⚡",
-   "category": "challenge",
-   "hidden": false,
-   "condition": {
-    "type": "seal_week_max",
-    "value": 22
-   }
-  },
-  {
-   "id": "seal_late",
-   "name": "坚守到底",
-   "description": "坚持到48周封印圣所。",
-   "icon": "🛡️",
-   "category": "challenge",
-   "hidden": false,
-   "condition": {
-    "type": "seal_week_min",
-    "value": 48
-   }
-  },
-  {
-   "id": "no_emergency",
-   "name": "从容不迫",
-   "description": "不使用应急协议封印圣所。",
-   "icon": "🧘",
-   "category": "challenge",
-   "hidden": false,
-   "condition": {
-    "type": "no_emergency"
-   }
-  },
-  {
-   "id": "no_skip",
-   "name": "争分夺秒",
-   "description": "不跳过任何回合封印圣所。",
-   "icon": "⏱️",
-   "category": "challenge",
-   "hidden": false,
-   "condition": {
-    "type": "no_skip"
-   }
-  },
-  {
-   "id": "first_archive",
-   "name": "初次归档",
-   "description": "归档第一条记忆。",
-   "icon": "✨",
-   "category": "milestone",
-   "hidden": false,
-   "condition": {
-    "type": "archives_count",
-    "value": 1
-   }
-  },
-  {
-   "id": "never_starve",
-   "name": "丰衣足食",
-   "description": "连续30周保持食物储备为正。",
-   "icon": "🍖",
-   "category": "challenge",
-   "hidden": false,
-   "condition": {
-    "type": "custom",
-    "value": "never_starve_30"
-   }
-  },
-  {
-   "id": "project_master",
-   "name": "循环大师",
-   "description": "完成所有循环维护项目各至少一次。",
-   "icon": "🔄",
-   "category": "milestone",
-   "hidden": false,
-   "condition": {
-    "type": "custom",
-    "value": "all_repeatable_projects"
-   }
-  },
-  {
-   "id": "all_endings_base",
-   "name": "命运编织者",
-   "description": "解锁所有基础结局（不含守护者专属）。",
-   "icon": "🎭",
-   "category": "ending",
-   "hidden": true,
-   "condition": {
-    "type": "all_base_endings"
-   }
-  },
-  {
-   "id": "all_guardian_finales",
-   "name": "心灵港湾",
-   "description": "解锁所有守护者专属结局。",
-   "icon": "💕",
-   "category": "guardian",
-   "hidden": true,
-   "condition": {
-    "type": "all_guardian_finales"
-   }
-  },
-  {
-   "id": "all_achievements",
-   "name": "完美收藏家",
-   "description": "解锁所有其他成就。",
-   "icon": "🏆",
-   "category": "meta",
-   "hidden": true,
-   "condition": {
-    "type": "all_achievements"
-   }
-  },
-  {
-   "id": "reincarnator",
-   "name": "轮回者",
-   "description": "完成3个周目",
-   "icon": "🔄",
-   "condition": {
-    "type": "playthroughs",
-    "value": 3
-   }
-  },
-  {
-   "id": "eternal_keeper",
-   "name": "永恒守护者",
-   "description": "完成5个周目",
-   "icon": "♾️",
-   "condition": {
-    "type": "playthroughs",
-    "value": 5
-   }
-  },
-  {
-   "id": "beyond_time",
-   "name": "超越时间",
-   "description": "在第5周目打破循环",
-   "icon": "✨",
-   "condition": {
-    "type": "ending",
-    "value": "true_ending"
-   }
-  },
-  {
-   "id": "chapter_complete_12",
-   "name": "终章见证者",
-   "description": "经历全部12个章节过渡",
-   "icon": "📖",
-   "condition": {
-    "type": "chapter",
-    "value": 12
-   }
-  },
-  {
-   "id": "memory_keeper",
-   "name": "记忆收集者",
-   "description": "解锁全部NG+专属条目",
-   "icon": "🧠",
-   "condition": {
-    "type": "unlock_ng_entries",
-    "value": 25
-   }
-  },
-  {
-   "id": "ai_assist_first",
-   "name": "机魂共呜",
-   "description": "第一次请求档案AI助理辅助归档",
-   "icon": "🤖",
-   "condition": {
-    "type": "custom",
-    "value": "ai_assist_count"
-   }
-  },
-  {
-   "id": "ai_assist_10",
-   "name": "人机协作",
-   "description": "档案AI助理累计辅助归档10条",
-   "icon": "🛰️",
-   "condition": {
-    "type": "custom",
-    "value": "ai_assist_10"
-   }
-  },
-  {
-   "id": "guardian_aid_first",
-   "name": "临时援手",
-   "description": "以食物作为报酬，邀请守护者临时协助归档",
-   "icon": "🍖",
-   "condition": {
-    "type": "custom",
-    "value": "guardian_aid_count"
-   }
-  },
-  {
-   "id": "explore_10",
-   "name": "步履不停",
-   "description": "单周目完成10次地表勘探",
-   "icon": "🥾",
-   "condition": {
-    "type": "custom",
-    "value": "exploration_count"
-   }
-  },
-  {
-   "id": "all_explorations",
-   "name": "地表全图",
-   "description": "完成全部地表勘探点",
-   "icon": "🗺️",
-   "condition": {
-    "type": "custom",
-    "value": "all_explorations"
-   }
-  },
-  {
-   "id": "emergency_gambit",
-   "name": "孤注一掷",
-   "description": "激活紧急勘探协议，用腐败换机会",
-   "icon": "🔭",
-   "condition": {
-    "type": "custom",
-    "value": "emergency_explore_used"
-   }
-  },
-  {
-   "id": "survived_famine",
-   "name": "劫后余生",
-   "description": "食物归零后，圣所成功恢复生机",
-   "icon": "🌾",
-   "condition": {
-    "type": "custom",
-    "value": "survived_famine"
-   }
-  },
-  {
-   "id": "all_archives_union",
-   "name": "万卷归藏",
-   "description": "跨周目归档过全部记忆碎片（多周目累计，无需单局全收集）",
-   "icon": "📚",
-   "category": "collection",
-   "hidden": false,
-   "condition": {
-    "type": "custom",
-    "value": "all_archives_union"
-   }
-  }
- ]
+  "achievements": [
+    {
+      "id": "first_seal",
+      "name": "初次封印",
+      "description": "第一次封印圣所。",
+      "icon": "🏛️",
+      "category": "milestone",
+      "hidden": false,
+      "condition": {
+        "type": "seal"
+      }
+    },
+    {
+      "id": "complete_memory",
+      "name": "永恒记忆",
+      "description": "达成全收集结局——保存萨拉达斯文明的每一片碎片。",
+      "icon": "🌟",
+      "category": "ending",
+      "hidden": false,
+      "condition": {
+        "type": "ending",
+        "value": "complete_memory"
+      }
+    },
+    {
+      "id": "song_of_doom",
+      "name": "终焉之歌",
+      "description": "达成「终焉之歌」结局——保存灾难与艺术的交织。",
+      "icon": "🎵",
+      "category": "ending",
+      "hidden": false,
+      "condition": {
+        "type": "ending",
+        "value": "finale_song_of_doom"
+      }
+    },
+    {
+      "id": "roots_of_civilization",
+      "name": "文明之根",
+      "description": "达成「文明之根」结局——保存语言、历史与法律。",
+      "icon": "📜",
+      "category": "ending",
+      "hidden": false,
+      "condition": {
+        "type": "ending",
+        "value": "finale_roots_of_civilization"
+      }
+    },
+    {
+      "id": "children_of_stardust",
+      "name": "星尘之子",
+      "description": "达成「星尘之子」结局——保存科学、天文与生态。",
+      "icon": "⭐",
+      "category": "ending",
+      "hidden": false,
+      "condition": {
+        "type": "ending",
+        "value": "finale_children_of_stardust"
+      }
+    },
+    {
+      "id": "fire_of_life",
+      "name": "生命礼赞",
+      "description": "达成「生命礼赞」结局——保存生态、医学与艺术。",
+      "icon": "🌿",
+      "category": "ending",
+      "hidden": false,
+      "condition": {
+        "type": "ending",
+        "value": "finale_fire_of_life"
+      }
+    },
+    {
+      "id": "eternal_question",
+      "name": "永恒追问",
+      "description": "达成「永恒追问」结局——保存哲学、天文与艺术。",
+      "icon": "🌌",
+      "category": "ending",
+      "hidden": false,
+      "condition": {
+        "type": "ending",
+        "value": "finale_eternal_question"
+      }
+    },
+    {
+      "id": "chronicle_of_doom",
+      "name": "末日档案",
+      "description": "达成「末日档案」结局——保存灾难、历史与法律。",
+      "icon": "🔥",
+      "category": "ending",
+      "hidden": false,
+      "condition": {
+        "type": "ending",
+        "value": "finale_chronicle_of_doom"
+      }
+    },
+    {
+      "id": "voice_of_home",
+      "name": "人间烟火",
+      "description": "达成「人间烟火」结局——保存日常生活、建筑与医学。",
+      "icon": "🏠",
+      "category": "ending",
+      "hidden": false,
+      "condition": {
+        "type": "ending",
+        "value": "finale_voice_of_home"
+      }
+    },
+    {
+      "id": "silent_sanctuary",
+      "name": "寂静圣所",
+      "description": "达成「寂静圣所」结局——选择沉默。",
+      "icon": "🖤",
+      "category": "ending",
+      "hidden": false,
+      "condition": {
+        "type": "ending",
+        "value": "finale_silent_sanctuary"
+      }
+    },
+    {
+      "id": "guardian_tika_love",
+      "name": "最后的歌者",
+      "description": "与缇卡达成亲密关系，解锁她的专属结局。",
+      "icon": "🦅",
+      "category": "guardian",
+      "hidden": false,
+      "condition": {
+        "type": "guardian_finale",
+        "value": "tika"
+      }
+    },
+    {
+      "id": "guardian_finn_love",
+      "name": "编年史官",
+      "description": "与芬恩达成亲密关系，解锁他的专属结局。",
+      "icon": "📜",
+      "category": "guardian",
+      "hidden": false,
+      "condition": {
+        "type": "guardian_finale",
+        "value": "finn"
+      }
+    },
+    {
+      "id": "guardian_misha_love",
+      "name": "最后的园丁",
+      "description": "与米莎达成亲密关系，解锁她的专属结局。",
+      "icon": "🌿",
+      "category": "guardian",
+      "hidden": false,
+      "condition": {
+        "type": "guardian_finale",
+        "value": "misha"
+      }
+    },
+    {
+      "id": "guardian_lorn_love",
+      "name": "守夜人",
+      "description": "与洛恩达成亲密关系，解锁他的专属结局。",
+      "icon": "⚙️",
+      "category": "guardian",
+      "hidden": false,
+      "condition": {
+        "type": "guardian_finale",
+        "value": "lorn"
+      }
+    },
+    {
+      "id": "guardian_ethel_love",
+      "name": "最后的祈祷",
+      "description": "与埃塞尔达成亲密关系，解锁她的专属结局。",
+      "icon": "🙏",
+      "category": "guardian",
+      "hidden": false,
+      "condition": {
+        "type": "guardian_finale",
+        "value": "ethel"
+      }
+    },
+    {
+      "id": "all_guardians_friendly",
+      "name": "团队之心",
+      "description": "让所有守护者达到友好或以上。",
+      "icon": "💛",
+      "category": "guardian",
+      "hidden": false,
+      "condition": {
+        "type": "all_guardians_mood",
+        "value": "friendly"
+      }
+    },
+    {
+      "id": "all_guardians_intimate",
+      "name": "灵魂共鸣",
+      "description": "让4位守护者达到亲密关系",
+      "icon": "❤️",
+      "category": "guardian",
+      "hidden": false,
+      "condition": {
+        "type": "all_guardians_mood",
+        "value": 4
+      }
+    },
+    {
+      "id": "ng_plus_2",
+      "name": "轮回开始",
+      "description": "开始第二次周目。",
+      "icon": "🔄",
+      "category": "playthrough",
+      "hidden": false,
+      "condition": {
+        "type": "playthrough",
+        "value": 2
+      }
+    },
+    {
+      "id": "ng_plus_3",
+      "name": "三度轮回",
+      "description": "开始第三次周目。",
+      "icon": "🔄",
+      "category": "playthrough",
+      "hidden": false,
+      "condition": {
+        "type": "playthrough",
+        "value": 3
+      }
+    },
+    {
+      "id": "ng_plus_5",
+      "name": "无尽轮回",
+      "description": "开始第五次周目。",
+      "icon": "♾️",
+      "category": "playthrough",
+      "hidden": false,
+      "condition": {
+        "type": "playthrough",
+        "value": 5
+      }
+    },
+    {
+      "id": "arch_10",
+      "name": "记忆收集者",
+      "description": "归档10条记忆。",
+      "icon": "📦",
+      "category": "collection",
+      "hidden": false,
+      "condition": {
+        "type": "archives_count",
+        "value": 10
+      }
+    },
+    {
+      "id": "arch_25",
+      "name": "文明守护者",
+      "description": "归档25条记忆。",
+      "icon": "🏺",
+      "category": "collection",
+      "hidden": false,
+      "condition": {
+        "type": "archives_count",
+        "value": 25
+      }
+    },
+    {
+      "id": "arch_50",
+      "name": "历史编织者",
+      "description": "归档50条记忆。",
+      "icon": "🧵",
+      "category": "collection",
+      "hidden": false,
+      "condition": {
+        "type": "archives_count",
+        "value": 50
+      }
+    },
+    {
+      "id": "vault_complete_1",
+      "name": "语言大师",
+      "description": "完成语言与语法存储室。",
+      "icon": "🗣️",
+      "category": "vault",
+      "hidden": false,
+      "condition": {
+        "type": "vault_complete",
+        "value": 1
+      }
+    },
+    {
+      "id": "vault_complete_3",
+      "name": "灾难记录者",
+      "description": "完成灾难纪实存储室。",
+      "icon": "🌋",
+      "category": "vault",
+      "hidden": false,
+      "condition": {
+        "type": "vault_complete",
+        "value": 3
+      }
+    },
+    {
+      "id": "vault_complete_12",
+      "name": "星空观测者",
+      "description": "完成星象与天文存储室。",
+      "icon": "🔭",
+      "category": "vault",
+      "hidden": false,
+      "condition": {
+        "type": "vault_complete",
+        "value": 12
+      }
+    },
+    {
+      "id": "all_vaults_50",
+      "name": "均衡守护者",
+      "description": "所有存储室完成度达到30%",
+      "icon": "⚖️",
+      "category": "vault",
+      "hidden": false,
+      "condition": {
+        "type": "all_vaults_percent",
+        "value": 0.3
+      }
+    },
+    {
+      "id": "seal_early",
+      "name": "速战速决",
+      "description": "在22周或更早封印圣所。",
+      "icon": "⚡",
+      "category": "challenge",
+      "hidden": false,
+      "condition": {
+        "type": "seal_week_max",
+        "value": 22
+      }
+    },
+    {
+      "id": "seal_late",
+      "name": "坚守到底",
+      "description": "坚持到48周封印圣所。",
+      "icon": "🛡️",
+      "category": "challenge",
+      "hidden": false,
+      "condition": {
+        "type": "seal_week_min",
+        "value": 48
+      }
+    },
+    {
+      "id": "no_emergency",
+      "name": "从容不迫",
+      "description": "不使用应急协议封印圣所。",
+      "icon": "🧘",
+      "category": "challenge",
+      "hidden": false,
+      "condition": {
+        "type": "no_emergency"
+      }
+    },
+    {
+      "id": "no_skip",
+      "name": "争分夺秒",
+      "description": "不跳过任何回合封印圣所。",
+      "icon": "⏱️",
+      "category": "challenge",
+      "hidden": false,
+      "condition": {
+        "type": "no_skip"
+      }
+    },
+    {
+      "id": "first_archive",
+      "name": "初次归档",
+      "description": "归档第一条记忆。",
+      "icon": "✨",
+      "category": "milestone",
+      "hidden": false,
+      "condition": {
+        "type": "archives_count",
+        "value": 1
+      }
+    },
+    {
+      "id": "never_starve",
+      "name": "丰衣足食",
+      "description": "连续30周保持食物储备为正。",
+      "icon": "🍖",
+      "category": "challenge",
+      "hidden": false,
+      "condition": {
+        "type": "custom",
+        "value": "never_starve_30"
+      }
+    },
+    {
+      "id": "project_master",
+      "name": "循环大师",
+      "description": "完成所有循环维护项目各至少一次。",
+      "icon": "🔄",
+      "category": "milestone",
+      "hidden": false,
+      "condition": {
+        "type": "custom",
+        "value": "all_repeatable_projects"
+      }
+    },
+    {
+      "id": "all_endings_base",
+      "name": "命运编织者",
+      "description": "解锁所有基础结局（不含守护者专属）。",
+      "icon": "🎭",
+      "category": "ending",
+      "hidden": true,
+      "condition": {
+        "type": "all_base_endings"
+      }
+    },
+    {
+      "id": "all_guardian_finales",
+      "name": "心灵港湾",
+      "description": "解锁所有守护者专属结局。",
+      "icon": "💕",
+      "category": "guardian",
+      "hidden": true,
+      "condition": {
+        "type": "all_guardian_finales"
+      }
+    },
+    {
+      "id": "all_achievements",
+      "name": "完美收藏家",
+      "description": "解锁所有其他成就。",
+      "icon": "🏆",
+      "category": "meta",
+      "hidden": true,
+      "condition": {
+        "type": "all_achievements"
+      }
+    },
+    {
+      "id": "reincarnator",
+      "name": "轮回者",
+      "description": "完成3个周目",
+      "icon": "🔄",
+      "condition": {
+        "type": "playthroughs",
+        "value": 3
+      }
+    },
+    {
+      "id": "eternal_keeper",
+      "name": "永恒守护者",
+      "description": "完成5个周目",
+      "icon": "♾️",
+      "condition": {
+        "type": "playthroughs",
+        "value": 5
+      }
+    },
+    {
+      "id": "beyond_time",
+      "name": "超越时间",
+      "description": "在第5周目打破循环",
+      "icon": "✨",
+      "condition": {
+        "type": "ending",
+        "value": "true_ending"
+      }
+    },
+    {
+      "id": "chapter_complete_12",
+      "name": "终章见证者",
+      "description": "经历全部12个章节过渡",
+      "icon": "📖",
+      "condition": {
+        "type": "chapter",
+        "value": 12
+      }
+    },
+    {
+      "id": "memory_keeper",
+      "name": "记忆收集者",
+      "description": "解锁全部NG+专属条目",
+      "icon": "🧠",
+      "condition": {
+        "type": "unlock_ng_entries",
+        "value": 25
+      }
+    },
+    {
+      "id": "ai_assist_first",
+      "name": "机魂共呜",
+      "description": "第一次请求档案AI助理辅助归档",
+      "icon": "🤖",
+      "condition": {
+        "type": "custom",
+        "value": "ai_assist_count"
+      }
+    },
+    {
+      "id": "ai_assist_10",
+      "name": "人机协作",
+      "description": "档案AI助理累计辅助归档10条",
+      "icon": "🛰️",
+      "condition": {
+        "type": "custom",
+        "value": "ai_assist_10"
+      }
+    },
+    {
+      "id": "guardian_aid_first",
+      "name": "临时援手",
+      "description": "以食物作为报酬，邀请守护者临时协助归档",
+      "icon": "🍖",
+      "condition": {
+        "type": "custom",
+        "value": "guardian_aid_count"
+      }
+    },
+    {
+      "id": "explore_10",
+      "name": "步履不停",
+      "description": "单周目完成10次地表勘探",
+      "icon": "🥾",
+      "condition": {
+        "type": "custom",
+        "value": "exploration_count"
+      }
+    },
+    {
+      "id": "all_explorations",
+      "name": "地表全图",
+      "description": "完成全部地表勘探点",
+      "icon": "🗺️",
+      "condition": {
+        "type": "custom",
+        "value": "all_explorations"
+      }
+    },
+    {
+      "id": "emergency_gambit",
+      "name": "孤注一掷",
+      "description": "激活紧急勘探协议，用腐败换机会",
+      "icon": "🔭",
+      "condition": {
+        "type": "custom",
+        "value": "emergency_explore_used"
+      }
+    },
+    {
+      "id": "survived_famine",
+      "name": "劫后余生",
+      "description": "食物归零后，圣所成功恢复生机",
+      "icon": "🌾",
+      "condition": {
+        "type": "custom",
+        "value": "survived_famine"
+      }
+    },
+    {
+      "id": "all_archives_union",
+      "name": "万卷归藏",
+      "description": "跨周目累计归档100条记忆碎片",
+      "icon": "📚",
+      "category": "collection",
+      "hidden": false,
+      "condition": {
+        "type": "custom",
+        "value": 100
+      }
+    },
+    {
+      "id": "conflict_resolver",
+      "name": "抉择者",
+      "description": "第一次经历叙事冲突（归档一条目导致另一条消失）。",
+      "icon": "⚖️",
+      "category": "challenge",
+      "hidden": false,
+      "condition": {
+        "type": "custom",
+        "value": "first_conflict"
+      }
+    },
+    {
+      "id": "deep_archivist",
+      "name": "深度挖掘",
+      "description": "完成 5 次深度归档。",
+      "icon": "🔍",
+      "category": "collection",
+      "hidden": false,
+      "condition": {
+        "type": "custom",
+        "value": "deep_archive_count"
+      }
+    },
+    {
+      "id": "bot_master",
+      "name": "机械守夜人",
+      "description": "同时拥有 5 台工程机器人。",
+      "icon": "🤖",
+      "category": "challenge",
+      "hidden": false,
+      "condition": {
+        "type": "custom",
+        "value": "max_bots"
+      }
+    },
+    {
+      "id": "theme_master",
+      "name": "归档专家",
+      "description": "在 12 间存储室中各归档至少 1 条主题匹配条目。",
+      "icon": "📚",
+      "category": "collection",
+      "hidden": false,
+      "condition": {
+        "type": "custom",
+        "value": "all_vaults_theme"
+      }
+    }
+  ]
 }

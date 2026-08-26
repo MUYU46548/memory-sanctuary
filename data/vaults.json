@@ -8,7 +8,13 @@
       "priority": "high",
       "color": "#1a2a4a",
       "accentColor": "#4a6a9a",
-      "description": "萨拉达斯语系的语法结构、词汇表与音韵规则。"
+      "description": "萨拉达斯语系的语法结构、词汇表与音韵规则。",
+      "themeTags": [
+        "language",
+        "text"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     },
     {
       "id": 2,
@@ -18,7 +24,13 @@
       "priority": "high",
       "color": "#3a2a1a",
       "accentColor": "#9a7a4a",
-      "description": "从城邦建立到末日降临，萨拉达斯文明的关键历史节点。"
+      "description": "从城邦建立到末日降临，萨拉达斯文明的关键历史节点。",
+      "themeTags": [
+        "history",
+        "document"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     },
     {
       "id": 3,
@@ -28,7 +40,13 @@
       "priority": "high",
       "color": "#4a1a1a",
       "accentColor": "#9a4a4a",
-      "description": "末日降临的记录——光雨、地裂、大气消散。"
+      "description": "末日降临的记录——光雨、地裂、大气消散。",
+      "themeTags": [
+        "disaster",
+        "record"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     },
     {
       "id": 4,
@@ -38,7 +56,14 @@
       "priority": "medium",
       "color": "#2a1a3a",
       "accentColor": "#7a4a9a",
-      "description": "壁画、雕塑、乐曲与舞蹈。"
+      "description": "壁画、雕塑、乐曲与舞蹈。",
+      "themeTags": [
+        "art",
+        "audio",
+        "music"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     },
     {
       "id": 5,
@@ -48,7 +73,13 @@
       "priority": "medium",
       "color": "#1a3a2a",
       "accentColor": "#4a9a7a",
-      "description": "对存在、死亡、星空与永恒的思考。"
+      "description": "对存在、死亡、星空与永恒的思考。",
+      "themeTags": [
+        "philosophy",
+        "religion"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     },
     {
       "id": 6,
@@ -58,7 +89,13 @@
       "priority": "high",
       "color": "#1a3a4a",
       "accentColor": "#4a9aaa",
-      "description": "天文观测、数学原理、工程图纸。"
+      "description": "天文观测、数学原理、工程图纸。",
+      "themeTags": [
+        "science",
+        "tech"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     },
     {
       "id": 7,
@@ -68,7 +105,13 @@
       "priority": "medium",
       "color": "#1a3a1a",
       "accentColor": "#4a9a4a",
-      "description": "萨拉达斯星球的动植物志与气候记录。"
+      "description": "萨拉达斯星球的动植物志与气候记录。",
+      "themeTags": [
+        "ecology",
+        "nature"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     },
     {
       "id": 8,
@@ -78,7 +121,13 @@
       "priority": "medium",
       "color": "#2a2a2a",
       "accentColor": "#7a7a7a",
-      "description": "城邦法典、议会记录、契约文书。"
+      "description": "城邦法典、议会记录、契约文书。",
+      "themeTags": [
+        "law",
+        "governance"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     },
     {
       "id": 9,
@@ -88,7 +137,13 @@
       "priority": "low",
       "color": "#3a3a1a",
       "accentColor": "#9a9a4a",
-      "description": "平民的日记、食谱、玩具与家书。"
+      "description": "平民的日记、食谱、玩具与家书。",
+      "themeTags": [
+        "daily",
+        "life"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     },
     {
       "id": 10,
@@ -98,7 +153,13 @@
       "priority": "medium",
       "color": "#3a2a2a",
       "accentColor": "#9a7a7a",
-      "description": "从地下居所到穹顶圣所，萨拉达斯人的建造智慧。"
+      "description": "从地下居所到穹顶圣所，萨拉达斯人的建造智慧。",
+      "themeTags": [
+        "architecture",
+        "engineering"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     },
     {
       "id": 11,
@@ -108,7 +169,13 @@
       "priority": "medium",
       "color": "#2a1a2a",
       "accentColor": "#9a4a7a",
-      "description": "草药学、解剖记录、生育与死亡。"
+      "description": "草药学、解剖记录、生育与死亡。",
+      "themeTags": [
+        "medicine",
+        "biology"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     },
     {
       "id": 12,
@@ -118,7 +185,13 @@
       "priority": "high",
       "color": "#0a0a3a",
       "accentColor": "#4a4a9a",
-      "description": "星图、历法、轨道计算。"
+      "description": "星图、历法、轨道计算。",
+      "themeTags": [
+        "astronomy",
+        "cosmos"
+      ],
+      "themeBonus": 0.2,
+      "themePenalty": 0.3
     }
   ]
 }

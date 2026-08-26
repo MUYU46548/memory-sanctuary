@@ -98,8 +98,8 @@
         "type": "foodBoost",
         "amount": 4
       }
-      },
-      {
+    },
+    {
       "id": "proj_hunting",
       "name": "定期狩猎",
       "description": "派遣小队外出狩猎，每周补充食物。可重复进行。",
@@ -113,8 +113,8 @@
         "type": "foodBoost",
         "amount": 3
       }
-      },
-      {
+    },
+    {
       "id": "proj_rainwater",
       "name": "收集雨水",
       "description": "利用圣所屋顶收集雨水并净化，补充环境与食物。",
@@ -128,8 +128,8 @@
         "type": "foodBoost",
         "amount": 2
       }
-      },
-      {
+    },
+    {
       "id": "proj_scavenge",
       "name": "废墟搜寻",
       "description": "派遣小队搜寻废弃建筑中的物资。可重复进行。",
@@ -144,7 +144,7 @@
         "resource": "food",
         "amount": 5
       }
-      },
+    },
     {
       "id": "proj_kitchen",
       "name": "共享食堂",
@@ -209,6 +209,21 @@
           "arch_final_002",
           "arch_final_003"
         ]
+      }
+    },
+    {
+      "id": "proj_bot_factory",
+      "name": "建造工程机器人",
+      "description": "建造一台工程机器人，自动维护圣所，减少资源衰减。每台机器人每回合消耗 2 能源，减少 10% 衰减（最多 50%）。",
+      "availableAfter": 6,
+      "duration": 3,
+      "repeatable": true,
+      "cost": {
+        "energy": 30,
+        "media": 20
+      },
+      "effect": {
+        "type": "buildBot"
       }
     }
   ]

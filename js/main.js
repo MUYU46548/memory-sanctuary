@@ -263,14 +263,23 @@ async function loadGameData() {
         MemorySanctuary.data.guardianEvents = [];
     }
 
+    try {
+        const guardianStoriesRes = await fetch('data/guardian_stories.json');
+        MemorySanctuary.data.guardianStories = (await guardianStoriesRes.json()).guardian_stories || [];
+        if (DEBUG) console.log(`[数据] ${MemorySanctuary.data.guardianStories.length} 个守护者故事`);
+    } catch (e) {
+        if (DEBUG) console.warn('[数据] guardian_stories.json 加载失败');
+        MemorySanctuary.data.guardianStories = [];
+    }
+    
     if (DEBUG) console.log(`[数据] ${MemorySanctuary.data.archives.length}条目, ${MemorySanctuary.data.vaults.length}存储室, ${MemorySanctuary.data.guardians.length}守护者, ${MemorySanctuary.data.events.length}随机事件, ${MemorySanctuary.data.scheduledEvents.length}调度事件, ${MemorySanctuary.data.explorations.length}勘探点, ${MemorySanctuary.data.projects.length}项目`);
 }
 
 function initGameState() {
     MemorySanctuary.state = {
-        resources: { energy: 150, media: 100, environment: 95, food: 50 },
+        resources: { energy: 150, media: 100, environment: 95, food: 50, engineeringBots: 2 },
         ongoingEffects: [],
-        resourceChanges: { energy: 0, media: 0, environment: 0, food: 0 },
+        resourceChanges: { energy: 0, media: 0, environment: 0, food: 0, engineeringBots: 0 },
         week: 1,
         chapter: 1,
         completedArchives: [],
@@ -312,7 +321,21 @@ function initGameState() {
         batchArchiveCount: 0,
         batchArchiveUsedThisRun: false,
         nextWeekDecayPenalty: 0,
-        modules: {}
+        modules: {},
+        // 工程机器人系统
+        botFactoryActive: false,
+        botMaintenanceCost: 0,
+        // 跨周目继承
+        inheritedProjects: [],
+        inheritedVaultUsage: {},
+        memoryEchoSelection: [],
+        deepArchiveCount: 0,
+        conflictLog: [],
+        consecutiveSkips: 0,
+        // 叙事连锁
+        narrativeFlags: ['intro_complete'],
+        sacrificeHistory: [],
+        loopCluesFound: []
     };
     
     MemorySanctuary.data.vaults.forEach(vault => {
@@ -635,11 +658,12 @@ function initSaveData() {
 
 function getSettings() {
     const raw = localStorage.getItem('memory-sanctuary-settings');
-    if (!raw) return { skipConfirm: false, showResult: true };
+    if (!raw) return { skipConfirm: false, showResult: true, vnGuardianDialogue: true, animationSpeed: 100, fontSize: 17 };
     try {
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        return { skipConfirm: false, showResult: true, vnGuardianDialogue: true, animationSpeed: 100, fontSize: 17, ...parsed };
     } catch {
-        return { skipConfirm: false, showResult: true };
+        return { skipConfirm: false, showResult: true, vnGuardianDialogue: true, animationSpeed: 100, fontSize: 17 };
     }
 }
 
@@ -852,6 +876,46 @@ function initSettings() {
                     }
                 }
             }
+        });
+    }
+    
+    // 动画速度滑块
+    const animationSpeedSlider = document.getElementById('setting-animation-speed');
+    const animationSpeedValue = document.getElementById('animation-speed-value');
+    if (animationSpeedSlider) {
+        animationSpeedSlider.value = (getSettings().animationSpeed ?? 100);
+        if (animationSpeedValue) {
+            animationSpeedValue.textContent = animationSpeedSlider.value + '%';
+        }
+        animationSpeedSlider.addEventListener('input', () => {
+            const val = parseInt(animationSpeedSlider.value, 10);
+            if (animationSpeedValue) {
+                animationSpeedValue.textContent = val + '%';
+            }
+            const s = getSettings();
+            s.animationSpeed = val;
+            localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
+            document.documentElement.style.setProperty('--animation-speed', (val / 100).toFixed(2));
+        });
+    }
+    
+    // 字体大小滑块
+    const fontSizeSlider = document.getElementById('setting-font-size');
+    const fontSizeValue = document.getElementById('font-size-value');
+    if (fontSizeSlider) {
+        fontSizeSlider.value = (getSettings().fontSize ?? 17);
+        if (fontSizeValue) {
+            fontSizeValue.textContent = fontSizeSlider.value + 'px';
+        }
+        fontSizeSlider.addEventListener('input', () => {
+            const val = parseInt(fontSizeSlider.value, 10);
+            if (fontSizeValue) {
+                fontSizeValue.textContent = val + 'px';
+            }
+            const s = getSettings();
+            s.fontSize = val;
+            localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
+            document.documentElement.style.fontSize = val + 'px';
         });
     }
 }

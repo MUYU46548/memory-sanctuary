@@ -852,6 +852,17 @@ function drawVaultDoors(ctx, config, theme) {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(String(vault.id).padStart(2, '0'), doorX, doorY);
+        
+        // 工程机器人状态指示（小圆点）
+        if (MemorySanctuary.state && index === 0) {
+            const botCount = MemorySanctuary.state.resources.engineeringBots || 0;
+            if (botCount > 0) {
+                ctx.beginPath();
+                ctx.arc(doorX + doors.radius - 2, doorY - doors.radius + 2, 3, 0, Math.PI * 2);
+                ctx.fillStyle = MemorySanctuary.state.botBlackoutLogged ? '#e74c3c' : '#6bb8c9';
+                ctx.fill();
+            }
+        }
     });
 }
 

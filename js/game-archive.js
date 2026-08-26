@@ -47,7 +47,79 @@ function canArchiveEntry(entry) {
 }
 
 
-function archiveEntry(archiveId) {
+/**
+ * 计算条目在目标存储室的实际消耗（含主题加成/惩罚）
+ */
+function getEffectiveCost(entry, vault) {
+    if (!vault || !entry) return { energy: entry.energyCost, media: entry.dataCost };
+    
+    const entryType = entry.type || '';
+    const themeTags = vault.themeTags || [];
+    const isMatch = themeTags.includes(entryType);
+    
+    let modifier = 1.0;
+    if (isMatch) {
+        modifier = 1.0 - (vault.themeBonus || 0);
+    } else {
+        modifier = 1.0 + (vault.themePenalty || 0);
+    }
+    
+    return {
+        energy: Math.round(entry.energyCost * modifier),
+        media: Math.round(entry.dataCost * modifier),
+        modifier: modifier,
+        isMatch: isMatch
+    };
+}
+
+/**
+ * 检查条目冲突：归档某条是否导致另一条消失
+ */
+function checkArchiveConflict(archiveId) {
+    const entry = getArchiveById(archiveId);
+    if (!entry || !entry.conflictsWith) return null;
+    
+    const conflictId = entry.conflictsWith;
+    const conflictEntry = getArchiveById(conflictId);
+    if (!conflictEntry) return null;
+    
+    // 如果冲突条目已归档，无冲突
+    if (isArchiveCompleted(conflictId)) return null;
+    
+    // 如果冲突条目已过期，无冲突
+    if (conflictEntry.expired) return null;
+    
+    return conflictEntry;
+}
+
+/**
+ * 使冲突条目消失（归档互斥条目时调用）
+ */
+function destroyConflictEntry(conflictId) {
+    const conflictEntry = getArchiveById(conflictId);
+    if (!conflictEntry) return;
+    
+    conflictEntry.expired = true;
+    addLog(`⚠️ 由于叙事冲突，「${conflictEntry.title}」已永久消失。`, 'warning');
+    
+    // 记录冲突事件
+    if (!MemorySanctuary.state.conflictLog) {
+        MemorySanctuary.state.conflictLog = [];
+    }
+    MemorySanctuary.state.conflictLog.push({
+        week: MemorySanctuary.state.week,
+        kept: MemorySanctuary.state.completedArchives[MemorySanctuary.state.completedArchives.length - 1],
+        destroyed: conflictId
+    });
+}
+
+/**
+ * 归档仪式类型
+ * standard: 标准归档（正常消耗）
+ * deep: 深度归档（额外消耗10能源，解锁隐藏叙事）
+ * quick: 快速归档（消耗减半，无守护者反应）
+ */
+function archiveEntry(archiveId, ritualType = 'standard') {
     const entry = getArchiveById(archiveId);
     const state = MemorySanctuary.state;
     
@@ -57,85 +129,116 @@ function archiveEntry(archiveId) {
     }
     
     if (isArchiveCompleted(archiveId)) {
-        addLog(`条目 "${entry.title}" 已被归档。`, 'system');
+        addLog(`条目 \"${entry.title}\" 已被归档。`, 'system');
         renderAll();
         return false;
     }
     
     // 圣所衰竭：介质耗尽时无法录入（紧急归档除外）
-    if (!MemorySanctuary.state.emergencyArchiveActive && MemorySanctuary.state.deterioration && MemorySanctuary.state.deterioration.media) {
+    if (!state.emergencyArchiveActive && state.deterioration && state.deterioration.media) {
         addLog('存储介质耗尽，无法录入新条目。请补充介质后再试。', 'system');
         return false;
     }
     
-    const isEmergencyArchive = MemorySanctuary.state.emergencyArchiveActive;
+    const isEmergencyArchive = state.emergencyArchiveActive;
     const isBatchMode = state.batchArchiveMode;
+    
+    // 计算实际消耗（含主题加成/惩罚）
+    const vault = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
+    const effectiveCost = getEffectiveCost(entry, vault);
+    
+    // 根据仪式类型调整消耗
+    let energyCost = effectiveCost.energy;
+    let mediaCost = effectiveCost.media;
+    let extraEnergyCost = 0;
+    
+    if (ritualType === 'deep') {
+        extraEnergyCost = 10;
+    } else if (ritualType === 'quick') {
+        energyCost = Math.ceil(energyCost * 0.5);
+        mediaCost = Math.ceil(mediaCost * 0.5);
+    }
     
     // 紧急归档协议：跳过介质检查
     if (isEmergencyArchive) {
-        if (state.resources.energy < entry.energyCost * 2) {
-            addLog(`能源不足，无法介质豁免 "${entry.title}"。`, 'system');
-            MemorySanctuary.state.emergencyArchiveActive = false;
+        if (state.resources.energy < energyCost * 2 + extraEnergyCost) {
+            addLog(`能源不足，无法介质豁免 \"${entry.title}\"。`, 'system');
+            state.emergencyArchiveActive = false;
             return false;
         }
     } else {
-        if (!hasResources(entry.energyCost, entry.dataCost)) {
-            addLog(`资源不足，无法归档 "${entry.title}"。`, 'system');
-            return false;
+        const totalEnergy = energyCost + extraEnergyCost;
+        const totalMedia = mediaCost;
+        if (ritualType === 'quick') {
+            // 快速归档只需50%资源
+            if (!hasResources(totalEnergy, totalMedia)) {
+                addLog(`资源不足，无法归档 \"${entry.title}\"。`, 'system');
+                return false;
+            }
+        } else {
+            if (!hasResources(totalEnergy, totalMedia)) {
+                addLog(`资源不足，无法归档 \"${entry.title}\"。`, 'system');
+                return false;
+            }
         }
     }
     
-    const vault = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
     if (!vault) {
         addLog(`错误：找不到存储室 ${entry.vault}`, 'system');
         return false;
     }
     
-    const currentUsage = MemorySanctuary.state.vaultUsage[vault.id] || 0;
+    const currentUsage = state.vaultUsage[vault.id] || 0;
     
     // 紧急归档协议：跳过容量检查（不消耗介质）
-    if (!isEmergencyArchive && currentUsage + entry.dataCost > vault.capacity) {
-        addLog(`存储室 "${vault.name}" 容量不足。`, 'system');
+    if (!isEmergencyArchive && currentUsage + mediaCost > vault.capacity) {
+        addLog(`存储室 \"${vault.name}\" 容量不足。`, 'system');
         return false;
     }
     
     // 紧急归档协议：本回合归档不消耗介质（能源消耗加倍）
     if (isEmergencyArchive) {
-        if (!consumeResources(entry.energyCost * 2, 0)) return false;
+        if (!consumeResources(energyCost * 2 + extraEnergyCost, 0)) return false;
     } else {
         // 食物归零惩罚：归档能源消耗 +20%
         let foodPenalty = 0;
-        if (MemorySanctuary.state.resources.food <= 0) {
-            foodPenalty = Math.ceil(entry.energyCost * 0.2);
+        if (state.resources.food <= 0) {
+            foodPenalty = Math.ceil(energyCost * 0.2);
         }
-        if (!consumeResources(entry.energyCost + foodPenalty, entry.dataCost)) return false;
+        if (!consumeResources(energyCost + foodPenalty + extraEnergyCost, mediaCost)) return false;
         if (foodPenalty > 0) {
             addLog(`🍂 饥荒惩罚：归档能耗 +${foodPenalty}（食物耗尽）`, 'warning');
         }
     }
     
     // 介质豁免协议激活后立即关闭
-    if (MemorySanctuary.state.emergencyArchiveActive) {
-        MemorySanctuary.state.emergencyArchiveActive = false;
+    if (state.emergencyArchiveActive) {
+        state.emergencyArchiveActive = false;
         addLog('📼 介质豁免已结束（本回合效果已使用）。', 'system');
     }
     
-    MemorySanctuary.state.completedArchives.push(archiveId);
+    state.completedArchives.push(archiveId);
     // 紧急归档不消耗介质，所以不增加 vaultUsage
     if (!isEmergencyArchive) {
-        MemorySanctuary.state.vaultUsage[vault.id] = currentUsage + entry.dataCost;
+        state.vaultUsage[vault.id] = currentUsage + mediaCost;
+    }
+    
+    // 检查冲突：归档此条目是否导致另一条消失
+    const conflict = checkArchiveConflict(archiveId);
+    if (conflict) {
+        destroyConflictEntry(conflict.id);
     }
     
     // 批量归档模式：不推进时间
     if (isBatchMode) {
         state.batchArchiveCount = (state.batchArchiveCount || 0) + 1;
-        addLog(`📦 批量归档 (${state.batchArchiveCount}/3)："${entry.title}"`, 'success');
+        addLog(`📦 批量归档 (${state.batchArchiveCount}/3)：\"${entry.title}\"`, 'success');
         
         // 音效
         if (typeof AudioSystem !== 'undefined') AudioSystem.playArchiveChime();
         
         // 守护者反应（仅前2次，第3次批量结束后统一显示）
-        if (state.batchArchiveCount < 3) {
+        if (state.batchArchiveCount < 3 && ritualType !== 'quick') {
             const guardianId = Object.keys(entry.guardianReactions || {})[0];
             if (guardianId && entry.guardianReactions[guardianId]) {
                 addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
@@ -154,22 +257,32 @@ function archiveEntry(archiveId) {
     // 正常模式：推进时间
     advanceTime(1);
     
-    addLog(`已完成归档："${entry.title}"`, 'success');
+    // 深度归档日志
+    if (ritualType === 'deep') {
+        addLog(`✨ 深度归档：\"${entry.title}\"（额外消耗 10 能源解锁隐藏叙事）`, 'success');
+        state.deepArchiveCount = (state.deepArchiveCount || 0) + 1;
+    } else if (ritualType === 'quick') {
+        addLog(`⚡ 快速归档：\"${entry.title}\"（消耗减半）`, 'success');
+    } else {
+        addLog(`已完成归档：\"${entry.title}\"`, 'success');
+    }
     
     // 音效：归档成功风铃
     if (typeof AudioSystem !== 'undefined') AudioSystem.playArchiveChime();
     
-    // 守护者反应
-    const guardianId = Object.keys(entry.guardianReactions || {})[0];
-    if (guardianId && entry.guardianReactions[guardianId]) {
-        addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
-        showGuardianDialogue(guardianId, 'archive');
+    // 守护者反应（快速归档无反应）
+    if (ritualType !== 'quick') {
+        const guardianId = Object.keys(entry.guardianReactions || {})[0];
+        if (guardianId && entry.guardianReactions[guardianId]) {
+            addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
+            showGuardianDialogue(guardianId, 'archive');
+        }
     }
     
     // 归档后展示内容（根据设置决定是否显示）
     const settings = (typeof getSettings === 'function') ? getSettings() : { showResult: true };
     if (settings.showResult) {
-        showArchiveCompleteModal(entry);
+        showArchiveCompleteModal(entry, ritualType);
     }
     
     // 检查叙事线索链
@@ -640,7 +753,7 @@ function aiAssistArchive(archiveId) {
 }
 
 
-function closeConfirmModal(archiveId, confirmed) {
+function closeConfirmModal(archiveId, confirmed, ritualType = 'standard') {
     const overlay = document.getElementById('modal-overlay');
     const confirmContainer = document.getElementById('modal-confirm-container');
     const closeBtn = document.getElementById('modal-close');
@@ -655,12 +768,12 @@ function closeConfirmModal(archiveId, confirmed) {
     }
     
     if (confirmed && archiveId) {
-        archiveEntry(archiveId);
+        archiveEntry(archiveId, ritualType);
     }
 }
 
 
-function showArchiveCompleteModal(entry) {
+function showArchiveCompleteModal(entry, ritualType = 'standard') {
     const overlay = document.getElementById('modal-overlay');
     const title = document.getElementById('modal-title');
     const content = document.getElementById('modal-content');
@@ -671,6 +784,12 @@ function showArchiveCompleteModal(entry) {
     
     let modalContent = `${entry.description}\n\n`;
     modalContent += `「${entry.content.substring(0, 120)}...」\n\n`;
+    
+    // 深度归档：解锁隐藏叙事
+    if (ritualType === 'deep' && entry.hiddenContent) {
+        modalContent += `━━ 隐藏叙事 ━━\n`;
+        modalContent += `${entry.hiddenContent}\n\n`;
+    }
     
     if (entry.guardianReactions) {
         const reactions = Object.entries(entry.guardianReactions);

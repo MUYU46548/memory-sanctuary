@@ -337,6 +337,18 @@ function startNewGame(slot, isNGPlus, moduleId) {
 
     if (isNGPlus) {
         applyNGPlusBonuses();
+        // 应用跨周目守护者记忆加成
+        if (typeof applyCrossPlaythroughGuardianBonus === 'function') {
+            applyCrossPlaythroughGuardianBonus();
+        }
+        // 应用圣所状态继承
+        if (typeof applySanctuaryInheritance === 'function') {
+            applySanctuaryInheritance();
+        }
+        // 触发叙事连锁事件
+        if (typeof triggerNarrativeChainEvents === 'function') {
+            triggerNarrativeChainEvents();
+        }
     }
 
     // 设置当前模块

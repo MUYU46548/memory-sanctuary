@@ -149,6 +149,13 @@ function applyProjectEffect(project, isCompletion) {
                 addLog('🤖 档案AI助理已上线：每回合可请求它辅助归档一条（费用减半，环境稳定度 -5）。', 'success');
             }
             break;
+        case 'buildBot':
+            // 建造工程机器人
+            if (isCompletion) {
+                state.resources.engineeringBots = (state.resources.engineeringBots || 0) + 1;
+                addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。每台减少 10% 衰减，每回合消耗 2 能源。`, 'success');
+            }
+            break;
     }
 
     // Guardian bonus

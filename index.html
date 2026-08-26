@@ -115,6 +115,11 @@
                     <span class="res-label">食物</span>
                     <span class="res-value" id="food-value">50</span>
                 </div>
+                <div class="resource" id="res-bots">
+                    <span class="res-icon">🔧</span>
+                    <span class="res-label">机器人</span>
+                    <span class="res-value" id="bots-value">2</span>
+                </div>
                 <button id="theme-toggle" title="切换主题">◐</button>
                 <button id="mute-toggle" title="静音切换">🔊</button>
                 <button id="seal-topbar-btn" class="hidden" title="">封印圣所</button>
@@ -131,58 +136,81 @@
 
             <!-- 右侧：操作面板 -->
             <section id="action-panel">
-                <!-- 事件通知 -->
-                <div id="event-panel" class="hidden" role="alert" aria-live="polite">
-                    <div id="event-banner">
-                        <div class="event-title" id="event-title"></div>
-                        <div class="event-desc" id="event-desc"></div>
-                        <div class="event-choices" id="event-choices"></div>
-                    </div>
+                <!-- 标签页导航 -->
+                <div class="action-tabs">
+                    <button class="action-tab active" data-tab="archive">📜 归档</button>
+                    <button class="action-tab" data-tab="guardian">🦅 守护者</button>
+                    <button class="action-tab" data-tab="vault">🏛️ 存储室</button>
                 </div>
 
-                <!-- 守护者面板 -->
-                <div id="guardian-panel">
-                    <h2 class="panel-title">守护者</h2>
-                    <div class="guardian-display">
-                        <div class="guardian-avatar" id="guardian-avatar">🦅</div>
-                        <div class="guardian-info">
-                            <div class="guardian-name-row">
-                                <div class="guardian-name" id="guardian-name">缇卡</div>
-                                <div class="guardian-mood" id="guardian-mood">🤍</div>
-                                <div class="guardian-fatigue hidden" id="guardian-fatigue"></div>
-                            </div>
-                            <div class="guardian-role" id="guardian-role">首席歌者</div>
-                            <div class="guardian-dialogue" id="guardian-dialogue">……我准备好了。让我们开始吧。</div>
+                <!-- 归档条目标签页 -->
+                <div class="action-tab-content active" id="tab-archive">
+                    <!-- 事件通知 -->
+                    <div id="event-panel" class="hidden" role="alert" aria-live="polite">
+                        <div id="event-banner">
+                            <div class="event-title" id="event-title"></div>
+                            <div class="event-desc" id="event-desc"></div>
+                            <div class="event-choices" id="event-choices"></div>
                         </div>
                     </div>
-                    <!-- 守护者全局视图 -->
-                    <div class="guardian-overview" id="guardian-overview"></div>
-                    <!-- 守护者互动菜单 -->
-                    <div id="guardian-boost-hint" class="guardian-boost-hint hidden">🎁 补给品可分发：消耗 8 食物，全员士气 +2（每周一次）。点击头像打开菜单。</div>
-                    <div id="guardian-menu" class="hidden">
-                        <button class="guardian-menu-item" id="guardian-talk">💬 交谈</button>
-                        <button class="guardian-menu-item" id="guardian-recommend">📌 推荐归档</button>
-                        <button class="guardian-menu-item" id="guardian-boost" title="消耗 8 食物为所有守护者提供额外补给，每周限一次">🎁 分发补给品</button>
-                        <button class="guardian-menu-item" id="guardian-detail">📖 详情</button>
+
+                    <!-- 待归档条目 -->
+                    <div id="archive-entries" class="panel">
+                        <h2 class="panel-title">
+                            待归档条目
+                            <button id="batch-archive-btn" class="panel-title-btn locked" title="紧急归档协议：第30周后解锁，一回合可归档最多3条，但会付出代价">🚨 紧急归档 (0/30)</button>
+                        </h2>
+                        <div id="entry-list"></div>
                     </div>
-                    <!-- 守护者详情展开区 -->
-                    <div class="guardian-detail-panel hidden" id="guardian-detail-panel"></div>
                 </div>
 
-                <!-- 存储室状态 -->
-                <div id="vault-status" class="panel">
-                    <h2 class="panel-title">存储室</h2>
-                    <div id="vault-tabs"></div>
-                    <div id="vault-list"></div>
+                <!-- 守护者标签页 -->
+                <div class="action-tab-content" id="tab-guardian">
+                    <!-- 守护者面板 -->
+                    <div id="guardian-panel">
+                        <h2 class="panel-title">守护者</h2>
+                        <div class="guardian-display">
+                            <div class="guardian-avatar" id="guardian-avatar">🦅</div>
+                            <div class="guardian-info">
+                                <div class="guardian-name-row">
+                                    <div class="guardian-name" id="guardian-name">缇卡</div>
+                                    <div class="guardian-mood" id="guardian-mood">🤍</div>
+                                    <div class="guardian-fatigue hidden" id="guardian-fatigue"></div>
+                                </div>
+                                <div class="guardian-role" id="guardian-role">首席歌者</div>
+                                <div class="guardian-dialogue" id="guardian-dialogue">……我准备好了。让我们开始吧。</div>
+                            </div>
+                        </div>
+                        <!-- 守护者全局视图 -->
+                        <div class="guardian-overview" id="guardian-overview"></div>
+                        <!-- 守护者故事进度 -->
+                        <div class="guardian-story-progress" id="guardian-story-progress"></div>
+                        <!-- 守护者互动菜单 -->
+                        <div id="guardian-boost-hint" class="guardian-boost-hint hidden">🎁 补给品可分发：消耗 8 食物，全员士气 +2（每周一次）。点击头像打开菜单。</div>
+                        <div id="guardian-menu" class="hidden">
+                            <button class="guardian-menu-item" id="guardian-talk">💬 交谈</button>
+                            <button class="guardian-menu-item" id="guardian-recommend">📌 推荐归档</button>
+                            <button class="guardian-menu-item" id="guardian-boost" title="消耗 8 食物为所有守护者提供额外补给，每周限一次">🎁 分发补给品</button>
+                            <button class="guardian-menu-item" id="guardian-detail">📖 详情</button>
+                        </div>
+                        <!-- 守护者详情展开区 -->
+                        <div class="guardian-detail-panel hidden" id="guardian-detail-panel"></div>
+                    </div>
+                    
+                    <!-- 工程机器人面板 -->
+                    <div id="bots-panel" class="panel">
+                        <div class="bots-panel-content"></div>
+                    </div>
                 </div>
 
-                <!-- 待归档条目 -->
-                <div id="archive-entries" class="panel">
-                    <h2 class="panel-title">
-                        待归档条目
-                        <button id="batch-archive-btn" class="panel-title-btn locked" title="紧急归档协议：第30周后解锁，一回合可归档最多3条，但会付出代价">🚨 紧急归档 (0/30)</button>
-                    </h2>
-                    <div id="entry-list"></div>
+                <!-- 存储室标签页 -->
+                <div class="action-tab-content" id="tab-vault">
+                    <!-- 存储室状态 -->
+                    <div id="vault-status" class="panel">
+                        <h2 class="panel-title">存储室</h2>
+                        <div id="vault-tabs"></div>
+                        <div id="vault-list"></div>
+                    </div>
                 </div>
             </section>
         </main>
@@ -221,39 +249,29 @@
 
         <!-- 底部功能栏 -->
         <footer id="func-bar">
-            <button id="title-btn" title="返回标题">
-                <span>标题</span>
-            </button>
-            <button id="skip-btn" title="跳过回合">
-                <span>跳过</span>
-            </button>
-            <button id="atlas-btn" title="文明图谱">
-                <span>图谱</span>
-            </button>
-            <button id="explore-btn" title="地表勘探" disabled>
-                <span>勘探</span>
-            </button>
-            <button id="project-btn" title="圣所项目" disabled>
-                <span>项目</span>
-            </button>
-            <button id="emergency-btn" title="应急协议" disabled>
-                <span>应急</span>
-            </button>
-            <button id="save-btn" title="存档">
-                <span>存档</span>
-            </button>
-            <button id="load-btn" title="读档">
-                <span>读档</span>
-            </button>
-            <button id="help-btn" title="帮助">
-                <span>帮助</span>
-            </button>
-            <button id="about-btn" title="关于">
-                <span>关于</span>
-            </button>
-            <button id="settings-btn" title="设置">
-                <span>⚙️</span>
-            </button>
+            <!-- 游戏操作组 -->
+            <div class="func-bar-group">
+                <button id="skip-btn" title="跳过回合">⏭️ 跳过</button>
+                <button id="explore-btn" title="地表勘探" disabled>🔭 勘探</button>
+                <button id="project-btn" title="圣所项目" disabled>🏗️ 项目</button>
+                <button id="emergency-btn" title="应急协议" disabled>⚡ 应急</button>
+            </div>
+            <!-- 视图组 -->
+            <div class="func-bar-group">
+                <button id="atlas-btn" title="文明图谱">🗺️ 图谱</button>
+            </div>
+            <!-- 存档组 -->
+            <div class="func-bar-group">
+                <button id="save-btn" title="存档">💾 存档</button>
+                <button id="load-btn" title="读档">📂 读档</button>
+            </div>
+            <!-- 系统组 -->
+            <div class="func-bar-group">
+                <button id="title-btn" title="返回标题">🏠 标题</button>
+                <button id="settings-btn" title="设置">⚙️</button>
+                <button id="help-btn" title="帮助">❓</button>
+                <button id="about-btn" title="关于">ℹ️</button>
+            </div>
         </footer>
     </div>
 
@@ -442,6 +460,26 @@
                         <button class="settings-theme-btn" id="theme-light" data-theme="light">☀️ 亮色</button>
                     </div>
                     <div class="settings-desc">切换界面主题。当前主题将高亮显示。</div>
+                </div>
+                <div class="settings-item">
+                    <label class="settings-label">
+                        <span>动画速度</span>
+                    </label>
+                    <div class="settings-volume-row">
+                        <input type="range" id="setting-animation-speed" min="0" max="200" value="100" class="settings-slider">
+                        <span class="settings-volume-value" id="animation-speed-value">100%</span>
+                    </div>
+                    <div class="settings-desc">调整动画过渡速度。0% 为关闭动画，200% 为双倍速。</div>
+                </div>
+                <div class="settings-item">
+                    <label class="settings-label">
+                        <span>字体大小</span>
+                    </label>
+                    <div class="settings-volume-row">
+                        <input type="range" id="setting-font-size" min="14" max="20" value="17" class="settings-slider">
+                        <span class="settings-volume-value" id="font-size-value">17px</span>
+                    </div>
+                    <div class="settings-desc">调整基础字体大小（14-20px）。</div>
                 </div>
             </div>
         </div>

@@ -31,6 +31,23 @@ function initUI() {
         });
     }
 
+    // 标签页切换
+    document.querySelectorAll('.action-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.dataset.tab;
+            
+            // 切换标签按钮状态
+            document.querySelectorAll('.action-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // 切换内容显示
+            document.querySelectorAll('.action-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('tab-' + tabName).classList.add('active');
+        });
+    });
+
     // Initialize title screen panels (must be here because ui.js loads after main.js)
     initAchievementsPanel();
     initCodexPanel();
@@ -171,6 +188,29 @@ function initProjectPanel() {
     }
 }
 
+// ============================================================
+// 渲染调度器 — 防止 renderAll 在单帧内被多次调用
+// ============================================================
+let renderScheduled = false;
+let renderFullScheduled = false;
+
+function requestRender(full = false) {
+    if (full) {
+        renderFullScheduled = true;
+    }
+    if (renderScheduled) return;
+    renderScheduled = true;
+    requestAnimationFrame(() => {
+        renderScheduled = false;
+        if (renderFullScheduled) {
+            renderFullScheduled = false;
+            renderAll();
+        } else {
+            renderAll();
+        }
+    });
+}
+
 function renderAll() {
     renderResources();
     renderWeekDisplay();
@@ -183,6 +223,8 @@ function renderAll() {
     updateEmergencyButton();
     updateBatchArchiveBtn();
     renderSealTopbarButton();
+    renderEngineeringBotsPanel();
+    renderGuardianStoryProgress();
     
     // Always keep resource changes up-to-date
     if (typeof recalculateResourceChanges === 'function') recalculateResourceChanges();
@@ -225,6 +267,7 @@ function renderSealTopbarButton() {
     const state = MemorySanctuary.state;
     const week = state.week;
     const archivedCount = state.completedArchives.length;
+    const canSeal = canSealSanctuary();
 
     // week < 16: 隐藏按钮
     if (week < 16) {
@@ -620,16 +663,24 @@ function renderResources() {
     const mediaEl = document.getElementById('media-value');
     const envEl = document.getElementById('environment-value');
     const foodEl = document.getElementById('food-value');
+    const botsEl = document.getElementById('bots-value');
     
     if (energyEl) energyEl.textContent = Math.floor(resources.energy);
     if (mediaEl) mediaEl.textContent = Math.floor(resources.media);
     if (envEl) envEl.textContent = Math.floor(resources.environment);
     if (foodEl) foodEl.textContent = Math.floor(resources.food);
+    if (botsEl) botsEl.textContent = Math.floor(resources.engineeringBots || 0);
     
     updateResourceColor('res-energy', resources.energy, 100);
     updateResourceColor('res-media', resources.media, 60);
     updateResourceColor('res-environment', resources.environment, 100);
     updateResourceColor('res-food', resources.food, 80);
+    
+    // 工程机器人状态颜色
+    if (botsEl) {
+        const botCount = resources.engineeringBots || 0;
+        botsEl.className = 'res-value ' + (botCount > 0 ? 'active' : 'inactive');
+    }
     
     // 刷新悬停提示（如果可见）
     const tooltip = document.getElementById('resource-tooltip');
@@ -682,7 +733,7 @@ function renderResources() {
             el.classList.remove('critical');
         }
     });
-
+    
     // 衰减惩罚预警（紧急归档后下周衰减+20%）
     const resPanel = document.getElementById('resource-panel');
     if (resPanel) {
@@ -692,17 +743,25 @@ function renderResources() {
             resPanel.classList.remove('decay-penalty');
         }
     }
+    
+    // 工程机器人停机警告
+    if (state.botBlackoutLogged) {
+        if (botsEl) botsEl.classList.add('bot-blackout');
+    } else {
+        if (botsEl) botsEl.classList.remove('bot-blackout');
+    }
 }
 
 function getResourceStatus() {
     const state = MemorySanctuary.state;
-    if (!state) return { energy: 0, media: 0, environment: 0, food: 0 };
+    if (!state) return { energy: 0, media: 0, environment: 0, food: 0, engineeringBots: 0 };
     
     return {
         energy: Math.max(0, state.resources.energy),
         media: Math.max(0, state.resources.media),
         environment: Math.max(0, state.resources.environment),
-        food: Math.max(0, state.resources.food || 0)
+        food: Math.max(0, state.resources.food || 0),
+        engineeringBots: state.resources.engineeringBots || 0
     };
 }
 
@@ -719,7 +778,7 @@ function updateResourceColor(elementId, value, max) {
 }
 
 function getResourceName(resource) {
-    const names = { energy: '能源', media: '介质', environment: '环境', food: '食物' };
+    const names = { energy: '能源', media: '介质', environment: '环境', food: '食物', engineeringBots: '工程机器人' };
     return names[resource] || resource;
 }
 
@@ -785,102 +844,172 @@ function renderArchiveEntries() {
     container.innerHTML = '';
     
     const vaultId = MemorySanctuary.currentVaultId;
-    const entries = getArchivesByVault(vaultId);
+    let entries = getArchivesByVault(vaultId);
     
     if (entries.length === 0) {
         container.innerHTML = '<p style="color: var(--text-dim); font-size: 0.8rem;">暂无待归档条目</p>';
         return;
     }
     
-    // Show expiring soon aggregation at top
-    const expiringSoon = entries.filter(e => {
-        if (e.expired || isArchiveCompleted(e.id) || !e.expiresAfter) return false;
-        const remaining = e.expiresAfter - MemorySanctuary.state.week;
-        return remaining <= 3 && remaining > 0;
+    // 筛选和排序控件
+    const controlsDiv = document.createElement('div');
+    controlsDiv.className = 'entry-controls';
+    controlsDiv.innerHTML = `
+        <select id="entry-sort" class="entry-select">
+            <option value="default">默认排序</option>
+            <option value="cost-asc">消耗↑</option>
+            <option value="cost-desc">消耗↓</option>
+            <option value="expiry">过期时间</option>
+            <option value="theme">主题匹配</option>
+        </select>
+        <select id="entry-filter" class="entry-select">
+            <option value="all">全部</option>
+            <option value="affordable">可归档</option>
+            <option value="expiring">即将过期</option>
+            <option value="conflict">有冲突</option>
+            <option value="hidden">有隐藏</option>
+        </select>
+    `;
+    container.appendChild(controlsDiv);
+    
+    // 获取筛选和排序设置
+    const sortBy = (MemorySanctuary.state.entrySort || 'default');
+    const filterBy = (MemorySanctuary.state.entryFilter || 'all');
+    
+    // 应用筛选
+    let filteredEntries = entries.filter(entry => {
+        if (entry.availableAfter && MemorySanctuary.state.week < entry.availableAfter) return false;
+        
+        switch (filterBy) {
+            case 'affordable':
+                return canArchiveEntry(entry);
+            case 'expiring':
+                return entry.expiresAfter && (entry.expiresAfter - MemorySanctuary.state.week) <= 3;
+            case 'conflict':
+                return checkArchiveConflict(entry.id) !== null;
+            case 'hidden':
+                return !!entry.hiddenContent;
+            default:
+                return true;
+        }
     });
     
-    if (expiringSoon.length > 0) {
-        const expiringDiv = document.createElement('div');
-        expiringDiv.className = 'expiring-soon-panel';
-        expiringDiv.innerHTML = `
-            <div class="expiring-soon-header">⚠ 即将过期</div>
-            ${expiringSoon.map(e => `<div class="expiring-soon-item">「${e.title}」— ${e.expiresAfter - MemorySanctuary.state.week}周后消失</div>`).join('')}
-        `;
-        container.appendChild(expiringDiv);
+    // 应用排序
+    switch (sortBy) {
+        case 'cost-asc':
+            filteredEntries.sort((a, b) => (a.energyCost + a.dataCost) - (b.energyCost + b.dataCost));
+            break;
+        case 'cost-desc':
+            filteredEntries.sort((a, b) => (b.energyCost + b.dataCost) - (a.energyCost + a.dataCost));
+            break;
+        case 'expiry':
+            filteredEntries.sort((a, b) => (a.expiresAfter || 999) - (b.expiresAfter || 999));
+            break;
+        case 'theme':
+            filteredEntries.sort((a, b) => {
+                const vault = MemorySanctuary.data.vaults.find(v => v.id === vaultId);
+                const aMatch = vault && vault.themeTags && vault.themeTags.includes(a.type || '');
+                const bMatch = vault && vault.themeTags && vault.themeTags.includes(b.type || '');
+                if (aMatch && !bMatch) return -1;
+                if (!aMatch && bMatch) return 1;
+                return 0;
+            });
+            break;
     }
     
-    // AI 助理辅助归档状态提示（顶部）
-    const stAI = MemorySanctuary.state;
-    if (stAI.aiAssistantActive) {
-        const aiBanner = document.createElement('div');
-        aiBanner.className = 'ai-assist-banner';
-        if (stAI.aiAssistUsedThisWeek) {
-            aiBanner.textContent = '🤖 档案AI助理本周已完成一次辅助归档，下周再来。';
-            aiBanner.classList.add('used');
-        } else {
-            aiBanner.textContent = '🤖 档案AI助理在线：每回合可辅助归档一条（费用减半，环境稳定度 -5）。';
-            aiBanner.classList.add('ready');
-        }
-        container.appendChild(aiBanner);
-    }
-
-    entries.forEach(entry => {
-        // Filter out entries not yet available
-        if (entry.availableAfter && MemorySanctuary.state.week < entry.availableAfter) return;
-
-        const isCompleted = isArchiveCompleted(entry.id);
-        const isExpired = entry.expired;
-        const canArchive = canArchiveEntry(entry);
-        
-        const item = document.createElement('div');
-        item.className = `entry-item ${isCompleted ? 'archived' : ''} ${isExpired ? 'expired' : ''} ${entry.emergency ? 'emergency' : ''}`;
-        
-        const chainIndicator = (typeof getChainIndicator === 'function') ? getChainIndicator(entry) : '';
-        
-        // Calculate remaining weeks
-        const remaining = entry.expiresAfter ? entry.expiresAfter - MemorySanctuary.state.week : null;
-        const isExpiringSoon = remaining !== null && remaining <= 3 && remaining > 0;
-        
-        const costHtml = `
-            <div class="entry-cost">
-                <span class="cost-energy">◈ ${entry.energyCost}</span>
-                <span class="cost-data">◇ ${entry.dataCost}</span>
-                ${remaining !== null ? `<span style="color: ${isExpiringSoon ? 'var(--danger)' : 'var(--text-dim)'}">⏱ ${remaining}周</span>` : ''}
-            </div>
-        `;
-        
-        let mainBtnHtml = '';
-        if (isCompleted) {
-            mainBtnHtml = `<button class="archive-btn" disabled>已归档</button>`;
-        } else if (isExpired) {
-            mainBtnHtml = `<button class="archive-btn" disabled>已消失</button>`;
-        } else if (!canArchive) {
-            // 紧急归档模式下按钮不可用只可能是能源不足；常规模式是资源不足
-            const disabledLabel = (MemorySanctuary.state.emergencyArchiveActive) ? '能源不足' : '资源不足';
-            mainBtnHtml = `<button class="archive-btn" disabled>${disabledLabel}</button>`;
-        } else {
-            mainBtnHtml = `<button class="archive-btn" data-archive-id="${entry.id}">录入归档</button>`;
-        }
-
-        // AI 助理辅助归档按钮（独立于常规归档，不占用行动；与主按钮同行对齐）
-        let aiBtnHtml = '';
-        if (typeof canAiAssistArchive === 'function' && canAiAssistArchive(entry)) {
-            const halfCost = `(◈${Math.ceil((entry.energyCost || 0) / 2)} ◇${Math.ceil((entry.dataCost || 0) / 2)})`;
-            aiBtnHtml = `<button class="archive-btn ai-assist-btn" data-archive-id="${entry.id}" title="请求AI助理辅助归档：费用减半${halfCost}，环境稳定度 -5，不推进时间">🤖 AI辅助</button>`;
-        }
-        const buttonHtml = `<div class="entry-actions">${mainBtnHtml}${aiBtnHtml}</div>`;
-        
-        item.innerHTML = `
-            <div class="entry-title">${entry.title}${chainIndicator}${isExpiringSoon ? ' <span style="color:var(--danger);font-size:0.7rem">⚠ 即将消失</span>' : ''}</div>
-            <div class="entry-desc">${entry.description}</div>
-            ${costHtml}
-            ${buttonHtml}
-        `;
-        
-        container.appendChild(item);
-    });
+    // 渲染条目列表
+    const listDiv = document.createElement('div');
+    listDiv.className = 'entry-list-items';
     
-    container.querySelectorAll('.archive-btn:not(.ai-assist-btn):not([disabled])').forEach(btn => {
+    if (filteredEntries.length === 0) {
+        listDiv.innerHTML = '<p style="color: var(--text-dim); font-size: 0.8rem;">没有符合条件的条目</p>';
+    } else {
+        filteredEntries.forEach(entry => {
+            // ... 现有条目渲染逻辑 ...
+            const isCompleted = isArchiveCompleted(entry.id);
+            const isExpired = entry.expired;
+            const canArchive = canArchiveEntry(entry);
+            
+            const item = document.createElement('div');
+            item.className = `entry-item ${isCompleted ? 'archived' : ''} ${isExpired ? 'expired' : ''} ${entry.emergency ? 'emergency' : ''}`;
+            
+            const chainIndicator = (typeof getChainIndicator === 'function') ? getChainIndicator(entry) : '';
+            
+            // Calculate remaining weeks
+            const remaining = entry.expiresAfter ? entry.expiresAfter - MemorySanctuary.state.week : null;
+            const isExpiringSoon = remaining !== null && remaining <= 3 && remaining > 0;
+            
+            // 计算主题匹配
+            const vault = MemorySanctuary.data.vaults.find(v => v.id === vaultId);
+            const effectiveCost = (typeof getEffectiveCost === 'function') ? getEffectiveCost(entry, vault) : null;
+            const isThemeMatch = effectiveCost ? effectiveCost.isMatch : null;
+            const themeModifier = effectiveCost ? effectiveCost.modifier : 1;
+            
+            // 根据主题匹配添加边框颜色
+            if (isThemeMatch === true) {
+                item.classList.add('theme-match-border');
+            } else if (isThemeMatch === false) {
+                item.classList.add('theme-mismatch-border');
+            }
+            
+            const themeIndicator = isThemeMatch !== null ? (isThemeMatch ? '<span class="theme-match" title="主题契合：消耗 -20%">✓契合</span>' : '<span class="theme-mismatch" title="非主题：消耗 +30%">✗不适</span>') : '';
+            
+            // 冲突警告
+            const conflict = (typeof checkArchiveConflict === 'function') ? checkArchiveConflict(entry.id) : null;
+            const conflictWarning = conflict ? '<span class="conflict-warning" title="归档此条目会导致另一条消失">⚡冲突</span>' : '';
+            
+            // 隐藏内容标记
+            const hiddenMarker = entry.hiddenContent ? '<span title="包含隐藏叙事">✨</span>' : '';
+            
+            const costHtml = `
+                <div class="entry-cost">
+                    <span class="cost-energy">◈ ${effectiveCost ? effectiveCost.energy : entry.energyCost}</span>
+                    <span class="cost-data">◇ ${effectiveCost ? effectiveCost.media : entry.dataCost}</span>
+                    ${remaining !== null ? `<span style="color: ${isExpiringSoon ? 'var(--danger)' : 'var(--text-dim)'}">⏱ ${remaining}周</span>` : ''}
+                </div>
+            `;
+            
+            let mainBtnHtml = '';
+            if (isCompleted) {
+                mainBtnHtml = `<button class="archive-btn" disabled>已归档</button>`;
+            } else if (isExpired) {
+                mainBtnHtml = `<button class="archive-btn" disabled>已消失</button>`;
+            } else if (!canArchive) {
+                const disabledLabel = (MemorySanctuary.state.emergencyArchiveActive) ? '能源不足' : '资源不足';
+                mainBtnHtml = `<button class="archive-btn" disabled>${disabledLabel}</button>`;
+            } else {
+                mainBtnHtml = `<button class="archive-btn" data-archive-id="${entry.id}">录入归档</button>`;
+            }
+
+            // 快速归档按钮
+            let quickBtnHtml = '';
+            if (!isCompleted && !isExpired && canArchive) {
+                quickBtnHtml = `<button class="archive-btn quick-archive-btn" data-archive-id="${entry.id}" title="快速归档：消耗减半，无守护者反应">⚡快速</button>`;
+            }
+            
+            // AI 助理辅助归档按钮
+            let aiBtnHtml = '';
+            if (typeof canAiAssistArchive === 'function' && canAiAssistArchive(entry)) {
+                const halfCost = `(◈${Math.ceil((entry.energyCost || 0) / 2)} ◇${Math.ceil((entry.dataCost || 0) / 2)})`;
+                aiBtnHtml = `<button class="archive-btn ai-assist-btn" data-archive-id="${entry.id}" title="请求AI助理辅助归档：费用减半${halfCost}，环境稳定度 -5，不推进时间">🤖 AI辅助</button>`;
+            }
+            const buttonHtml = `<div class="entry-actions">${mainBtnHtml}${quickBtnHtml}${aiBtnHtml}</div>`;
+            
+            item.innerHTML = `
+                <div class="entry-title">${entry.title}${hiddenMarker}${chainIndicator}${themeIndicator}${conflictWarning}${isExpiringSoon ? ' <span style="color:var(--danger);font-size:0.7rem">⚠ 即将消失</span>' : ''}</div>
+                <div class="entry-desc">${entry.description}</div>
+                ${costHtml}
+                ${buttonHtml}
+            `;
+            
+            listDiv.appendChild(item);
+        });
+    }
+    
+    container.appendChild(listDiv);
+    
+    // 绑定事件
+    container.querySelectorAll('.archive-btn:not(.quick-archive-btn):not(.ai-assist-btn):not([disabled])').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const archiveId = e.target.dataset.archiveId;
             if (typeof confirmArchive === 'function') {
@@ -890,8 +1019,14 @@ function renderArchiveEntries() {
             }
         });
     });
-
-    // AI 助理辅助归档按钮（独立事件，直接执行，不弹确认）
+    
+    container.querySelectorAll('.quick-archive-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const archiveId = e.target.dataset.archiveId;
+            archiveEntry(archiveId, 'quick');
+        });
+    });
+    
     container.querySelectorAll('.ai-assist-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const archiveId = e.target.dataset.archiveId;
@@ -900,11 +1035,96 @@ function renderArchiveEntries() {
             }
         });
     });
+    
+    // 绑定筛选和排序事件
+    const sortSelect = document.getElementById('entry-sort');
+    const filterSelect = document.getElementById('entry-filter');
+    
+    if (sortSelect) {
+        sortSelect.value = sortBy;
+        sortSelect.onchange = () => {
+            MemorySanctuary.state.entrySort = sortSelect.value;
+            renderArchiveEntries();
+        };
+    }
+    
+    if (filterSelect) {
+        filterSelect.value = filterBy;
+        filterSelect.onchange = () => {
+            MemorySanctuary.state.entryFilter = filterSelect.value;
+            renderArchiveEntries();
+        };
+    }
 }
 
 // ==========================================
-// 圣所项目 UI
+// 工程机器人状态面板
 // ==========================================
+
+function renderEngineeringBotsPanel() {
+    const container = document.getElementById('bots-panel');
+    if (!container) return;
+    
+    const state = MemorySanctuary.state;
+    const botCount = state.resources.engineeringBots || 0;
+    const maintenanceCost = botCount * 2;
+    const reduction = (typeof getBotDecayReduction === 'function') ? getBotDecayReduction() : 0;
+    const isBlackout = state.botBlackoutLogged;
+    
+    container.innerHTML = `
+        <div class="bots-panel-header">
+            <span class="bots-panel-icon">🔧</span>
+            <span class="bots-panel-title">工程机器人</span>
+            <span class="bots-panel-count ${botCount > 0 ? 'active' : 'inactive'}">${botCount}/5</span>
+        </div>
+        <div class="bots-panel-stats">
+            <div class="bots-stat">
+                <span class="bots-stat-label">维护成本</span>
+                <span class="bots-stat-value ${isBlackout ? 'warning' : ''}">◈ ${maintenanceCost}/周</span>
+            </div>
+            <div class="bots-stat">
+                <span class="bots-stat-label">衰减减免</span>
+                <span class="bots-stat-value ${reduction > 0 ? 'success' : 'inactive'}">${Math.round(reduction * 100)}%</span>
+            </div>
+        </div>
+        ${isBlackout ? '<div class="bots-warning">⚠️ 能源不足，机器人停机中</div>' : ''}
+    `;
+}
+
+// ==========================================
+// 守护者故事进度
+// ==========================================
+
+function renderGuardianStoryProgress() {
+    const container = document.getElementById('guardian-story-progress');
+    if (!container) return;
+    
+    const state = MemorySanctuary.state;
+    const stories = MemorySanctuary.data.guardianStories || [];
+    const guardians = MemorySanctuary.data.guardians;
+    
+    container.innerHTML = '';
+    
+    guardians.forEach(g => {
+        const guardianStories = stories.filter(s => s.guardianId === g.id);
+        const completed = guardianStories.filter(s => state.activeEventIds.includes(s.id)).length;
+        const total = guardianStories.length;
+        
+        if (total === 0) return;
+        
+        const item = document.createElement('div');
+        item.className = 'story-progress-item';
+        item.innerHTML = `
+            <span class="story-progress-avatar">${g.avatar}</span>
+            <span class="story-progress-name">${g.name}</span>
+            <span class="story-progress-bar">
+                <span class="story-progress-fill" style="width: ${(completed / total) * 100}%"></span>
+            </span>
+            <span class="story-progress-text">${completed}/${total}</span>
+        `;
+        container.appendChild(item);
+    });
+}
 
 function updateProjectButton() {
     const btn = document.getElementById('project-btn');
@@ -1015,6 +1235,8 @@ function getProjectEffectText(project) {
             return `解锁 ${e.archiveIds.length} 条加密记录`;
         case 'aiAssistant':
             return `解锁 AI 助理辅助归档（每回合可减半费用额外归档一条）`;
+        case 'buildBot':
+            return `建造工程机器人（减少资源衰减）`;
         default:
             return '';
     }

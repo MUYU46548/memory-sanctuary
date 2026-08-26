@@ -22,10 +22,11 @@ function checkEndingCondition(condition) {
             return a && !a.ngPlusExclusive;
         }).length === 0 && MemorySanctuary.state.week >= (condition.weekMin || 10);
     }
-    // 完美封印：所有守护者亲密 + 45%收集
-    if (condition.allGuardiansIntimate && condition.minVaultCompletion) {
-        const allIntimate = ['tika', 'finn', 'misha', 'lorn', 'ethel'].every(gid => getMoodTier(gid) === 'intimate');
-        if (!allIntimate) return false;
+    // 完美封印：4个守护者亲密 + 45%收集
+    if (condition.minGuardiansIntimate && condition.minVaultCompletion) {
+        const guardianIds = ['tika', 'finn', 'misha', 'lorn', 'ethel'];
+        const intimateCount = guardianIds.filter(gid => getMoodTier(gid) === 'intimate').length;
+        if (intimateCount < condition.minGuardiansIntimate) return false;
         const vaults = MemorySanctuary.data.vaults;
         return vaults.every(v => getVaultCompletion(v.id).ratio >= condition.minVaultCompletion);
     }
@@ -33,10 +34,10 @@ function checkEndingCondition(condition) {
     if (condition.anyGuardianSacrifice) {
         return MemorySanctuary.state.guardianSacrifice === true;
     }
-    // 遗忘结局：无成就 + 第48周
+    // 遗忘结局：无成就 + 第48周 + 未封印
     if (condition.noAchievementsUnlocked) {
         const achievements = getUnlockedAchievements();
-        return achievements.length === 0 && MemorySanctuary.state.week >= (condition.weekMin || 48);
+        return achievements.length === 0 && MemorySanctuary.state.week >= (condition.weekMin || 48) && condition.notSealed;
     }
     return false;
 }
@@ -117,7 +118,13 @@ function checkHiddenEndings() {
         }
     }
     
-    // 3. Vault组合结局 & 百分比结局（按priority排序）
+    // 3. 文明抉择结局（基于冲突选择）
+    const conflictEnding = checkConflictEnding();
+    if (conflictEnding) {
+        return { ...conflictEnding, priority: 80 };
+    }
+
+    // 4. Vault组合结局 & 百分比结局（按priority排序）
     const sortedEndings = [...(data.endings || [])].sort((a, b) => (b.priority || 0) - (a.priority || 0));
     for (const ending of sortedEndings) {
         if (ending.id === 'complete_memory') continue;
@@ -127,7 +134,7 @@ function checkHiddenEndings() {
         }
     }
 
-    // 4. 兜底：基于完成度的普通结局
+    // 5. 兜底：基于完成度的普通结局
     const pct = total > 0 ? completed.length / total : 0;
     if (pct >= 0.6) return { id: 'guardian_of_remnants', title: '文明守护者', description: '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的萨拉达斯。', priority: 50 };
     if (pct >= 0.4) return { id: 'fragment_keeper', title: '碎片收集者', description: `你保存了萨拉达斯的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。`, priority: 50 };
@@ -135,6 +142,73 @@ function checkHiddenEndings() {
     if (state.week >= 20) return { id: 'silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。也许……遗忘也是一种选择。', priority: 10 };
 
     return null;
+}
+
+/**
+ * 文明抉择结局
+ * 基于玩家在冲突对中的选择倾向，生成不同的结局描述
+ * 
+ * 冲突对：
+ * 1. 翼神升天颂 ↔ 禁忌词汇表（神圣 vs 禁忌）
+ * 2. 最后的语法书 ↔ 翻译者的笔记（正统 vs 异见）
+ * 3. 城邦建立记 ↔ 封存仪式记录（建立 vs 终结）
+ * 4. 永恒之书 ↔ 哲学家的最后问题（信仰 vs 怀疑）
+ * 5. 天文观测全记录 ↔ 星座神话集（科学 vs 神话）
+ * 6. 城邦法典 ↔ 权利宣言（旧法 vs 新权）
+ */
+function checkConflictEnding() {
+    const state = MemorySanctuary.state;
+    const conflictLog = state.conflictLog || [];
+    
+    if (conflictLog.length === 0) return null;
+    
+    // 分析选择倾向
+    const archiveMap = {};
+    MemorySanctuary.data.archives.forEach(a => { archiveMap[a.id] = a; });
+    
+    // 计算各主题的倾向
+    const themes = {
+        sacred: 0,    // 神圣/正统/信仰/科学/旧法/建立
+        profane: 0,   // 禁忌/异见/怀疑/神话/新权/终结
+    };
+    
+    conflictLog.forEach(entry => {
+        const kept = entry.kept;
+        // 根据选择的条目判断倾向
+        const sacredItems = ['arch_001', 'arch_004', 'arch_007', 'arch_024', 'arch_029', 'arch_039'];
+        const profaneItems = ['arch_005', 'arch_006', 'arch_012', 'arch_028', 'arch_062', 'arch_043'];
+        
+        if (sacredItems.includes(kept)) themes.sacred++;
+        else if (profaneItems.includes(kept)) themes.profane++;
+    });
+    
+    // 生成结局描述
+    const totalChoices = conflictLog.length;
+    const sacredRatio = themes.sacred / totalChoices;
+    const profaneRatio = themes.profane / totalChoices;
+    
+    let title, description;
+    
+    if (sacredRatio >= 0.7) {
+        title = '🛡️ 守圣者';
+        description = `你坚定地守护着萨拉达斯的神圣记忆。${totalChoices} 次抉择中，${themes.sacred} 次选择了正统与信仰。后世将看到一个纯净、高贵的文明——它的歌声、它的律法、它的信仰，都如星辰般永恒。`;
+    } else if (profaneRatio >= 0.7) {
+        title = '🔥 破茧者';
+        description = `你勇敢地拥抱了萨拉达斯的另一面。${totalChoices} 次抉择中，${themes.profane} 次选择了异见与怀疑。后世将看到一个真实、复杂的文明——它的挣扎、它的质疑、它的蜕变，都如火焰般炽热。`;
+    } else {
+        title = '⚖️ 平衡者';
+        description = `你在萨拉达斯的记忆中寻找平衡。${totalChoices} 次抉择中，你既守护了神圣，也拥抱了异见。后世将看到一个完整、矛盾的文明——它既有歌声也有质疑，既有信仰也有思考。`;
+    }
+    
+    return {
+        id: 'conflict_choice',
+        title: title,
+        description: description,
+        priority: 80,
+        totalChoices: totalChoices,
+        sacredChoices: themes.sacred,
+        profaneChoices: themes.profane
+    };
 }
 
 
@@ -244,10 +318,111 @@ function finalizePlaythrough() {
         archives: [...state.completedArchives]
     });
 
+    // 记录圣所状态继承
+    if (!ngData.sanctuaryInheritance) ngData.sanctuaryInheritance = {};
+    ngData.sanctuaryInheritance = {
+        completedProjects: [...(state.completedProjects || [])],
+        vaultUsage: { ...(state.vaultUsage || {}) },
+        engineeringBots: state.resources.engineeringBots || 0,
+        conflictLog: [...(state.conflictLog || [])],
+        memoryEchoSelection: [...(state.memoryEchoSelection || [])]
+    };
+
+    // 记录冲突选择（文明抉择结局用）
+    if (state.conflictLog && state.conflictLog.length > 0) {
+        if (!ngData.conflictChoices) ngData.conflictChoices = [];
+        ngData.conflictChoices.push({
+            playthrough: ngData.playthroughCount + 1,
+            week: state.week,
+            choices: [...state.conflictLog]
+        });
+    }
+
+    // 记录牺牲历史
+    if (state.guardianSacrifice && state.sacrificedGuardian) {
+        if (!ngData.sacrificeHistory) ngData.sacrificeHistory = [];
+        ngData.sacrificeHistory.push({
+            playthrough: ngData.playthroughCount + 1,
+            guardian: state.sacrificedGuardian
+        });
+    }
+
     saveNGPlusData(ngData);
 
     // 计入已完成周目数
     startNewGamePlus();
+}
+
+/**
+ * 应用圣所状态继承
+ * 上周目完成的项目，新周目以"损坏的圣所设施"形式保留
+ */
+function applySanctuaryInheritance() {
+    const ngData = getNGPlusData();
+    const inheritance = ngData.sanctuaryInheritance;
+    if (!inheritance) return;
+    
+    const state = MemorySanctuary.state;
+    
+    // 继承工程机器人（保留一半，向下取整）
+    if (inheritance.engineeringBots > 0) {
+        state.resources.engineeringBots = Math.floor(inheritance.engineeringBots / 2);
+        if (state.resources.engineeringBots > 0) {
+            addLog(`🔧 上周目的工程机器人中有 ${state.resources.engineeringBots} 台仍可运转。`, 'system');
+        }
+    }
+    
+    // 继承存储室使用情况（保留20%，表示残留数据）
+    if (inheritance.vaultUsage) {
+        Object.keys(inheritance.vaultUsage).forEach(vid => {
+            const oldUsage = inheritance.vaultUsage[vid] || 0;
+            state.vaultUsage[vid] = Math.floor(oldUsage * 0.2);
+        });
+    }
+    
+    // 继承已完成项目（标记为"损坏"状态）
+    if (inheritance.completedProjects && inheritance.completedProjects.length > 0) {
+        state.inheritedProjects = [...inheritance.completedProjects];
+        addLog(`🏗️ 上周目的 ${state.inheritedProjects.length} 个设施仍保留在圣所中（需要修复才能使用）。`, 'system');
+    }
+}
+
+/**
+ * 触发叙事连锁事件
+ * 基于周目数和上周目选择，触发特殊事件
+ */
+function triggerNarrativeChainEvents() {
+    const ngData = getNGPlusData();
+    const pt = ngData.playthroughCount;
+    
+    if (pt < 2) return;
+    
+    const state = MemorySanctuary.state;
+    
+    // 第2周目：守护者幻影事件
+    if (pt === 2) {
+        state.narrativeFlags.push('ghost_vision_available');
+        addLog('🌀 你感觉到圣所中似乎有什么东西在注视着你……', 'system');
+    }
+    
+    // 第3周目：轮回裂缝事件
+    if (pt === 3) {
+        state.narrativeFlags.push('loop_crack_available');
+        addLog('⚡ 圣所的墙壁上出现了奇怪的裂缝，似乎通向另一个时空……', 'system');
+    }
+    
+    // 第5周目：真结局线索
+    if (pt >= 5) {
+        state.narrativeFlags.push('true_ending_clue');
+        addLog('✨ 你感觉到，这一次，一切都将不同……', 'system');
+    }
+    
+    // 检查牺牲历史，解锁特殊对话
+    if (ngData.sacrificeHistory && ngData.sacrificeHistory.length > 0) {
+        const lastSacrifice = ngData.sacrificeHistory[ngData.sacrificeHistory.length - 1];
+        state.narrativeFlags.push(`sacrifice_memory_${lastSacrifice.guardian}`);
+        addLog(`💫 你记得上周目 ${getGuardianName(lastSacrifice.guardian)} 的牺牲……`, 'guardian');
+    }
 }
 
 
@@ -262,10 +437,10 @@ function sealSanctuary() {
     
     MemorySanctuary.state.gameOver = true;
     const state = MemorySanctuary.state;
-
+    
     // NG+ 结算：累计归档、守护者记录、周目递增（与崩溃/饥荒结局共用）
     finalizePlaythrough();
-
+    
     // Check for hidden endings first
     const ending = checkHiddenEndings();
     
@@ -283,8 +458,82 @@ function sealSanctuary() {
         checkSealAchievements(ending ? ending.id : null, state.week);
     }
     
-    // Show ending VN if scene exists, otherwise show modal directly
+    // 记忆回响：让玩家选择最珍贵的 3 条记忆
+    if (state.completedArchives.length >= 3) {
+        showMemoryEchoSelection(ending);
+    } else {
+        // 不足 3 条，直接播放结局
+        playEndingSequence(ending);
+    }
+}
+
+/**
+ * 记忆回响选择界面
+ * 玩家选择最珍贵的 3 条记忆，影响结局VN的情感基调
+ */
+function showMemoryEchoSelection(ending) {
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    
+    if (!overlay || !title || !content) {
+        playEndingSequence(ending);
+        return;
+    }
+    
+    title.textContent = '记忆回响';
+    
+    const state = MemorySanctuary.state;
+    const completedArchives = state.completedArchives;
+    
+    let html = `<p>在封印之前，请选择最珍贵的 <strong>3 条</strong>记忆。它们将在结局中以特殊形式呈现。</p>`;
+    html += `<div class="memory-echo-list">`;
+    
+    completedArchives.forEach(archId => {
+        const arch = getArchiveById(archId);
+        if (!arch) return;
+        html += `
+            <label class="memory-echo-item">
+                <input type="checkbox" value="${archId}" class="memory-echo-check">
+                <span class="memory-echo-title">${arch.title}</span>
+            </label>
+        `;
+    });
+    
+    html += `</div>`;
+    html += `<button id="memory-echo-confirm" class="modal-btn">确认选择</button>`;
+    
+    content.innerHTML = html;
+    overlay.classList.remove('hidden');
+    
+    // 限制选择数量
+    const checks = content.querySelectorAll('.memory-echo-check');
+    checks.forEach(check => {
+        check.addEventListener('change', () => {
+            const checked = content.querySelectorAll('.memory-echo-check:checked');
+            if (checked.length > 3) {
+                check.checked = false;
+            }
+        });
+    });
+    
+    // 确认按钮
+    document.getElementById('memory-echo-confirm').onclick = () => {
+        const checked = content.querySelectorAll('.memory-echo-check:checked');
+        const selected = Array.from(checked).map(c => c.value);
+        state.memoryEchoSelection = selected;
+        overlay.classList.add('hidden');
+        playEndingSequence(ending);
+    };
+}
+
+/**
+ * 播放结局序列
+ */
+function playEndingSequence(ending) {
+    const state = MemorySanctuary.state;
     let endingSceneId = ending ? ending.id : 'silent_sanctuary';
+    
     // For sacrifice endings, use guardian-specific scene
     if (ending && ending.id === 'sacrifice' && ending.sacrificedGuardian) {
         const sacSceneId = `sacrifice_${ending.sacrificedGuardian}`;
@@ -292,17 +541,71 @@ function sealSanctuary() {
             endingSceneId = sacSceneId;
         }
     }
+    
+    // 如果有记忆回响选择，动态生成结局场景
+    if (state.memoryEchoSelection && state.memoryEchoSelection.length > 0) {
+        generateDynamicEnding(ending);
+        return;
+    }
+    
     if (typeof VN !== 'undefined' && VN.getEndingScene(endingSceneId)) {
         VN.showEnding(endingSceneId, () => {
-            // After VN completes, show stats modal
             const modalContent = getEndingModalData(ending);
             showSealModalWithContent(modalContent, ending);
         });
     } else {
-        // Fallback: show modal directly
         const modalContent = getEndingModalData(ending);
         showSealModalWithContent(modalContent, ending);
     }
+}
+
+/**
+ * 动态生成结局场景（基于玩家选择）
+ */
+function generateDynamicEnding(ending) {
+    const state = MemorySanctuary.state;
+    const selected = state.memoryEchoSelection || [];
+    
+    // 创建动态场景
+    const dynamicScene = {
+        title: ending ? ending.title : '圣所封印',
+        background: ending?.id || 'silent_sanctuary',
+        speakers: ['narrator'],
+        dialogue: [
+            { speaker: 'narrator', text: '在封印之前，你选择了最珍贵的记忆……' }
+        ]
+    };
+    
+    // 添加选中的记忆
+    selected.forEach(archId => {
+        const arch = getArchiveById(archId);
+        if (arch) {
+            dynamicScene.dialogue.push({
+                speaker: 'narrator',
+                text: `「${arch.title}」— ${arch.content.substring(0, 60)}...`
+            });
+        }
+    });
+    
+    // 添加结局特定的结尾
+    if (ending) {
+        dynamicScene.dialogue.push({
+            speaker: 'narrator',
+            text: ending.description.substring(0, 100)
+        });
+    }
+    
+    dynamicScene.dialogue.push({
+        speaker: 'narrator',
+        text: '「——终来之刻，何物当存？」'
+    });
+    
+    // 动态加载并播放场景
+    VN.loadScenes({ 'dynamic_ending': dynamicScene });
+    VN.showEnding('dynamic_ending', () => {
+        const modalContent = getEndingModalData(ending);
+        showSealModalWithContent(modalContent, ending);
+    });
 }
 
 
