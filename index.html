@@ -594,6 +594,16 @@
         </div>
     </div>
 
+    <!-- 版本更新提示（轻量方案 A，启动后异步检测）-->
+    <div id="update-toast" class="hidden" role="status" aria-live="polite">
+        <div class="update-toast-title">新版本可用 <span id="update-toast-version"></span></div>
+        <div class="update-toast-body" id="update-toast-notes"></div>
+        <div class="update-toast-actions">
+            <a id="update-toast-download" href="#" target="_blank" rel="noopener">前往下载</a>
+            <button id="update-toast-ignore" type="button">忽略此版本</button>
+        </div>
+    </div>
+
     <!-- 调试面板 -->
     <div id="debug-overlay" class="hidden">
         <div id="debug-panel">
@@ -714,6 +724,7 @@
 
     <script src="js/font-loader.js"></script>
     <script src="js/main.js"></script>
+    <script src="js/update-check.js"></script>
     <script src="js/game.js"></script>
     <script src="js/game-log.js"></script>
     <script src="js/game-events.js"></script>

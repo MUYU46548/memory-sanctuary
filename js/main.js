@@ -156,7 +156,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         initTitleScreen();
-        
+
+        // 版本更新检测（轻量方案 A，失败静默降级，绝不阻塞启动）
+        checkForUpdate();
+
         if (typeof AudioSystem !== 'undefined') {
             AudioSystem.playBGM('title');
         }

@@ -4724,6 +4724,71 @@ button.archive-btn.recommended {
     }
 }
 
+/* ========== 版本更新提示 ========== */
+#update-toast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    max-width: 320px;
+    background: var(--bg-panel);
+    border: 1px solid var(--amber-primary);
+    border-radius: 8px;
+    padding: 14px 16px;
+    z-index: 10001;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+#update-toast.hidden {
+    display: none;
+}
+#update-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+.update-toast-title {
+    font-weight: 600;
+    color: var(--amber-primary);
+    margin-bottom: 6px;
+}
+.update-toast-body {
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+#update-toast-version {
+    font-weight: 600;
+    margin-right: 6px;
+}
+.update-toast-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+#update-toast-download {
+    color: var(--amber-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+#update-toast-download:hover {
+    text-decoration: underline;
+}
+#update-toast-ignore {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0;
+}
+#update-toast-ignore:hover {
+    color: var(--text-primary);
+}
+
 /* ========== 成就系统 ========== */
 
 /* Toast notification */
