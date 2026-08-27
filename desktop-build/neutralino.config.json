@@ -1,0 +1,34 @@
+{
+  "applicationId": "io.ronghua.memorysanctuary",
+  "version": "0.2.1",
+  "defaultMode": "window",
+  "url": "/resources/index.html",
+  "enableServer": true,
+  "enableNativeAPI": false,
+  "nativeDependency": false,
+  "tokenSecurity": "none",
+  "modes": {
+    "window": {
+      "title": "记忆圣所 · Memory Sanctuary",
+      "width": 1400,
+      "height": 900,
+      "minWidth": 1200,
+      "minHeight": 750,
+      "center": true,
+      "resizable": true,
+      "maximize": true,
+      "fullscreen": false,
+      "enableInspector": false,
+      "borderless": false
+    }
+  },
+  "cli": {
+    "binaryName": "MemorySanctuary",
+    "clientLibrary": "resources/neutralino.js",
+    "resourcesPath": "resources",
+    "extensionsPath": "extensions",
+    "binaryVersion": "6.9.0",
+    "clientVersion": "6.9.0",
+    "distributionPath": "dist"
+  }
+}

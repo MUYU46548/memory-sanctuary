@@ -35,3 +35,8 @@ js/balance-sim*.js
 # Python 缓存（headless 验证脚本）
 __pycache__/
 *.pyc
+
+# 桌面打包工程（Neutralino）：仅保留骨架，运行期产物不进仓库
+desktop-build/resources/
+desktop-build/dist/
+desktop-build/.tmp/
