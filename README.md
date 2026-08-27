@@ -1,6 +1,6 @@
 # 记忆圣所 (Memory Sanctuary)
 
-![Version](https://img.shields.io/badge/version-v0.2.0--beta-blue)
+![Version](https://img.shields.io/badge/version-v0.2.1-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tech](https://img.shields.io/badge/tech-HTML5%20%2B%20CSS3%20%2B%20Vanilla%20JS-orange)
 
@@ -306,6 +306,12 @@ memory-sanctuary/
 ---
 
 ## 版本历史
+
+### v0.2.1 (2026-08-27)
+
+- ✅ 轻量版本更新检测：启动后异步拉取远程 `version.json`，有新版时右下角非阻塞提示 + 跳转下载页（失败静默降级，绝不阻塞启动）
+- ✅ 版本号单一来源梳理（`GAME_VERSION` / `version.json` / 打包脚本同步）
+- ✅ 发布打包纳入 `version.json`，包名同步 v0.2.1
 
 ### v0.2.0-beta (2026-08-15)
 
