@@ -1,6 +1,6 @@
 # 记忆圣所 (Memory Sanctuary)
 
-![Version](https://img.shields.io/badge/version-v0.2.2-blue)
+![Version](https://img.shields.io/badge/version-v0.2.3-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tech](https://img.shields.io/badge/tech-HTML5%20%2B%20CSS3%20%2B%20Vanilla%20JS-orange)
 
@@ -306,6 +306,20 @@ memory-sanctuary/
 ---
 
 ## 版本历史
+
+### v0.2.3 (2026-08-29)
+
+- ✅ 结局图鉴解锁修复（真根因）：兜底结局 ID 统一为图鉴 ID（新增 `guardian_of_remnants`/`conflict_choice` 图鉴条目）；新增 `recordUnlockedEnding` 在封印/崩溃/饥荒时持久化达成结局进 NG+ `unlockedEndings`；图鉴判定 = 成就映射（仅保留真实存在的成就）**或** `unlockedEndings`；老存档一次性迁移 `backfillUnlockedEndings`（按 bestRun 完整度反推补登记）
+- ✅ 工程机器人价值重做：维护成本 2→1 能源/台；新增「腐败抑制」（按台数削弱腐败侵蚀）；能源悬浮窗如实显示维护与抑制后数值；机器人面板新增腐败抑制栏；新增机器人专属归档条目《启动日志/协同日志》（拥有 1/3 台时出现在建筑与工程存储室）
+- ✅ 推荐归档反馈链修复：点「推荐归档」时先切到归档页再高亮+滚动，并弹横幅（此前玩家在守护者页点击，高亮全发生在看不见的归档页）
+- ✅ 速记限次可见：每回合用过速记后按钮置灰为「⚡已速记」
+- ✅ 守护者头像可点击感强化（呼吸光环 + 💬 角标，仅限守护者面板）
+- ✅ 新手引导不再错指（步骤新增 `tab` 属性先切到对应标签页再定位；结束自动回归档页）
+- ✅ 顶栏「第 X 周」与士气可点击（周况叙事 / 守护者心声弹窗）
+- ✅ 资源卡新增储量条与补给箱可视化
+- ✅ 静音与音量设置持久化（BGM/音效/全局静音、两路音量、顶栏快捷静音，重启后如实恢复）
+- ✅ 互斥标记改为 ⚖ 静态描边徽章（与「⚡速记」区分，呼应结局统计「⚖互斥抉择」）
+- ✅ 应急协议「激活」无声失效修复（腐化音效函数未导出致反馈链中断，激活后面板关闭/横幅/紧急勘探联动恢复）
 
 ### v0.2.2 (2026-08-29)
 

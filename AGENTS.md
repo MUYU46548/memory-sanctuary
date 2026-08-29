@@ -19,15 +19,26 @@ You are a senior HTML5 game developer working on **记忆圣所（Memory Sanctua
 ## Architecture
 
 ```
-/js/main.js     → Bootstrap, theme switch, data load scheduling
-/js/game.js     → Core state machine (resources, time, archive logic)
-/js/ui.js       → DOM rendering & event binding (no business logic)
-/js/canvas.js   → Canvas drawing & animation loop (no UI interaction)
-/js/audio.js    → BGM / SFX management
-/js/vn.js       → Visual novel engine (chapter transitions, endings)
-/data/*.json    → All entries, guardian dialogues, events, projects
-/css/main.css   → Theme-driven styles (CSS variables)
-/index.html     → Single-page app shell
+/js/main.js          → Bootstrap, theme switch, data load scheduling, global error handling
+/js/game.js          → Core state machine (resources, time, decay, NG+, achievements)
+/js/game-*.js        → Subsystems split from game.js:
+                         game-archive.js     (archive entry / conflict / quick-archive)
+                         game-emergency.js   (emergency protocol activation)
+                         game-ending.js      (ending condition / gallery / VN bridge)
+                         game-exploration.js (surface exploration dispatch)
+                         game-projects.js    (maintenance projects)
+                         game-events.js      (random/scheduled events)
+                         game-log.js         (log system)
+                         game-save.js        (save/load/export/import)
+                         game-tutorial.js    (new-player tutorial)
+/js/ui.js            → DOM rendering & event binding (no business logic)
+/js/canvas.js        → Canvas drawing & animation loop (no UI interaction)
+/js/audio.js         → BGM / SFX management (Web Audio API)
+/js/vn.js            → Visual novel engine (chapter transitions, endings)
+/js/dlc.js           → DLC module registry (ascension / greenOrb)
+/data/*.json         → All entries, guardian dialogues, events, projects, explorations, endings
+/css/main.css         → Theme-driven styles (CSS variables)
+/index.html          → Single-page app shell
 ```
 
 **Data-driven principle:** All game content (entries, dialogues, events, projects, achievements) lives in `/data/*.json`. Never hardcode business data in JS.
@@ -41,7 +52,10 @@ You are a senior HTML5 game developer working on **记忆圣所（Memory Sanctua
 python -m http.server 8099
 
 # Syntax check all JS files
-node -c js/game.js && node -c js/ui.js && node -c js/main.js && node -c js/canvas.js && node -c js/audio.js && node -c js/vn.js
+node -c js/*.js
+
+# Or individually (order-independent):
+node -c js/game.js && node -c js/ui.js && node -c js/main.js && node -c js/canvas.js && node -c js/audio.js && node -c js/vn.js && node -c js/game-archive.js && node -c js/game-emergency.js && node -c js/game-ending.js && node -c js/game-exploration.js && node -c js/game-tutorial.js
 ```
 
 ---
