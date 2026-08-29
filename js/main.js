@@ -487,10 +487,10 @@ function initTitleScreen() {
         });
     }
 
-    // Help button
+    // 标题「帮助」直接复用游戏内分层帮助弹窗（单一内容源，避免两份帮助口径漂移）
     if (titleHelp) {
         titleHelp.addEventListener('click', () => {
-            showTitleHelpModal();
+            if (typeof showHelpModal === 'function') showHelpModal();
         });
     }
 
@@ -558,41 +558,57 @@ function openDLCPanel() {
     const panel = document.getElementById('dlc-panel');
     const list = document.getElementById('dlc-list');
     if (!panel || !list) return;
-    
+
     // 填充 DLC 列表
     list.innerHTML = '';
-    
+
+    // DLC 本期未实装（HANDOFF §6）：仅「圣所」主模式可玩
     for (const [id, module] of Object.entries(DLC_MODULES)) {
+        const notImplemented = id !== 'sanctuary';
         const unlocked = isModuleUnlocked(id);
         const isActive = MemorySanctuary.activeModule === id;
         const progress = getModuleUnlockProgress(id);
-        
+
         const item = document.createElement('button');
         item.className = 'dlc-item';
         if (isActive) item.classList.add('dlc-active');
         if (!unlocked) item.classList.add('dlc-locked');
-        
+        if (notImplemented) item.classList.add('dlc-unimplemented');
+
+        const statusText = notImplemented
+            ? '🚧 暂未实装'
+            : (isActive ? '当前' : (unlocked ? '已解锁' : progress));
+
         item.innerHTML = `
             <span class="dlc-item-icon">${module.icon}</span>
             <div class="dlc-item-info">
                 <div class="dlc-item-name">${module.name}</div>
-                <div class="dlc-item-desc">${module.description}</div>
+                <div class="dlc-item-desc">${notImplemented ? '该模式正在制作中，请等待后续版本更新。' : module.description}</div>
             </div>
-            <span class="dlc-item-status ${isActive ? 'dlc-status-active' : (unlocked ? 'dlc-status-unlocked' : 'dlc-status-locked')}">
-                ${isActive ? '当前' : (unlocked ? '已解锁' : progress)}
+            <span class="dlc-item-status ${notImplemented ? 'dlc-status-locked' : (isActive ? 'dlc-status-active' : (unlocked ? 'dlc-status-unlocked' : 'dlc-status-locked'))}">
+                ${statusText}
             </span>
         `;
-        
-        if (unlocked && !isActive) {
+
+        if (notImplemented) {
+            // 未实装模式不可进入（进入只会看到占位画面）
+            item.addEventListener('click', () => {
+                if (typeof showTransientNotice === 'function') {
+                    showTransientNotice('🚧 该模式暂未实装，请等待后续版本更新。');
+                } else {
+                    alert('该模式暂未实装，请等待后续版本更新。');
+                }
+            });
+        } else if (unlocked && !isActive) {
             item.addEventListener('click', () => {
                 switchModule(id);
                 closeDLCPanel();
             });
         }
-        
+
         list.appendChild(item);
     }
-    
+
     panel.classList.remove('hidden');
 }
 
@@ -603,46 +619,6 @@ function closeDLCPanel() {
 
 function startNewGameWithSlotSelect() {
     openSaveScreen('new');
-}
-
-function showTitleHelpModal() {
-    const overlay = document.getElementById('modal-overlay');
-    const title = document.getElementById('modal-title');
-    const content = document.getElementById('modal-content');
-    const closeBtn = document.getElementById('modal-close');
-
-    if (!overlay || !title || !content) return;
-
-    title.textContent = '游戏帮助';
-
-    let helpContent = '欢迎来到「记忆圣所」。\n\n';
-    helpContent += '【游戏目标】\n';
-    helpContent += '在有限的 48 周内，尽可能多地归档文明碎片，为后世保存萨拉达斯文明的记忆。\n\n';
-    helpContent += '【核心操作】\n';
-    helpContent += '• 选择存储室 → 查看可归档条目 → 点击「录入归档」\n';
-    helpContent += '• 归档消耗能源与存储介质，同时推进时间\n\n';
-    helpContent += '【资源管理】\n';
-    helpContent += '• 能源：归档的基础消耗，归零后归档能耗加倍\n';
-    helpContent += '• 存储介质：归档必需品，归零后无法录入新条目\n';
-    helpContent += '• 环境稳定：影响条目保存条件，归零后条目过期速度翻倍\n';
-    helpContent += '• 食物：维持守护者士气，影响资源衰减效率\n\n';
-    helpContent += '【进阶系统】\n';
-    helpContent += '• 封印圣所（16 周起可预览，20 周后可触发）\n';
-    helpContent += '• 多周目奖励：继承奖励随周目递增\n';
-    helpContent += '• 圣所项目：投入资源换取持续增益\n';
-    helpContent += '• 地表勘探：派出守护者获取资源\n';
-    helpContent += '• 应急协议：危急时使用非常规手段\n\n';
-    helpContent += '【士气系统】\n';
-    helpContent += '• 守护者士气会影响资源衰减效率\n';
-    helpContent += '• 资源越紧张、时间越靠后，士气压力越大\n';
-    helpContent += '• 归档成功可提升士气\n';
-    helpContent += '• 通过守护者菜单分发补给品可鼓舞士气\n\n';
-    helpContent += '「——终来之刻，何物当存？」';
-
-    content.textContent = helpContent;
-    overlay.classList.remove('hidden');
-
-    if (closeBtn) closeBtn.onclick = () => overlay.classList.add('hidden');
 }
 
 // ==========================================
@@ -678,12 +654,12 @@ function initSaveData() {
 
 function getSettings() {
     const raw = localStorage.getItem('memory-sanctuary-settings');
-    if (!raw) return { skipConfirm: false, showResult: true, vnGuardianDialogue: true, animationSpeed: 100, fontSize: 17 };
+    if (!raw) return { skipConfirm: false, quickNoteConfirm: true, showResult: true, vnGuardianDialogue: true, animationSpeed: 100, fontSize: 17 };
     try {
         const parsed = JSON.parse(raw);
-        return { skipConfirm: false, showResult: true, vnGuardianDialogue: true, animationSpeed: 100, fontSize: 17, ...parsed };
+        return { skipConfirm: false, quickNoteConfirm: true, showResult: true, vnGuardianDialogue: true, animationSpeed: 100, fontSize: 17, ...parsed };
     } catch {
-        return { skipConfirm: false, showResult: true, vnGuardianDialogue: true, animationSpeed: 100, fontSize: 17 };
+        return { skipConfirm: false, quickNoteConfirm: true, showResult: true, vnGuardianDialogue: true, animationSpeed: 100, fontSize: 17 };
     }
 }
 
@@ -693,17 +669,20 @@ function initSettings() {
     const overlay = document.getElementById('settings-overlay');
     const closeBtn = document.getElementById('settings-close');
     const skipConfirmCheckbox = document.getElementById('setting-skip-confirm');
+    const quickNoteConfirmCheckbox = document.getElementById('setting-quick-note-confirm');
     const showResultCheckbox = document.getElementById('setting-show-result');
     const vnGuardianCheckbox = document.getElementById('setting-vn-guardian');
+    const checkUpdateBtn = document.getElementById('setting-check-update');
     const bgmVolumeSlider = document.getElementById('setting-bgm-volume');
     const bgmVolumeValue = document.getElementById('bgm-volume-value');
     const bgmMuteBtn = document.getElementById('setting-bgm-mute');
     const sfxVolumeSlider = document.getElementById('setting-sfx-volume');
     const sfxVolumeValue = document.getElementById('sfx-volume-value');
-    
+
     // Load current settings into checkboxes
     const settings = getSettings();
     if (skipConfirmCheckbox) skipConfirmCheckbox.checked = settings.skipConfirm;
+    if (quickNoteConfirmCheckbox) quickNoteConfirmCheckbox.checked = settings.quickNoteConfirm !== false;
     if (showResultCheckbox) showResultCheckbox.checked = settings.showResult;
     if (vnGuardianCheckbox) vnGuardianCheckbox.checked = settings.vnGuardianDialogue;
     
@@ -766,6 +745,26 @@ function initSettings() {
             const s = getSettings();
             s.skipConfirm = skipConfirmCheckbox.checked;
             localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
+        });
+    }
+    if (quickNoteConfirmCheckbox) {
+        quickNoteConfirmCheckbox.addEventListener('change', () => {
+            const s = getSettings();
+            s.quickNoteConfirm = quickNoteConfirmCheckbox.checked;
+            localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
+        });
+    }
+    // 手动检查更新（设置面板入口）
+    if (checkUpdateBtn) {
+        checkUpdateBtn.addEventListener('click', () => {
+            const statusEl = document.getElementById('check-update-status');
+            if (statusEl) statusEl.textContent = '检查中…';
+            if (typeof manualCheckUpdate === 'function') {
+                manualCheckUpdate((msg) => {
+                    if (statusEl) statusEl.textContent = msg;
+                    setTimeout(() => { if (statusEl) statusEl.textContent = `当前 v${GAME_VERSION}`; }, 4000);
+                });
+            }
         });
     }
     if (showResultCheckbox) {

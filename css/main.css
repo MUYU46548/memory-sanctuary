@@ -340,9 +340,15 @@ button:focus-visible,
     color: var(--text-dim);
 }
 
-#res-bots .res-value.bot-blackout {
-    color: var(--danger);
-    animation: criticalPulse 0.8s ease-in-out infinite;
+/* 机器人停机：整个 chip 呼吸闪烁（柔和红色边框光晕，非突兀高亮） */
+#res-bots.bot-blackout {
+    animation: chipBreath 2s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+@keyframes chipBreath {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(160, 64, 64, 0); border-color: transparent; }
+    50% { box-shadow: 0 0 0 3px rgba(160, 64, 64, 0.35); border-color: var(--danger); }
 }
 
 /* 关于弹窗样式 */
@@ -948,6 +954,16 @@ button:focus-visible,
     opacity: 0.6;
     letter-spacing: 0.05em;
     white-space: nowrap;
+}
+
+/* 封印按钮现居底部功能栏：与同组按钮对齐，但保持独立视觉层级 */
+#func-bar #seal-topbar-btn {
+    padding: 7px 16px;
+}
+
+#func-bar #seal-topbar-btn.sealable-ready,
+#func-bar #seal-topbar-btn.sealable-warning {
+    font-weight: 500;
 }
 
 /* 预览状态 — 灰色不可点击 */
@@ -5397,50 +5413,52 @@ button.archive-btn.recommended {
     display: none;
 }
 
-/* 章节提示卡片 — 屏幕居中覆盖层（不压顶栏/封印按钮） */
+/* 章节提示卡片 — 左侧侧边低调弹出（不居中、不压顶栏） */
 .chapter-banner {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.96);
-    width: min(420px, 80vw);
-    padding: 22px 28px;
-    text-align: center;
-    background: rgba(0, 0, 0, 0.88);
-    backdrop-filter: blur(6px);
-    border: 1px solid var(--amber-dim);
-    border-radius: 10px;
+    top: 88px;
+    left: 24px;
+    width: max-content;
+    max-width: 300px;
+    padding: 12px 18px;
+    text-align: left;
+    background: var(--bg-panel);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--border-subtle);
+    border-left: 3px solid var(--amber-dim);
+    border-radius: 6px;
     opacity: 0;
+    transform: translateX(-8px);
     transition: opacity 0.4s ease, transform 0.4s ease;
     pointer-events: none;
     z-index: 1002;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .chapter-banner.show {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translateX(0);
 }
 
 [data-theme="light"] .chapter-banner {
-    background: rgba(255, 248, 235, 0.95);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    background: var(--bg-panel);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .chapter-banner-text {
     font-family: var(--font-cn);
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: var(--amber-primary);
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
     font-weight: 500;
 }
 
 .chapter-banner-sub {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-dim);
-    margin-top: 4px;
-    letter-spacing: 0.08em;
+    margin-top: 3px;
+    letter-spacing: 0.06em;
 }
 
 #vn-overlay.vn-fade-in {
@@ -6185,4 +6203,128 @@ button.archive-btn.recommended {
     background: rgba(255, 255, 255, 0.15);
     padding: 2px 8px;
     border-radius: 3px;
+}
+
+/* ============================================
+   2026-08-29 反馈批次（v0.2.2 迭代二）
+   ============================================ */
+
+/* 帮助弹窗：紧凑双列卡片，全部默认折叠 */
+.help-modal-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 8px;
+}
+
+.help-modal-content .help-section {
+    margin-bottom: 0;
+    align-self: start;
+}
+
+.rt-desc {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin: 4px 0 6px;
+    max-width: 260px;
+}
+
+/* 轻量提示横幅（速记限次 / 检查更新结果等即时反馈） */
+#transient-notice {
+    position: fixed;
+    top: 64px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-6px);
+    background: var(--bg-panel);
+    border: 1px solid var(--amber-dim);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-family: var(--font-cn);
+    font-size: 0.85rem;
+    padding: 10px 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+    pointer-events: none;
+    z-index: 5000;
+    max-width: 70vw;
+    text-align: center;
+}
+
+#transient-notice.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* 关于弹窗：紧凑双列布局 */
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.about-grid .about-section {
+    margin-bottom: 0;
+}
+
+.about-modal .about-section {
+    margin-bottom: 12px;
+}
+
+.about-actions {
+    display: flex;
+    justify-content: center;
+    margin: 4px 0 12px;
+}
+
+.about-update-btn {
+    padding: 8px 20px;
+    background: var(--bg-panel-hover);
+    border: 1px solid var(--amber-dim);
+    border-radius: 4px;
+    color: var(--amber-primary);
+    font-family: var(--font-cn);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.about-update-btn:hover {
+    background: var(--amber-primary);
+    color: var(--bg-deep);
+}
+
+/* DLC 面板：暂未实装提示 */
+#dlc-panel-notice {
+    margin: 10px auto 4px;
+    padding: 8px 14px;
+    max-width: 420px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    background: var(--bg-panel);
+    border: 1px dashed var(--border-subtle);
+    border-radius: 6px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.dlc-item.dlc-unimplemented {
+    opacity: 0.55;
+}
+
+.dlc-item.dlc-unimplemented .dlc-item-name::after {
+    content: '（制作中）';
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-left: 6px;
+}
+
+/* #modal-content 为 pre-wrap，会把模板字符串的换行/缩进渲染成大段空白：
+   结构化弹窗（帮助/关于）局部恢复 normal，内部 <pre> 仍按自身规则换行 */
+.help-modal-content,
+.about-modal {
+    white-space: normal;
 }

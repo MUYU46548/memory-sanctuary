@@ -675,37 +675,25 @@ function renderResources() {
     const envEl = document.getElementById('environment-value');
     const foodEl = document.getElementById('food-value');
     const botsEl = document.getElementById('bots-value');
-    
-    if (energyEl) {
-        energyEl.textContent = Math.floor(resources.energy);
-        energyEl.style.cursor = 'pointer';
-        energyEl.title = '能源 ◈：归档基础消耗；归零后归档能耗加倍。点击查看说明';
-        if (!energyEl._bound) { energyEl._bound = true; energyEl.addEventListener('click', () => addLog('◈ 能源：维持圣所运转与归档的核心资源。归零后归档能耗 ×2。', 'system')); }
-    }
-    if (mediaEl) {
-        mediaEl.textContent = Math.floor(resources.media);
-        mediaEl.style.cursor = 'pointer';
-        mediaEl.title = '存储介质 ◇：存储归档数据；归零后无法录入新条目。点击查看说明';
-        if (!mediaEl._bound) { mediaEl._bound = true; mediaEl.addEventListener('click', () => addLog('◇ 存储介质：归档必需品。归零后无法录入新条目（应急协议除外）。', 'system')); }
-    }
-    if (envEl) {
-        envEl.textContent = Math.floor(resources.environment);
-        envEl.style.cursor = 'pointer';
-        envEl.title = '环境稳定 ○：保护设备；归零后条目过期速度翻倍。点击查看说明';
-        if (!envEl._bound) { envEl._bound = true; envEl.addEventListener('click', () => addLog('○ 环境稳定：影响条目保存条件。归零后条目过期速度 ×2。', 'system')); }
-    }
-    if (foodEl) {
-        foodEl.textContent = Math.floor(resources.food);
-        foodEl.style.cursor = 'pointer';
-        foodEl.title = '食物 🍖：维持守护者士气；耗尽后归档能耗 +20%。点击查看说明';
-        if (!foodEl._bound) { foodEl._bound = true; foodEl.addEventListener('click', () => addLog('🍖 食物：维持守护者士气。耗尽后归档能耗 +20%。', 'system')); }
-    }
-    if (botsEl) {
-        botsEl.textContent = Math.floor(resources.engineeringBots || 0);
-        botsEl.style.cursor = 'pointer';
-        botsEl.title = '工程机器人 🔧：自动减缓衰减；每台维护 2 能源/周。点击查看说明';
-        if (!botsEl._bound) { botsEl._bound = true; botsEl.addEventListener('click', () => addLog('🔧 工程机器人：自动减缓资源衰减，每台维护 ◈2 能源/周；能源不足时停机。', 'system')); }
-    }
+
+    // 顶栏资源 chips：点击弹出说明卡（悬停提示的固定版）
+    const chipKeys = ['energy', 'media', 'environment', 'food', 'engineeringBots'];
+    chipKeys.forEach(key => {
+        const chip = document.getElementById('res-' + (key === 'engineeringBots' ? 'bots' : key));
+        if (!chip || chip._bound) return;
+        chip._bound = true;
+        chip.style.cursor = 'pointer';
+        chip.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (typeof togglePinnedResourceTooltip === 'function') togglePinnedResourceTooltip(key);
+        });
+    });
+
+    if (energyEl) energyEl.textContent = Math.floor(resources.energy);
+    if (mediaEl) mediaEl.textContent = Math.floor(resources.media);
+    if (envEl) envEl.textContent = Math.floor(resources.environment);
+    if (foodEl) foodEl.textContent = Math.floor(resources.food);
+    if (botsEl) botsEl.textContent = Math.floor(resources.engineeringBots || 0);
     
     updateResourceColor('res-energy', resources.energy, 100);
     updateResourceColor('res-media', resources.media, 60);
@@ -780,11 +768,12 @@ function renderResources() {
         }
     }
     
-    // 工程机器人停机警告
+    // 工程机器人停机警告：整个 chip 呼吸闪烁（不做突兀的红色数字高亮）
+    const botsChip = document.getElementById('res-bots');
     if (state.botBlackoutLogged) {
-        if (botsEl) botsEl.classList.add('bot-blackout');
+        if (botsChip) botsChip.classList.add('bot-blackout');
     } else {
-        if (botsEl) botsEl.classList.remove('bot-blackout');
+        if (botsChip) botsChip.classList.remove('bot-blackout');
     }
 }
 
@@ -1003,11 +992,11 @@ function renderArchiveEntries() {
                 item.classList.add('theme-mismatch-border');
             }
             
-            const themeIndicator = isThemeMatch !== null ? (isThemeMatch ? '<span class="theme-match" title="主题契合：消耗 -20%">✓契合</span>' : '<span class="theme-mismatch" title="非主题：消耗 +30%">✗不适</span>') : '';
-            
+            const themeIndicator = isThemeMatch !== null ? (isThemeMatch ? '<span class="theme-match" title="主题契合：此条目与当前存储室主题匹配，归档消耗 -20%">✓契合</span>' : '<span class="theme-mismatch" title="主题不合：此条目与当前存储室主题不符，归档消耗 +30%。改存到匹配主题的存储室可降低消耗">主题不合</span>') : '';
+
             // 冲突警告
             const conflict = (typeof checkArchiveConflict === 'function') ? checkArchiveConflict(entry.id) : null;
-            const conflictWarning = conflict ? '<span class="conflict-warning" title="归档此条目会导致另一条消失">⚡冲突</span>' : '';
+            const conflictWarning = conflict ? `<span class="conflict-warning" title="叙事互斥：「${conflict.title}」与本条目互斥，归档此条目后它将永久消失。请先想好要保留哪一条">⚡互斥</span>` : '';
             
             // 隐藏内容标记
             const hiddenMarker = entry.hiddenContent ? '<span title="包含隐藏叙事">✨</span>' : '';
@@ -1074,7 +1063,11 @@ function renderArchiveEntries() {
     container.querySelectorAll('.quick-archive-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const archiveId = e.target.dataset.archiveId;
-            archiveEntry(archiveId, 'quick');
+            if (typeof confirmQuickArchive === 'function') {
+                confirmQuickArchive(archiveId);
+            } else {
+                archiveEntry(archiveId, 'quick');
+            }
         });
     });
     
@@ -1260,7 +1253,12 @@ function renderProjectList() {
             const isUnlock = project.effect && project.effect.type === 'unlockArchives';
             buttonHtml = `<button class="project-btn" disabled>${isUnlock ? '已生效' : '已完成'}</button>`;
         } else if (isRepeatableDone && canStart) {
-            buttonHtml = `<button class="project-btn" data-project-id="${project.id}">再次开始</button>`;
+            // 循环项目给出明确动作名，避免「一次性项目也能重开」的误解
+            let repeatLabel = '再次开始';
+            if (project.effect && project.effect.type === 'buildBot') repeatLabel = '再建一台（+1 机器人）';
+            else if (project.effect && project.effect.type === 'foodBoost') repeatLabel = '再次生产';
+            else if (project.effect && project.effect.type === 'resourceBoost') repeatLabel = '再次执行';
+            buttonHtml = `<button class="project-btn" data-project-id="${project.id}" title="循环项目：可重复执行，每次完成获得一次收益">${repeatLabel}</button>`;
         } else if (isRepeatableDone && !canStart) {
             buttonHtml = `<button class="project-btn" disabled>已完成（资源不足）</button>`;
         } else if (canStart) {
@@ -1440,11 +1438,26 @@ function showAchievementToast(achievement) {
     
     toast.classList.remove('hidden');
     toast.classList.add('show');
-    
+
     setTimeout(() => {
         toast.classList.remove('show');
         toast.classList.add('hidden');
     }, 3000);
+}
+
+// 轻量提示横幅（速记限次等即时反馈），2.6s 后自动淡出
+function showTransientNotice(text) {
+    let banner = document.getElementById('transient-notice');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'transient-notice';
+        banner.setAttribute('role', 'status');
+        document.body.appendChild(banner);
+    }
+    banner.textContent = text;
+    banner.classList.add('show');
+    clearTimeout(banner._timer);
+    banner._timer = setTimeout(() => banner.classList.remove('show'), 2600);
 }
 
 // ==========================================
@@ -1756,31 +1769,102 @@ function showArchiveDetail(entry) {
 // ==========================================
 
 function initResourceTooltips() {
-    const resourceKeys = ['energy', 'media', 'environment', 'food'];
+    const resourceKeys = ['energy', 'media', 'environment', 'food', 'engineeringBots'];
     resourceKeys.forEach(key => {
-        const el = document.getElementById('res-' + key);
+        const el = document.getElementById('res-' + (key === 'engineeringBots' ? 'bots' : key));
         if (!el) return;
-        
+
         el.addEventListener('mouseenter', (e) => showTooltip(e, key));
         el.addEventListener('mousemove', (e) => moveTooltip(e));
-        el.addEventListener('mouseleave', () => hideTooltip());
+        el.addEventListener('mouseleave', () => {
+            // 点击固定的说明卡不随鼠标离开消失
+            const tooltip = document.getElementById('resource-tooltip');
+            if (tooltip && tooltip.dataset.pinned) return;
+            hideTooltip();
+        });
     });
+
+    // 点击 chip 之外的区域时收起固定说明卡
+    if (!document._pinnedTooltipDismiss) {
+        document._pinnedTooltipDismiss = true;
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.resource')) hidePinnedTooltip();
+        });
+    }
 }
+
+// 点击顶栏资源 chip：固定显示说明卡（再点一次或点其他区域收起）
+function togglePinnedResourceTooltip(resourceKey) {
+    let tooltip = document.getElementById('resource-tooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'resource-tooltip';
+        document.body.appendChild(tooltip);
+    }
+
+    if (tooltip.dataset.pinned === resourceKey && tooltip.classList.contains('visible')) {
+        hidePinnedTooltip();
+        return;
+    }
+
+    tooltip.dataset.resourceKey = resourceKey;
+    tooltip.dataset.pinned = resourceKey;
+    tooltip.innerHTML = buildResourceTooltip(resourceKey);
+    tooltip.classList.add('visible');
+
+    const chip = document.getElementById('res-' + (resourceKey === 'engineeringBots' ? 'bots' : resourceKey));
+    if (chip) {
+        const r = chip.getBoundingClientRect();
+        let x = r.left;
+        let y = r.bottom + 8;
+        const rect = tooltip.getBoundingClientRect();
+        if (x + rect.width > window.innerWidth - 12) x = window.innerWidth - rect.width - 12;
+        if (y + rect.height > window.innerHeight - 12) y = Math.max(12, r.top - rect.height - 8);
+        tooltip.style.left = x + 'px';
+        tooltip.style.top = y + 'px';
+    }
+}
+
+function hidePinnedTooltip() {
+    const tooltip = document.getElementById('resource-tooltip');
+    if (!tooltip) return;
+    tooltip.classList.remove('visible');
+    delete tooltip.dataset.pinned;
+}
+
+// 各资源的一句话说明（与游戏内帮助「五种资源」口径一致）
+const RESOURCE_DESCRIPTIONS = {
+    energy: '维持圣所运转与归档的核心资源。归零后归档能耗加倍。',
+    media: '归档必需品。归零后无法录入新条目（应急协议的介质豁免除外）。',
+    environment: '保护设备与条目保存条件。归零后条目过期速度翻倍。',
+    food: '维持守护者士气。耗尽后归档能耗 +20%，并可能触发饥荒。',
+    engineeringBots: '自动维护圣所，每台减少 10% 资源衰减（上限 50%），每台每周消耗 2 能源；能源不足时停机。'
+};
 
 function buildResourceTooltip(resourceKey) {
     const state = MemorySanctuary.state;
     if (!state || !state.resourceChanges) return '';
-    
+
+    const desc = RESOURCE_DESCRIPTIONS[resourceKey];
+    let html = `<div class="rt-title">${getResourceName(resourceKey)}</div>`;
+    if (desc) html += `<div class="rt-desc">${desc}</div>`;
+
+    // 工程机器人：无回合变化统计，直接显示台数与说明
+    if (resourceKey === 'engineeringBots') {
+        const count = state.resources.engineeringBots || 0;
+        html += `<div class="rt-capacity">当前：${count} 台${state.botBlackoutLogged ? '（⚠ 能源不足，停机中）' : ''}</div>`;
+        return html;
+    }
+
     const changes = state.resourceChanges[resourceKey] || 0;
     const changeClass = changes > 0 ? 'gain' : (changes < 0 ? 'loss' : 'neutral');
     const changeSign = changes > 0 ? '+' : '';
-    
+
     // 收集来源分解
     const breakdowns = getResourceBreakdown(resourceKey);
-    
-    let html = `<div class="rt-title">${getResourceName(resourceKey)}</div>`;
+
     html += `<div class="rt-total ${changeClass}">${changeSign}${changes.toFixed(1)} / 回合</div>`;
-    
+
     if (breakdowns.length > 0) {
         html += '<div class="rt-breakdown">';
         breakdowns.forEach(b => {
@@ -1790,7 +1874,7 @@ function buildResourceTooltip(resourceKey) {
         });
         html += '</div>';
     }
-    
+
     // 储量信息
     const maxCap = resourceKey === 'food' ? 80
         : resourceKey === 'energy' ? 150

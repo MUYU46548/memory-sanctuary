@@ -58,7 +58,8 @@ function showUpdateToast(remote) {
     requestAnimationFrame(() => toast.classList.add('show'));
 }
 
-async function checkForUpdate() {
+async function checkForUpdate(options = {}) {
+    const manual = !!options.manual;
     try {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 8000);
@@ -67,25 +68,36 @@ async function checkForUpdate() {
             cache: 'no-store'
         });
         clearTimeout(timer);
-        if (!res.ok) return; // 静默降级
+        if (!res.ok) {
+            if (manual && options.onResult) options.onResult('⚠ 检查失败：更新源无响应');
+            return;
+        }
 
         const remote = await res.json();
-        if (!remote || !remote.version) return;
+        if (!remote || !remote.version) {
+            if (manual && options.onResult) options.onResult('⚠ 检查失败：更新源数据异常');
+            return;
+        }
 
-        // 已忽略该版本则不再打扰
-        let ignored = null;
-        try { ignored = localStorage.getItem(UPDATE_IGNORE_KEY); } catch (e) {}
-        if (ignored === remote.version) return;
-
-        // 本地版本来自 main.js 全局常量 GAME_VERSION（单一来源）
         const local = (typeof GAME_VERSION !== 'undefined') ? GAME_VERSION : '0.0.0';
-        if (compareVersion(remote.version, local) > 0) {
-            showUpdateToast(remote);
+        const hasNew = compareVersion(remote.version, local) > 0;
+
+        if (hasNew && !(localStorage.getItem(UPDATE_IGNORE_KEY) === remote.version && !manual)) {
+            showUpdateToast(remote, { manual });
+        }
+        if (manual && options.onResult) {
+            options.onResult(hasNew ? `发现新版本 v${remote.version}` : '✓ 已是最新版本');
         }
     } catch (e) {
         // 网络/CORS/超时/解析失败：静默忽略，游戏照常进行
+        if (manual && options.onResult) options.onResult('⚠ 检查失败：网络不可用');
         if (typeof DEBUG !== 'undefined' && DEBUG) {
             console.warn('[更新检测] 已跳过（不影响游戏）:', e);
         }
     }
+}
+
+// 手动检查入口（设置面板 / 关于弹窗）：无论结果如何都给出可见反馈
+function manualCheckUpdate(onResult) {
+    return checkForUpdate({ manual: true, onResult });
 }

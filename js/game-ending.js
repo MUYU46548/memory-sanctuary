@@ -623,8 +623,8 @@ function generateDynamicEnding(ending) {
         text: '「——终来之刻，何物当存？」'
     });
     
-    // 动态加载并播放场景
-    VN.loadScenes({ 'dynamic_ending': dynamicScene });
+    // 动态加载并播放场景（结局场景必须进 endingScenes：VN.showEnding 只查这张表）
+    VN.loadEndingScenes({ 'dynamic_ending': dynamicScene });
     VN.showEnding('dynamic_ending', () => {
         const modalContent = getEndingModalData(ending);
         showSealModalWithContent(modalContent, ending);

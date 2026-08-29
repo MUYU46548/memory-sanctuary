@@ -2288,22 +2288,14 @@ function showAboutModal() {
                 <div class="about-subtitle">终来之刻，何物当存？</div>
                 <div class="about-version">v${GAME_VERSION}</div>
             </div>
-            <div class="about-divider"></div>
-            <div class="about-section">
-                <div class="about-section-title">技术信息</div>
-                <div class="about-section-content">
-                    HTML5 + CSS3 + Canvas 2D + Vanilla JavaScript<br>
-                    — 绒花计划 系列IP —
+            <div class="about-grid">
+                <div class="about-section">
+                    <div class="about-section-title">技术信息</div>
+                    <div class="about-section-content">HTML5 + CSS3 + Canvas 2D<br>Vanilla JavaScript · 绒花计划系列IP</div>
                 </div>
-            </div>
-            <div class="about-section">
-                <div class="about-section-title">守护者</div>
-                <div class="about-section-content">
-                    🦅 缇卡 · 首席歌者<br>
-                    📜 芬恩 · 历史编年学者<br>
-                    🌿 米莎 · 生态学家<br>
-                    ⚙️ 洛恩 · 前航天工程师<br>
-                    🙏 埃塞尔 · 前祭司
+                <div class="about-section">
+                    <div class="about-section-title">守护者</div>
+                    <div class="about-section-content">🦅 缇卡 · 首席歌者　📜 芬恩 · 编年学者<br>🌿 米莎 · 生态学家　⚙️ 洛恩 · 工程师<br>🙏 埃塞尔 · 前祭司</div>
                 </div>
             </div>
             <div class="about-section">
@@ -2316,16 +2308,32 @@ function showAboutModal() {
                     <div class="about-stat"><span class="about-stat-label">最佳</span><span class="about-stat-value">${bestRun}</span></div>
                 </div>
             </div>
+            <div class="about-actions">
+                <button id="about-check-update-btn" class="about-update-btn">🔄 检查更新</button>
+            </div>
             <div class="about-footer">
                 「我们曾存在，我们曾仰望，我们曾渴望触碰你们。」
             </div>
         </div>
     `;
 
-    content.innerHTML = html;
+    content.innerHTML = html.trim();
     overlay.classList.remove('hidden');
 
     if (closeBtn) closeBtn.onclick = () => overlay.classList.add('hidden');
+
+    // 手动检查更新：关闭关于弹窗，结果走右下角更新提示/轻量横幅
+    const checkBtn = document.getElementById('about-check-update-btn');
+    if (checkBtn) {
+        checkBtn.onclick = () => {
+            overlay.classList.add('hidden');
+            if (typeof manualCheckUpdate === 'function') {
+                manualCheckUpdate((msg) => {
+                    if (typeof showTransientNotice === 'function') showTransientNotice(msg);
+                });
+            }
+        };
+    }
 }
 
 // ==========================================
@@ -2341,19 +2349,19 @@ function showHelpModal() {
     
     title.textContent = '游戏帮助';
     
-    // 分层级的帮助内容
+    // 分层级的帮助内容（默认全部折叠，点击展开；弹窗保持紧凑）
     const helpSections = [
         {
             title: '🎯 游戏目标',
-            content: '在有限的 48 周内，尽可能多地归档文明碎片，为后世保存萨拉达斯文明的记忆。',
-            defaultOpen: true
+            content: `• 在有限的 48 周内，尽可能多地归档文明碎片，为后世保存萨拉达斯文明的记忆
+• 20 周后可封印圣所提前结算，48 周为极限挑战`,
         },
         {
             title: '🎮 核心操作',
-            content: `• 选择存储室 → 查看可归档条目 → 点击「录入归档」
-• 归档消耗能源与存储介质，同时推进时间
-• 跳过回合可恢复资源，但会推进时间并可能降低守护者好感`,
-            defaultOpen: false
+            content: `• 待归档条目自动出现在右侧「归档」页，点击「录入归档」执行
+• 归档消耗能源与存储介质，同时推进 1 周时间
+• 跳过回合可恢复资源，但会推进时间并可能降低守护者好感
+• 底部功能栏：勘探（获取外部资源）、项目（长期建设）、应急（危急手段）`,
         },
         {
             title: '📊 五种资源',
@@ -2361,29 +2369,27 @@ function showHelpModal() {
 • 存储介质 ◇：归档必需品，归零后无法录入新条目
 • 环境稳定 ○：影响条目保存条件，归零后条目过期速度翻倍
 • 食物 🍖：维持守护者士气，影响资源衰减效率
-• 工程机器人 🔧：自动维护圣所，减少资源衰减（每台消耗 2 能源/周）`,
-            defaultOpen: true
+• 工程机器人 🔧：自动维护圣所，减少资源衰减（每台消耗 2 能源/周）
+提示：点击顶栏对应资源图标可随时查看当周变化明细。`,
         },
         {
             title: '✨ 归档仪式',
-            content: `• 标准归档：正常消耗，有守护者反应与隐藏叙事
+            content: `• 标准归档：正常消耗，有守护者反应与隐藏叙事，推进 1 周
 • 深度归档：额外消耗 10 能源，解锁隐藏叙事
-• 速记：省 30% 资源、不推进时间，但牺牲隐藏叙事与守护者注记，每回合限 1 次`,
-            defaultOpen: false
+• ⚡速记：省 30% 资源、不推进时间的轻量归档；但牺牲隐藏叙事与守护者注记、不触发线索链、士气收益减半，每回合限 1 次
+• 🤖 AI辅助：解锁档案AI助理后可用，费用减半、不推进时间，环境稳定度 -5`,
         },
         {
             title: '🏛️ 存储室主题契合度',
-            content: `• 匹配主题的条目：消耗 -20%（绿色 ✓契合）
-• 非匹配主题的条目：消耗 +30%（橙色 ✗不适）
-• 条目类型与存储室主题匹配时显示绿色标记`,
-            defaultOpen: false
+            content: `• ✓契合（绿色）：条目与存储室主题匹配，归档消耗 -20%
+• 主题不合（橙色）：条目与存储室主题不符，归档消耗 +30%
+• 悬停标记可查看说明；同一批条目在不同主题的存储室消耗不同`,
         },
         {
-            title: '⚡ 叙事冲突',
-            content: `• 某些条目互斥：归档一条会导致另一条永久消失
-• 冲突不在 UI 直接显示，需要玩家通过阅读内容推断
-• 冲突条目会显示 ⚡冲突 警告`,
-            defaultOpen: false
+            title: '⚡ 叙事互斥',
+            content: `• 带 ⚡互斥 标记的条目之间存在叙事冲突：归档其中一条，另一条将永久消失
+• 悬停 ⚡互斥 标记可看到与哪条互斥
+• 互斥是剧情抉择：两条都读完简介后再决定保留哪一条`,
         },
         {
             title: '🗺️ 进阶系统',
@@ -2420,14 +2426,13 @@ function showHelpModal() {
     ];
     
     let html = '<div class="help-modal-content">';
-    
+
     helpSections.forEach((section, index) => {
-        const isOpen = section.defaultOpen ? ' open' : '';
         html += `
-            <div class="help-section${isOpen}" data-section="${index}">
+            <div class="help-section" data-section="${index}">
                 <div class="help-section-header">
                     <span class="help-section-title">${section.title}</span>
-                    <span class="help-section-toggle">${isOpen ? '▼' : '▶'}</span>
+                    <span class="help-section-toggle">▶</span>
                 </div>
                 <div class="help-section-body">
                     <pre>${section.content}</pre>
@@ -2435,22 +2440,25 @@ function showHelpModal() {
             </div>
         `;
     });
-    
+
     html += '</div>';
-    
-    content.innerHTML = html;
+
+    content.innerHTML = html.trim();
     overlay.classList.remove('hidden');
-    
-    // 绑定折叠事件
+
+    // 绑定折叠事件：展开高度按内容实测，避免 600px 上限造成的空腔
     content.querySelectorAll('.help-section-header').forEach(header => {
         header.addEventListener('click', () => {
             const section = header.parentElement;
-            section.classList.toggle('open');
+            const body = section.querySelector('.help-section-body');
             const toggle = header.querySelector('.help-section-toggle');
-            toggle.textContent = section.classList.contains('open') ? '▼' : '▶';
+            const willOpen = !section.classList.contains('open');
+            section.classList.toggle('open', willOpen);
+            if (body) body.style.maxHeight = willOpen ? (body.scrollHeight + 'px') : '0px';
+            if (toggle) toggle.textContent = willOpen ? '▼' : '▶';
         });
     });
-    
+
     if (closeBtn) closeBtn.onclick = () => overlay.classList.add('hidden');
 }
 

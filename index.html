@@ -67,6 +67,7 @@
         <div id="dlc-panel-content">
             <h2 id="dlc-panel-title">选择模式</h2>
             <p id="dlc-panel-subtitle">终来之刻，何物当存？</p>
+            <div id="dlc-panel-notice">🚧 DLC 模式暂未实装（框架已就绪），请等待后续版本更新。当前仅开放「圣所」主模式。</div>
             <div id="dlc-list">
                 <!-- 由 JS 动态填充 -->
             </div>
@@ -122,7 +123,6 @@
                 </div>
                 <button id="theme-toggle" title="切换主题">◐</button>
                 <button id="mute-toggle" title="静音切换">🔊</button>
-                <button id="seal-topbar-btn" class="hidden" title="">封印圣所</button>
             </div>
         </header>
 
@@ -258,6 +258,7 @@
                 <button id="explore-btn" title="地表勘探" disabled>🔭 勘探</button>
                 <button id="project-btn" title="圣所项目" disabled>🏗️ 项目</button>
                 <button id="emergency-btn" title="应急协议" disabled>⚡ 应急</button>
+                <button id="seal-topbar-btn" class="hidden" title="">封印圣所</button>
             </div>
             <!-- 视图组 -->
             <div class="func-bar-group">
@@ -414,6 +415,13 @@
                 </div>
                 <div class="settings-item">
                     <label class="settings-label">
+                        <input type="checkbox" id="setting-quick-note-confirm" checked>
+                        <span>速记需要二次确认</span>
+                    </label>
+                    <div class="settings-desc">开启后点击「⚡速记」会先弹出代价说明窗口；关闭则直接执行。</div>
+                </div>
+                <div class="settings-item">
+                    <label class="settings-label">
                         <input type="checkbox" id="setting-show-result" checked>
                         <span>归档后展示内容</span>
                     </label>
@@ -483,6 +491,16 @@
                         <span class="settings-volume-value" id="font-size-value">17px</span>
                     </div>
                     <div class="settings-desc">调整基础字体大小（14-20px）。</div>
+                </div>
+                <div class="settings-item">
+                    <label class="settings-label">
+                        <span>游戏更新</span>
+                    </label>
+                    <div class="settings-volume-row">
+                        <button class="settings-mute-btn" id="setting-check-update" title="手动检查是否有新版本">🔄 检查更新</button>
+                        <span class="settings-volume-value" id="check-update-status">当前 v0.2.2</span>
+                    </div>
+                    <div class="settings-desc">手动检查新版本。有新版时会在右下角提示并附下载链接。</div>
                 </div>
             </div>
         </div>

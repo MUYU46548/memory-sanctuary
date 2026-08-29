@@ -591,6 +591,118 @@ function confirmArchive(archiveId) {
 }
 
 
+function confirmQuickArchive(archiveId) {
+    // 设置允许跳过速记确认
+    const settings = (typeof getSettings === 'function') ? getSettings() : { quickNoteConfirm: true };
+    if (settings.quickNoteConfirm === false) {
+        archiveEntry(archiveId, 'quick');
+        return;
+    }
+
+    const entry = getArchiveById(archiveId);
+    if (!entry) return;
+    const state = MemorySanctuary.state;
+
+    // 已用过速记：直接给阻断提示，不再弹确认
+    if (state.quickArchiveWeek === state.week) {
+        addLog('⚡ 速记本回合已使用（每回合限 1 次）。', 'system');
+        if (typeof showTransientNotice === 'function') showTransientNotice('⚡ 速记每回合限用 1 次，本回合已使用过。');
+        return;
+    }
+
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    const closeBtn = document.getElementById('modal-close');
+    if (!overlay || !title || !content) {
+        archiveEntry(archiveId, 'quick');
+        return;
+    }
+
+    // 计算速记后实际消耗（与 archiveEntry 同口径）
+    const vault = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
+    const effectiveCost = getEffectiveCost(entry, vault);
+    const energyCost = Math.ceil((effectiveCost.energy || 0) * 0.7);
+    const mediaCost = Math.ceil((effectiveCost.media || 0) * 0.7);
+
+    title.textContent = '确认速记';
+
+    let contentText = `要以「⚡速记」归档「${entry.title}」吗？\n\n`;
+    contentText += `【速记收益】\n`;
+    contentText += `· 资源消耗 -30%：◈ ${energyCost} 能源，◇ ${mediaCost} 介质\n`;
+    contentText += `· 不推进时间（本回合仍可继续其他行动）\n\n`;
+    contentText += `【速记代价】\n`;
+    contentText += `· 牺牲隐藏叙事与守护者注记（条目被标记为浅层录入）\n`;
+    contentText += `· 不触发叙事线索链\n`;
+    contentText += `· 士气收益减半\n`;
+    contentText += `· 每回合限用 1 次`;
+
+    content.innerHTML = esc(contentText, true);
+    overlay.classList.remove('hidden');
+
+    const existingConfirm = document.getElementById('modal-confirm-container');
+    if (existingConfirm) existingConfirm.remove();
+
+    const confirmContainer = document.createElement('div');
+    confirmContainer.id = 'modal-confirm-container';
+    confirmContainer.style.display = 'flex';
+    confirmContainer.style.gap = '12px';
+    confirmContainer.style.alignItems = 'center';
+    confirmContainer.style.marginTop = '16px';
+    confirmContainer.style.flexWrap = 'wrap';
+
+    const skipLabel = document.createElement('label');
+    skipLabel.style.display = 'flex';
+    skipLabel.style.alignItems = 'center';
+    skipLabel.style.gap = '6px';
+    skipLabel.style.fontSize = '0.75rem';
+    skipLabel.style.color = 'var(--text-dim)';
+    skipLabel.style.cursor = 'pointer';
+
+    const skipCheckbox = document.createElement('input');
+    skipCheckbox.type = 'checkbox';
+    skipCheckbox.id = 'quick-note-confirm-checkbox';
+    skipCheckbox.style.cursor = 'pointer';
+
+    skipLabel.appendChild(skipCheckbox);
+    skipLabel.appendChild(document.createTextNode('不再提示（可在设置中重新开启）'));
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.id = 'modal-quick-confirm-btn';
+    confirmBtn.textContent = '⚡ 确认速记';
+    confirmBtn.style.padding = '10px 24px';
+    confirmBtn.style.background = 'var(--success)';
+    confirmBtn.style.border = 'none';
+    confirmBtn.style.borderRadius = '4px';
+    confirmBtn.style.color = '#fff';
+    confirmBtn.style.fontFamily = 'var(--font-cn)';
+    confirmBtn.style.fontSize = '0.9rem';
+    confirmBtn.style.cursor = 'pointer';
+
+    confirmBtn.onclick = () => {
+        if (skipCheckbox.checked && typeof getSettings === 'function') {
+            const s = getSettings();
+            s.quickNoteConfirm = false;
+            localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
+        }
+        closeConfirmModal(archiveId, true, 'quick');
+    };
+
+    confirmContainer.appendChild(skipLabel);
+    confirmContainer.appendChild(confirmBtn);
+
+    // 修改关闭按钮为"取消"
+    if (closeBtn) {
+        closeBtn.textContent = '取消';
+        closeBtn.onclick = () => {
+            closeConfirmModal(archiveId, false);
+        };
+    }
+
+    content.appendChild(confirmContainer);
+}
+
+
 function useInstantArchive(archiveId) {
     const entry = getArchiveById(archiveId);
     if (!entry) return false;
