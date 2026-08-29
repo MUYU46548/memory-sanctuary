@@ -117,7 +117,7 @@ function destroyConflictEntry(conflictId) {
  * 归档仪式类型
  * standard: 标准归档（正常消耗）
  * deep: 深度归档（额外消耗10能源，解锁隐藏叙事）
- * quick: 快速归档（消耗减半，无守护者反应）
+ * quick: 速记（省 30% 资源、不推进时间，无守护者反应）
  */
 function archiveEntry(archiveId, ritualType = 'standard') {
     const entry = getArchiveById(archiveId);
@@ -262,15 +262,17 @@ function archiveEntry(archiveId, ritualType = 'standard') {
         return true;
     }
     
-    // 正常模式：推进时间
-    advanceTime(1);
+    // 速记不推进时间（轻量动作）；标准/深度归档推进 1 周
+    if (ritualType !== 'quick') {
+        advanceTime(1);
+    }
     
     // 深度归档日志
     if (ritualType === 'deep') {
         addLog(`✨ 深度归档：\"${entry.title}\"（额外消耗 10 能源解锁隐藏叙事）`, 'success');
         state.deepArchiveCount = (state.deepArchiveCount || 0) + 1;
     } else if (ritualType === 'quick') {
-        addLog(`⚡ 快速归档：\"${entry.title}\"（消耗减半）`, 'success');
+        addLog(`⚡ 快速归档：\"${entry.title}\"（省 30% 资源）`, 'success');
     } else {
         addLog(`已完成归档：\"${entry.title}\"`, 'success');
     }
@@ -302,8 +304,8 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     // 检查叙事线索链（速记不触发隐藏叙事与线索链）
     if (ritualType !== 'quick' && typeof checkNarrativeChains === 'function') checkNarrativeChains(archiveId);
     
-    // 归档后可能触发事件
-    if (typeof checkRandomEvent === 'function') checkRandomEvent();
+    // 归档后可能触发事件（速记不推进时间，不触发世界事件）
+    if (ritualType !== 'quick' && typeof checkRandomEvent === 'function') checkRandomEvent();
     
     // 归档成功士气奖励（速记仅基础奖励的一半）
     if (ritualType === 'quick') {
