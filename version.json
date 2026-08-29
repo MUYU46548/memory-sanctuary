@@ -1,6 +1,6 @@
 {
-  "version": "0.2.1",
-  "releaseDate": "2026-08-27",
-  "downloadUrl": "https://github.com/MUYU46548/memory-sanctuary/releases/tag/v0.2.1",
-  "notes": "新增轻量版本更新检测：有新版时右下角提示并跳转下载页。"
+  "version": "0.2.2",
+  "releaseDate": "2026-08-29",
+  "downloadUrl": "https://github.com/MUYU46548/memory-sanctuary/releases/tag/v0.2.2",
+  "notes": "圣所主厅美术重构（天文馆冷峻风）+ 安全整治 + 16 项玩家反馈修复（含事件面板常驻、章节条布局、速记重做带真实代价、按钮配色统一、滑块填充）+ 速记不推进时间修复。"
 }

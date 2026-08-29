@@ -1,6 +1,6 @@
 # 记忆圣所 (Memory Sanctuary)
 
-![Version](https://img.shields.io/badge/version-v0.2.1-blue)
+![Version](https://img.shields.io/badge/version-v0.2.2-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tech](https://img.shields.io/badge/tech-HTML5%20%2B%20CSS3%20%2B%20Vanilla%20JS-orange)
 
@@ -306,6 +306,13 @@ memory-sanctuary/
 ---
 
 ## 版本历史
+
+### v0.2.2 (2026-08-29)
+
+- ✅ 圣所主厅美术重构：暗色「恐怖感」→ 天文馆冷峻风（深蓝灰室内 + 观察窗星空 + 克制控制台）
+- ✅ 安全整治：Canvas 全面改读 CSS 变量调色板（0 裸 hex）、存档导入白名单清洗、统一 HTML 转义、更新链接白名单守卫、`prefers-reduced-motion` 支持、DEBUG 开关单一来源
+- ✅ 16 项玩家反馈修复：推荐归档竞态、结局 BGM 切换、章节提示条改为居中固定覆盖层（不再压住顶栏/封印按钮）、事件面板任何标签页常驻可见可处理、⚡速记重做（省 30% 资源、不推进时间、牺牲隐藏叙事与守护者注记、士气减半、每回合限 1 次）、底部功能栏配色统一（去除紫色不可点观感）、设置滑块左亮右灰填充等
+- 🐛 回归实测修复：速记此前仍会推进时间，与提示文案不符——现已真正不推进时间、不触发世界事件，日志文案同步更正
 
 ### v0.2.1 (2026-08-27)
 
