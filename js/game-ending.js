@@ -646,13 +646,55 @@ function playEndingSequence(ending) {
 }
 
 /**
+ * 清理长文本片段：去换行/多余空白，尽量在句末断，避免 VN 旁白里出现半个句子或原生换行
+ */
+function cleanSnippet(text, maxLen) {
+    if (!text) return '';
+    const flat = String(text).replace(/\s*\n\s*/g, ' ').replace(/\s+/g, ' ').trim();
+    if (flat.length <= maxLen) return flat;
+    const cut = flat.slice(0, maxLen);
+    const lastPunc = Math.max(cut.lastIndexOf('。'), cut.lastIndexOf('，'), cut.lastIndexOf('、'), cut.lastIndexOf('：'));
+    const end = lastPunc > maxLen * 0.5 ? lastPunc + 1 : maxLen;
+    return flat.slice(0, end) + '…';
+}
+
+/**
  * 动态生成结局场景（基于玩家选择）
+ *
+ * 方案 A：若结局本身有专属 VN 场景（如 guardian_tika_finale / complete_memory / sacrifice_*），
+ * 以其为基底保留立绘与专属对白，再把玩家选中的「记忆回响」插入到专属对白之后；
+ * 无专属场景的兜底/百分比类结局才用通用旁白。
+ * 这样守护者亲密结局的专属演出（立绘+对白）在选了记忆回响时也能正常播放，不再被通用旁白覆盖。
  */
 function generateDynamicEnding(ending) {
     const state = MemorySanctuary.state;
     const selected = state.memoryEchoSelection || [];
-    
-    // 创建动态场景
+    const echoes = selected.map(id => getArchiveById(id)).filter(Boolean);
+
+    // 结局有专属 VN 场景：以专属场景为基底，追加记忆回响段
+    const baseScene = (ending && typeof VN !== 'undefined') ? VN.getEndingScene(ending.id) : null;
+    if (baseScene) {
+        const scene = JSON.parse(JSON.stringify(baseScene)); // 深拷贝，避免污染原始场景数据
+        if (!scene.dialogue) scene.dialogue = [];
+        if (echoes.length > 0) {
+            scene.dialogue.push({ speaker: 'narrator', text: '封印之前，你最后回望了这几段记忆——' });
+            echoes.forEach(arch => {
+                scene.dialogue.push({
+                    speaker: 'narrator',
+                    text: `「${arch.title}」：${cleanSnippet(arch.content, 48)}`
+                });
+            });
+            scene.dialogue.push({ speaker: 'narrator', text: '「——终来之刻，何物当存？」' });
+        }
+        VN.loadEndingScenes({ 'dynamic_ending': scene });
+        VN.showEnding('dynamic_ending', () => {
+            const modalContent = getEndingModalData(ending);
+            showSealModalWithContent(modalContent, ending);
+        });
+        return;
+    }
+
+    // 无专属场景（兜底/百分比类）：通用旁白，清理换行与粗暴截断
     const dynamicScene = {
         title: ending ? ending.title : '圣所封印',
         background: ending?.id || 'silent_sanctuary',
@@ -661,31 +703,26 @@ function generateDynamicEnding(ending) {
             { speaker: 'narrator', text: '在封印之前，你选择了最珍贵的记忆……' }
         ]
     };
-    
-    // 添加选中的记忆
-    selected.forEach(archId => {
-        const arch = getArchiveById(archId);
-        if (arch) {
-            dynamicScene.dialogue.push({
-                speaker: 'narrator',
-                text: `「${arch.title}」— ${arch.content.substring(0, 60)}...`
-            });
-        }
+
+    echoes.forEach(arch => {
+        dynamicScene.dialogue.push({
+            speaker: 'narrator',
+            text: `「${arch.title}」：${cleanSnippet(arch.content, 48)}`
+        });
     });
-    
-    // 添加结局特定的结尾
+
     if (ending) {
         dynamicScene.dialogue.push({
             speaker: 'narrator',
-            text: ending.description.substring(0, 100)
+            text: cleanSnippet(ending.description, 100)
         });
     }
-    
+
     dynamicScene.dialogue.push({
         speaker: 'narrator',
         text: '「——终来之刻，何物当存？」'
     });
-    
+
     // 动态加载并播放场景（结局场景必须进 endingScenes：VN.showEnding 只查这张表）
     VN.loadEndingScenes({ 'dynamic_ending': dynamicScene });
     VN.showEnding('dynamic_ending', () => {
@@ -721,14 +758,21 @@ function showEndingSummaryPage(ending, isGameOver = false) {
     
     if (!pageOverlay) return;
     
-    // Set title
-    titleEl.textContent = isGameOver ? '圣所已崩溃' : '圣所封印';
+    // Set title（显示玩家实际达成的结局名；崩溃/无结局时退回通用标题）
+    titleEl.textContent = ending ? ending.title : (isGameOver ? '圣所已崩溃' : '圣所封印');
     
     // Generate civilization portrait
     const portrait = generateCivilizationPortrait();
     
-    // Portrait section
-    portraitEl.innerHTML = `
+    // Portrait section（顶部先展示玩家达成的结局叙述，再展示文明画像）
+    let outcomeHtml = '';
+    if (ending) {
+        outcomeHtml = `<div class="ending-outcome">
+            <h3>${esc(ending.title, true)}</h3>
+            <p>${esc(ending.description, true)}</p>
+        </div>`;
+    }
+    portraitEl.innerHTML = outcomeHtml + `
         <h3>${portrait.title}</h3>
         <p>${portrait.description}</p>
     `;

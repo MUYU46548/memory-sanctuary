@@ -6298,6 +6298,30 @@ button.archive-btn.recommended {
     margin: 0;
 }
 
+/* 结局叙述块：玩家实际达成的结局（标题+描述），置于文明画像之上 */
+.ending-outcome {
+    background: var(--amber-bg-soft, rgba(201, 168, 124, 0.12));
+    border: 1px solid var(--amber-border, rgba(201, 168, 124, 0.4));
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+}
+
+.ending-outcome h3 {
+    color: var(--amber-primary, #c9a87c);
+    font-size: 1.05rem;
+    margin: 0 0 8px 0;
+    letter-spacing: 0.02em;
+}
+
+.ending-outcome p {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
 #ending-stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
