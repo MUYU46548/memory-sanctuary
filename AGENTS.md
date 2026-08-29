@@ -165,7 +165,7 @@ button:focus:not(:focus-visible) { outline: none; }
 MemorySanctuary.state = {
     week: 1,
     resources: { energy: 150, media: 100, environment: 95, food: 50 },
-    guardianMoods: { tika: 5, finn: 5, misha: 5, lorn: 5, ethel: 5 },
+    guardianMoods: { tika: 2, finn: 2, misha: 2, lorn: 2, ethel: 2 },
     completedArchives: [],
     activeProjects: [],
     completedProjects: [],
