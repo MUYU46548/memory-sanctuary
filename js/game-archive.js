@@ -134,6 +134,13 @@ function archiveEntry(archiveId, ritualType = 'standard') {
         return false;
     }
     
+    // 速记（快速归档）每回合限 1 次：牺牲叙事深度，不可滥用
+    if (ritualType === 'quick') {
+        if (state.quickArchiveWeek === state.week) {
+            addLog('⚡ 速记本回合已使用（每回合限 1 次）。', 'system');
+            return false;
+        }
+    }
     // 圣所衰竭：介质耗尽时无法录入（紧急归档除外）
     if (!state.emergencyArchiveActive && state.deterioration && state.deterioration.media) {
         addLog('存储介质耗尽，无法录入新条目。请补充介质后再试。', 'system');
@@ -155,8 +162,9 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     if (ritualType === 'deep') {
         extraEnergyCost = 10;
     } else if (ritualType === 'quick') {
-        energyCost = Math.ceil(energyCost * 0.5);
-        mediaCost = Math.ceil(mediaCost * 0.5);
+        // 速记：仅省 30% 资源，但牺牲叙事深度（见下方限制）
+        energyCost = Math.ceil(energyCost * 0.7);
+        mediaCost = Math.ceil(mediaCost * 0.7);
     }
     
     // 紧急归档协议：跳过介质检查
@@ -270,13 +278,19 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     // 音效：归档成功风铃
     if (typeof AudioSystem !== 'undefined') AudioSystem.playArchiveChime();
     
-    // 守护者反应（快速归档无反应）
+    // 守护者反应（速记无反应）
     if (ritualType !== 'quick') {
         const guardianId = Object.keys(entry.guardianReactions || {})[0];
         if (guardianId && entry.guardianReactions[guardianId]) {
             addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
             showGuardianDialogue(guardianId, 'archive');
         }
+    } else {
+        // 速记：标记浅层录入（牺牲隐藏叙事与线索链），并记录本回合已用
+        state.quickArchiveWeek = state.week;
+        if (!state.shallowArchives) state.shallowArchives = [];
+        if (!state.shallowArchives.includes(archiveId)) state.shallowArchives.push(archiveId);
+        addLog(`⚡ 速记：仅保留核心数据，省略细节与守护者注记。`, 'system');
     }
     
     // 归档后展示内容（根据设置决定是否显示）
@@ -285,14 +299,22 @@ function archiveEntry(archiveId, ritualType = 'standard') {
         showArchiveCompleteModal(entry, ritualType);
     }
     
-    // 检查叙事线索链
-    if (typeof checkNarrativeChains === 'function') checkNarrativeChains(archiveId);
+    // 检查叙事线索链（速记不触发隐藏叙事与线索链）
+    if (ritualType !== 'quick' && typeof checkNarrativeChains === 'function') checkNarrativeChains(archiveId);
     
     // 归档后可能触发事件
     if (typeof checkRandomEvent === 'function') checkRandomEvent();
     
-    // 归档成功士气奖励
-    applyArchiveMoraleBonus(entry);
+    // 归档成功士气奖励（速记仅基础奖励的一半）
+    if (ritualType === 'quick') {
+        if (MemorySanctuary.state.guardianMoods) {
+            Object.keys(MemorySanctuary.state.guardianMoods).forEach(gid => {
+                MemorySanctuary.state.guardianMoods[gid] = Math.min(10, (MemorySanctuary.state.guardianMoods[gid] || 0) + 0.25);
+            });
+        }
+    } else {
+        applyArchiveMoraleBonus(entry);
+    }
     
     renderAll();
     return true;
@@ -466,7 +488,7 @@ function confirmArchive(archiveId) {
         contentText += `\n\n⚡ 你有 ${instantChances} 次立即归档机会（不消耗介质，不推进时间）。`;
     }
     
-    content.innerHTML = contentText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
+    content.innerHTML = esc(contentText, true);
     overlay.classList.remove('hidden');
     
     // 创建确认按钮容器
@@ -801,7 +823,7 @@ function showArchiveCompleteModal(entry, ritualType = 'standard') {
         }
     }
     
-    content.innerHTML = modalContent.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
+    content.innerHTML = esc(modalContent, true);
     overlay.classList.remove('hidden');
     
     const closeBtn = document.getElementById('modal-close');

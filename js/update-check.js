@@ -41,7 +41,10 @@ function showUpdateToast(remote) {
 
     if (verEl) verEl.textContent = `v${remote.version}`;
     if (notesEl) notesEl.textContent = remote.notes || '';
-    if (dlEl) dlEl.href = remote.downloadUrl || UPDATE_CHECK_URL;
+    // 仅允许 http(s) 链接，拒绝 javascript:/data: 等注入载体
+    if (dlEl && typeof remote.downloadUrl === 'string' && /^https?:\/\//.test(remote.downloadUrl)) {
+        dlEl.href = remote.downloadUrl;
+    }
 
     if (ignoreEl) {
         ignoreEl.onclick = () => {

@@ -293,7 +293,7 @@ function renderOutcomeBars(expData) {
 
         const label = document.createElement('span');
         label.className = 'outcome-label';
-        label.textContent = o.type === 'resource' ? (o.resource === 'energy' ? '能源' : o.resource === 'media' ? '介质' : o.resource === 'food' ? '食物' : '环境') : o.type === 'narrative' ? '叙事' : '风险';
+        label.textContent = o.type === 'resource' ? (o.resource === 'energy' ? '能源' : o.resource === 'media' ? '介质' : o.resource === 'food' ? '食物' : '环境') : o.type === 'narrative' ? '情报' : '风险';
 
         const fill = document.createElement('span');
         fill.className = 'outcome-fill' + (o.type === 'risk' ? ' risk' : '');
@@ -593,7 +593,7 @@ function renderExploreLog() {
     }
     
     container.innerHTML = '';
-    const typeLabels = { resource: '◈ 资源', narrative: '✦ 叙事', risk: '⚠ 风险' };
+    const typeLabels = { resource: '◈ 资源', narrative: '✦ 情报', risk: '⚠ 风险' };
     
     logs.slice().reverse().forEach(log => {
         const div = document.createElement('div');

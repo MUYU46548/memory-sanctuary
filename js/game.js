@@ -4,7 +4,7 @@
  */
 
 // 调试模式开关：发布时设为 false，开发时设为 true
-var DEBUG = false;
+// DEBUG 由 js/main.js 统一声明（单一来源），此处不再重复声明
 
 // ==========================================
 // 资源管理
@@ -996,7 +996,7 @@ function triggerGameOver(reason) {
 
             contentText += `\n点击「返回标题」重新开始。`;
             title.textContent = titleText;
-            content.innerHTML = contentText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
+            content.innerHTML = esc(contentText, true);
             overlay.classList.remove('hidden');
 
             if (closeBtn) {
@@ -1017,7 +1017,7 @@ function triggerGameOver(reason) {
 
     // ─── 其他崩溃：直接显示 modal ───
     title.textContent = titleText;
-    content.innerHTML = contentText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
+    content.innerHTML = esc(contentText, true);
     overlay.classList.remove('hidden');
 
     if (closeBtn) {
@@ -1663,8 +1663,10 @@ function guardianRecommendArchive() {
         recommended = available.sort((a, b) => (a.energyCost + a.dataCost) - (b.energyCost + b.dataCost))[0];
     }
     
-    // 高亮推荐条目
-    highlightRecommendedEntry(recommended.id);
+    // 高亮推荐条目（在渲染时统一加类，避免 setTimeout 竞态）
+    if (typeof highlightRecommendedEntry === 'function') {
+        highlightRecommendedEntry(recommended.id);
+    }
     
     // 守护者对话（根据是否可负担调整台词）
     let dialogueText;
@@ -1697,25 +1699,33 @@ function guardianRecommendArchive() {
 }
 
 function highlightRecommendedEntry(archiveId) {
-    // 切换到对应存储室
+    // 记录推荐条目，交由 renderArchiveEntries 在渲染时统一加 .recommended 类
+    MemorySanctuary.recommendedArchiveId = archiveId;
     const entry = getArchiveById(archiveId);
     if (!entry) return;
-    
+    // 若当前不在对应存储室，切换过去（renderAll 会重新渲染列表并加高亮类）
     if (MemorySanctuary.currentVaultId !== entry.vault) {
         selectVault(entry.vault);
+    } else if (typeof renderArchiveEntries === 'function') {
+        renderArchiveEntries();
     }
-    
-    // 等待渲染后高亮
-    setTimeout(() => {
-        const btn = document.querySelector(`button[data-archive-id="${archiveId}"]`);
-        if (btn) {
-            btn.classList.add('recommended');
-            btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // 3秒后移除高亮
-            setTimeout(() => btn.classList.remove('recommended'), 3000);
-        }
-    }, 100);
+}
+
+// 在归档条目渲染后调用，为推荐条目加高亮类并自动滚动到视图
+function applyRecommendedHighlight() {
+    const archiveId = MemorySanctuary.recommendedArchiveId;
+    if (!archiveId) return;
+    const btn = document.querySelector(`button[data-archive-id="${archiveId}"]`);
+    if (btn) {
+        btn.classList.add('recommended');
+        btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => {
+            btn.classList.remove('recommended');
+            MemorySanctuary.recommendedArchiveId = null;
+        }, 3000);
+    } else {
+        MemorySanctuary.recommendedArchiveId = null;
+    }
 }
 
 // 守护者主动事件
@@ -2343,7 +2353,7 @@ function showHelpModal() {
             content: `• 选择存储室 → 查看可归档条目 → 点击「录入归档」
 • 归档消耗能源与存储介质，同时推进时间
 • 跳过回合可恢复资源，但会推进时间并可能降低守护者好感`,
-            defaultOpen: true
+            defaultOpen: false
         },
         {
             title: '📊 五种资源',
@@ -2356,9 +2366,9 @@ function showHelpModal() {
         },
         {
             title: '✨ 归档仪式',
-            content: `• 标准归档：正常消耗，有守护者反应
+            content: `• 标准归档：正常消耗，有守护者反应与隐藏叙事
 • 深度归档：额外消耗 10 能源，解锁隐藏叙事
-• 快速归档：消耗减半，无守护者反应`,
+• 速记：省 30% 资源、不推进时间，但牺牲隐藏叙事与守护者注记，每回合限 1 次`,
             defaultOpen: false
         },
         {
@@ -2775,5 +2785,4 @@ function checkSealAchievements(endingId, week) {
 // ==========================================
 // 终局事件强制触发
 // ==========================================
-
 

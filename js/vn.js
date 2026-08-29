@@ -11,7 +11,7 @@
  */
 
 // 调试模式开关：发布时设为 false，开发时设为 true
-var DEBUG = false;
+// DEBUG 由 js/main.js 统一声明（单一来源），此处不再重复声明
 
 const VN = (() => {
     'use strict';

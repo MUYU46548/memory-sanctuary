@@ -5,6 +5,21 @@
 // 调试模式开关：发布时设为 false，开发时设为 true
 var DEBUG = false;
 
+// 统一 HTML 转义收口：所有动态字符串拼接进 innerHTML 前必须经此处理，
+// 避免未来把 JSON 字段（data/*.json 作者内容）塞进属性/URL 时引入 XSS。
+// 用法：esc(text) 仅转义；esc(text, true) 额外把换行转为 <br>。
+function esc(str, newlineToBr) {
+    if (str === null || str === undefined) return '';
+    let s = String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    if (newlineToBr) s = s.replace(/\n/g, '<br>');
+    return s;
+}
+
 
 // ============================================================
 // 全局常量
@@ -366,6 +381,7 @@ function initTheme() {
             document.documentElement.setAttribute('data-theme', next);
             localStorage.setItem('memory-sanctuary-theme', next);
             toggle.textContent = next === 'dark' ? '◐' : '◑';
+            if (typeof refreshCanvasTheme === 'function') refreshCanvasTheme();
         });
     }
     
@@ -431,6 +447,7 @@ function initTitleScreen() {
             document.documentElement.setAttribute('data-theme', next);
             localStorage.setItem('memory-sanctuary-theme', next);
             titleThemeToggle.textContent = next === 'dark' ? '◐ 主题' : '◑ 主题';
+            if (typeof refreshCanvasTheme === 'function') refreshCanvasTheme();
         });
     }
     
@@ -887,6 +904,14 @@ function initSettings() {
     const animationSpeedValue = document.getElementById('animation-speed-value');
     if (animationSpeedSlider) {
         animationSpeedSlider.value = (getSettings().animationSpeed ?? 100);
+        const setFill = () => {
+            const min = parseInt(animationSpeedSlider.min, 10) || 0;
+            const max = parseInt(animationSpeedSlider.max, 10) || 100;
+            const v = parseInt(animationSpeedSlider.value, 10);
+            const pct = ((v - min) / (max - min) * 100).toFixed(1) + '%';
+            animationSpeedSlider.style.setProperty('--slider-fill', pct);
+        };
+        setFill();
         if (animationSpeedValue) {
             animationSpeedValue.textContent = animationSpeedSlider.value + '%';
         }
@@ -899,6 +924,7 @@ function initSettings() {
             s.animationSpeed = val;
             localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
             document.documentElement.style.setProperty('--animation-speed', (val / 100).toFixed(2));
+            setFill();
         });
     }
     
@@ -907,6 +933,14 @@ function initSettings() {
     const fontSizeValue = document.getElementById('font-size-value');
     if (fontSizeSlider) {
         fontSizeSlider.value = (getSettings().fontSize ?? 17);
+        const setFill = () => {
+            const min = parseInt(fontSizeSlider.min, 10) || 0;
+            const max = parseInt(fontSizeSlider.max, 10) || 100;
+            const v = parseInt(fontSizeSlider.value, 10);
+            const pct = ((v - min) / (max - min) * 100).toFixed(1) + '%';
+            fontSizeSlider.style.setProperty('--slider-fill', pct);
+        };
+        setFill();
         if (fontSizeValue) {
             fontSizeValue.textContent = fontSizeSlider.value + 'px';
         }
@@ -919,6 +953,7 @@ function initSettings() {
             s.fontSize = val;
             localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
             document.documentElement.style.fontSize = val + 'px';
+            setFill();
         });
     }
 }

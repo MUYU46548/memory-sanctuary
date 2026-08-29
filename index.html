@@ -126,6 +126,9 @@
             </div>
         </header>
 
+        <!-- 章节提示覆盖层（固定居中，不压顶栏） -->
+        <div id="chapter-banner" class="chapter-banner"></div>
+
         <!-- 主内容区 -->
         <main id="main-content">
             <!-- 左侧：圣所主厅 Canvas -->
@@ -136,6 +139,15 @@
 
             <!-- 右侧：操作面板 -->
             <section id="action-panel">
+                <!-- 事件通知（常驻：任何标签页下均可见且可处理） -->
+                <div id="event-panel" class="hidden" role="alert" aria-live="polite">
+                    <div id="event-banner">
+                        <div class="event-title" id="event-title"></div>
+                        <div class="event-desc" id="event-desc"></div>
+                        <div class="event-choices" id="event-choices"></div>
+                    </div>
+                </div>
+
                 <!-- 标签页导航 -->
                 <div class="action-tabs">
                     <button class="action-tab active" data-tab="archive">📜 归档</button>
@@ -145,15 +157,6 @@
 
                 <!-- 归档条目标签页 -->
                 <div class="action-tab-content active" id="tab-archive">
-                    <!-- 事件通知 -->
-                    <div id="event-panel" class="hidden" role="alert" aria-live="polite">
-                        <div id="event-banner">
-                            <div class="event-title" id="event-title"></div>
-                            <div class="event-desc" id="event-desc"></div>
-                            <div class="event-choices" id="event-choices"></div>
-                        </div>
-                    </div>
-
                     <!-- 待归档条目 -->
                     <div id="archive-entries" class="panel">
                         <h2 class="panel-title">

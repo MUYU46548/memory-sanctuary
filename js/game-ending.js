@@ -486,7 +486,7 @@ function showMemoryEchoSelection(ending) {
     const state = MemorySanctuary.state;
     const completedArchives = state.completedArchives;
     
-    let html = `<p>在封印之前，请选择最珍贵的 <strong>3 条</strong>记忆。它们将在结局中以特殊形式呈现。</p>`;
+    let html = `<p class="memory-echo-intro">封印之前，挑选最珍贵的记忆（最多 <strong>3 条</strong>）。它们将在结局中以特殊形式重现；未选中的条目仅作浅层留存。</p>`;
     html += `<div class="memory-echo-list">`;
     
     completedArchives.forEach(archId => {
@@ -495,13 +495,16 @@ function showMemoryEchoSelection(ending) {
         html += `
             <label class="memory-echo-item">
                 <input type="checkbox" value="${archId}" class="memory-echo-check">
-                <span class="memory-echo-title">${arch.title}</span>
+                <span class="memory-echo-title">${esc(arch.title, false)}</span>
             </label>
         `;
     });
     
     html += `</div>`;
-    html += `<button id="memory-echo-confirm" class="modal-btn">确认选择</button>`;
+    html += `<div class="memory-echo-actions">
+        <button id="memory-echo-confirm" class="modal-btn primary">确定封印（保留所选）</button>
+        <button id="memory-echo-skip" class="modal-btn ghost">跳过 · 全部纳入回响</button>
+    </div>`;
     
     content.innerHTML = html;
     overlay.classList.remove('hidden');
@@ -517,14 +520,28 @@ function showMemoryEchoSelection(ending) {
         });
     });
     
-    // 确认按钮
-    document.getElementById('memory-echo-confirm').onclick = () => {
-        const checked = content.querySelectorAll('.memory-echo-check:checked');
-        const selected = Array.from(checked).map(c => c.value);
+    const proceed = (selected) => {
         state.memoryEchoSelection = selected;
         overlay.classList.add('hidden');
         playEndingSequence(ending);
     };
+    
+    // 确认：仅保留所选（最多 3）
+    const confirmBtn = document.getElementById('memory-echo-confirm');
+    if (confirmBtn) {
+        confirmBtn.onclick = () => {
+            const checked = content.querySelectorAll('.memory-echo-check:checked');
+            proceed(Array.from(checked).map(c => c.value));
+        };
+    }
+    
+    // 跳过：全部纳入回响
+    const skipBtn = document.getElementById('memory-echo-skip');
+    if (skipBtn) {
+        skipBtn.onclick = () => {
+            proceed(completedArchives.slice());
+        };
+    }
 }
 
 /**
@@ -554,6 +571,12 @@ function playEndingSequence(ending) {
             showSealModalWithContent(modalContent, ending);
         });
     } else {
+        // 无对应 VN 场景：先播放结局 BGM，再直接显示封印弹窗
+        if (typeof AudioSystem !== 'undefined') {
+            const ngData = (typeof getNGPlusData === 'function') ? getNGPlusData() : {};
+            const isTrueEnding = ngData.playthroughCount >= 5 && (ending?.id === 'true_ending');
+            AudioSystem.playBGM(isTrueEnding ? 'ending_true' : 'ending_normal');
+        }
         const modalContent = getEndingModalData(ending);
         showSealModalWithContent(modalContent, ending);
     }

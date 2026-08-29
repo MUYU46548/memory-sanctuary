@@ -4,7 +4,7 @@
  */
 
 // 调试模式开关：发布时设为 false，开发时设为 true
-var DEBUG = false;
+// DEBUG 由 js/main.js 统一声明（单一来源），此处不再重复声明
 
 
 function initUI() {
@@ -79,7 +79,7 @@ function showBatchExitConfirm() {
         text = `已归档 ${count} 条。确定要退出吗？\n\n退出后将推进1周时间，且已付出的代价不予退回。`;
     }
     
-    content.innerHTML = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g, '<br>');
+    content.innerHTML = esc(text, true);
     overlay.classList.remove('hidden');
     
     // 创建确认按钮容器
@@ -596,7 +596,7 @@ function showGuardianMemory(guardianId, memId) {
     if (!overlay || !title || !content) return;
 
     title.textContent = `${guardian.name} · ${mem.title}`;
-    content.innerHTML = mem.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>');
+    content.innerHTML = esc(mem.text, true);
     overlay.classList.remove('hidden');
 
     if (closeBtn) {
@@ -621,6 +621,17 @@ function renderWeekDisplay() {
             weekEl.classList.remove('updated');
             void weekEl.offsetWidth;
             weekEl.classList.add('updated');
+        }
+        // 可点击反馈：显示周数含义
+        weekEl.style.cursor = 'pointer';
+        weekEl.title = `第 ${newWeek} 周 / 共 ${MAX_WEEK} 周\n点击查看本周进度说明`;
+        if (!weekEl._bound) {
+            weekEl._bound = true;
+            weekEl.addEventListener('click', () => {
+                const w = MemorySanctuary.state.week;
+                const remain = MAX_WEEK - w;
+                addLog(`📅 第 ${w} 周：剩余 ${remain} 周。封印需满 20 周，全周目上限 ${MAX_WEEK} 周。`, 'system');
+            });
         }
     }
     
@@ -665,11 +676,36 @@ function renderResources() {
     const foodEl = document.getElementById('food-value');
     const botsEl = document.getElementById('bots-value');
     
-    if (energyEl) energyEl.textContent = Math.floor(resources.energy);
-    if (mediaEl) mediaEl.textContent = Math.floor(resources.media);
-    if (envEl) envEl.textContent = Math.floor(resources.environment);
-    if (foodEl) foodEl.textContent = Math.floor(resources.food);
-    if (botsEl) botsEl.textContent = Math.floor(resources.engineeringBots || 0);
+    if (energyEl) {
+        energyEl.textContent = Math.floor(resources.energy);
+        energyEl.style.cursor = 'pointer';
+        energyEl.title = '能源 ◈：归档基础消耗；归零后归档能耗加倍。点击查看说明';
+        if (!energyEl._bound) { energyEl._bound = true; energyEl.addEventListener('click', () => addLog('◈ 能源：维持圣所运转与归档的核心资源。归零后归档能耗 ×2。', 'system')); }
+    }
+    if (mediaEl) {
+        mediaEl.textContent = Math.floor(resources.media);
+        mediaEl.style.cursor = 'pointer';
+        mediaEl.title = '存储介质 ◇：存储归档数据；归零后无法录入新条目。点击查看说明';
+        if (!mediaEl._bound) { mediaEl._bound = true; mediaEl.addEventListener('click', () => addLog('◇ 存储介质：归档必需品。归零后无法录入新条目（应急协议除外）。', 'system')); }
+    }
+    if (envEl) {
+        envEl.textContent = Math.floor(resources.environment);
+        envEl.style.cursor = 'pointer';
+        envEl.title = '环境稳定 ○：保护设备；归零后条目过期速度翻倍。点击查看说明';
+        if (!envEl._bound) { envEl._bound = true; envEl.addEventListener('click', () => addLog('○ 环境稳定：影响条目保存条件。归零后条目过期速度 ×2。', 'system')); }
+    }
+    if (foodEl) {
+        foodEl.textContent = Math.floor(resources.food);
+        foodEl.style.cursor = 'pointer';
+        foodEl.title = '食物 🍖：维持守护者士气；耗尽后归档能耗 +20%。点击查看说明';
+        if (!foodEl._bound) { foodEl._bound = true; foodEl.addEventListener('click', () => addLog('🍖 食物：维持守护者士气。耗尽后归档能耗 +20%。', 'system')); }
+    }
+    if (botsEl) {
+        botsEl.textContent = Math.floor(resources.engineeringBots || 0);
+        botsEl.style.cursor = 'pointer';
+        botsEl.title = '工程机器人 🔧：自动减缓衰减；每台维护 2 能源/周。点击查看说明';
+        if (!botsEl._bound) { botsEl._bound = true; botsEl.addEventListener('click', () => addLog('🔧 工程机器人：自动减缓资源衰减，每台维护 ◈2 能源/周；能源不足时停机。', 'system')); }
+    }
     
     updateResourceColor('res-energy', resources.energy, 100);
     updateResourceColor('res-media', resources.media, 60);
@@ -811,26 +847,36 @@ function renderVaultStatus() {
     
     container.innerHTML = '';
     
-    const vault = MemorySanctuary.data.vaults.find(v => v.id === MemorySanctuary.currentVaultId);
-    if (!vault) return;
-    
-    const status = getVaultStatus(vault.id);
-    
-    const item = document.createElement('div');
-    item.className = 'vault-item active';
-    item.style.borderLeftColor = vault.accentColor;
-    
-    item.innerHTML = `
-        <div class="vault-name" style="color: ${vault.accentColor}">${vault.name}</div>
-        <div class="vault-capacity">
-            <div class="vault-bar">
-                <div class="vault-bar-fill" style="width: ${status.percent}%; background: ${vault.accentColor}"></div>
+    // 渲染全部存储室，点击可跳转到该存储室的待归档条目
+    MemorySanctuary.data.vaults.forEach(vault => {
+        const status = getVaultStatus(vault.id);
+        const isActive = vault.id === MemorySanctuary.currentVaultId;
+        
+        const item = document.createElement('div');
+        item.className = `vault-item ${isActive ? 'active' : ''}`;
+        item.style.borderLeftColor = vault.accentColor;
+        item.style.cursor = 'pointer';
+        item.title = `点击查看「${vault.name}」的待归档条目`;
+        
+        item.innerHTML = `
+            <div class="vault-name" style="color: ${vault.accentColor}">${vault.name}</div>
+            <div class="vault-capacity">
+                <div class="vault-bar">
+                    <div class="vault-bar-fill" style="width: ${status.percent}%; background: ${vault.accentColor}"></div>
+                </div>
+                <span class="vault-bar-text">${status.used}/${vault.capacity}</span>
             </div>
-            <span class="vault-bar-text">${status.used}/${vault.capacity}</span>
-        </div>
-    `;
-    
-    container.appendChild(item);
+        `;
+        
+        item.addEventListener('click', () => {
+            if (typeof selectVault === 'function') selectVault(vault.id);
+            // 切到归档标签页，便于直接处理该存储室待归档
+            const archiveTab = document.querySelector('.action-tab[data-tab="archive"]');
+            if (archiveTab) archiveTab.click();
+        });
+        
+        container.appendChild(item);
+    });
 }
 
 // ==========================================
@@ -854,7 +900,12 @@ function renderArchiveEntries() {
     // 筛选和排序控件
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'entry-controls';
+    const vaultOptions = MemorySanctuary.data.vaults
+        .map(v => `<option value="${v.id}">${v.name}</option>`).join('');
     controlsDiv.innerHTML = `
+        <select id="entry-vault-filter" class="entry-select" title="按存储室筛选">
+            ${vaultOptions}
+        </select>
         <select id="entry-sort" class="entry-select">
             <option value="default">默认排序</option>
             <option value="cost-asc">消耗↑</option>
@@ -984,7 +1035,7 @@ function renderArchiveEntries() {
             // 快速归档按钮
             let quickBtnHtml = '';
             if (!isCompleted && !isExpired && canArchive) {
-                quickBtnHtml = `<button class="archive-btn quick-archive-btn" data-archive-id="${entry.id}" title="快速归档：消耗减半，无守护者反应">⚡快速</button>`;
+                quickBtnHtml = `<button class="archive-btn quick-archive-btn" data-archive-id="${entry.id}" title="速记：省 30% 资源、不推进时间，但牺牲隐藏叙事与守护者注记，每回合限 1 次">⚡速记</button>`;
             }
             
             // AI 助理辅助归档按钮
@@ -1055,6 +1106,23 @@ function renderArchiveEntries() {
             renderArchiveEntries();
         };
     }
+    
+    // 存储室筛选：切换 currentVaultId 并重渲染（同时同步顶部存储室标签高亮）
+    const vaultFilterSelect = document.getElementById('entry-vault-filter');
+    if (vaultFilterSelect) {
+        vaultFilterSelect.value = String(vaultId);
+        vaultFilterSelect.onchange = () => {
+            const targetVault = parseInt(vaultFilterSelect.value, 10);
+            if (!isNaN(targetVault)) {
+                selectVault(targetVault);
+            }
+        };
+    }
+
+    // 推荐条目高亮（在列表渲染完成后统一加类，避免 setTimeout 竞态）
+    if (typeof applyRecommendedHighlight === 'function') {
+        applyRecommendedHighlight();
+    }
 }
 
 // ==========================================
@@ -1072,7 +1140,7 @@ function renderEngineeringBotsPanel() {
     const isBlackout = state.botBlackoutLogged;
     
     container.innerHTML = `
-        <div class="bots-panel-header">
+        <div class="bots-panel-header" title="工程机器人：自动降低圣所资源衰减。维护成本每周从能源扣除；能源不足时停机（衰减减免归零）。">
             <span class="bots-panel-icon">🔧</span>
             <span class="bots-panel-title">工程机器人</span>
             <span class="bots-panel-count ${botCount > 0 ? 'active' : 'inactive'}">${botCount}/5</span>
@@ -1089,6 +1157,9 @@ function renderEngineeringBotsPanel() {
         </div>
         ${isBlackout ? '<div class="bots-warning">⚠️ 能源不足，机器人停机中</div>' : ''}
     `;
+    container.title = botCount > 0
+        ? `当前 ${botCount} 台机器人运行中，提供 ${Math.round(reduction * 100)}% 衰减减免（每周维护 ◈${maintenanceCost} 能源）。`
+        : '尚未部署工程机器人。可在「项目」中建造以减缓资源衰减。';
 }
 
 // ==========================================
@@ -1868,21 +1939,10 @@ function showChapterTitle(chapterNum) {
     const data = CHAPTER_DATA[chapterNum];
     if (!data) return;
     
-    // 章节提示条放在画面顶部
-    const gameContainer = document.getElementById('game-container');
-    if (!gameContainer) return;
+    // 章节提示条：使用独立固定定位覆盖层，避免压住顶栏/封印按钮
+    const banner = document.getElementById('chapter-banner');
+    if (!banner) return;
     
-    // 查找或创建章节提示条
-    let banner = document.getElementById('chapter-banner');
-    if (!banner) {
-        banner = document.createElement('div');
-        banner.id = 'chapter-banner';
-        banner.className = 'chapter-banner';
-        // 插入为 game-container 的第一个子元素
-        gameContainer.insertBefore(banner, gameContainer.firstChild);
-    }
-    
-    // 设置内容
     banner.innerHTML = `
         <span class="chapter-banner-text">第 ${data.number} 章 · ${data.title}</span>
         <span class="chapter-banner-sub">${data.subtitle || ''}</span>

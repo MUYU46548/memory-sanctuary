@@ -647,15 +647,81 @@ function exportSaveToClipboard(slot) {
 }
 
 
+// 存档导入白名单重建：只保留已知字段、数值 clamp、数组兜底，
+// 避免导入他人分享的脏档导致后续逻辑崩溃。
+function sanitizeImportedSave(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    const s = raw.state || {};
+    const num = (v, d) => (typeof v === 'number' && isFinite(v)) ? v : d;
+    const intClamp = (v, lo, hi, d) => {
+        const n = num(v, d);
+        return Math.max(lo, Math.min(hi, n));
+    };
+    const arr = (v) => Array.isArray(v) ? v : [];
+    const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v)) ? v : {};
+
+    const cleanState = {
+        resources: {
+            energy: intClamp(s.resources?.energy, 0, 999, 0),
+            media: intClamp(s.resources?.media, 0, 999, 0),
+            environment: intClamp(s.resources?.environment, 0, 999, 0),
+            food: intClamp(s.resources?.food, 0, 999, 0)
+        },
+        week: intClamp(s.week, 1, 48, 1),
+        chapter: intClamp(s.chapter, 1, 12, 1),
+        completedArchives: arr(s.completedArchives).filter(x => typeof x === 'string' || typeof x === 'number'),
+        vaultUsage: obj(s.vaultUsage),
+        narrativeFlags: arr(s.narrativeFlags).filter(x => typeof x === 'string'),
+        deterioration: obj(s.deterioration),
+        emergencyCorruption: num(s.emergencyCorruption, 0),
+        emergencyCooldowns: obj(s.emergencyCooldowns),
+        activeEventIds: arr(s.activeEventIds).filter(x => typeof x === 'string' || typeof x === 'number'),
+        guardianMoods: obj(s.guardianMoods),
+        scheduledEvents: arr(s.scheduledEvents).filter(x => x && typeof x === 'object'),
+        unlockedBonuses: arr(s.unlockedBonuses).filter(x => x && typeof x === 'object'),
+        exploration: obj(s.exploration),
+        activeProjects: arr(s.activeProjects).filter(x => x && typeof x === 'object'),
+        completedProjects: arr(s.completedProjects).filter(x => x && typeof x === 'object'),
+        ongoingEffects: arr(s.ongoingEffects),
+        resourceChanges: obj(s.resourceChanges),
+        aiAssistantActive: !!s.aiAssistantActive,
+        aiAssistUsedThisWeek: !!s.aiAssistUsedThisWeek,
+        finalPrepHintShown: !!s.finalPrepHintShown,
+        panelHints: obj(s.panelHints),
+        emergencyExploreFoodFree: !!s.emergencyExploreFoodFree,
+        aiAssistCount: num(s.aiAssistCount, 0),
+        guardianAidCount: num(s.guardianAidCount, 0),
+        emergencyExploreUsed: !!s.emergencyExploreUsed,
+        famineSurvived: !!s.famineSurvived,
+        moraleStreak: obj(s.moraleStreak),
+        modules: obj(s.modules)
+    };
+
+    return {
+        version: 2,
+        slot: intClamp(raw.slot, 1, SAVE_SLOT_COUNT, 1),
+        savedAt: num(raw.savedAt, Date.now()),
+        playthrough: intClamp(raw.playthrough, 0, 999, 0),
+        state: cleanState,
+        currentVaultId: intClamp(raw.currentVaultId, 1, 12, 1)
+    };
+}
+
 function importSaveFromClipboard() {
     const input = prompt('粘贴导入文本：');
     if (!input || !input.trim()) return;
     
     try {
         const jsonStr = decodeURIComponent(escape(atob(input.trim())));
-        const saveData = JSON.parse(jsonStr);
+        const parsed = JSON.parse(jsonStr);
         
-        if (!saveData || !saveData.state || !saveData.version) {
+        if (!parsed || !parsed.state || !parsed.version) {
+            alert('无效的存档文本！');
+            return;
+        }
+        
+        const saveData = sanitizeImportedSave(parsed);
+        if (!saveData) {
             alert('无效的存档文本！');
             return;
         }

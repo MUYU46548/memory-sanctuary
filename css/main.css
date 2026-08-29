@@ -477,7 +477,8 @@ button:focus-visible,
 }
 
 .help-section.open .help-section-body {
-    max-height: 300px;
+    max-height: 600px;
+    overflow-y: auto;
 }
 
 .help-section-body pre {
@@ -516,6 +517,69 @@ button:focus-visible,
 .memory-echo-title {
     font-size: 0.85rem;
     color: var(--text-primary);
+}
+
+.memory-echo-intro {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0 0 12px;
+}
+
+.memory-echo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 42vh;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 14px;
+}
+
+.memory-echo-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* 模态按钮统一规范（高对比、可点态） */
+.modal-btn {
+    padding: 10px 20px;
+    border-radius: 6px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-panel);
+    color: var(--text-primary);
+    font-family: var(--font-cn);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+.modal-btn:hover {
+    border-color: var(--amber-primary);
+    background: var(--bg-panel-hover);
+}
+.modal-btn:focus-visible {
+    outline: 2px solid var(--amber-primary);
+    outline-offset: 2px;
+}
+.modal-btn.primary {
+    background: var(--amber-primary);
+    border-color: var(--amber-primary);
+    color: var(--bg-deep);
+    font-weight: 500;
+}
+.modal-btn.primary:hover {
+    background: var(--amber-bright);
+    filter: brightness(1.05);
+}
+.modal-btn.ghost {
+    background: transparent;
+    color: var(--text-secondary);
+}
+.modal-btn.ghost:hover {
+    color: var(--text-primary);
+    border-color: var(--text-secondary);
 }
 
 /* 工程机器人停机警告 */
@@ -4002,14 +4066,32 @@ button.archive-btn.recommended {
     -webkit-appearance: none;
     appearance: none;
     border-radius: 6px;
+    /* 左段亮（已选）、右段灰（未选），由 JS 设置 --slider-fill 百分比 */
     background: linear-gradient(
         to right,
         var(--amber-primary) 0%,
-        var(--amber-primary) 100%,
-        var(--bg-panel) 100%,
+        var(--amber-primary) var(--slider-fill, 0%),
+        var(--bg-panel) var(--slider-fill, 0%),
         var(--bg-panel) 100%
     );
     border: 1px solid var(--border-color);
+}
+
+/* 无 webkit 前缀时的 fallback：直接给 track 上色 */
+.settings-slider::-webkit-slider-runnable-track {
+    height: 12px;
+    border-radius: 6px;
+    background: transparent;
+}
+.settings-slider::-moz-range-track {
+    height: 12px;
+    border-radius: 6px;
+    background: var(--bg-panel);
+}
+.settings-slider::-moz-range-progress {
+    height: 12px;
+    border-radius: 6px;
+    background: var(--amber-primary);
 }
 
 .settings-slider::-webkit-slider-thumb {
@@ -4647,10 +4729,12 @@ button.archive-btn.recommended {
     border-color: rgba(255,255,255,0.15);
 }
 
-/* 项目按钮底部栏样式 */
+/* 项目按钮底部栏样式（改用琥珀色系，避免紫色带来的"不可点"观感） */
 #func-bar button#project-btn {
-    background: linear-gradient(135deg, #6b4c9a 0%, #8b6bb5 100%);
-    border-color: var(--project-purple);
+    background: linear-gradient(135deg, #b5894a 0%, var(--amber-primary) 100%);
+    border-color: var(--amber-primary);
+    color: var(--bg-deep);
+    font-weight: 500;
 }
 
 #func-bar button#project-btn.ready {
@@ -5313,28 +5397,29 @@ button.archive-btn.recommended {
     display: none;
 }
 
-/* 章节提示卡片 — 左侧弹出 */
+/* 章节提示卡片 — 屏幕居中覆盖层（不压顶栏/封印按钮） */
 .chapter-banner {
-    position: absolute;
-    top: 80px;
-    left: 20px;
-    width: 280px;
-    padding: 16px 20px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.96);
+    width: min(420px, 80vw);
+    padding: 22px 28px;
+    text-align: center;
     background: rgba(0, 0, 0, 0.88);
     backdrop-filter: blur(6px);
     border: 1px solid var(--amber-dim);
-    border-radius: 8px;
+    border-radius: 10px;
     opacity: 0;
-    transform: translateX(-30px);
     transition: opacity 0.4s ease, transform 0.4s ease;
     pointer-events: none;
     z-index: 1002;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
 }
 
 .chapter-banner.show {
     opacity: 1;
-    transform: translateX(0);
+    transform: translate(-50%, -50%) scale(1);
 }
 
 [data-theme="light"] .chapter-banner {

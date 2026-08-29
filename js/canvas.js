@@ -1,11 +1,11 @@
 /**
- * canvas.js - Canvas渲染
- * 圣所主厅：圆形穹顶、歌者之座、声波可视化、多闸门
+ * canvas.js - Canvas 渲染
+ * 圣所主厅（idle）：天文馆冷峻风 / 科幻地下工作室
+ * 建筑化观察窗（矩形，平静星空 + 微弱冷色星云）+ 克制控制台剪影 + 下缘冷光存储室舷窗
+ *
+ * 颜色全部从 CSS 变量读取（getComputedStyle），主/浅双主题自动适配，
+ * 不再在 JS 内写死 #hex，符合架构红线。无中央发光球、无全视之眼弧、无红色。
  */
-
-// 调试模式开关：发布时设为 false，开发时设为 true
-var DEBUG = false;
-
 
 let sanctuaryCanvas = null;
 let sanctuaryCtx = null;
@@ -15,7 +15,6 @@ let time = 0;
 // 场景粒子系统
 let particles = [];
 let floatingSymbols = [];
-let crackLines = [];
 let sceneTransition = 0;
 let currentSceneId = 1;
 
@@ -27,132 +26,183 @@ let chapterTransitionEffect = {
     intensity: 0
 };
 
+// 调色板（从 CSS 变量读取，启动时 + 主题切换时刷新）
+let CANVAS_PALETTE = null;
+// 是否尊重"减少动态效果"偏好
+let REDUCED_MOTION = false;
+
+// 符号字符库（记忆微光，温和上升漂浮）
+const SYMBOL_LIBRARY = {
+    language: ['◇', '◈', '◊', '✦', '✧', '⌬'],
+    history: ['Ⅰ', 'Ⅱ', 'Ⅲ', '◐', '◑', '◒'],
+    disaster: ['✧', '⋆', '❉', '✺', '✸'],
+    art: ['♪', '♫', '♬', '△', '○', '●'],
+    philosophy: ['∞', '☯', '⚘', '✿', '❀'],
+    science: ['⚛', '✶', '⊕', '⊗', '⬡'],
+    ecology: ['❀', '✿', '❁', '❃', '🌿'],
+    law: ['⚖', '§', '🔱', '✦'],
+    daily: ['☀', '☁', '★', '☆', '✩'],
+    architecture: ['⌂', '⌘', '⬡', '◈'],
+    medicine: ['✚', '❀', '✿', '⊕'],
+    astronomy: ['★', '☆', '✩', '✫', '✯']
+};
+
 const SANCTUARY_CONFIG = {
     width: 600,
     height: 400,
-    
-    dome: {
-        centerX: 300,
-        centerY: 200,
-        radius: 170,
+
+    // 观察窗（建筑化视窗，矩形，望向平静星空 / 微弱冷色星云）
+    window: {
+        x: 110,
+        y: 46,
+        w: 380,
+        h: 232,
         strokeWidth: 2
     },
-    
-    singerSeat: {
+
+    // 控制台/桌台剪影（冷色几何块 + 青色仪器线 + 少量冷光工位）
+    console: {
         centerX: 300,
-        centerY: 280,
-        radius: 35,
-        glowRadius: 55,
+        topY: 300,
+        width: 460,
+        height: 92,
         strokeWidth: 2
     },
-    
-    soundWaves: {
-        lineWidth: 1,
-        waveCount: 5,
-        maxRadius: 140,
-        speed: 0.02
-    },
-    
-    vaultDoors: {
-        radius: 11,
-        orbitRadius: 145
+
+    // 存储室冷光舷窗（下缘一排小型冷光门，随 currentVaultId 切换高亮）
+    portholes: {
+        radius: 7,
+        rowY: 384,
+        gap: 30
     }
 };
 
-// 符号字符库
-const SYMBOL_LIBRARY = {
-    language: ['◇', '◈', '◊', '⬡', '⬢', '✦', '✧', '⊕', '⊗', '⌬'],
-    history: ['Ⅰ', 'Ⅱ', 'Ⅲ', 'Ⅳ', 'Ⅴ', '◐', '◑', '◒', '◓', '◔'],
-    disaster: ['✦', '✧', '⋆', '﹡', '※', '⁕', '⁜', '⁂', '☄', '✴'],
-    art: ['♪', '♫', '♬', '♭', '♮', '♯', '△', '▽', '○', '●'],
-    philosophy: ['∞', '☯', '☮', '♾', '⚖', '⚙', '⚠', '⚡', '✡', '☸'],
-    science: ['⚛', '⚙', '⚡', '✦', '⊕', '⊗', '⌬', '⬡', '⬢', '◇'],
-    ecology: ['❀', '✿', '❁', '❃', '❋', '✤', '✥', '❉', '❊', '✽'],
-    law: ['⚖', '⚙', '⚠', '§', '¶', '†', '‡', '•', '‥', '…'],
-    daily: ['☀', '☁', '☂', '☃', '★', '☆', '☽', '☾', '✩', '✪'],
-    architecture: ['⌂', '⌐', '⌑', '⌒', '⌓', '⌔', '⌕', '⌖', '⌗', '⌘'],
-    medicine: ['✚', '✛', '✜', '✝', '✞', '✟', '✠', '✡', '☤', '⚕'],
-    astronomy: ['★', '☆', '✩', '✪', '✫', '✬', '✭', '✮', '✯', '✰']
-};
+// ---- 调色板读取（CSS 变量 → 内部 RGB） ----
+function hexToRgb(hex, fallback) {
+    hex = (hex || '').replace('#', '').trim();
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    if (hex.length !== 6 || /[^0-9a-fA-F]/.test(hex)) {
+        return fallback || { r: 138, g: 106, b: 74 };
+    }
+    const n = parseInt(hex, 16);
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+}
+
+function refreshCanvasPalette() {
+    const cs = getComputedStyle(document.documentElement);
+    const gv = (name, fb) => {
+        const v = cs.getPropertyValue(name);
+        return (v && v.trim()) ? v.trim() : fb;
+    };
+    const pal = {
+        bgDeep: hexToRgb(gv('--bg-deep', '#0a0a0f')),
+        bgPanel: hexToRgb(gv('--bg-panel', '#12121a')),
+        amber: hexToRgb(gv('--amber-primary', '#d4a04a')),
+        amberGlow: hexToRgb(gv('--amber-glow', '#e8b85c')),
+        amberDim: hexToRgb(gv('--amber-dim', '#8a6a2a')),
+        textDim: hexToRgb(gv('--text-dim', '#5a5040')),
+        border: hexToRgb(gv('--border-subtle', '#2a2a35')),
+        danger: hexToRgb(gv('--danger', '#8a3a2a')),
+        warning: hexToRgb(gv('--warning', '#d4a04a')),
+        success: hexToRgb(gv('--success', '#3a8a5a')),
+        info: hexToRgb(gv('--info-blue', '#6bb8c9')),
+        vaultLang: hexToRgb(gv('--vault-language', '#1a2a4a')),
+        vaultLangAccent: hexToRgb(gv('--vault-language-accent', '#4a6a9a')),
+        shadow: gv('--shadow-color', 'rgba(0,0,0,0.4)'),
+        glowAlpha: parseFloat(gv('--glow-alpha', '0.15')) || 0.15
+    };
+    pal.rgb = (o, a) => (a === undefined)
+        ? `rgb(${o.r},${o.g},${o.b})`
+        : `rgba(${o.r},${o.g},${o.b},${a})`;
+    CANVAS_PALETTE = pal;
+}
 
 function initCanvas() {
     sanctuaryCanvas = document.getElementById('sanctuary-canvas');
     if (!sanctuaryCanvas) {
-        if (DEBUG) console.error('[Canvas] 找不到圣所画布');
+        if (typeof DEBUG !== 'undefined' && DEBUG) console.error('[Canvas] 找不到圣所画布');
         return;
     }
-    
+
     // 防止重复初始化导致多动画循环叠加
     if (animationId) {
         cancelAnimationFrame(animationId);
         animationId = null;
     }
-    
+
+    refreshCanvasPalette();
+    if (window.matchMedia) {
+        REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
     // 响应式自适应
     resizeCanvas();
-    
+
     // 防止重复绑定 resize 监听器
     window.removeEventListener('resize', resizeCanvas);
     window.addEventListener('resize', resizeCanvas);
-    
+
     sanctuaryCtx = sanctuaryCanvas.getContext('2d');
-    time = 0; // 重置动画时间
+    time = 0;
     particles = [];
     floatingSymbols = [];
-    animate();
-    if (DEBUG) console.log('[Canvas] 圣所主厅初始化完成');
+
+    if (REDUCED_MOTION) {
+        drawSanctuary(); // 静态渲染一帧，不进入动画循环
+    } else {
+        animate();
+    }
+    if (typeof DEBUG !== 'undefined' && DEBUG) console.log('[Canvas] 圣所主厅初始化完成');
 }
 
 function resizeCanvas() {
     if (!sanctuaryCanvas) return;
     const container = sanctuaryCanvas.parentElement;
     if (!container) return;
-    
+
     const rect = container.getBoundingClientRect();
     const width = Math.min(rect.width, 600);
     const height = width * (2 / 3);
-    
-    // 防止容器隐藏时 width=0 导致 SANCTUARY_CONFIG 被污染（后续除零产生 NaN/Infinity）
+
+    // 防止容器隐藏时 width=0 导致 SANCTUARY_CONFIG 被污染（除零产生 NaN/Infinity）
     if (width < 1 || height < 1) return;
-    
-    // 计算缩放比例
+
     const scaleX = width / SANCTUARY_CONFIG.width;
     const scaleY = height / SANCTUARY_CONFIG.height;
-    
+
     sanctuaryCanvas.width = width;
     sanctuaryCanvas.height = height;
-    
-    // 更新配置中的动态值
+
+    const s = Math.min(scaleX, scaleY);
     SANCTUARY_CONFIG.width = width;
     SANCTUARY_CONFIG.height = height;
-    
-    // 按比例更新定位值
-    SANCTUARY_CONFIG.dome.centerX = 300 * scaleX;
-    SANCTUARY_CONFIG.dome.centerY = 200 * scaleY;
-    SANCTUARY_CONFIG.dome.radius = 170 * Math.min(scaleX, scaleY);
-    
-    SANCTUARY_CONFIG.singerSeat.centerX = 300 * scaleX;
-    SANCTUARY_CONFIG.singerSeat.centerY = 280 * scaleY;
-    SANCTUARY_CONFIG.singerSeat.radius = 35 * Math.min(scaleX, scaleY);
-    SANCTUARY_CONFIG.singerSeat.glowRadius = 55 * Math.min(scaleX, scaleY);
-    
-    SANCTUARY_CONFIG.soundWaves.maxRadius = 140 * Math.min(scaleX, scaleY);
-    SANCTUARY_CONFIG.vaultDoors.orbitRadius = 145 * Math.min(scaleX, scaleY);
-    SANCTUARY_CONFIG.vaultDoors.radius = 11 * Math.min(scaleX, scaleY);
+
+    SANCTUARY_CONFIG.window.x = width * 0.18;
+    SANCTUARY_CONFIG.window.y = height * 0.115;
+    SANCTUARY_CONFIG.window.w = width * 0.64;
+    SANCTUARY_CONFIG.window.h = height * 0.58;
+
+    SANCTUARY_CONFIG.console.centerX = width / 2;
+    SANCTUARY_CONFIG.console.topY = height * 0.75;
+    SANCTUARY_CONFIG.console.width = width * 0.78;
+    SANCTUARY_CONFIG.console.height = height * 0.23;
+
+    SANCTUARY_CONFIG.portholes.rowY = height * 0.96;
+    SANCTUARY_CONFIG.portholes.radius = Math.max(4, width * 0.012);
+    SANCTUARY_CONFIG.portholes.gap = Math.max(22, width * 0.05);
 }
 
 function animate() {
     time += 1;
-    
+
     // 场景切换过渡
     const targetScene = MemorySanctuary.currentVaultId || 1;
     if (currentSceneId !== targetScene) {
-        sceneTransition = 0;
         currentSceneId = targetScene;
         particles = [];
         floatingSymbols = [];
-        crackLines = [];
-        
+        sceneTransition = 0;
+
         // 场景切换音效
         if (typeof AudioSystem !== 'undefined') {
             const themeMap = {
@@ -164,107 +214,51 @@ function animate() {
             AudioSystem.playSceneSound(themeMap[targetScene] || 'language');
         }
     }
-    
-    // 动态添加粒子
-    if (time % 8 === 0) {
-        addParticle();
-    }
-    
+
+    // 动态添加记忆微光
+    if (time % 10 === 0) addParticle();
+
     // 动态添加漂浮符号
-    if (time % 45 === 0) {
-        addFloatingSymbol();
-    }
-    
+    if (time % 55 === 0) addFloatingSymbol();
+
     drawSanctuary();
     animationId = requestAnimationFrame(animate);
 }
 
 function addParticle() {
-    // 粒子上限保护：长时间游玩后防止内存增长
-    if (particles.length >= 200) return;
-    
-    const scene = getSceneTheme();
+    if (particles.length >= 160) return; // 上限保护
+
     const config = SANCTUARY_CONFIG;
-    
-    // 灾难粒子 - 从上往下
-    if (scene === 'disaster') {
-        particles.push({
-            x: Math.random() * config.width,
-            y: -10,
-            vx: (Math.random() - 0.5) * 0.5,
-            vy: Math.random() * 1.5 + 0.5,
-            size: Math.random() * 3 + 1,
-            alpha: Math.random() * 0.6 + 0.2,
-            life: 0,
-            maxLife: Math.random() * 100 + 100
-        });
-    } else if (scene === 'history') {
-        // 尘埃粒子 - 缓慢漂浮上升
-        particles.push({
-            x: Math.random() * config.width,
-            y: config.height + 10,
-            vx: (Math.random() - 0.5) * 0.3,
-            vy: -(Math.random() * 0.5 + 0.2),
-            size: Math.random() * 2 + 1,
-            alpha: Math.random() * 0.4 + 0.1,
-            life: 0,
-            maxLife: Math.random() * 150 + 100
-        });
-    } else if (scene === 'astronomy') {
-        // 星星粒子 - 闪烁
-        particles.push({
-            x: Math.random() * config.width,
-            y: Math.random() * config.height,
-            vx: 0,
-            vy: 0,
-            size: Math.random() * 2 + 0.5,
-            alpha: Math.random() * 0.8 + 0.2,
-            life: 0,
-            maxLife: Math.random() * 60 + 30
-        });
-    } else if (scene === 'ecology') {
-        // 种子粒子 - 飘落
-        particles.push({
-            x: Math.random() * config.width,
-            y: -10,
-            vx: (Math.random() - 0.5) * 0.8,
-            vy: Math.random() * 0.5 + 0.2,
-            size: Math.random() * 3 + 1,
-            alpha: Math.random() * 0.5 + 0.2,
-            life: 0,
-            maxLife: Math.random() * 120 + 80
-        });
-    } else {
-        // 默认粒子 - 上升
-        particles.push({
-            x: config.dome.centerX + (Math.random() - 0.5) * config.dome.radius * 1.5,
-            y: config.dome.centerY + config.dome.radius * 0.8,
-            vx: (Math.random() - 0.5) * 0.8,
-            vy: -(Math.random() * 1.0 + 0.3),
-            size: Math.random() * 4 + 2,
-            alpha: Math.random() * 0.5 + 0.2,
-            life: 0,
-            maxLife: Math.random() * 80 + 60
-        });
-    }
+    const w = config.window;
+    // 记忆微光：在观察窗内平静升起，像冷色尘雾在星空中漂浮
+    particles.push({
+        x: w.x + Math.random() * w.w,
+        y: w.y + w.h * (0.2 + Math.random() * 0.7),
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: -(Math.random() * 0.35 + 0.1),
+        size: Math.random() * 1.4 + 0.4,
+        alpha: Math.random() * 0.4 + 0.15,
+        life: 0,
+        maxLife: Math.random() * 140 + 90
+    });
 }
 
 function addFloatingSymbol() {
-    // 漂浮符号上限保护
-    if (floatingSymbols.length >= 80) return;
-    
-    const scene = getSceneTheme();
+    if (floatingSymbols.length >= 60) return;
+
     const config = SANCTUARY_CONFIG;
+    const scene = getSceneTheme();
     const symbols = SYMBOL_LIBRARY[scene] || SYMBOL_LIBRARY.language;
-    
+    const w = config.window;
+
     floatingSymbols.push({
-        x: Math.random() * config.width,
-        y: Math.random() * config.height * 0.6 + config.height * 0.2,
+        x: w.x + Math.random() * w.w,
+        y: w.y + w.h * (Math.random() * 0.6 + 0.1),
         symbol: symbols[Math.floor(Math.random() * symbols.length)],
         alpha: 0,
-        maxAlpha: Math.random() * 0.3 + 0.1,
+        maxAlpha: Math.random() * 0.22 + 0.1,
         phase: 0,
-        speed: Math.random() * 0.02 + 0.01
+        speed: Math.random() * 0.012 + 0.006
     });
 }
 
@@ -279,839 +273,426 @@ function getSceneTheme() {
     return themeMap[vaultId] || 'language';
 }
 
+function getSceneAccent() {
+    // 当前存储室的主色/描边色（来自 data，已随主题着色）
+    const vaults = (MemorySanctuary.data && MemorySanctuary.data.vaults) || [];
+    const id = MemorySanctuary.currentVaultId || 1;
+    const vault = vaults[id - 1] || vaults[0];
+    if (vault && vault.color) {
+        return { accent: hexToRgb(vault.color, CANVAS_PALETTE.amber), line: hexToRgb(vault.accentColor, CANVAS_PALETTE.amberGlow) };
+    }
+    return { accent: CANVAS_PALETTE.amber, line: CANVAS_PALETTE.amberGlow };
+}
+
 function drawSanctuary() {
     const ctx = sanctuaryCtx;
-    if (!ctx) return;
+    if (!ctx || !CANVAS_PALETTE) return;
 
     const config = SANCTUARY_CONFIG;
-    const theme = document.documentElement.getAttribute('data-theme') || 'dark';
     const scene = getSceneTheme();
+    const accent = getSceneAccent();
 
     ctx.clearRect(0, 0, config.width, config.height);
 
-    // 背景
-    drawBackground(ctx, config, theme, scene);
-
-    // 场景特效层
-    drawSceneEffects(ctx, config, theme, scene);
-
-    // 穹顶
-    drawDome(ctx, config, theme, scene);
-
-    // 声波
-    drawSoundWaves(ctx, config, theme, scene);
-
-    // 歌者之座
-    drawSingerSeat(ctx, config, theme);
-
-    // 闸门
-    drawVaultDoors(ctx, config, theme);
-
-    // 环境光
-    drawAmbientLight(ctx, config, theme, scene);
-
-    // 场景覆盖层（粒子、符号等）
-    drawSceneOverlay(ctx, config, theme, scene);
-    
-    // 衰败视觉层
-    drawDecayOverlay(ctx, config, theme, scene);
+    drawRoom(ctx, config);
+    drawObservationWindow(ctx, config, scene, accent);
+    drawConsoleDeck(ctx, config);
+    drawVaultPortholes(ctx, config);
+    drawMemoryMotes(ctx, config);
+    drawDecayOverlay(ctx, config, scene, accent);
 }
 
-function getThemeColor(theme, darkColor, lightColor) {
-    return theme === 'dark' ? darkColor : lightColor;
-}
+function drawRoom(ctx, config) {
+    const pal = CANVAS_PALETTE;
 
-function drawBackground(ctx, config, theme, scene) {
-    const gradient = ctx.createRadialGradient(
-        config.width / 2, config.height / 2, 0,
-        config.width / 2, config.height / 2, config.width / 2
-    );
-    
-    if (theme === 'dark') {
-        if (scene === 'language') {
-            gradient.addColorStop(0, '#141420');
-            gradient.addColorStop(1, '#0a0a12');
-        } else if (scene === 'history') {
-            gradient.addColorStop(0, '#1a1410');
-            gradient.addColorStop(1, '#0f0a08');
-        } else {
-            gradient.addColorStop(0, '#1a1010');
-            gradient.addColorStop(1, '#0f0808');
-        }
-    } else {
-        if (scene === 'language') {
-            gradient.addColorStop(0, '#f0ece5');
-            gradient.addColorStop(1, '#e8e0d8');
-        } else if (scene === 'history') {
-            gradient.addColorStop(0, '#f5f0e8');
-            gradient.addColorStop(1, '#ebe5d8');
-        } else {
-            gradient.addColorStop(0, '#f5ebe8');
-            gradient.addColorStop(1, '#ebe0d8');
-        }
-    }
-    
-    ctx.fillStyle = gradient;
+    // 室内背景：深蓝灰纵向纵深，冷峻地下科研工作室气质
+    const grad = ctx.createLinearGradient(0, 0, 0, config.height);
+    grad.addColorStop(0, pal.rgb(pal.bgPanel));
+    grad.addColorStop(1, pal.rgb(pal.bgDeep));
+    ctx.fillStyle = grad;
     ctx.fillRect(0, 0, config.width, config.height);
-}
 
-function drawSceneEffects(ctx, config, theme, scene) {
-    const dome = config.dome;
-    
-    if (scene === 'language') {
-        // 同心圆波纹
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.06 : 0.04;
-        for (let i = 1; i <= 4; i++) {
-            ctx.beginPath();
-            ctx.arc(dome.centerX, dome.centerY, dome.radius * i / 4, 0, Math.PI * 2);
-            ctx.strokeStyle = theme === 'dark' ? '#4a6a9a' : '#6a8ab0';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        }
-        ctx.restore();
-    } else if (scene === 'history') {
-        // 时间轴圆环
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.12 : 0.08;
-        ctx.beginPath();
-        ctx.arc(dome.centerX, dome.centerY, dome.radius + 20, 0, Math.PI * 2);
-        ctx.setLineDash([8, 12]);
-        ctx.strokeStyle = theme === 'dark' ? '#8a6a3a' : '#a07a4a';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.restore();
-    } else if (scene === 'disaster') {
-        // 裂痕纹理
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.15 : 0.1;
-        ctx.strokeStyle = theme === 'dark' ? '#8a3a3a' : '#a05050';
-        ctx.lineWidth = 1;
-        const cracks = [
-            { x1: 50, y1: 30, x2: 120, y2: 100, x3: 100, y3: 160 },
-            { x1: 550, y1: 50, x2: 480, y2: 120, x3: 500, y3: 180 },
-            { x1: 100, y1: 380, x2: 180, y2: 320, x3: 200, y3: 350 }
-        ];
-        cracks.forEach(crack => {
-            ctx.beginPath();
-            ctx.moveTo(crack.x1, crack.y1);
-            ctx.lineTo(crack.x2, crack.y2);
-            ctx.lineTo(crack.x3, crack.y3);
-            ctx.stroke();
-        });
-        ctx.restore();
-    } else if (scene === 'art') {
-        // 音符与色彩漩涡
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.1 : 0.06;
-        ctx.strokeStyle = theme === 'dark' ? '#7a4a9a' : '#9060b0';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 6; i++) {
-            const angle = (i / 6) * Math.PI * 2 + time * 0.001;
-            const r = 60 + i * 15;
-            ctx.beginPath();
-            ctx.arc(dome.centerX + Math.cos(angle) * 30, dome.centerY + Math.sin(angle) * 30, r, angle, angle + Math.PI);
-            ctx.stroke();
-        }
-        ctx.restore();
-    } else if (scene === 'philosophy') {
-        // 无限符号 - 莫比乌斯环
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.08 : 0.05;
-        ctx.strokeStyle = theme === 'dark' ? '#4a9a7a' : '#60b090';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        for (let t = 0; t < Math.PI * 2; t += 0.05) {
-            const scale = 50;
-            const x = dome.centerX + scale * Math.cos(t) / (1 + Math.sin(t) * Math.sin(t));
-            const y = dome.centerY + scale * Math.sin(t) * Math.cos(t) / (1 + Math.sin(t) * Math.sin(t));
-            if (t === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.restore();
-    } else if (scene === 'science') {
-        // 原子轨道
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.1 : 0.06;
-        ctx.strokeStyle = theme === 'dark' ? '#4a9aaa' : '#60b0b0';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 3; i++) {
-            ctx.beginPath();
-            ctx.ellipse(dome.centerX, dome.centerY, 80 + i * 25, 40 + i * 12, i * 0.5, 0, Math.PI * 2);
-            ctx.stroke();
-        }
-        ctx.restore();
-    } else if (scene === 'ecology') {
-        // 叶脉纹理
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.1 : 0.06;
-        ctx.strokeStyle = theme === 'dark' ? '#4a9a4a' : '#60b060';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 8; i++) {
-            const angle = (i / 8) * Math.PI * 2;
-            ctx.beginPath();
-            ctx.moveTo(dome.centerX, dome.centerY);
-            const endX = dome.centerX + Math.cos(angle) * (dome.radius - 20);
-            const endY = dome.centerY + Math.sin(angle) * (dome.radius - 20);
-            ctx.lineTo(endX, endY);
-            // 侧脉
-            for (let j = 1; j <= 3; j++) {
-                const midX = dome.centerX + Math.cos(angle) * (15 + j * 15);
-                const midY = dome.centerY + Math.sin(angle) * (15 + j * 15);
-                ctx.moveTo(midX, midY);
-                ctx.lineTo(midX + Math.cos(angle + 0.5) * 10, midY + Math.sin(angle + 0.5) * 10);
-                ctx.moveTo(midX, midY);
-                ctx.lineTo(midX + Math.cos(angle - 0.5) * 10, midY + Math.sin(angle - 0.5) * 10);
-            }
-            ctx.stroke();
-        }
-        ctx.restore();
-    } else if (scene === 'law') {
-        // 天平与天平刻度
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.08 : 0.05;
-        ctx.strokeStyle = theme === 'dark' ? '#7a7a7a' : '#909090';
-        ctx.lineWidth = 1;
-        // 水平刻度线
-        for (let i = 0; i < 5; i++) {
-            const y = dome.centerY - 40 + i * 20;
-            ctx.beginPath();
-            ctx.moveTo(dome.centerX - 60, y);
-            ctx.lineTo(dome.centerX + 60, y);
-            ctx.stroke();
-        }
-        // 垂直支柱
-        ctx.beginPath();
-        ctx.moveTo(dome.centerX, dome.centerY - 50);
-        ctx.lineTo(dome.centerX, dome.centerY + 50);
-        ctx.stroke();
-        ctx.restore();
-    } else if (scene === 'daily') {
-        // 生活碎片 - 小圆点
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.1 : 0.06;
-        ctx.fillStyle = theme === 'dark' ? '#9a9a4a' : '#b0b060';
-        for (let i = 0; i < 12; i++) {
-            const angle = (i / 12) * Math.PI * 2 + time * 0.0005;
-            const r = 50 + (i % 3) * 20;
-            const x = dome.centerX + Math.cos(angle) * r;
-            const y = dome.centerY + Math.sin(angle) * r;
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        ctx.restore();
-    } else if (scene === 'architecture') {
-        // 建筑蓝图网格
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.06 : 0.04;
-        ctx.strokeStyle = theme === 'dark' ? '#9a7a7a' : '#b09090';
-        ctx.lineWidth = 0.5;
-        const gridSize = 20;
-        for (let x = dome.centerX - dome.radius; x < dome.centerX + dome.radius; x += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(x, dome.centerY - dome.radius);
-            ctx.lineTo(x, dome.centerY + dome.radius);
-            ctx.stroke();
-        }
-        for (let y = dome.centerY - dome.radius; y < dome.centerY + dome.radius; y += gridSize) {
-            ctx.beginPath();
-            ctx.moveTo(dome.centerX - dome.radius, y);
-            ctx.lineTo(dome.centerX + dome.radius, y);
-            ctx.stroke();
-        }
-        ctx.restore();
-    } else if (scene === 'medicine') {
-        // 生命脉络 - 心跳波形
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.1 : 0.06;
-        ctx.strokeStyle = theme === 'dark' ? '#9a4a7a' : '#b06090';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        for (let i = 0; i < 60; i++) {
-            const x = dome.centerX - 60 + i * 2;
-            const y = dome.centerY + Math.sin(i * 0.3 + time * 0.01) * 15 * Math.sin(i * 0.1);
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.restore();
-    } else if (scene === 'astronomy') {
-        // 星轨 - 椭圆轨道
-        ctx.save();
-        ctx.globalAlpha = theme === 'dark' ? 0.1 : 0.06;
-        ctx.strokeStyle = theme === 'dark' ? '#4a4a9a' : '#6060b0';
-        ctx.lineWidth = 1;
-        for (let i = 0; i < 4; i++) {
-            ctx.beginPath();
-            ctx.ellipse(dome.centerX, dome.centerY, 40 + i * 20, 25 + i * 12, time * 0.001 * (i + 1), 0, Math.PI * 2);
-            ctx.stroke();
-        }
-        // 中心星
-        ctx.fillStyle = theme === 'dark' ? '#8a8aff' : '#4040c0';
-        ctx.beginPath();
-        ctx.arc(dome.centerX, dome.centerY, 4, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-    }
-}
-
-function drawDome(ctx, config, theme, scene) {
-    const dome = config.dome;
-    
+    // 墙面分隔线（极淡冷色，提供建筑感锚定，不喧宾夺主）
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = pal.rgb(pal.border);
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.arc(dome.centerX, dome.centerY, dome.radius, 0, Math.PI * 2);
-    
-    // 根据场景改变穹顶颜色
-    const domeColors = {
-        language:      { fill: ['#0e1220', '#e8e0d8'], stroke: ['#2a3a5a', '#8aa0c0'] },
-        history:       { fill: ['#14100a', '#ebe5d8'], stroke: ['#5a4a2a', '#a08a60'] },
-        disaster:      { fill: ['#140a0a', '#ebe0d8'], stroke: ['#5a2a2a', '#a06060'] },
-        art:           { fill: ['#120e1a', '#ede8f0'], stroke: ['#4a2a6a', '#9060b0'] },
-        philosophy:    { fill: ['#0a1a12', '#e8f0ea'], stroke: ['#2a5a4a', '#60b090'] },
-        science:       { fill: ['#0a141a', '#e8f0f0'], stroke: ['#2a5a6a', '#60b0b0'] },
-        ecology:       { fill: ['#0a1a0a', '#e8f0e8'], stroke: ['#2a5a2a', '#60b060'] },
-        law:           { fill: ['#121212', '#ececec'], stroke: ['#4a4a4a', '#909090'] },
-        daily:         { fill: ['#1a1a0a', '#f0f0e0'], stroke: ['#5a5a2a', '#b0b060'] },
-        architecture:  { fill: ['#141210', '#f0ece5'], stroke: ['#5a4a3a', '#b09070'] },
-        medicine:      { fill: ['#1a0e12', '#f0e8ec'], stroke: ['#5a2a4a', '#b06090'] },
-        astronomy:     { fill: ['#060620', '#e0e0f0'], stroke: ['#2a2a6a', '#6060b0'] },
-    };
-    
-    const colors = domeColors[scene] || domeColors.language;
-    ctx.fillStyle = theme === 'dark' ? colors.fill[0] : colors.fill[1];
-    ctx.strokeStyle = theme === 'dark' ? colors.stroke[0] : colors.stroke[1];
-    
-    ctx.fill();
-    ctx.lineWidth = dome.strokeWidth;
+    ctx.moveTo(0, config.window.y - 10);
+    ctx.lineTo(config.width, config.window.y - 10);
     ctx.stroke();
-    
-    // 纹理 - 场景定制
-    ctx.save();
-    ctx.globalAlpha = theme === 'dark' ? 0.1 : 0.05;
-    
-    if (scene === 'language') {
-        for (let i = 0; i < 12; i++) {
-            const angle = (i / 12) * Math.PI * 2;
-            const x1 = dome.centerX + Math.cos(angle) * 25;
-            const y1 = dome.centerY + Math.sin(angle) * 25;
-            const x2 = dome.centerX + Math.cos(angle) * dome.radius;
-            const y2 = dome.centerY + Math.sin(angle) * dome.radius;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.strokeStyle = theme === 'dark' ? '#3a5a8a' : '#7a9ac0';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        }
-    } else if (scene === 'history') {
-        ctx.beginPath();
-        ctx.strokeStyle = theme === 'dark' ? '#6a5a3a' : '#9a8a60';
-        ctx.lineWidth = 1;
-        for (let t = 0; t < 200; t += 0.1) {
-            const r = t * 0.7;
-            const x = dome.centerX + Math.cos(t) * r;
-            const y = dome.centerY + Math.sin(t) * r;
-            if (t === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-    } else if (scene === 'disaster') {
-        for (let i = 0; i < 8; i++) {
-            const angle = (i / 8) * Math.PI * 2 + time * 0.002;
-            const x1 = dome.centerX + Math.cos(angle) * 40;
-            const y1 = dome.centerY + Math.sin(angle) * 40;
-            const x2 = dome.centerX + Math.cos(angle) * (dome.radius - 10);
-            const y2 = dome.centerY + Math.sin(angle) * (dome.radius - 10);
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.strokeStyle = theme === 'dark' ? '#6a3a3a' : '#9a6060';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-        }
-    } else if (scene === 'art') {
-        // 音符点
-        ctx.fillStyle = theme === 'dark' ? '#9a6aca' : '#7040a0';
-        for (let i = 0; i < 8; i++) {
-            const angle = (i / 8) * Math.PI * 2;
-            const x = dome.centerX + Math.cos(angle) * 50;
-            const y = dome.centerY + Math.sin(angle) * 50;
-            ctx.beginPath();
-            ctx.arc(x, y, 3, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    } else if (scene === 'philosophy') {
-        // 圆环
-        ctx.beginPath();
-        ctx.arc(dome.centerX, dome.centerY, 40, 0, Math.PI * 2);
-        ctx.strokeStyle = theme === 'dark' ? '#4a9a7a' : '#60b090';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    } else if (scene === 'science') {
-        // 六边形
-        ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-            const angle = (i / 6) * Math.PI * 2;
-            const x = dome.centerX + Math.cos(angle) * 35;
-            const y = dome.centerY + Math.sin(angle) * 35;
-            if (i === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.strokeStyle = theme === 'dark' ? '#4a9aaa' : '#60b0b0';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    } else if (scene === 'ecology') {
-        // 叶形
-        ctx.beginPath();
-        ctx.ellipse(dome.centerX, dome.centerY, 30, 50, 0, 0, Math.PI * 2);
-        ctx.strokeStyle = theme === 'dark' ? '#4a9a4a' : '#60b060';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    } else if (scene === 'law') {
-        // 天平
-        ctx.beginPath();
-        ctx.moveTo(dome.centerX - 30, dome.centerY);
-        ctx.lineTo(dome.centerX + 30, dome.centerY);
-        ctx.moveTo(dome.centerX, dome.centerY - 10);
-        ctx.lineTo(dome.centerX, dome.centerY - 40);
-        ctx.strokeStyle = theme === 'dark' ? '#7a7a7a' : '#909090';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    } else if (scene === 'daily') {
-        // 房屋轮廓
-        ctx.beginPath();
-        ctx.moveTo(dome.centerX, dome.centerY - 30);
-        ctx.lineTo(dome.centerX - 25, dome.centerY);
-        ctx.lineTo(dome.centerX - 25, dome.centerY + 20);
-        ctx.lineTo(dome.centerX + 25, dome.centerY + 20);
-        ctx.lineTo(dome.centerX + 25, dome.centerY);
-        ctx.closePath();
-        ctx.strokeStyle = theme === 'dark' ? '#9a9a4a' : '#b0b060';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    } else if (scene === 'architecture') {
-        // 拱门
-        ctx.beginPath();
-        ctx.arc(dome.centerX, dome.centerY + 20, 25, Math.PI, 0);
-        ctx.lineTo(dome.centerX + 25, dome.centerY + 20);
-        ctx.lineTo(dome.centerX - 25, dome.centerY + 20);
-        ctx.closePath();
-        ctx.strokeStyle = theme === 'dark' ? '#9a7a7a' : '#b09090';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    } else if (scene === 'medicine') {
-        // 十字
-        ctx.beginPath();
-        ctx.moveTo(dome.centerX, dome.centerY - 20);
-        ctx.lineTo(dome.centerX, dome.centerY + 20);
-        ctx.moveTo(dome.centerX - 15, dome.centerY);
-        ctx.lineTo(dome.centerX + 15, dome.centerY);
-        ctx.strokeStyle = theme === 'dark' ? '#9a4a7a' : '#b06090';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-    } else if (scene === 'astronomy') {
-        // 星星
-        ctx.fillStyle = theme === 'dark' ? '#8a8aff' : '#4040c0';
-        for (let i = 0; i < 5; i++) {
-            const angle = (i / 5) * Math.PI * 2 - Math.PI / 2;
-            const x = dome.centerX + Math.cos(angle) * 40;
-            const y = dome.centerY + Math.sin(angle) * 40;
-            ctx.beginPath();
-            ctx.arc(x, y, 2, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-    
     ctx.restore();
 }
 
-function drawSoundWaves(ctx, config, theme, scene) {
-    const waves = config.soundWaves;
-    const seat = config.singerSeat;
-    
-    ctx.save();
-    
-    // 根据场景改变声波颜色
-    const waveColors = {
-        language:      theme === 'dark' ? [74, 106, 154] : [90, 120, 170],
-        history:       theme === 'dark' ? [138, 106, 58] : [150, 120, 70],
-        disaster:      theme === 'dark' ? [138, 58, 58] : [160, 80, 80],
-        art:           theme === 'dark' ? [138, 74, 154] : [150, 90, 170],
-        philosophy:    theme === 'dark' ? [74, 154, 138] : [90, 170, 150],
-        science:       theme === 'dark' ? [74, 154, 170] : [90, 170, 180],
-        ecology:       theme === 'dark' ? [74, 154, 74] : [90, 170, 90],
-        law:           theme === 'dark' ? [138, 138, 138] : [150, 150, 150],
-        daily:         theme === 'dark' ? [154, 154, 74] : [170, 170, 90],
-        architecture:  theme === 'dark' ? [154, 138, 138] : [170, 150, 150],
-        medicine:      theme === 'dark' ? [154, 74, 138] : [170, 90, 150],
-        astronomy:     theme === 'dark' ? [74, 74, 154] : [90, 90, 170],
-    };
-    
-    const waveColor = waveColors[scene] || waveColors.language;
-    
-    for (let i = 0; i < waves.waveCount; i++) {
-        const phase = (time * waves.speed + i * 0.4) % 1;
-        const radius = seat.radius + phase * waves.maxRadius;
-        const alpha = 0.3 * (1 - phase);
-        
-        ctx.beginPath();
-        ctx.arc(seat.centerX, seat.centerY, radius, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(${waveColor[0]}, ${waveColor[1]}, ${waveColor[2]}, ${alpha})`;
-        ctx.lineWidth = waves.lineWidth;
-        ctx.stroke();
-    }
-    
-    ctx.restore();
-}
+function drawObservationWindow(ctx, config, scene, accent) {
+    const pal = CANVAS_PALETTE;
+    const w = config.window;
 
-function drawSingerSeat(ctx, config, theme) {
-    const seat = config.singerSeat;
-    
-    // 光晕
-    const glowGradient = ctx.createRadialGradient(
-        seat.centerX, seat.centerY, 0,
-        seat.centerX, seat.centerY, seat.glowRadius
+    // 窗外：平静星空 + 微弱冷色星云（深蓝/青/紫，低饱和），绝非发光之眼
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(w.x, w.y, w.w, w.h);
+    ctx.clip();
+
+    // 深空底
+    const spaceGrad = ctx.createLinearGradient(0, w.y, 0, w.y + w.h);
+    spaceGrad.addColorStop(0, pal.rgb(pal.bgDeep));
+    spaceGrad.addColorStop(1, pal.rgb(pal.vaultLang));
+    ctx.fillStyle = spaceGrad;
+    ctx.fillRect(w.x, w.y, w.w, w.h);
+
+    // 微弱冷色星云（低饱和径向晕染，随存储室主色轻染）
+    const neb = ctx.createRadialGradient(
+        w.x + w.w * 0.38, w.y + w.h * 0.42, 0,
+        w.x + w.w * 0.38, w.y + w.h * 0.42, w.w * 0.55
     );
-    
-    if (theme === 'dark') {
-        glowGradient.addColorStop(0, 'rgba(212, 160, 74, 0.15)');
-    } else {
-        glowGradient.addColorStop(0, 'rgba(138, 106, 42, 0.2)');
-    }
-    glowGradient.addColorStop(1, 'transparent');
-    
-    ctx.fillStyle = glowGradient;
-    ctx.fillRect(seat.centerX - seat.glowRadius, seat.centerY - seat.glowRadius, 
-                 seat.glowRadius * 2, seat.glowRadius * 2);
-    
-    // 底座
-    ctx.beginPath();
-    ctx.arc(seat.centerX, seat.centerY, seat.radius, 0, Math.PI * 2);
-    ctx.fillStyle = theme === 'dark' ? '#1a1a25' : '#faf7f2';
-    ctx.fill();
-    ctx.strokeStyle = '#d4a04a';
-    ctx.lineWidth = seat.strokeWidth;
-    ctx.stroke();
-    
-    // 声波符号
-    drawSoundSymbol(ctx, seat.centerX, seat.centerY, theme);
-}
+    neb.addColorStop(0, pal.rgb(accent.line, 0.18));
+    neb.addColorStop(0.5, pal.rgb(accent.accent, 0.08));
+    neb.addColorStop(1, 'transparent');
+    ctx.fillStyle = neb;
+    ctx.fillRect(w.x, w.y, w.w, w.h);
 
-function drawSoundSymbol(ctx, x, y, theme) {
-    ctx.save();
-    ctx.strokeStyle = '#d4a04a';
-    ctx.lineWidth = 1.5;
-    
-    for (let i = 0; i < 3; i++) {
-        const r = 7 + i * 5;
+    // 平静星点（轻微闪烁，缓慢上升漂移，像天文馆穹顶）
+    ctx.fillStyle = pal.rgb(pal.info);
+    for (let i = 0; i < 46; i++) {
+        const sx = w.x + ((i * 73) % 100) / 100 * w.w;
+        const drift = (time * 0.08 + i * 11) % w.h;
+        const sy = w.y + w.h - drift * (0.4 + (i % 3) * 0.2);
+        const tw = 0.35 + 0.35 * Math.sin(time * 0.03 + i * 1.7);
+        ctx.globalAlpha = tw * 0.7;
+        const r = (i % 5 === 0) ? 1.5 : 0.9;
         ctx.beginPath();
-        ctx.arc(x, y, r, -Math.PI * 0.3, Math.PI * 0.3);
+        ctx.arc(sx, sy, r, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // 少量柔和冷光辉点（记忆微光，非暖色）
+    ctx.fillStyle = pal.rgb(pal.vaultLangAccent, 0.6);
+    for (let i = 0; i < 10; i++) {
+        const a = (i / 10) * Math.PI * 2 + time * 0.002;
+        const r = w.w * (0.12 + (i % 4) * 0.08);
+        const x = w.x + w.w / 2 + Math.cos(a) * r;
+        const y = w.y + w.h / 2 + Math.sin(a) * r * 0.6;
+        ctx.beginPath();
+        ctx.arc(x, y, 1, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
+
+    // 窗框：冷色细边框 + 轻微冷光，明确"这是一扇观察窗"
+    ctx.save();
+    ctx.strokeStyle = pal.rgb(pal.vaultLangAccent);
+    ctx.lineWidth = w.strokeWidth;
+    ctx.shadowColor = pal.rgb(pal.info, 0.35);
+    ctx.shadowBlur = 8;
+    ctx.strokeRect(w.x, w.y, w.w, w.h);
+    ctx.restore();
+
+    // 建筑化格栅（极淡，去"虚空/邪教"联想）
+    ctx.save();
+    ctx.globalAlpha = 0.14;
+    ctx.strokeStyle = pal.rgb(pal.border);
+    ctx.lineWidth = 1;
+    for (let gx = 1; gx <= 3; gx++) {
+        const x = w.x + (w.w * gx) / 4;
+        ctx.beginPath();
+        ctx.moveTo(x, w.y);
+        ctx.lineTo(x, w.y + w.h);
         ctx.stroke();
     }
-    
+    for (let gy = 1; gy <= 2; gy++) {
+        const y = w.y + (w.h * gy) / 3;
+        ctx.beginPath();
+        ctx.moveTo(w.x, y);
+        ctx.lineTo(w.x + w.w, y);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    // 窗下角标（明确语义，消解恐怖误读）—— 冷色文字 + 极少量琥珀仪器点
+    if (MemorySanctuary.state) {
+        ctx.save();
+        ctx.globalAlpha = 0.85;
+        ctx.fillStyle = pal.rgb(pal.textDim);
+        ctx.font = '12px "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        const week = MemorySanctuary.state.week || 1;
+        const archived = (MemorySanctuary.state.completedArchives || []).length;
+        ctx.fillText(`观察窗 · 第 ${week} 周 · 已保存 ${archived} 段记忆`, w.x + 2, w.y + w.h + 8);
+        ctx.restore();
+    }
+
+    // 右上极小琥珀仪器指示点（仅作极少量仪器点缀，非装饰光池）
+    ctx.save();
+    ctx.globalAlpha = 0.5 + 0.3 * Math.sin(time * 0.04);
+    ctx.fillStyle = pal.rgb(pal.amber);
+    ctx.beginPath();
+    ctx.arc(w.x + w.w - 6, w.y + 6, 2.2, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
 }
 
-function drawVaultDoors(ctx, config, theme) {
-    const dome = config.dome;
-    const doors = config.vaultDoors;
-    const vaults = MemorySanctuary.data.vaults;
-    
-    // 根据存储室数量计算闸门位置
+function drawConsoleDeck(ctx, config) {
+    const pal = CANVAS_PALETTE;
+    const c = config.console;
+    const left = c.centerX - c.width / 2;
+    const top = c.topY;
+    const right = c.centerX + c.width / 2;
+    const bottom = top + c.height;
+
+    // 桌台剪影：深色几何块（地下工作室的克制控制台）
+    ctx.save();
+    ctx.fillStyle = pal.rgb(pal.bgDeep, 0.7);
+    ctx.beginPath();
+    ctx.moveTo(left, top + 8);
+    ctx.lineTo(right, top + 8);
+    ctx.lineTo(right - 14, bottom);
+    ctx.lineTo(left + 14, bottom);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = pal.rgb(pal.border);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+
+    // 台面细青色仪器线（在线工位指示，非装饰光池）
+    ctx.save();
+    ctx.strokeStyle = pal.rgb(pal.info, 0.55);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(left + 18, top + 6);
+    ctx.lineTo(right - 18, top + 6);
+    ctx.stroke();
+
+    // 少量柔和冷光工位点（表示在线终端）
+    const stations = 7;
+    for (let i = 0; i < stations; i++) {
+        const x = left + 24 + (i + 0.5) * (c.width - 48) / stations;
+        const lit = (i + Math.floor(time * 0.002)) % 3 !== 0;
+        const a = lit ? (0.45 + 0.25 * Math.sin(time * 0.02 + i)) : 0.12;
+        ctx.fillStyle = pal.rgb(pal.info, a);
+        ctx.beginPath();
+        ctx.arc(x, top + 14, 2, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
+
+    // 极少量琥珀仪器点缀（仅指示灯，禁用暖色光池）
+    ctx.save();
+    ctx.globalAlpha = 0.4 + 0.2 * Math.sin(time * 0.05);
+    ctx.fillStyle = pal.rgb(pal.amber);
+    ctx.beginPath();
+    ctx.arc(right - 22, top + 14, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+}
+
+function drawVaultPortholes(ctx, config) {
+    const pal = CANVAS_PALETTE;
+    const p = config.portholes;
+    const vaults = (MemorySanctuary.data && MemorySanctuary.data.vaults) || [];
+    if (!vaults.length) return;
+
     const count = vaults.length;
-    const startAngle = -Math.PI / 2; // 从正上方开始
-    const angleStep = (Math.PI * 2) / Math.max(count, 3);
-    
+    const totalW = (count - 1) * p.gap;
+    const startX = config.width / 2 - totalW / 2;
+    const y = p.rowY;
+    const currentId = MemorySanctuary.currentVaultId || 1;
+
     vaults.forEach((vault, index) => {
-        const angle = startAngle + index * angleStep;
-        const doorX = dome.centerX + Math.cos(angle) * doors.orbitRadius;
-        const doorY = dome.centerY + Math.sin(angle) * doors.orbitRadius;
-        
-        // 闸门背景
+        const x = startX + index * p.gap;
+        const isCurrent = (index + 1) === currentId;
+
+        // 冷光舷窗：深色门 + 冷色边框 + 在线冷光（非环绕黑洞）
         ctx.beginPath();
-        ctx.arc(doorX, doorY, doors.radius + 3, 0, Math.PI * 2);
-        ctx.fillStyle = theme === 'dark' ? '#0a0a0f' : '#f5f0e8';
+        ctx.arc(x, y, p.radius + 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = pal.rgb(pal.bgDeep, 0.8);
         ctx.fill();
-        
-        // 闸门
-        ctx.beginPath();
-        ctx.arc(doorX, doorY, doors.radius, 0, Math.PI * 2);
-        ctx.fillStyle = theme === 'dark' ? vault.color : lightenColor(vault.color, 0.7);
-        ctx.fill();
-        ctx.strokeStyle = vault.accentColor;
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = isCurrent
+            ? pal.rgb(pal.info, 0.9)
+            : pal.rgb(hexToRgb(vault.accentColor, pal.vaultLangAccent), 0.55);
+        ctx.lineWidth = isCurrent ? 2 : 1;
         ctx.stroke();
-        
-        // 闸门编号
-        ctx.fillStyle = vault.accentColor;
-        ctx.font = 'bold 9px "Courier New", monospace';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(String(vault.id).padStart(2, '0'), doorX, doorY);
-        
-        // 工程机器人状态指示（小圆点）
-        if (MemorySanctuary.state && index === 0) {
-            const botCount = MemorySanctuary.state.resources.engineeringBots || 0;
-            if (botCount > 0) {
-                ctx.beginPath();
-                ctx.arc(doorX + doors.radius - 2, doorY - doors.radius + 2, 3, 0, Math.PI * 2);
-                ctx.fillStyle = MemorySanctuary.state.botBlackoutLogged ? '#e74c3c' : '#6bb8c9';
-                ctx.fill();
-            }
-        }
+
+        // 冷光门芯（当前存储室更亮，表示"正打开"）
+        const coreA = isCurrent ? (0.6 + 0.3 * Math.sin(time * 0.04)) : 0.4;
+        ctx.beginPath();
+        ctx.arc(x, y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = pal.rgb(hexToRgb(vault.color, pal.info), coreA);
+        ctx.fill();
     });
 }
 
-function lightenColor(hex, factor) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    
-    const nr = Math.round(r + (255 - r) * factor);
-    const ng = Math.round(g + (255 - g) * factor);
-    const nb = Math.round(b + (255 - b) * factor);
-    
-    return `rgb(${nr}, ${ng}, ${nb})`;
-}
+function drawMemoryMotes(ctx, config) {
+    const pal = CANVAS_PALETTE;
 
-function drawAmbientLight(ctx, config, theme, scene) {
-    const lightGradient = ctx.createRadialGradient(
-        config.width / 2, 50, 0,
-        config.width / 2, 50, 200
-    );
-    
-    const ambientColors = {
-        language:      theme === 'dark' ? 'rgba(74, 106, 154, 0.06)' : 'rgba(90, 120, 170, 0.08)',
-        history:       theme === 'dark' ? 'rgba(138, 106, 58, 0.06)' : 'rgba(150, 120, 70, 0.08)',
-        disaster:      theme === 'dark' ? 'rgba(138, 58, 58, 0.06)' : 'rgba(160, 80, 80, 0.08)',
-        art:           theme === 'dark' ? 'rgba(138, 74, 154, 0.06)' : 'rgba(150, 90, 170, 0.08)',
-        philosophy:    theme === 'dark' ? 'rgba(74, 154, 138, 0.06)' : 'rgba(90, 170, 150, 0.08)',
-        science:       theme === 'dark' ? 'rgba(74, 154, 170, 0.06)' : 'rgba(90, 170, 180, 0.08)',
-        ecology:       theme === 'dark' ? 'rgba(74, 154, 74, 0.06)' : 'rgba(90, 170, 90, 0.08)',
-        law:           theme === 'dark' ? 'rgba(138, 138, 138, 0.05)' : 'rgba(150, 150, 150, 0.07)',
-        daily:         theme === 'dark' ? 'rgba(154, 154, 74, 0.06)' : 'rgba(170, 170, 90, 0.08)',
-        architecture:  theme === 'dark' ? 'rgba(154, 138, 138, 0.06)' : 'rgba(170, 150, 150, 0.08)',
-        medicine:      theme === 'dark' ? 'rgba(154, 74, 138, 0.06)' : 'rgba(170, 90, 150, 0.08)',
-        astronomy:     theme === 'dark' ? 'rgba(74, 74, 154, 0.06)' : 'rgba(90, 90, 170, 0.08)',
-    };
-    
-    lightGradient.addColorStop(0, ambientColors[scene] || ambientColors.language);
-    lightGradient.addColorStop(1, 'transparent');
-    
-    ctx.fillStyle = lightGradient;
-    ctx.fillRect(0, 0, config.width, config.height);
-    
-    if (theme === 'dark') {
-        const vignetteGradient = ctx.createRadialGradient(
-            config.width / 2, config.height / 2, config.width * 0.3,
-            config.width / 2, config.height / 2, config.width * 0.7
-        );
-        vignetteGradient.addColorStop(0, 'transparent');
-        vignetteGradient.addColorStop(1, 'rgba(0, 0, 0, 0.4)');
-        ctx.fillStyle = vignetteGradient;
-        ctx.fillRect(0, 0, config.width, config.height);
-    }
-}
-
-function drawSceneOverlay(ctx, config, theme, scene) {
-    // 绘制粒子
-    ctx.save();
-    
-    // 粒子颜色映射
-    const particleColors = {
-        language:      theme === 'dark' ? [100, 150, 200] : [80, 120, 180],
-        history:       theme === 'dark' ? [138, 106, 58] : [160, 130, 80],
-        disaster:      theme === 'dark' ? [212, 160, 74] : [180, 130, 60],
-        art:           theme === 'dark' ? [180, 100, 220] : [150, 80, 190],
-        philosophy:    theme === 'dark' ? [100, 200, 180] : [80, 180, 160],
-        science:       theme === 'dark' ? [100, 200, 220] : [80, 180, 200],
-        ecology:       theme === 'dark' ? [100, 200, 100] : [80, 180, 80],
-        law:           theme === 'dark' ? [180, 180, 180] : [200, 200, 200],
-        daily:         theme === 'dark' ? [200, 200, 100] : [220, 220, 80],
-        architecture:  theme === 'dark' ? [200, 160, 160] : [220, 180, 180],
-        medicine:      theme === 'dark' ? [200, 100, 180] : [220, 80, 160],
-        astronomy:     theme === 'dark' ? [100, 100, 220] : [80, 80, 200],
-    };
-    
-    const pColor = particleColors[scene] || particleColors.language;
-    
+    // 记忆微光
     for (let i = particles.length - 1; i >= 0; i--) {
-        const p = particles[i];
-        
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life++;
-        
-        const lifeRatio = p.life / p.maxLife;
-        const currentAlpha = p.alpha * (1 - lifeRatio);
-        
-        ctx.fillStyle = `rgba(${pColor[0]}, ${pColor[1]}, ${pColor[2]}, ${currentAlpha})`;
-        
+        const pt = particles[i];
+        pt.x += pt.vx;
+        pt.y += pt.vy;
+        pt.life++;
+
+        const lifeRatio = pt.life / pt.maxLife;
+        const currentAlpha = pt.alpha * (1 - lifeRatio);
+
+        ctx.fillStyle = pal.rgb(pal.info, currentAlpha);
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
         ctx.fill();
-        
-        if (p.life >= p.maxLife || p.y > config.height + 20 || p.y < -20 || p.x < -20 || p.x > config.width + 20) {
+
+        if (pt.life >= pt.maxLife || pt.y < config.window.y - 10 ||
+            pt.x < -20 || pt.x > config.width + 20) {
             particles.splice(i, 1);
         }
     }
-    
-    // 绘制漂浮符号
+
+    // 漂浮符号（温和的记忆字符，低透明度，冷色）
     for (let i = floatingSymbols.length - 1; i >= 0; i--) {
         const s = floatingSymbols[i];
         s.phase += s.speed;
-        
         const targetAlpha = s.maxAlpha * (0.5 + 0.5 * Math.sin(s.phase));
         s.alpha += (targetAlpha - s.alpha) * 0.02;
-        
+
         ctx.globalAlpha = s.alpha;
-        ctx.fillStyle = theme === 'dark' ? '#d4a04a' : '#8a6a2a';
+        ctx.fillStyle = pal.rgb(pal.info);
         ctx.font = '12px "Courier New", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(s.symbol, s.x, s.y + Math.sin(s.phase * 2) * 3);
-        
+
         if (s.phase > Math.PI * 8) {
             floatingSymbols.splice(i, 1);
         }
     }
-    
-    ctx.restore();
+    ctx.globalAlpha = 1;
 }
 
 // ==========================================
-// 衰败视觉层
+// 衰败视觉层（去血红 → 琥珀/去饱和告警，并给出文字说明）
 // ==========================================
-
-function drawDecayOverlay(ctx, config, theme, scene) {
-    // 获取游戏状态
+function drawDecayOverlay(ctx, config, scene, accent) {
     if (!MemorySanctuary.state) return;
-    
-    const resources = MemorySanctuary.state.resources;
-    const energy = resources ? resources.energy : 100;
-    const media = resources ? resources.media : 60;
-    const environment = resources ? resources.environment : 95;
-    
-    const w = config.width;
-    const h = config.height;
-    
-    // 能源衰败：穹顶闪烁 + 整体偏红
+    const pal = CANVAS_PALETTE;
+    const res = MemorySanctuary.state.resources || {};
+    const energy = res.energy != null ? res.energy : 100;
+    const media = res.media != null ? res.media : 60;
+    const environment = res.environment != null ? res.environment : 95;
+    const w = config.width, h = config.height;
+
+    const alerts = [];
+
+    // 能源不足：琥珀色呼吸（非血红）
     if (energy <= 0) {
-        // 完全枯竭：强烈红色呼吸
-        const pulse = 0.1 + 0.05 * Math.sin(time * 0.1);
-        ctx.fillStyle = `rgba(138, 58, 58, ${pulse})`;
+        const pulse = 0.08 + 0.05 * Math.sin(time * 0.1);
+        ctx.fillStyle = pal.rgb(pal.warning, pulse);
         ctx.fillRect(0, 0, w, h);
+        alerts.push('能源枯竭');
     } else if (energy < 30) {
-        // 能源不足：间歇性闪烁
-        const flicker = Math.sin(time * 0.15) > 0.7 ? 0.08 : 0.02;
-        ctx.fillStyle = `rgba(138, 58, 58, ${flicker})`;
+        const flicker = Math.sin(time * 0.15) > 0.7 ? 0.06 : 0.02;
+        ctx.fillStyle = pal.rgb(pal.warning, flicker);
         ctx.fillRect(0, 0, w, h);
     }
-    
-    // 介质衰败：雪花噪点
+
+    // 介质不足：中性扫描点
     if (media <= 0) {
         ctx.save();
-        ctx.globalAlpha = 0.15;
-        const dotCount = 30;
-        for (let i = 0; i < dotCount; i++) {
+        ctx.globalAlpha = 0.12;
+        for (let i = 0; i < 24; i++) {
             const x = (Math.sin(time * 0.05 + i * 1.3) * 0.5 + 0.5) * w;
             const y = (Math.cos(time * 0.04 + i * 1.7) * 0.5 + 0.5) * h;
-            const size = Math.random() * 2 + 1;
-            ctx.fillStyle = theme === 'dark' ? '#ffffff' : '#000000';
+            ctx.fillStyle = pal.rgb(pal.textDim);
             ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.arc(x, y, 1.5, 0, Math.PI * 2);
             ctx.fill();
         }
         ctx.restore();
+        alerts.push('介质中断');
     } else if (media < 20) {
         ctx.save();
-        ctx.globalAlpha = 0.08;
-        const dotCount = 10;
-        for (let i = 0; i < dotCount; i++) {
+        ctx.globalAlpha = 0.06;
+        for (let i = 0; i < 8; i++) {
             const x = (Math.sin(time * 0.03 + i * 2.1) * 0.5 + 0.5) * w;
             const y = (Math.cos(time * 0.02 + i * 2.3) * 0.5 + 0.5) * h;
-            ctx.fillStyle = theme === 'dark' ? '#ffffff' : '#000000';
+            ctx.fillStyle = pal.rgb(pal.textDim);
             ctx.beginPath();
             ctx.arc(x, y, 1, 0, Math.PI * 2);
             ctx.fill();
         }
         ctx.restore();
     }
-    
-    // 环境衰败：边缘暗角加重
+
+    // 环境不足：去饱和琥珀暗角（非血色）
     if (environment <= 0) {
-        const vignetteGradient = ctx.createRadialGradient(
-            w / 2, h / 2, w * 0.15,
-            w / 2, h / 2, w * 0.55
-        );
-        vignetteGradient.addColorStop(0, 'transparent');
-        vignetteGradient.addColorStop(1, 'rgba(50, 0, 0, 0.6)');
-        ctx.fillStyle = vignetteGradient;
+        const v = ctx.createRadialGradient(w / 2, h / 2, w * 0.15, w / 2, h / 2, w * 0.55);
+        v.addColorStop(0, 'transparent');
+        v.addColorStop(1, pal.rgb(pal.amberDim, 0.5));
+        ctx.fillStyle = v;
         ctx.fillRect(0, 0, w, h);
+        alerts.push('环境崩坏');
     } else if (environment < 30) {
-        const vignetteGradient = ctx.createRadialGradient(
-            w / 2, h / 2, w * 0.2,
-            w / 2, h / 2, w * 0.6
-        );
-        vignetteGradient.addColorStop(0, 'transparent');
-        vignetteGradient.addColorStop(1, 'rgba(80, 40, 0, 0.3)');
-        ctx.fillStyle = vignetteGradient;
+        const v = ctx.createRadialGradient(w / 2, h / 2, w * 0.2, w / 2, h / 2, w * 0.6);
+        v.addColorStop(0, 'transparent');
+        v.addColorStop(1, pal.rgb(pal.amberDim, 0.25));
+        ctx.fillStyle = v;
         ctx.fillRect(0, 0, w, h);
     }
-    
-    // 三种资源全部危急：整体震颤效果
+
+    // 三资源全危：轻微琥珀震颤
     if (energy < 20 && media < 15 && environment < 20) {
         const shake = Math.sin(time * 0.3) * 0.03;
-        ctx.fillStyle = `rgba(100, 0, 0, ${0.05 + shake})`;
+        ctx.fillStyle = pal.rgb(pal.warning, 0.05 + shake);
         ctx.fillRect(0, 0, w, h);
+        alerts.push('圣所告急');
     }
-    
-    // 终局倒计时：第32周起边缘泛红
+
+    // 终局倒计时：第32周起边缘泛琥珀（时间压迫，非血色）
     if (MemorySanctuary.state.week >= 32) {
-        const intensity = Math.min(0.3, (MemorySanctuary.state.week - 31) * 0.04);
+        const intensity = Math.min(0.28, (MemorySanctuary.state.week - 31) * 0.035);
         const weekPulse = intensity * (0.8 + 0.2 * Math.sin(time * 0.05));
-        ctx.fillStyle = `rgba(80, 20, 20, ${weekPulse})`;
+        ctx.fillStyle = pal.rgb(pal.warning, weekPulse);
         ctx.fillRect(0, 0, w, h);
+        if (MemorySanctuary.state.week >= 40) alerts.push('终期临近');
     }
-    
-    // 章节过渡强化效果
+
+    // 章节过渡 surge（琥珀色）
     if (chapterTransitionEffect.active) {
         const elapsed = Date.now() - chapterTransitionEffect.startTime;
         const progress = Math.min(1, elapsed / chapterTransitionEffect.duration);
-        
-        // 前30%：衰败效果突然加重
-        // 40%-70%：保持高峰
-        // 70%-100%：缓慢消退
-        let surgeIntensity;
-        if (progress < 0.3) {
-            surgeIntensity = progress / 0.3;
-        } else if (progress < 0.7) {
-            surgeIntensity = 1;
-        } else {
-            surgeIntensity = 1 - (progress - 0.7) / 0.3;
-        }
-        
-        const surge = surgeIntensity * 0.25;
-        ctx.fillStyle = `rgba(120, 30, 30, ${surge})`;
+        let surge;
+        if (progress < 0.3) surge = progress / 0.3;
+        else if (progress < 0.7) surge = 1;
+        else surge = 1 - (progress - 0.7) / 0.3;
+        const s = surge * 0.22;
+        ctx.fillStyle = pal.rgb(pal.warning, s);
         ctx.fillRect(0, 0, w, h);
-        
-        // 边缘暗角脉冲
-        const vignetteGradient = ctx.createRadialGradient(
-            w / 2, h / 2, w * 0.1,
-            w / 2, h / 2, w * 0.5
-        );
-        vignetteGradient.addColorStop(0, 'transparent');
-        vignetteGradient.addColorStop(1, `rgba(60, 10, 10, ${surge * 0.8})`);
-        ctx.fillStyle = vignetteGradient;
-        ctx.fillRect(0, 0, w, h);
-        
-        if (progress >= 1) {
-            chapterTransitionEffect.active = false;
-        }
+        if (progress >= 1) chapterTransitionEffect.active = false;
+    }
+
+    // 文字告警：把"看不懂的红色"变成明确的资源提示
+    if (alerts.length && (time % 90 < 60)) {
+        ctx.save();
+        ctx.globalAlpha = 0.9;
+        ctx.fillStyle = pal.rgb(pal.warning);
+        ctx.font = 'bold 13px "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText('⚠ ' + alerts.join(' · '), 12, 12);
+        ctx.restore();
+    }
+}
+
+// 主题切换时刷新调色板并重绘（被 main.js 的主题切换回调调用）
+function refreshCanvasTheme() {
+    if (!sanctuaryCtx && !sanctuaryCanvas) return;
+    refreshCanvasPalette();
+    if (window.matchMedia) {
+        REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    if (REDUCED_MOTION && sanctuaryCtx) {
+        drawSanctuary();
     }
 }
 
