@@ -211,6 +211,29 @@
       }
     },
     {
+      "id": "guardian_of_remnants",
+      "priority": 55,
+      "title": "🏛️ 文明守护者",
+      "description": "你保存了大部分文明碎片。\n\n后世将看到一个虽不完整但足够真实的萨拉达斯——它的歌声、它的挣扎、它的智慧、它的爱。\n\n你没能留住一切，但你留住的每一样都足够厚重。",
+      "type": "completion",
+      "condition": {
+        "minPercent": 0.6,
+        "maxPercent": 0.99
+      },
+      "unlockMessage": "文明完整度 60% 以上"
+    },
+    {
+      "id": "conflict_choice",
+      "priority": 80,
+      "title": "⚖️ 文明抉择",
+      "description": "面对互斥的记忆，你没有逃避每一次抉择。\n\n你保留了什么、舍弃了什么，共同决定了后世「看到」的萨拉达斯——一个由你的偏见与坚持塑造的文明。\n\n没有标准答案，只有你给出的答案。",
+      "type": "conflict",
+      "condition": {
+        "hasConflictChoices": true
+      },
+      "unlockMessage": "至少完成一次叙事互斥抉择"
+    },
+    {
       "id": "finale_silent_sanctuary",
       "priority": 10,
       "title": "🖤 寂静圣所",

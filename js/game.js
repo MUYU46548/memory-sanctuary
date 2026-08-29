@@ -142,8 +142,11 @@ function onTimeAdvanced(weeks) {
         if (typeof checkFoodAbundancePenalty === 'function') checkFoodAbundancePenalty();
         
         // 腐败度惩罚：每20点，所有资源额外 -0.5/周（食物受影响但减半）
+        // 在线机器人按衰减减免比例抑制腐败侵蚀（停机时无抑制）
         if (state.emergencyCorruption > 0) {
-            const penalty = Math.floor(state.emergencyCorruption / 20) * 0.5;
+            let penalty = Math.floor(state.emergencyCorruption / 20) * 0.5;
+            const botDamp = typeof getBotDecayReduction === 'function' ? getBotDecayReduction() : 0;
+            if (botDamp > 0) penalty *= (1 - botDamp);
             const foodPenalty = penalty * 0.5;
             if (penalty > 0) {
                 state.resources.energy = Math.max(0, state.resources.energy - penalty);
@@ -821,17 +824,20 @@ function checkWeekLimit() {
  * 
  * 机器人自动维护圣所，减少资源衰减。
  * 每回合开始时，机器人会消耗能源进行维护。
- * 维护效果：减少所有资源衰减 10%（每回合最多减少 2 点）。
+ * 维护效果：
+ *  1. 减少所有资源自然衰减（每台 10%，上限 50%）
+ *  2. 抑制圣所腐败的持续侵蚀（在线机器人按相同比例削弱腐败惩罚）
  * 
- * 机器人需要维护：每回合消耗 2 能源。
+ * 机器人需要维护：每回合消耗 1 能源。
  * 如果能源不足，机器人会停机（无法提供维护加成）。
  * 
  * 机器人可以通过项目建造更多（最多 5 个）。
+ * 机器人存在期间会解锁专属归档条目（data/archives.json unlockCondition.bots）。
  */
 
 const ENGINEERING_BOTS_CONFIG = {
     maxBots: 5,
-    maintenanceCostPerBot: 2,  // 每回合每机器人消耗能源
+    maintenanceCostPerBot: 1,  // 每回合每机器人消耗能源
     decayReductionPerBot: 0.10,  // 每机器人减少 10% 衰减
     maxDecayReduction: 0.50,  // 最多减少 50% 衰减
     buildCost: { energy: 30, media: 20 },  // 建造成本
@@ -964,7 +970,7 @@ function processBotBuild() {
     if (state.panelBotBuild.remainingWeeks <= 0) {
         state.panelBotBuild = null;
         state.resources.engineeringBots = (state.resources.engineeringBots || 0) + 1;
-        addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。每台减少 10% 衰减，每回合消耗 2 能源。`, 'success');
+        addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。每台减少 10% 衰减并抑制腐败侵蚀，每回合消耗 1 能源。`, 'success');
         if (typeof AudioSystem !== 'undefined' && AudioSystem.playProjectComplete) {
             AudioSystem.playProjectComplete();
         }
@@ -1020,10 +1026,13 @@ function triggerGameOver(reason) {
                     priority: starvationEnding.priority || 1
                 };
             }
+            // 饥荒结局同样计入结局图鉴（坏结局也要可见，否则玩家会当成 BUG）
+            if (typeof recordUnlockedEnding === 'function') recordUnlockedEnding('starvation');
         } else {
             // 普通崩溃：检查是否有可触发的结局
             ending = (typeof checkHiddenEndings === 'function') ? checkHiddenEndings() : null;
             endingSceneId = ending ? ending.id : 'silent_sanctuary';
+            if (ending && typeof recordUnlockedEnding === 'function') recordUnlockedEnding(ending.id);
         }
         
         const hasVNScene = (typeof VN !== 'undefined' && VN.getEndingScene(endingSceneId));
@@ -1478,6 +1487,7 @@ function initGuardianInteraction() {
     // 点击头像展开菜单
     if (avatar && menu) {
         avatar.style.cursor = 'pointer';
+        avatar.title = '点击打开互动菜单：交谈 / 推荐归档 / 分发补给品 / 详情';
         avatar.addEventListener('click', (e) => {
             e.stopPropagation();
             menu.classList.toggle('hidden');
@@ -1672,6 +1682,7 @@ function guardianRecommendArchive() {
         };
         addLog(`${guardian.name}：「${fallbackDialogues[guardianId] || '当前存储室已无待归档条目。'}」`, 'guardian');
         showGuardianDialogue(guardianId, 'idle');
+        if (typeof showTransientNotice === 'function') showTransientNotice(`📌 ${guardian.name}：当前存储室已无待归档条目。`);
         return;
     }
     
@@ -1689,6 +1700,7 @@ function guardianRecommendArchive() {
         };
         addLog(`${guardian.name}：「${lockedFallbackDialogues[guardianId] || '当前存储室的条目尚未解锁。'}」`, 'guardian');
         showGuardianDialogue(guardianId, 'idle');
+        if (typeof showTransientNotice === 'function') showTransientNotice(`📌 ${guardian.name}：条目尚未解锁，需要更多线索。`);
         return;
     }
     
@@ -1743,7 +1755,10 @@ function guardianRecommendArchive() {
     }
     
     addLog(`${guardian.name}：「${dialogueText}」`, 'guardian');
-    
+
+    // 明确的即时反馈横幅：推荐动作必须让玩家"看见"（高亮+滚动发生在归档页）
+    if (typeof showTransientNotice === 'function') showTransientNotice(`📌 ${guardian.name} 建议优先录入「${recommended.title}」`);
+
     // 更新守护者面板对话
     const dialogueEl = document.getElementById('guardian-dialogue');
     if (dialogueEl) dialogueEl.textContent = dialogueText;
@@ -1754,6 +1769,9 @@ function highlightRecommendedEntry(archiveId) {
     MemorySanctuary.recommendedArchiveId = archiveId;
     const entry = getArchiveById(archiveId);
     if (!entry) return;
+    // 玩家点「推荐归档」时多半在守护者页——必须先把归档页带到眼前，
+    // 否则高亮+滚动全发生在看不见的标签页里，玩家会觉得按钮没反应
+    if (typeof switchActionTab === 'function') switchActionTab('archive');
     // 若当前不在对应存储室，切换过去（renderAll 会重新渲染列表并加高亮类）
     if (MemorySanctuary.currentVaultId !== entry.vault) {
         selectVault(entry.vault);
@@ -2000,17 +2018,19 @@ const TUTORIAL_STEPS = [
     },
     {
         target: '#vault-tabs',
-        text: '圣所共有 12 间存储室，记录着萨拉达斯文明的不同侧面：\n\n语言、历史、灾难、艺术、哲学、科学、生态、法律、生活、建筑、医学与星象。\n\n点击标签切换存储室，查看各室的待归档条目。',
+        tab: 'vault',
+        text: '圣所共有 12 间存储室，记录着萨拉达斯文明的不同侧面：\n\n语言、历史、灾难、艺术、哲学、科学、生态、法律、生活、建筑、医学与星象。\n\n已为你打开「存储室」页——点击标签切换存储室，查看各室的容量与已存条目。',
         position: 'bottom'
     },
     {
         target: '#guardian-panel',
-        text: '这是守护者面板。\n\n5 名守护者各司其职——歌者缇卡、学者芬恩、生态学家米莎、工程师洛恩、前祭司埃塞尔。\n\n💡 点击守护者头像可以互动：交谈、获取归档建议，或分发补给品提升士气。',
+        tab: 'guardian',
+        text: '这是守护者面板。\n\n5 名守护者各司其职——歌者缇卡、学者芬恩、生态学家米莎、工程师洛恩、前祭司埃塞尔。\n\n💡 点击带 💬 角标的守护者头像可以互动：交谈、获取归档建议，或分发补给品提升士气。下方一排小头像可切换查看其他守护者。',
         position: 'left'
     },
     {
         target: '#res-energy',
-        text: '圣所运作依赖五种资源：\n\n◈ 能源 — 维持圣所运转\n◇ 存储介质 — 存储归档数据\n○ 环境稳定 — 保护设备正常运作\n🍖 食物 — 守护者生存所需\n🔧 工程机器人 — 自动维护圣所\n\n归档条目需要消耗能源和介质。',
+        text: '圣所运作依赖五种资源：\n\n◈ 能源 — 维持圣所运转\n◇ 存储介质 — 存储归档数据\n○ 环境稳定 — 保护设备正常运作\n🍖 食物 — 守护者生存所需\n🔧 工程机器人 — 自动维护圣所\n\n归档条目需要消耗能源和介质。点击任意资源可查看说明与当周收支明细。',
         position: 'bottom'
     },
     {
@@ -2420,7 +2440,7 @@ function showHelpModal() {
 • 存储介质 ◇：归档必需品，归零后无法录入新条目
 • 环境稳定 ○：影响条目保存条件，归零后条目过期速度翻倍
 • 食物 🍖：维持守护者士气，影响资源衰减效率
-• 工程机器人 🔧：自动维护圣所，减少资源衰减（每台消耗 2 能源/周）
+• 工程机器人 🔧：自动维护圣所，减少资源衰减并抑制腐败侵蚀（每台消耗 1 能源/周）
 提示：点击顶栏对应资源图标可随时查看当周变化明细。`,
         },
         {
@@ -2437,9 +2457,9 @@ function showHelpModal() {
 • 悬停标记可查看说明；同一批条目在不同主题的存储室消耗不同`,
         },
         {
-            title: '⚡ 叙事互斥',
-            content: `• 带 ⚡互斥 标记的条目之间存在叙事冲突：归档其中一条，另一条将永久消失
-• 悬停 ⚡互斥 标记可看到与哪条互斥
+            title: '⚖ 叙事互斥',
+            content: `• 带 ⚖互斥 标记的条目之间存在叙事冲突：归档其中一条，另一条将永久消失
+• 悬停 ⚖互斥 标记可看到与哪条互斥
 • 互斥是剧情抉择：两条都读完简介后再决定保留哪一条`,
         },
         {
@@ -2705,7 +2725,9 @@ function checkAchievements(context) {
 function checkSealAchievements(endingId, week) {
     unlockAchievement('first_seal');
     
-    // 结局 ID → 成就 ID 映射
+    // 结局 ID → 成就 ID 映射（仅收录真实存在的对应成就；
+    // 旧版把 finale_whisper_keeper→eternal_keeper（实为5周目成就）、finale_guardian_of_fragments→memory_keeper（实为NG+条目成就），
+    // 既解锁不了图鉴也会误导成就，已移除——兜底结局的图鉴解锁由 recordUnlockedEnding 持久化记录负责）
     const endingToAchievement = {
         'finale_song_of_doom': 'song_of_doom',
         'finale_roots_of_civilization': 'roots_of_civilization',
@@ -2715,8 +2737,7 @@ function checkSealAchievements(endingId, week) {
         'finale_chronicle_of_doom': 'chronicle_of_doom',
         'finale_voice_of_home': 'voice_of_home',
         'finale_silent_sanctuary': 'silent_sanctuary',
-        'finale_guardian_of_fragments': 'memory_keeper',
-        'finale_whisper_keeper': 'eternal_keeper',
+        'complete_memory': 'complete_memory',
         'true_ending': 'beyond_time',
         'guardian_tika_finale': 'guardian_tika_love',
         'guardian_finn_finale': 'guardian_finn_love',
@@ -2724,10 +2745,12 @@ function checkSealAchievements(endingId, week) {
         'guardian_lorn_finale': 'guardian_lorn_love',
         'guardian_ethel_finale': 'guardian_ethel_love'
     };
-    
+
     if (endingId) {
-        const achievementId = endingToAchievement[endingId] || endingId;
-        unlockAchievement(achievementId);
+        const achievementId = endingToAchievement[endingId];
+        // 只解锁真实存在的成就，避免把图鉴专用 ID 写进成就存档
+        const achDef = achievementId && (MemorySanctuary.data.achievements || []).find(a => a.id === achievementId);
+        if (achDef) unlockAchievement(achievementId);
         if (endingId.startsWith('guardian_') && endingId.endsWith('_finale')) {
             const gid = endingId.replace('guardian_', '').replace('_finale', '');
             unlockAchievement('guardian_' + gid + '_love');

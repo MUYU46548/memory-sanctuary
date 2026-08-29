@@ -24,7 +24,7 @@ function esc(str, newlineToBr) {
 // ============================================================
 // 全局常量
 // ============================================================
-const GAME_VERSION = '0.2.2';
+const GAME_VERSION = '0.2.3';
 
 // ============================================================
 // 全局错误处理：防止加载失败白屏
@@ -686,30 +686,53 @@ function initSettings() {
     if (showResultCheckbox) showResultCheckbox.checked = settings.showResult;
     if (vnGuardianCheckbox) vnGuardianCheckbox.checked = settings.vnGuardianDialogue;
     
-    // SFX 音量初始化
-    if (typeof AudioSystem !== 'undefined') {
-        if (sfxVolumeSlider) {
-            sfxVolumeSlider.value = 100;
-        }
-        if (sfxVolumeValue) {
-            sfxVolumeValue.textContent = '100%';
-        }
-    }
-    
-    // BGM 设置初始化
-    if (typeof AudioSystem !== 'undefined') {
-        const bgmVol = AudioSystem.bgmVolumeLevel;
+    // 音频控件与 AudioSystem 实际状态同步（静音/音量已持久化，重启后要如实还原）
+    function syncAudioSettingsUI() {
+        if (typeof AudioSystem === 'undefined') return;
+
+        const globalMuted = AudioSystem.isGlobalMuted;
+        const bgmMuted = AudioSystem.isBGMMuted;
+        const sfxMuted = AudioSystem.isSFXMuted;
+
         if (bgmVolumeSlider) {
-            bgmVolumeSlider.value = Math.round(bgmVol * 100);
+            bgmVolumeSlider.value = Math.round(AudioSystem.bgmVolumeLevel * 100);
+            bgmVolumeSlider.style.filter = (bgmMuted || globalMuted) ? 'grayscale(1)' : '';
         }
         if (bgmVolumeValue) {
-            bgmVolumeValue.textContent = Math.round(bgmVol * 100) + '%';
+            bgmVolumeValue.textContent = Math.round(AudioSystem.bgmVolumeLevel * 100) + '%';
         }
         if (bgmMuteBtn) {
-            bgmMuteBtn.textContent = AudioSystem.isBGMMuted ? '🔇' : '🎵';
-            bgmMuteBtn.classList.toggle('muted', AudioSystem.isBGMMuted);
+            bgmMuteBtn.textContent = bgmMuted ? '🔇' : '🎵';
+            bgmMuteBtn.classList.toggle('muted', bgmMuted);
         }
+
+        if (sfxVolumeSlider) {
+            sfxVolumeSlider.value = Math.round((AudioSystem.sfxVolumeLevel ?? 1) * 100);
+            sfxVolumeSlider.style.filter = (sfxMuted || globalMuted) ? 'grayscale(1)' : '';
+        }
+        if (sfxVolumeValue) {
+            sfxVolumeValue.textContent = Math.round((AudioSystem.sfxVolumeLevel ?? 1) * 100) + '%';
+        }
+        if (sfxMuteBtn) {
+            sfxMuteBtn.textContent = sfxMuted ? '🔇' : '🔊';
+            sfxMuteBtn.classList.toggle('muted', sfxMuted);
+        }
+
+        if (globalMuteBtn) {
+            globalMuteBtn.textContent = globalMuted ? '🔇 已静音' : '🔇 全局静音';
+            globalMuteBtn.classList.toggle('active', globalMuted);
+        }
+
+        // 顶栏快捷静音键图标
+        const topMute = document.getElementById('mute-toggle');
+        if (topMute) {
+            topMute.textContent = AudioSystem.isMuted ? '🔇' : '🔊';
+        }
+
+        updateSliderFill();
+        updateSfxSliderFill();
     }
+    window.__syncAudioSettingsUI = syncAudioSettingsUI;
     
     // Open settings from title screen
     if (titleSettingsBtn) {
@@ -955,11 +978,16 @@ function initSettings() {
             setFill();
         });
     }
+
+    // 此时全部音频控件引用已就绪，按恢复的静音/音量状态同步 UI
+    syncAudioSettingsUI();
 }
 
 function openSettingsPanel() {
     const overlay = document.getElementById('settings-overlay');
     if (overlay) overlay.classList.remove('hidden');
+    // 面板可能在上次打开后被外部改动（如全局静音联动），每次打开都对齐实际音频状态
+    if (typeof window.__syncAudioSettingsUI === 'function') window.__syncAudioSettingsUI();
 }
 
 function closeSettingsPanel() {

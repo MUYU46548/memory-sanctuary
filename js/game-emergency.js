@@ -138,50 +138,58 @@ function openEmergencyProtocol() {
 
 function activateEmergencyProtocol(protocol) {
     const state = MemorySanctuary.state;
-    
+
     // 执行效果
     protocol.execute(state);
     if (protocol.extraEffect) protocol.extraEffect(state);
-    
+
     // 应用冷却
     if (!state.emergencyCooldowns) state.emergencyCooldowns = {};
     state.emergencyCooldowns[protocol.id] = protocol.cooldown;
-    
+
     // 增加腐败度
     state.emergencyCorruption = Math.min(100, (state.emergencyCorruption || 0) + protocol.corruption);
-    
+
     // 日志
     addLog(`⚡ 应急协议「${protocol.name}」激活。腐败度 +${protocol.corruption}。`, 'system');
-    
-    // 音效
+
+    // 音效（try/catch：音效异常绝不允许中断后续的关面板/渲染反馈链）
     if (typeof AudioSystem !== 'undefined') {
-        const corruption = state.emergencyCorruption;
-        if (corruption >= 30 && corruption < 70) {
-            AudioSystem.playMechanicalEngage();
-            AudioSystem.playEmergencyCorrupt();
-        } else if (corruption >= 70) {
-            AudioSystem.playEmergencyCorrupt();
-            // 高腐败度延迟叠加一层
-            setTimeout(() => AudioSystem.playEmergencyCorrupt(), 150);
-        } else {
-            AudioSystem.playMechanicalEngage();
+        try {
+            const corruption = state.emergencyCorruption;
+            if (corruption >= 30 && corruption < 70) {
+                AudioSystem.playMechanicalEngage();
+                AudioSystem.playEmergencyCorrupt();
+            } else if (corruption >= 70) {
+                AudioSystem.playEmergencyCorrupt();
+                // 高腐败度延迟叠加一层
+                setTimeout(() => AudioSystem.playEmergencyCorrupt(), 150);
+            } else {
+                AudioSystem.playMechanicalEngage();
+            }
+        } catch (e) {
+            console.warn('[emergency] 音效播放失败（不影响协议生效）:', e);
         }
     }
-    
+
     // 守护者反应（50% 概率）
     if (Math.random() < 0.5) {
         const guardians = getAvailableGuardians();
-        if (guardians.length === 0) return;
-        const guardian = guardians[Math.floor(Math.random() * guardians.length)];
-        const reaction = EMERGENCY_GUARDIAN_REACTIONS[Math.floor(Math.random() * EMERGENCY_GUARDIAN_REACTIONS.length)];
-        addLog(`${guardian.name}：「${reaction}」`, 'guardian');
+        if (guardians.length > 0) {
+            const guardian = guardians[Math.floor(Math.random() * guardians.length)];
+            const reaction = EMERGENCY_GUARDIAN_REACTIONS[Math.floor(Math.random() * EMERGENCY_GUARDIAN_REACTIONS.length)];
+            addLog(`${guardian.name}：「${reaction}」`, 'guardian');
+        }
     }
-    
+
     // 关闭面板
     const overlay = document.getElementById('emergency-overlay');
     if (overlay) overlay.classList.add('hidden');
-    
+
     renderAll();
+    if (typeof showTransientNotice === 'function') {
+        showTransientNotice(`⚡ ${protocol.name} 已激活（腐败度 +${protocol.corruption}）`);
+    }
     if (typeof checkStuckState === 'function') checkStuckState();
     if (typeof updateEmergencyButton === 'function') updateEmergencyButton();
 

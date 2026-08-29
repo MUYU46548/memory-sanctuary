@@ -1,10 +1,14 @@
 /**
  * canvas.js - Canvas 渲染
- * 圣所主厅（idle）：天文馆冷峻风 / 科幻地下工作室
- * 建筑化观察窗（矩形，平静星空 + 微弱冷色星云）+ 克制控制台剪影 + 下缘冷光存储室舷窗
+ * 圣所主厅（idle）：天文馆冷峻风 × 圣所叙事主体
+ * 构图：穹顶肋线 + 两侧立柱 → 中央观察窗（银河带 / 远方行星 / 双层星 / 流星）
+ *       → 光井 → 中央「歌者之座」高台（呼吸琥珀共鸣芯 + 向存储室扩散的声波涟漪）
+ *       → 前景低控制台 + 拱顶存储室门
+ * 主视觉焦点与教程文案（"中央的歌者之座将声波传递至各个存储室"）一致；
+ * 冷色为底，唯一暖色焦点是共鸣芯——圣所的"心脏"，不回归早期全视之眼式恐怖意象。
  *
  * 颜色全部从 CSS 变量读取（getComputedStyle），主/浅双主题自动适配，
- * 不再在 JS 内写死 #hex，符合架构红线。无中央发光球、无全视之眼弧、无红色。
+ * 不在 JS 内写死 #hex。布局全部确定性（index 种子/时刻表动画），渲染循环无随机数。
  */
 
 let sanctuaryCanvas = null;
@@ -51,25 +55,36 @@ const SANCTUARY_CONFIG = {
     width: 600,
     height: 400,
 
-    // 观察窗（建筑化视窗，矩形，望向平静星空 / 微弱冷色星云）
+    // 观察窗（建筑化视窗，矩形，望向星空 / 银河 / 远方行星）
     window: {
-        x: 110,
-        y: 46,
-        w: 380,
-        h: 232,
+        x: 132,
+        y: 40,
+        w: 336,
+        h: 168,
         strokeWidth: 2
     },
 
-    // 控制台/桌台剪影（冷色几何块 + 青色仪器线 + 少量冷光工位）
+    // 地平线（地面从这条线向下延展，产生纵深）
+    floorY: 262,
+
+    // 歌者之座（中央高台：圣所的心脏，声波从这里传向各存储室）
+    dais: {
+        cx: 300,
+        baseY: 336,
+        w: 190,
+        h: 74
+    },
+
+    // 前景控制台（画面前下方的低矮桌台剪影，交代"有人在此工作"）
     console: {
         centerX: 300,
-        topY: 300,
-        width: 460,
-        height: 92,
+        topY: 344,
+        width: 480,
+        height: 56,
         strokeWidth: 2
     },
 
-    // 存储室冷光舷窗（下缘一排小型冷光门，随 currentVaultId 切换高亮）
+    // 存储室冷光舷窗（前景桌台正面的一排冷光门，随 currentVaultId 切换高亮）
     portholes: {
         radius: 7,
         rowY: 384,
@@ -177,15 +192,22 @@ function resizeCanvas() {
     SANCTUARY_CONFIG.width = width;
     SANCTUARY_CONFIG.height = height;
 
-    SANCTUARY_CONFIG.window.x = width * 0.18;
-    SANCTUARY_CONFIG.window.y = height * 0.115;
-    SANCTUARY_CONFIG.window.w = width * 0.64;
-    SANCTUARY_CONFIG.window.h = height * 0.58;
+    SANCTUARY_CONFIG.window.x = width * 0.22;
+    SANCTUARY_CONFIG.window.y = height * 0.10;
+    SANCTUARY_CONFIG.window.w = width * 0.56;
+    SANCTUARY_CONFIG.window.h = height * 0.42;
+
+    SANCTUARY_CONFIG.floorY = height * 0.655;
+
+    SANCTUARY_CONFIG.dais.cx = width / 2;
+    SANCTUARY_CONFIG.dais.baseY = height * 0.84;
+    SANCTUARY_CONFIG.dais.w = width * 0.32;
+    SANCTUARY_CONFIG.dais.h = height * 0.185;
 
     SANCTUARY_CONFIG.console.centerX = width / 2;
-    SANCTUARY_CONFIG.console.topY = height * 0.75;
-    SANCTUARY_CONFIG.console.width = width * 0.78;
-    SANCTUARY_CONFIG.console.height = height * 0.23;
+    SANCTUARY_CONFIG.console.topY = height * 0.86;
+    SANCTUARY_CONFIG.console.width = width * 0.80;
+    SANCTUARY_CONFIG.console.height = height * 0.14;
 
     SANCTUARY_CONFIG.portholes.rowY = height * 0.96;
     SANCTUARY_CONFIG.portholes.radius = Math.max(4, width * 0.012);
@@ -296,6 +318,8 @@ function drawSanctuary() {
 
     drawRoom(ctx, config);
     drawObservationWindow(ctx, config, scene, accent);
+    drawLightShaft(ctx, config);
+    drawSingerDais(ctx, config, accent);
     drawConsoleDeck(ctx, config);
     drawVaultPortholes(ctx, config);
     drawMemoryMotes(ctx, config);
@@ -304,31 +328,81 @@ function drawSanctuary() {
 
 function drawRoom(ctx, config) {
     const pal = CANVAS_PALETTE;
+    const w = config.width, h = config.height;
+    const floorY = config.floorY;
 
-    // 室内背景：深蓝灰纵向纵深，冷峻地下科研工作室气质
-    const grad = ctx.createLinearGradient(0, 0, 0, config.height);
-    grad.addColorStop(0, pal.rgb(pal.bgPanel));
-    grad.addColorStop(1, pal.rgb(pal.bgDeep));
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, config.width, config.height);
+    // 室内背景：上墙（深）→ 地面（微亮，承接来自观察窗与高台的光）
+    const wallGrad = ctx.createLinearGradient(0, 0, 0, floorY);
+    wallGrad.addColorStop(0, pal.rgb(pal.bgDeep));
+    wallGrad.addColorStop(1, pal.rgb(pal.bgPanel));
+    ctx.fillStyle = wallGrad;
+    ctx.fillRect(0, 0, w, floorY);
 
-    // 墙面分隔线（极淡冷色，提供建筑感锚定，不喧宾夺主）
+    const floorGrad = ctx.createLinearGradient(0, floorY, 0, h);
+    floorGrad.addColorStop(0, pal.rgb(pal.bgPanel));
+    floorGrad.addColorStop(1, pal.rgb(pal.bgDeep));
+    ctx.fillStyle = floorGrad;
+    ctx.fillRect(0, floorY, w, h - floorY);
+
+    // 地面透视引导线：两侧向中心收拢，交代空间纵深
     ctx.save();
-    ctx.globalAlpha = 0.5;
+    ctx.globalAlpha = 0.35;
     ctx.strokeStyle = pal.rgb(pal.border);
     ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, config.window.y - 10);
-    ctx.lineTo(config.width, config.window.y - 10);
-    ctx.stroke();
+    for (let i = 1; i <= 4; i++) {
+        const y = floorY + ((h - floorY) * i * i) / 25;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+    }
     ctx.restore();
+
+    // 穹顶肋线：数道抛物线拱，赋予"厅"的建筑感
+    ctx.save();
+    ctx.globalAlpha = 0.4;
+    ctx.strokeStyle = pal.rgb(pal.border);
+    ctx.lineWidth = 1.2;
+    const ribs = 5;
+    for (let i = 0; i <= ribs; i++) {
+        const x = (w * i) / ribs;
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.quadraticCurveTo(w / 2 + (x - w / 2) * 0.18, h * 0.16, w / 2 + (x - w / 2) * 0.05, h * 0.085);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    // 两侧立柱：纵向亮边 + 暗面，构成画框
+    const colW = w * 0.045;
+    const drawColumn = (x) => {
+        const grad = ctx.createLinearGradient(x, 0, x + colW, 0);
+        grad.addColorStop(0, pal.rgb(pal.bgDeep));
+        grad.addColorStop(0.5, pal.rgb(pal.bgPanel));
+        grad.addColorStop(1, pal.rgb(pal.bgDeep));
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, h * 0.04, colW, floorY - h * 0.04 + 4);
+        ctx.strokeStyle = pal.rgb(pal.border);
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, h * 0.04, colW, floorY - h * 0.04 + 4);
+        // 柱头嵌灯（暖色小点，冷厅里唯一的暖色预埋）
+        ctx.save();
+        ctx.globalAlpha = 0.55 + 0.25 * Math.sin(time * 0.02 + x);
+        ctx.fillStyle = pal.rgb(pal.amber);
+        ctx.beginPath();
+        ctx.arc(x + colW / 2, h * 0.09, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    };
+    drawColumn(w * 0.055);
+    drawColumn(w - w * 0.055 - colW);
 }
 
 function drawObservationWindow(ctx, config, scene, accent) {
     const pal = CANVAS_PALETTE;
     const w = config.window;
 
-    // 窗外：平静星空 + 微弱冷色星云（深蓝/青/紫，低饱和），绝非发光之眼
+    // 窗外：深空 + 银河带 + 远方行星 + 双层星（随存储室主色轻染）
     ctx.save();
     ctx.beginPath();
     ctx.rect(w.x, w.y, w.w, w.h);
@@ -341,31 +415,93 @@ function drawObservationWindow(ctx, config, scene, accent) {
     ctx.fillStyle = spaceGrad;
     ctx.fillRect(w.x, w.y, w.w, w.h);
 
-    // 微弱冷色星云（低饱和径向晕染，随存储室主色轻染）
-    const neb = ctx.createRadialGradient(
-        w.x + w.w * 0.38, w.y + w.h * 0.42, 0,
-        w.x + w.w * 0.38, w.y + w.h * 0.42, w.w * 0.55
-    );
-    neb.addColorStop(0, pal.rgb(accent.line, 0.18));
-    neb.addColorStop(0.5, pal.rgb(accent.accent, 0.08));
-    neb.addColorStop(1, 'transparent');
-    ctx.fillStyle = neb;
-    ctx.fillRect(w.x, w.y, w.w, w.h);
+    // 银河带：斜向柔光带 + 沿带密集星尘（天文馆的"纵深"来源）
+    ctx.save();
+    ctx.translate(w.x + w.w / 2, w.y + w.h / 2);
+    ctx.rotate(-0.35);
+    const bandW = w.w * 1.3, bandH = w.h * 0.42;
+    const band = ctx.createLinearGradient(0, -bandH / 2, 0, bandH / 2);
+    band.addColorStop(0, 'transparent');
+    band.addColorStop(0.35, pal.rgb(pal.vaultLangAccent, 0.10));
+    band.addColorStop(0.5, pal.rgb(pal.info, 0.16));
+    band.addColorStop(0.65, pal.rgb(pal.vaultLangAccent, 0.10));
+    band.addColorStop(1, 'transparent');
+    ctx.fillStyle = band;
+    ctx.fillRect(-bandW / 2, -bandH / 2, bandW, bandH);
+    // 银河星尘：确定性散布（index 种子，非随机数）
+    ctx.fillStyle = pal.rgb(pal.info, 0.5);
+    for (let i = 0; i < 60; i++) {
+        const dx = (((i * 137.5) % 100) / 100 - 0.5) * bandW;
+        const dy = ((((i * 61.8) % 100) / 100) - 0.5) * bandH * (0.4 + 0.6 * Math.abs(Math.sin(i * 3.3)));
+        const tw = 0.3 + 0.3 * Math.sin(time * 0.025 + i * 2.1);
+        ctx.globalAlpha = tw * 0.55;
+        ctx.beginPath();
+        ctx.arc(dx, dy, (i % 7 === 0) ? 1.1 : 0.6, 0, Math.PI * 2);
+        ctx.fill();
+    }
+    ctx.restore();
 
-    // 平静星点（轻微闪烁，缓慢上升漂移，像天文馆穹顶）
-    ctx.fillStyle = pal.rgb(pal.info);
+    // 远方行星：右上角，带晨昏线与微弱大气晕
+    const px = w.x + w.w * 0.78, py = w.y + w.h * 0.26, pr = w.w * 0.085;
+    const atmo = ctx.createRadialGradient(px, py, pr * 0.6, px, py, pr * 1.9);
+    atmo.addColorStop(0, pal.rgb(accent.line, 0.10));
+    atmo.addColorStop(1, 'transparent');
+    ctx.fillStyle = atmo;
+    ctx.fillRect(px - pr * 2, py - pr * 2, pr * 4, pr * 4);
+    const body = ctx.createRadialGradient(px - pr * 0.4, py - pr * 0.35, pr * 0.15, px, py, pr);
+    body.addColorStop(0, pal.rgb(accent.accent, 0.85));
+    body.addColorStop(0.7, pal.rgb(pal.vaultLangAccent, 0.55));
+    body.addColorStop(1, pal.rgb(pal.bgDeep, 0.9));
+    ctx.fillStyle = body;
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.fill();
+    // 晨昏线（暗面遮挡，形成月牙感）
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(px, py, pr, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.fillStyle = pal.rgb(pal.bgDeep, 0.55);
+    ctx.beginPath();
+    ctx.arc(px + pr * 0.55, py + pr * 0.3, pr * 0.95, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // 前景星：缓慢上升漂移 + 闪烁（两层视差）
     for (let i = 0; i < 46; i++) {
+        const layer = i % 2;
         const sx = w.x + ((i * 73) % 100) / 100 * w.w;
-        const drift = (time * 0.08 + i * 11) % w.h;
+        const speed = layer === 0 ? 0.08 : 0.05;
+        const drift = (time * speed + i * 11) % w.h;
         const sy = w.y + w.h - drift * (0.4 + (i % 3) * 0.2);
         const tw = 0.35 + 0.35 * Math.sin(time * 0.03 + i * 1.7);
-        ctx.globalAlpha = tw * 0.7;
+        ctx.globalAlpha = tw * (layer === 0 ? 0.75 : 0.5);
+        ctx.fillStyle = pal.rgb(layer === 0 ? pal.info : pal.textDim);
         const r = (i % 5 === 0) ? 1.5 : 0.9;
         ctx.beginPath();
         ctx.arc(sx, sy, r, 0, Math.PI * 2);
         ctx.fill();
     }
     ctx.globalAlpha = 1;
+
+    // 流星：每约 15 秒一枚，确定性轨迹（时刻表式，非随机）
+    const meteorPeriod = 900;
+    const meteorT = time % meteorPeriod;
+    if (meteorT < 46) {
+        const prog = meteorT / 46;
+        const mx = w.x + w.w * (0.15 + prog * 0.55);
+        const my = w.y + w.h * (0.10 + prog * 0.38);
+        const tail = 26 * (1 - prog * 0.5);
+        const mg = ctx.createLinearGradient(mx - tail, my + tail * 0.6, mx, my);
+        mg.addColorStop(0, 'transparent');
+        mg.addColorStop(1, pal.rgb(pal.info, 0.8 * (1 - prog * 0.6)));
+        ctx.strokeStyle = mg;
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(mx - tail, my + tail * 0.6);
+        ctx.lineTo(mx, my);
+        ctx.stroke();
+    }
 
     // 少量柔和冷光辉点（记忆微光，非暖色）
     ctx.fillStyle = pal.rgb(pal.vaultLangAccent, 0.6);
@@ -434,6 +570,110 @@ function drawObservationWindow(ctx, config, scene, accent) {
     ctx.restore();
 }
 
+// 天窗 → 歌者之座的光井：把视线从窗口引向中央高台（构图主轴）
+function drawLightShaft(ctx, config) {
+    const pal = CANVAS_PALETTE;
+    const d = config.dais;
+    const breathe = 0.05 + 0.02 * Math.sin(time * 0.02);
+
+    ctx.save();
+    const shaft = ctx.createLinearGradient(0, config.window.y + config.window.h, 0, d.baseY);
+    shaft.addColorStop(0, pal.rgb(pal.info, 0.10 + breathe));
+    shaft.addColorStop(0.6, pal.rgb(pal.info, 0.05));
+    shaft.addColorStop(1, pal.rgb(pal.amber, 0.06 + breathe));
+    ctx.fillStyle = shaft;
+    ctx.beginPath();
+    ctx.moveTo(config.width / 2 - config.window.w * 0.14, config.window.y + config.window.h);
+    ctx.lineTo(config.width / 2 + config.window.w * 0.14, config.window.y + config.window.h);
+    ctx.lineTo(d.cx + d.w * 0.30, d.baseY - d.h * 0.5);
+    ctx.lineTo(d.cx - d.w * 0.30, d.baseY - d.h * 0.5);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+// 中央歌者之座：三层高台 + 纤细座碑 + 呼吸的琥珀共鸣芯 + 向存储室扩散的声波涟漪
+// （呼应游戏设定"中央的歌者之座将声波传递至各个存储室"——主厅终于有了与文案一致的视觉主体）
+function drawSingerDais(ctx, config, accent) {
+    const pal = CANVAS_PALETTE;
+    const d = config.dais;
+    const stepW = d.w, stepH = d.h / 5;
+
+    // 高台三层（下宽上窄的椭圆台阶，带顶面微光）
+    for (let i = 0; i < 3; i++) {
+        const sw = stepW * (1 - i * 0.18);
+        const sy = d.baseY - i * stepH;
+        // 台阶立面
+        ctx.fillStyle = pal.rgb(pal.bgDeep, 0.9);
+        ctx.beginPath();
+        ctx.ellipse(d.cx, sy, sw / 2, stepH * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = pal.rgb(pal.border);
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        // 台阶顶面（受光）
+        ctx.fillStyle = pal.rgb(pal.bgPanel, 0.95);
+        ctx.beginPath();
+        ctx.ellipse(d.cx, sy - stepH * 0.35, sw / 2 * 0.96, stepH * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    const seatBaseY = d.baseY - stepH * 2;
+
+    // 地面柔光反射（琥珀芯的倒影）
+    const reflect = ctx.createRadialGradient(d.cx, d.baseY + stepH * 0.8, 0, d.cx, d.baseY + stepH * 0.8, d.w * 0.55);
+    reflect.addColorStop(0, pal.rgb(pal.amber, 0.10));
+    reflect.addColorStop(1, 'transparent');
+    ctx.fillStyle = reflect;
+    ctx.fillRect(d.cx - d.w * 0.6, d.baseY, d.w * 1.2, stepH * 2.2);
+
+    // 座碑：细长的碑体，顶部为共鸣芯
+    const monumentH = d.h * 0.62;
+    const monumentW = d.w * 0.055;
+    const grad = ctx.createLinearGradient(d.cx - monumentW, 0, d.cx + monumentW, 0);
+    grad.addColorStop(0, pal.rgb(pal.bgDeep));
+    grad.addColorStop(0.5, pal.rgb(pal.bgPanel));
+    grad.addColorStop(1, pal.rgb(pal.bgDeep));
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(d.cx - monumentW, seatBaseY);
+    ctx.lineTo(d.cx - monumentW * 0.55, seatBaseY - monumentH);
+    ctx.lineTo(d.cx + monumentW * 0.55, seatBaseY - monumentH);
+    ctx.lineTo(d.cx + monumentW, seatBaseY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = pal.rgb(pal.border);
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // 共鸣芯：呼吸的暖光（整幅冷色画面里唯一的暖色焦点 = 圣所"心脏"）
+    const coreY = seatBaseY - monumentH - 2;
+    const pulse = 0.55 + 0.3 * Math.sin(time * 0.045);
+    const halo = ctx.createRadialGradient(d.cx, coreY, 0, d.cx, coreY, monumentW * 5);
+    halo.addColorStop(0, pal.rgb(pal.amberGlow, 0.5 * pulse));
+    halo.addColorStop(0.4, pal.rgb(pal.amber, 0.18 * pulse));
+    halo.addColorStop(1, 'transparent');
+    ctx.fillStyle = halo;
+    ctx.fillRect(d.cx - monumentW * 5, coreY - monumentW * 5, monumentW * 10, monumentW * 10);
+    ctx.fillStyle = pal.rgb(pal.amberGlow, 0.9);
+    ctx.beginPath();
+    ctx.arc(d.cx, coreY, monumentW * 0.75, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 声波涟漪：自共鸣芯周期性扩散的圆环（传向下方一排存储室舷窗）
+    const ringPeriod = 220;
+    for (let k = 0; k < 3; k++) {
+        const t = ((time + k * ringPeriod / 3) % ringPeriod) / ringPeriod;
+        const rr = monumentW + t * d.w * 1.15;
+        const alpha = 0.28 * (1 - t) * pulse;
+        ctx.strokeStyle = pal.rgb(pal.amber, alpha);
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.ellipse(d.cx, coreY + monumentH * 0.25, rr, rr * 0.36, 0, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+}
+
 function drawConsoleDeck(ctx, config) {
     const pal = CANVAS_PALETTE;
     const c = config.console;
@@ -442,14 +682,14 @@ function drawConsoleDeck(ctx, config) {
     const right = c.centerX + c.width / 2;
     const bottom = top + c.height;
 
-    // 桌台剪影：深色几何块（地下工作室的克制控制台）
+    // 前景桌台：深色低剪影（观者视角的近景，框住画面下缘）
     ctx.save();
-    ctx.fillStyle = pal.rgb(pal.bgDeep, 0.7);
+    ctx.fillStyle = pal.rgb(pal.bgDeep, 0.85);
     ctx.beginPath();
-    ctx.moveTo(left, top + 8);
-    ctx.lineTo(right, top + 8);
-    ctx.lineTo(right - 14, bottom);
-    ctx.lineTo(left + 14, bottom);
+    ctx.moveTo(left, top + 6);
+    ctx.lineTo(right, top + 6);
+    ctx.lineTo(right - 12, bottom);
+    ctx.lineTo(left + 12, bottom);
     ctx.closePath();
     ctx.fill();
     ctx.strokeStyle = pal.rgb(pal.border);
@@ -457,16 +697,15 @@ function drawConsoleDeck(ctx, config) {
     ctx.stroke();
     ctx.restore();
 
-    // 台面细青色仪器线（在线工位指示，非装饰光池）
+    // 台缘细青色仪器线 + 在线工位冷光点
     ctx.save();
     ctx.strokeStyle = pal.rgb(pal.info, 0.55);
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(left + 18, top + 6);
-    ctx.lineTo(right - 18, top + 6);
+    ctx.moveTo(left + 18, top + 4);
+    ctx.lineTo(right - 18, top + 4);
     ctx.stroke();
 
-    // 少量柔和冷光工位点（表示在线终端）
     const stations = 7;
     for (let i = 0; i < stations; i++) {
         const x = left + 24 + (i + 0.5) * (c.width - 48) / stations;
@@ -474,17 +713,15 @@ function drawConsoleDeck(ctx, config) {
         const a = lit ? (0.45 + 0.25 * Math.sin(time * 0.02 + i)) : 0.12;
         ctx.fillStyle = pal.rgb(pal.info, a);
         ctx.beginPath();
-        ctx.arc(x, top + 14, 2, 0, Math.PI * 2);
+        ctx.arc(x, top + 11, 2, 0, Math.PI * 2);
         ctx.fill();
     }
-    ctx.restore();
 
     // 极少量琥珀仪器点缀（仅指示灯，禁用暖色光池）
-    ctx.save();
     ctx.globalAlpha = 0.4 + 0.2 * Math.sin(time * 0.05);
     ctx.fillStyle = pal.rgb(pal.amber);
     ctx.beginPath();
-    ctx.arc(right - 22, top + 14, 1.8, 0, Math.PI * 2);
+    ctx.arc(right - 22, top + 11, 1.8, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 }
@@ -500,26 +737,32 @@ function drawVaultPortholes(ctx, config) {
     const startX = config.width / 2 - totalW / 2;
     const y = p.rowY;
     const currentId = MemorySanctuary.currentVaultId || 1;
+    const doorW = p.radius * 1.7;
+    const doorH = p.radius * 2.1;
 
     vaults.forEach((vault, index) => {
         const x = startX + index * p.gap;
         const isCurrent = (index + 1) === currentId;
 
-        // 冷光舷窗：深色门 + 冷色边框 + 在线冷光（非环绕黑洞）
+        // 拱顶小门：存储室入口剪影（比圆形舷窗更有"建筑"语义）
         ctx.beginPath();
-        ctx.arc(x, y, p.radius + 2.5, 0, Math.PI * 2);
-        ctx.fillStyle = pal.rgb(pal.bgDeep, 0.8);
+        ctx.moveTo(x - doorW / 2, y + doorH / 2);
+        ctx.lineTo(x - doorW / 2, y - doorH / 4);
+        ctx.arc(x, y - doorH / 4, doorW / 2, Math.PI, 0);
+        ctx.lineTo(x + doorW / 2, y + doorH / 2);
+        ctx.closePath();
+        ctx.fillStyle = pal.rgb(pal.bgDeep, 0.9);
         ctx.fill();
         ctx.strokeStyle = isCurrent
             ? pal.rgb(pal.info, 0.9)
-            : pal.rgb(hexToRgb(vault.accentColor, pal.vaultLangAccent), 0.55);
-        ctx.lineWidth = isCurrent ? 2 : 1;
+            : pal.rgb(hexToRgb(vault.accentColor, pal.vaultLangAccent), 0.5);
+        ctx.lineWidth = isCurrent ? 1.6 : 1;
         ctx.stroke();
 
-        // 冷光门芯（当前存储室更亮，表示"正打开"）
-        const coreA = isCurrent ? (0.6 + 0.3 * Math.sin(time * 0.04)) : 0.4;
+        // 门芯冷光（当前存储室更亮且呼吸，表示"正打开"）
+        const coreA = isCurrent ? (0.55 + 0.3 * Math.sin(time * 0.04)) : 0.35;
         ctx.beginPath();
-        ctx.arc(x, y, p.radius, 0, Math.PI * 2);
+        ctx.arc(x, y, p.radius * 0.55, 0, Math.PI * 2);
         ctx.fillStyle = pal.rgb(hexToRgb(vault.color, pal.info), coreA);
         ctx.fill();
     });

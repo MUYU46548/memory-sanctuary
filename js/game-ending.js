@@ -39,6 +39,14 @@ function checkEndingCondition(condition) {
         const achievements = getUnlockedAchievements();
         return achievements.length === 0 && MemorySanctuary.state.week >= (condition.weekMin || 48) && condition.notSealed;
     }
+    // 独立周数条件（如 finale_silent_sanctuary 的 {weekMin: 10}；带其他标志的条件在上方分支已返回）
+    if (condition.weekMin !== undefined) {
+        return MemorySanctuary.state.week >= condition.weekMin;
+    }
+    // 文明抉择结局（互斥抉择记录非空即可解锁图鉴）
+    if (condition.hasConflictChoices) {
+        return (MemorySanctuary.state.conflictLog || []).length > 0;
+    }
     return false;
 }
 
@@ -135,13 +143,65 @@ function checkHiddenEndings() {
     }
 
     // 5. 兜底：基于完成度的普通结局
+    // ⚠ ID 必须与 endings.json 图鉴条目一致（历史上 fallback 曾用 fragment_keeper/whisper_keeper 等旧 ID，
+    //   与图鉴的 finale_* 对不上，导致通关后结局图鉴全部显示锁定）
     const pct = total > 0 ? completed.length / total : 0;
     if (pct >= 0.6) return { id: 'guardian_of_remnants', title: '文明守护者', description: '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的萨拉达斯。', priority: 50 };
-    if (pct >= 0.4) return { id: 'fragment_keeper', title: '碎片收集者', description: `你保存了萨拉达斯的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。`, priority: 50 };
-    if (pct >= 0.1) return { id: 'whisper_keeper', title: '微光守护者', description: `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。`, priority: 30 };
-    if (state.week >= 20) return { id: 'silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。也许……遗忘也是一种选择。', priority: 10 };
+    if (pct >= 0.4) return { id: 'finale_guardian_of_fragments', title: '碎片收集者', description: `你保存了萨拉达斯的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。`, priority: 50 };
+    if (pct >= 0.1) return { id: 'finale_whisper_keeper', title: '微光守护者', description: `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。`, priority: 30 };
+    if (state.week >= 20) return { id: 'finale_silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。也许……遗忘也是一种选择。', priority: 10 };
 
     return null;
+}
+
+// ==========================================
+// 结局图鉴解锁记录（持久化）
+// 图鉴以「实际达成过的结局」为准，成就映射仅作历史兼容
+// ==========================================
+
+// 旧版兜底结局 ID → 图鉴条目 ID（老存档可能残留旧 ID 记录）
+const ENDING_GALLERY_ALIASES = {
+    fragment_keeper: 'finale_guardian_of_fragments',
+    whisper_keeper: 'finale_whisper_keeper',
+    silent_sanctuary: 'finale_silent_sanctuary'
+};
+
+function recordUnlockedEnding(endingId) {
+    if (!endingId) return;
+    const galleryId = ENDING_GALLERY_ALIASES[endingId] || endingId;
+    // conflict_choice 结局按抉择倾向分三种标题，图鉴统一记为 conflict_choice
+    const ngData = getNGPlusData();
+    if (!ngData.unlockedEndings) ngData.unlockedEndings = [];
+    if (!ngData.unlockedEndings.includes(galleryId)) {
+        ngData.unlockedEndings.push(galleryId);
+        saveNGPlusData(ngData);
+    }
+}
+
+/**
+ * 一次性迁移：修复老存档「通关过但结局图鉴全锁」
+ * 老版本封印时不记录结局 ID，这里按最佳记录的文明完整度反推当时达成的兜底结局并补登记
+ */
+function backfillUnlockedEndings() {
+    const ngData = getNGPlusData();
+    if (ngData.playthroughCount < 1 || !ngData.bestRun) return;
+    if (ngData.unlockedEndings && ngData.unlockedEndings.length > 0) return;
+    if (ngData.endingBackfillDone) return;
+
+    const total = MemorySanctuary.data.archives
+        ? MemorySanctuary.data.archives.filter(a => !a.ngPlusExclusive).length : 0;
+    if (total <= 0) return;
+
+    const pct = ngData.bestRun.count / total;
+    let galleryId;
+    if (pct >= 0.6) galleryId = 'guardian_of_remnants';
+    else if (pct >= 0.4) galleryId = 'finale_guardian_of_fragments';
+    else if (pct >= 0.05) galleryId = 'finale_whisper_keeper';
+    else galleryId = 'finale_silent_sanctuary';
+
+    ngData.unlockedEndings = [galleryId];
+    ngData.endingBackfillDone = true;
+    saveNGPlusData(ngData);
 }
 
 /**
@@ -443,7 +503,10 @@ function sealSanctuary() {
     
     // Check for hidden endings first
     const ending = checkHiddenEndings();
-    
+
+    // 记入结局图鉴（实际达成的结局，持久化到 NG+ 数据）
+    if (typeof recordUnlockedEnding === 'function') recordUnlockedEnding(ending ? ending.id : 'finale_silent_sanctuary');
+
     // Show unlock message for guardian endings
     if (ending && ending.id && ending.id.startsWith('guardian_') && ending.id.endsWith('_finale')) {
         const gid = ending.id.replace('guardian_', '').replace('_finale', '');

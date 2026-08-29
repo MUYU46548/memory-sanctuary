@@ -35,11 +35,11 @@ function initUI() {
     document.querySelectorAll('.action-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             const tabName = tab.dataset.tab;
-            
+
             // 切换标签按钮状态
             document.querySelectorAll('.action-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            
+
             // 切换内容显示
             document.querySelectorAll('.action-tab-content').forEach(content => {
                 content.classList.remove('active');
@@ -53,8 +53,20 @@ function initUI() {
     initCodexPanel();
     initProjectPanel();
     initResourceTooltips();
+    initTopBarInteractions();
 
     if (DEBUG) console.log('[UI] 初始化完成');
+}
+
+/**
+ * 编程式切换主操作标签页（archive / guardian / vault）
+ * 供推荐归档跳转、新手引导等需要把某个标签页带到玩家眼前的场景使用
+ */
+function switchActionTab(tabName) {
+    const tabBtn = document.querySelector(`.action-tab[data-tab="${tabName}"]`);
+    if (tabBtn && !tabBtn.classList.contains('active')) {
+        tabBtn.click();
+    }
 }
 
 /**
@@ -919,7 +931,14 @@ function renderArchiveEntries() {
     // 应用筛选
     let filteredEntries = entries.filter(entry => {
         if (entry.availableAfter && MemorySanctuary.state.week < entry.availableAfter) return false;
-        
+
+        // 条件解锁门槛（unlockCondition，如机器人专属条目 / NG+ 条目）：
+        // 不满足条件的条目直接不显示，而不是显示出来却无法归档
+        if ((entry.unlockCondition || entry.ngPlusExclusive)
+            && typeof isArchiveAvailable === 'function' && !isArchiveAvailable(entry)) {
+            return false;
+        }
+
         switch (filterBy) {
             case 'affordable':
                 return canArchiveEntry(entry);
@@ -996,7 +1015,7 @@ function renderArchiveEntries() {
 
             // 冲突警告
             const conflict = (typeof checkArchiveConflict === 'function') ? checkArchiveConflict(entry.id) : null;
-            const conflictWarning = conflict ? `<span class="conflict-warning" title="叙事互斥：「${conflict.title}」与本条目互斥，归档此条目后它将永久消失。请先想好要保留哪一条">⚡互斥</span>` : '';
+            const conflictWarning = conflict ? `<span class="conflict-warning" title="叙事互斥：「${conflict.title}」与本条目互斥，归档此条目后它将永久消失。请先想好要保留哪一条">⚖互斥</span>` : '';
             
             // 隐藏内容标记
             const hiddenMarker = entry.hiddenContent ? '<span title="包含隐藏叙事">✨</span>' : '';
@@ -1021,10 +1040,15 @@ function renderArchiveEntries() {
                 mainBtnHtml = `<button class="archive-btn" data-archive-id="${entry.id}">录入归档</button>`;
             }
 
-            // 快速归档按钮
+            // 快速归档按钮（每回合限 1 次：本回合已用时置灰，避免"看着能点点了才说不能用"）
             let quickBtnHtml = '';
             if (!isCompleted && !isExpired && canArchive) {
-                quickBtnHtml = `<button class="archive-btn quick-archive-btn" data-archive-id="${entry.id}" title="速记：省 30% 资源、不推进时间，但牺牲隐藏叙事与守护者注记，每回合限 1 次">⚡速记</button>`;
+                const quickUsedThisWeek = MemorySanctuary.state.quickArchiveWeek === MemorySanctuary.state.week;
+                if (quickUsedThisWeek) {
+                    quickBtnHtml = `<button class="archive-btn quick-archive-btn" disabled title="本回合已使用过速记（每回合限 1 次），下回合恢复">⚡已速记</button>`;
+                } else {
+                    quickBtnHtml = `<button class="archive-btn quick-archive-btn" data-archive-id="${entry.id}" title="速记：省 30% 资源、不推进时间，但牺牲隐藏叙事与守护者注记，每回合限 1 次">⚡速记</button>`;
+                }
             }
             
             // AI 助理辅助归档按钮
@@ -1128,7 +1152,8 @@ function renderEngineeringBotsPanel() {
     
     const state = MemorySanctuary.state;
     const botCount = state.resources.engineeringBots || 0;
-    const maintenanceCost = botCount * 2;
+    const perBot = (typeof ENGINEERING_BOTS_CONFIG !== 'undefined') ? ENGINEERING_BOTS_CONFIG.maintenanceCostPerBot : 1;
+    const maintenanceCost = botCount * perBot;
     const reduction = (typeof getBotDecayReduction === 'function') ? getBotDecayReduction() : 0;
     const isBlackout = state.botBlackoutLogged;
 
@@ -1151,7 +1176,7 @@ function renderEngineeringBotsPanel() {
     }
 
     container.innerHTML = `
-        <div class="bots-panel-header" title="工程机器人：自动降低圣所资源衰减。维护成本每周从能源扣除；能源不足时停机（衰减减免归零）。">
+        <div class="bots-panel-header" title="工程机器人：降低圣所资源衰减，并抑制腐败侵蚀。维护成本每周从能源扣除；能源不足时停机（所有加成归零）。">
             <span class="bots-panel-icon">🔧</span>
             <span class="bots-panel-title">工程机器人</span>
             <span class="bots-panel-count ${botCount > 0 ? 'active' : 'inactive'}">${botCount}/5</span>
@@ -1163,6 +1188,10 @@ function renderEngineeringBotsPanel() {
             </div>
             <div class="bots-stat">
                 <span class="bots-stat-label">衰减减免</span>
+                <span class="bots-stat-value ${reduction > 0 ? 'success' : 'inactive'}">${Math.round(reduction * 100)}%</span>
+            </div>
+            <div class="bots-stat">
+                <span class="bots-stat-label">腐败抑制</span>
                 <span class="bots-stat-value ${reduction > 0 ? 'success' : 'inactive'}">${Math.round(reduction * 100)}%</span>
             </div>
         </div>
@@ -1179,11 +1208,8 @@ function renderEngineeringBotsPanel() {
     }
 
     container.title = botCount > 0
-        ? `当前 ${botCount} 台机器人运行中，提供 ${Math.round(reduction * 100)}% 衰减减免（每周维护 ◈${maintenanceCost} 能源）。`
+        ? `当前 ${botCount} 台机器人运行中：衰减减免 ${Math.round(reduction * 100)}%、腐败侵蚀抑制 ${Math.round(reduction * 100)}%（每周维护 ◈${maintenanceCost} 能源，能源不足时停机）。拥有机器人期间，存储室会出现它们的专属日志条目。`
         : '尚未部署工程机器人。完成「建造工程机器人」项目获得首台后，可在此继续建造。';
-    container.title = botCount > 0
-        ? `当前 ${botCount} 台机器人运行中，提供 ${Math.round(reduction * 100)}% 衰减减免（每周维护 ◈${maintenanceCost} 能源）。`
-        : '尚未部署工程机器人。可在「项目」中建造以减缓资源衰减。';
 }
 
 // ==========================================
@@ -1564,11 +1590,16 @@ function renderCodex() {
 function renderCodexEndings() {
     const container = document.getElementById('codex-endings-list');
     if (!container) return;
-    
+
     const endings = MemorySanctuary.data.endings || [];
     const unlockedAchievements = getUnlockedAchievements();
-    
-    // 结局 ID → 成就 ID 映射
+
+    // 老存档迁移：通关过但未记录结局的，按最佳记录补登记
+    if (typeof backfillUnlockedEndings === 'function') backfillUnlockedEndings();
+    const ngData = getNGPlusData();
+    const seenEndings = ngData.unlockedEndings || [];
+
+    // 结局 ID → 成就 ID 映射（仅收录真实存在的结局成就，兜底结局以 seenEndings 为准）
     const endingToAchievement = {
         'finale_song_of_doom': 'song_of_doom',
         'finale_roots_of_civilization': 'roots_of_civilization',
@@ -1578,8 +1609,7 @@ function renderCodexEndings() {
         'finale_chronicle_of_doom': 'chronicle_of_doom',
         'finale_voice_of_home': 'voice_of_home',
         'finale_silent_sanctuary': 'silent_sanctuary',
-        'finale_guardian_of_fragments': 'memory_keeper',
-        'finale_whisper_keeper': 'eternal_keeper',
+        'complete_memory': 'complete_memory',
         'true_ending': 'beyond_time',
         'guardian_tika_finale': 'guardian_tika_love',
         'guardian_finn_finale': 'guardian_finn_love',
@@ -1587,12 +1617,14 @@ function renderCodexEndings() {
         'guardian_lorn_finale': 'guardian_lorn_love',
         'guardian_ethel_finale': 'guardian_ethel_love'
     };
-    
+
     container.innerHTML = '';
-    
+
     for (const ending of endings) {
-        const achievementId = endingToAchievement[ending.id] || ending.id;
-        const isUnlocked = unlockedAchievements.includes(achievementId);
+        const achievementId = endingToAchievement[ending.id];
+        const isUnlocked = seenEndings.includes(ending.id) ||
+            (achievementId && unlockedAchievements.includes(achievementId)) ||
+            unlockedAchievements.includes(ending.id);
         
         const item = document.createElement('div');
         item.className = `codex-ending-item ${isUnlocked ? 'unlocked' : 'locked'}`;
@@ -1863,13 +1895,190 @@ function hidePinnedTooltip() {
     delete tooltip.dataset.pinned;
 }
 
+// ==========================================
+// 顶栏点击交互（周况 / 士气）
+// 「第 X 周」与士气徽标此前只有悬停提示没有点击行为，属于可深挖叙事却一直缺席的入口
+// ==========================================
+
+function initTopBarInteractions() {
+    const weekEl = document.getElementById('week-display');
+    const moraleEl = document.getElementById('morale-display');
+    if (weekEl) {
+        weekEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleTopBarPopover('week', weekEl);
+        });
+    }
+    if (moraleEl) {
+        moraleEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleTopBarPopover('morale', moraleEl);
+        });
+    }
+
+    // 点击弹窗与锚点之外的区域收起
+    if (!document._topbarPopoverDismiss) {
+        document._topbarPopoverDismiss = true;
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('#topbar-popover')) return;
+            if (e.target.closest('#week-display, #morale-display')) return;
+            hideTopBarPopover();
+        });
+    }
+}
+
+function toggleTopBarPopover(kind, anchorEl) {
+    let pop = document.getElementById('topbar-popover');
+    if (!pop) {
+        pop = document.createElement('div');
+        pop.id = 'topbar-popover';
+        pop.setAttribute('role', 'dialog');
+        document.body.appendChild(pop);
+    }
+    if (pop.dataset.kind === kind && pop.classList.contains('visible')) {
+        hideTopBarPopover();
+        return;
+    }
+    pop.dataset.kind = kind;
+    pop.innerHTML = (kind === 'week') ? buildWeekPopover() : buildMoralePopover();
+    pop.classList.add('visible');
+
+    const r = anchorEl.getBoundingClientRect();
+    let x = r.left;
+    let y = r.bottom + 8;
+    const rect = pop.getBoundingClientRect();
+    if (x + rect.width > window.innerWidth - 12) x = window.innerWidth - rect.width - 12;
+    if (y + rect.height > window.innerHeight - 12) y = Math.max(12, r.top - rect.height - 8);
+    pop.style.left = x + 'px';
+    pop.style.top = y + 'px';
+}
+
+function hideTopBarPopover() {
+    const pop = document.getElementById('topbar-popover');
+    if (pop) pop.classList.remove('visible');
+}
+
+// 当前所处时期的叙事标题与描述（随周数推进，玩家选择带来的状态差异体现在"本局概况"里）
+function getWeekPhaseNarrative(week) {
+    if (week <= 12) return {
+        title: '序章 · 初醒',
+        text: '圣所刚刚苏醒，守护者们陆续回到自己的岗位。地表还不算太糟——偶尔还能看到成群的候鸟掠过天际。现在是积蓄的时节：多存一条，后世就多一分完整。'
+    };
+    if (week <= 19) return {
+        title: '上篇 · 坚守',
+        text: '地表的寂静一天比一天沉。勘探队带回的物资越来越杂，有时是一些说不清用途的残骸。守护者们不再谈论天气，只是更专注地工作。'
+    };
+    if (week <= 29) return {
+        title: '中篇 · 抉择',
+        text: '封印的选项已经摆在面前。是带着不完整的记忆提前锁上大门，还是继续打开门、在崩塌中抢救更多？每一次互斥抉择，都在定义后世看到的萨拉达斯。'
+    };
+    if (week <= 39) return {
+        title: '下篇 · 终期',
+        text: '圣所的墙壁开始出现细纹。外界的信号越来越弱，最后一批候选条目正在排队。你开始在心里默数：还剩多少周，还剩多少条。'
+    };
+    return {
+        title: '终章 · 终来之刻',
+        text: '倒数的最后阶段。无论此刻圣所里存着什么，它们就是萨拉达斯留在宇宙中的全部。终来之刻，何物当存？'
+    };
+}
+
+function buildWeekPopover() {
+    const state = MemorySanctuary.state;
+    if (!state) return '<div class="tp-empty">尚未开始游戏</div>';
+
+    const MAX_WEEK = 48;
+    const phase = getWeekPhaseNarrative(state.week);
+    const pct = Math.min(100, Math.round((state.week / MAX_WEEK) * 100));
+
+    // 本局概况（随玩家选择变化）
+    const archived = (state.completedArchives || []).length;
+    const conflicts = (state.conflictLog || []).length;
+    const projects = (state.completedProjects || []).length;
+    const exp = state.exploration || {};
+    const expStatus = exp.deployedUntil > state.week
+        ? `🔭 勘探队在外，第 ${exp.deployedUntil} 周返回`
+        : (exp.deployedUntil ? '🔭 勘探队已返回圣所' : '🔭 勘探队待命');
+
+    // 里程碑
+    const milestones = [
+        { week: 16, label: '封印圣所可预览' },
+        { week: 20, label: '可提前封印结算' },
+        { week: 30, label: '紧急归档协议解锁' },
+        { week: 48, label: '终局 · 强制封印' }
+    ];
+    const msHtml = milestones.map(m => {
+        const done = state.week >= m.week;
+        const current = !done && m.week > state.week && milestones.find(x => x.week > state.week)?.week === m.week;
+        return `<div class="tp-milestone ${done ? 'done' : (current ? 'next' : '')}">
+            <span class="tp-ms-dot">${done ? '✓' : '○'}</span>
+            <span class="tp-ms-label">${m.label}</span>
+            <span class="tp-ms-week">第 ${m.week} 周</span>
+        </div>`;
+    }).join('');
+
+    return `
+        <div class="tp-title">第 ${state.week} 周 / 共 ${MAX_WEEK} 周 · ${phase.title}</div>
+        <div class="tp-week-bar"><div class="tp-week-bar-fill" style="width:${pct}%"></div></div>
+        <div class="tp-desc">${phase.text}</div>
+        <div class="tp-section">本局概况</div>
+        <div class="tp-stats">
+            <span>📜 已归档 ${archived} 条</span>
+            <span>⚖️ 互斥抉择 ${conflicts} 次</span>
+            <span>🏗️ 已完成项目 ${projects} 个</span>
+            <span>${expStatus}</span>
+        </div>
+        <div class="tp-section">时间节点</div>
+        ${msHtml}
+    `;
+}
+
+function buildMoralePopover() {
+    const state = MemorySanctuary.state;
+    if (!state) return '<div class="tp-empty">尚未开始游戏</div>';
+
+    const morale = getMoraleLevel();
+    const tierNames = { hostile: '疏离', cold: '冷淡', neutral: '平和', friendly: '友好', intimate: '亲密' };
+    const rows = [];
+
+    for (const gid of ['tika', 'finn', 'misha', 'lorn', 'ethel']) {
+        const guardian = getGuardianById(gid);
+        if (!guardian) continue;
+        const tier = getMoodTier(gid);
+        const indicator = getMoodIndicator(gid);
+        const fatigue = getFatigueWeeksLeft(gid);
+        // 士气弹窗里的"守护者聊天"：按当前好感档取一句（士气点击入口的核心叙事价值）
+        const dialogues = (typeof getMoodDialogue === 'function') ? getMoodDialogue(gid) : (guardian.dialogues?.idle || ['……']);
+        const line = dialogues[Math.floor(Math.random() * dialogues.length)] || '……';
+        rows.push(`
+            <div class="tp-guardian mood-${tier}">
+                <span class="tp-g-avatar">${guardian.avatar}</span>
+                <div class="tp-g-body">
+                    <div class="tp-g-head">
+                        <span class="tp-g-name">${guardian.name}</span>
+                        <span class="tp-g-tier">${indicator} ${tierNames[tier]}</span>
+                        ${fatigue > 0 ? `<span class="tp-g-fatigue">💤 ${fatigue}周</span>` : ''}
+                    </div>
+                    <div class="tp-g-line">「${esc(line, false)}」</div>
+                </div>
+            </div>
+        `);
+    }
+
+    return `
+        <div class="tp-title">平均士气：${morale.label}（效率 ${Math.round(morale.bonus * 100)}%）</div>
+        <div class="tp-desc">士气影响资源衰减效率与突发事件走向。分发补给品、归档成功都能提振士气。</div>
+        ${rows.join('')}
+        <div class="tp-hint">💡 点击守护者页的头像可与其交谈；🎁 分发补给品可提升全员士气（每周一次）。</div>
+    `;
+}
+
 // 各资源的一句话说明（与游戏内帮助「五种资源」口径一致）
 const RESOURCE_DESCRIPTIONS = {
     energy: '维持圣所运转与归档的核心资源。归零后归档能耗加倍。',
     media: '归档必需品。归零后无法录入新条目（应急协议的介质豁免除外）。',
     environment: '保护设备与条目保存条件。归零后条目过期速度翻倍。',
     food: '维持守护者士气。耗尽后归档能耗 +20%，并可能触发饥荒。',
-    engineeringBots: '自动维护圣所，每台减少 10% 资源衰减（上限 50%），每台每周消耗 2 能源；能源不足时停机。'
+    engineeringBots: '自动维护圣所：每台减少 10% 资源衰减（上限 50%），并按同比例抑制腐败侵蚀；每台每周消耗 1 能源，能源不足时停机。拥有机器人期间，存储室出现其专属日志条目。'
 };
 
 function buildResourceTooltip(resourceKey) {
@@ -1906,14 +2115,26 @@ function buildResourceTooltip(resourceKey) {
         html += '</div>';
     }
 
-    // 储量信息
+    // 储量信息（附储量条 + 食物补给箱可视化，让"存量"一眼可读）
     const maxCap = resourceKey === 'food' ? 80
         : resourceKey === 'energy' ? 150
         : resourceKey === 'media' ? 150
         : 100;
     const current = state.resources[resourceKey] || 0;
-    html += `<div class="rt-capacity">储量: ${current.toFixed(1)} / ${maxCap}</div>`;
-    
+    const capPct = Math.max(0, Math.min(100, (current / maxCap) * 100));
+    const barClass = capPct < 20 ? 'crit' : (capPct < 45 ? 'low' : 'ok');
+    html += `<div class="rt-bar"><div class="rt-bar-fill ${barClass}" style="width:${capPct}%"></div></div>`;
+    html += `<div class="rt-capacity">储量: ${current.toFixed(1)} / ${maxCap}（${Math.round(capPct)}%）</div>`;
+
+    // 食物：以"补给箱"呈现存量（4 箱封顶，对应储量比例）
+    if (resourceKey === 'food') {
+        const crates = Math.round(capPct / 25);
+        const cratesHtml = Array.from({ length: 4 }, (_, i) =>
+            `<span class="rt-crate ${i < crates ? 'filled' : ''}">${i < crates ? '📦' : '▢'}</span>`).join('');
+        const lowFoodNote = current < 10 ? '<span class="rt-food-warning">⚠ 食物告急，连续 3 周归零将触发饥荒</span>' : '';
+        html += `<div class="rt-crates">${cratesHtml}<span class="rt-crates-label">补给箱</span>${lowFoodNote}</div>`;
+    }
+
     return html;
 }
 
@@ -1937,11 +2158,23 @@ function getResourceBreakdown(resourceKey) {
         }
     }
     
-    // 腐败度额外衰减（作用于能源/介质/环境，不作用于食物）
+    // 腐败度额外衰减（作用于能源/介质/环境，不作用于食物；在线机器人按比例抑制）
     if (state.emergencyCorruption > 0 && resourceKey !== 'food') {
-        const corruptionPenalty = Math.floor(state.emergencyCorruption / 20) * 0.5;
+        let corruptionPenalty = Math.floor(state.emergencyCorruption / 20) * 0.5;
+        const botDamp = (typeof getBotDecayReduction === 'function') ? getBotDecayReduction() : 0;
+        if (botDamp > 0) corruptionPenalty *= (1 - botDamp);
         if (corruptionPenalty > 0) {
-            breakdowns.push({ amount: -corruptionPenalty, source: '圣所腐败' });
+            breakdowns.push({ amount: -corruptionPenalty, source: botDamp > 0 ? `圣所腐败（机器人抑制 -${Math.round(botDamp * 100)}%）` : '圣所腐败' });
+        }
+    }
+    
+    // 工程机器人维护消耗（能源；停机时不消耗。此前这项真实支出不在面板里，玩家只觉得"耗得很凶"却看不到去向）
+    if (resourceKey === 'energy' && typeof getEngineeringBotCount === 'function') {
+        const botCount = getEngineeringBotCount();
+        const perBot = (typeof ENGINEERING_BOTS_CONFIG !== 'undefined') ? ENGINEERING_BOTS_CONFIG.maintenanceCostPerBot : 1;
+        const maintenance = botCount * perBot;
+        if (maintenance > 0 && state.resources.energy >= maintenance) {
+            breakdowns.push({ amount: -maintenance, source: `机器人维护 ×${botCount}` });
         }
     }
     

@@ -743,6 +743,16 @@ button:focus-visible,
     background: color-mix(in srgb, var(--success) 80%, white) !important;
 }
 
+/* 速记本回合已用：置灰（基础 :disabled 会被上面的 !important 盖掉，需同级覆盖） */
+.quick-archive-btn:disabled,
+.quick-archive-btn:disabled:hover {
+    background: var(--bg-deep) !important;
+    color: var(--text-dim) !important;
+    border-color: var(--text-dim) !important;
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
 /* 条目列表控件 */
 .entry-controls {
     display: flex;
@@ -801,12 +811,20 @@ button:focus-visible,
     margin-left: 4px;
 }
 
-/* 冲突警告 */
+/* 冲突警告 — 静态描边徽章（不用脉冲发光：inline 元素的发光阴影会与条目卡片边框打架） */
 .conflict-warning {
+    display: inline-block;
     color: var(--danger);
-    font-weight: bold;
-    animation: criticalPulse 1s ease-in-out infinite;
-    margin-left: 4px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    margin-left: 6px;
+    padding: 0 6px;
+    border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent);
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--danger) 8%, transparent);
+    cursor: help;
+    vertical-align: 1px;
 }
 
 /* 深度归档按钮 */
@@ -1733,6 +1751,63 @@ button.archive-btn.ai-assist-btn:hover {
     justify-content: center;
     font-size: 1.4rem;
     flex-shrink: 0;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* 可点击感强化：呼吸光环/💬角标只属于主守护者面板的头像（#guardian-avatar）。
+   勘探派遣面板复用了 .guardian-avatar 类，那里的点击=选入队伍，没有交谈功能，
+   不能借走这套"能对话"的视觉承诺（此前玩家在勘探里点头像期待对话而落空）。 */
+#guardian-avatar::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 2px solid var(--amber-primary);
+    opacity: 0;
+    animation: avatarInvite 2.6s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes avatarInvite {
+    0%, 100% { opacity: 0; transform: scale(0.9); }
+    50% { opacity: 0.6; transform: scale(1.08); }
+}
+
+#guardian-avatar:hover {
+    transform: scale(1.07);
+    border-color: var(--amber-primary);
+    box-shadow: 0 0 14px rgba(212, 160, 74, 0.45);
+}
+
+/* 角标：对话气泡 = 可以跟守护者互动（仅主面板） */
+#guardian-avatar::before {
+    content: '💬';
+    position: absolute;
+    right: -7px;
+    bottom: -5px;
+    font-size: 0.55rem;
+    line-height: 1;
+    width: 17px;
+    height: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-panel);
+    border: 1px solid var(--amber-dim);
+    border-radius: 50%;
+    z-index: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #guardian-avatar::after {
+        animation: none;
+        opacity: 0.35;
+    }
+    #guardian-avatar:hover {
+        transform: none;
+    }
 }
 
 .guardian-info {
@@ -1871,10 +1946,13 @@ button.archive-btn.ai-assist-btn:hover {
     cursor: pointer;
     transition: all 0.2s;
     min-width: 48px;
+    border: 1px solid transparent;
 }
 
 .guardian-overview-item:hover {
     background: var(--bg-panel-hover);
+    border-color: var(--amber-dim);
+    transform: translateY(-1px);
 }
 
 .guardian-overview-item.active {
@@ -5881,6 +5959,239 @@ button.archive-btn.recommended {
     font-size: 10px;
     color: var(--text-dim);
     text-align: right;
+}
+
+/* 储量条 */
+.rt-bar {
+    margin-top: 6px;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(128, 128, 128, 0.15);
+    overflow: hidden;
+}
+
+.rt-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.rt-bar-fill.ok { background: var(--success); }
+.rt-bar-fill.low { background: var(--warning); }
+.rt-bar-fill.crit { background: var(--danger); }
+
+/* 食物补给箱可视化 */
+.rt-crates {
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 13px;
+}
+
+.rt-crate {
+    opacity: 0.3;
+}
+
+.rt-crate.filled {
+    opacity: 1;
+}
+
+.rt-crates-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-left: 2px;
+}
+
+.rt-food-warning {
+    font-size: 10px;
+    color: var(--danger);
+    margin-left: 6px;
+}
+
+/* ==========================================
+   顶栏点击弹窗（周况 / 士气）
+   ========================================== */
+
+#week-display,
+#morale-display {
+    cursor: pointer;
+    transition: filter 0.2s ease, background 0.2s ease;
+    border-radius: 4px;
+}
+
+#week-display:hover,
+#morale-display:hover {
+    filter: brightness(1.2);
+    background: rgba(212, 160, 74, 0.08);
+}
+
+#topbar-popover {
+    position: fixed;
+    z-index: 1200;
+    width: 300px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--text-primary);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+    display: none;
+}
+
+#topbar-popover.visible {
+    display: block;
+    animation: fadeIn 0.15s ease-out;
+}
+
+.tp-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--amber-primary);
+    margin-bottom: 6px;
+}
+
+.tp-desc {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.tp-section {
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 8px;
+    margin: 8px 0 4px;
+}
+
+.tp-week-bar {
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(128, 128, 128, 0.15);
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.tp-week-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--amber-dim), var(--amber-primary));
+    border-radius: 3px;
+}
+
+.tp-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.tp-milestone {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 0;
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.tp-milestone .tp-ms-dot {
+    width: 14px;
+    text-align: center;
+}
+
+.tp-milestone.done {
+    color: var(--success);
+}
+
+.tp-milestone.next {
+    color: var(--amber-primary);
+}
+
+.tp-milestone.next .tp-ms-dot {
+    animation: avatarInvite 2s ease-in-out infinite;
+}
+
+.tp-milestone .tp-ms-week {
+    margin-left: auto;
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+.tp-guardian {
+    display: flex;
+    gap: 8px;
+    padding: 6px 0;
+    border-top: 1px solid var(--border-subtle);
+    align-items: flex-start;
+}
+
+.tp-guardian:first-of-type {
+    border-top: none;
+}
+
+.tp-g-avatar {
+    font-size: 18px;
+    line-height: 1.4;
+}
+
+.tp-g-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.tp-g-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tp-g-name {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-primary);
+}
+
+.tp-g-tier {
+    font-size: 10.5px;
+    color: var(--text-dim);
+}
+
+.tp-guardian.mood-intimate .tp-g-tier { color: var(--success); }
+.tp-guardian.mood-friendly .tp-g-tier { color: var(--amber-glow); }
+.tp-guardian.mood-hostile .tp-g-tier { color: var(--danger); }
+
+.tp-g-fatigue {
+    font-size: 10px;
+    color: var(--text-dim);
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
+    padding: 0 4px;
+}
+
+.tp-g-line {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-top: 2px;
+}
+
+.tp-hint {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 10.5px;
+    color: var(--text-dim);
+}
+
+.tp-empty {
+    color: var(--text-dim);
+    font-size: 12px;
 }
 
 /* Ending Summary Page */

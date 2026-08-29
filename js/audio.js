@@ -48,6 +48,52 @@ window.AudioSystem = (() => {
     let sfxMuted = false;          // 音效静音状态
     let globalMuted = false;       // 全局静音状态
 
+    // ─── 音频偏好持久化 ───
+    // 与 main.js 的设置系统共用 memory-sanctuary-settings（JSON 合并写入，互不覆盖）。
+    // 此前静音/音量只存在于内存，刷新后全部回默认 —— 静音无法持久化（玩家反馈 #5）。
+    const AUDIO_PREFS_KEY = 'memory-sanctuary-settings';
+
+    function loadAudioPrefs() {
+        try {
+            const raw = localStorage.getItem(AUDIO_PREFS_KEY);
+            if (!raw) return;
+            const s = JSON.parse(raw);
+            if (!s || typeof s !== 'object') return;
+            if (typeof s.sfxVolume === 'number') sfxVolume = Math.min(1, Math.max(0, s.sfxVolume));
+            if (typeof s.bgmVolume === 'number') bgmVolume = Math.min(1, Math.max(0, s.bgmVolume));
+            sfxMuted = !!s.sfxMuted;
+            bgmMuted = !!s.bgmMuted;
+            globalMuted = !!s.globalMuted;
+            isMuted = !!s.quickMuted; // 顶栏快捷静音键的状态
+        } catch (e) {
+            if (DEBUG) console.warn('[Audio] 音频偏好读取失败，使用默认值:', e);
+        }
+    }
+
+    function saveAudioPrefs() {
+        try {
+            let s = {};
+            const raw = localStorage.getItem(AUDIO_PREFS_KEY);
+            if (raw) s = JSON.parse(raw) || {};
+            s.sfxVolume = sfxVolume;
+            s.bgmVolume = bgmVolume;
+            s.sfxMuted = sfxMuted;
+            s.bgmMuted = bgmMuted;
+            s.globalMuted = globalMuted;
+            s.quickMuted = isMuted;
+            localStorage.setItem(AUDIO_PREFS_KEY, JSON.stringify(s));
+        } catch (e) {
+            if (DEBUG) console.warn('[Audio] 音频偏好保存失败:', e);
+        }
+    }
+
+    loadAudioPrefs();
+
+    // BGM 实际生效音量（快捷静音/BGM静音/全局静音任一命中即 0）
+    function effectiveBGMVolume(base) {
+        return (isMuted || bgmMuted || globalMuted) ? 0 : base * bgmVolume;
+    }
+
     // ─── BGM 核心方法 ───
 
     function getBGMPath(sceneId) {
@@ -227,7 +273,7 @@ window.AudioSystem = (() => {
     function fadeInBGM(targetVolume) {
         if (bgmFadeTimer) clearInterval(bgmFadeTimer);
         
-        const effectiveVolume = bgmMuted ? 0 : targetVolume * bgmVolume;
+        const effectiveVolume = effectiveBGMVolume(targetVolume);
         const steps = 30;
         const duration = 1500; // 1.5s
         const interval = duration / steps;
@@ -253,6 +299,7 @@ window.AudioSystem = (() => {
             const target = config ? config.volume * bgmVolume : bgmVolume;
             bgmAudio.volume = target;
         }
+        saveAudioPrefs();
     }
 
     // BGM 静音切换（独立于音效）
@@ -263,6 +310,7 @@ window.AudioSystem = (() => {
             const target = bgmMuted ? 0 : (config ? config.volume * bgmVolume : bgmVolume);
             bgmAudio.volume = target;
         }
+        saveAudioPrefs();
         return bgmMuted;
     }
 
@@ -288,7 +336,8 @@ window.AudioSystem = (() => {
             
             ctx = new AudioContext();
             masterGain = ctx.createGain();
-            masterGain.gain.value = 0.3 * sfxVolume * (sfxMuted || globalMuted ? 0 : 1);
+            // 恢复的静音状态（快捷静音/音效静音/全局静音）必须在初始化时生效
+            masterGain.gain.value = 0.3 * sfxVolume * (isMuted || sfxMuted || globalMuted ? 0 : 1);
             masterGain.connect(ctx.destination);
             
             startDrone();
@@ -1220,12 +1269,13 @@ window.AudioSystem = (() => {
         if (!ctx) return false;
         isMuted = !isMuted;
         if (masterGain) {
-            masterGain.gain.setValueAtTime(isMuted ? 0 : sfxVolume * 0.3, ctx.currentTime);
+            masterGain.gain.setValueAtTime(isMuted ? 0 : sfxVolume * 0.3 * (sfxMuted || globalMuted ? 0 : 1), ctx.currentTime);
         }
         // 同时静音 BGM
         if (bgmAudio) {
-            bgmAudio.volume = isMuted ? 0 : bgmVolume * (bgmMuted ? 0 : 1);
+            bgmAudio.volume = effectiveBGMVolume(bgmVolume);
         }
+        saveAudioPrefs();
         return isMuted;
     }
 
@@ -1233,8 +1283,9 @@ window.AudioSystem = (() => {
     function setVolume(value) {
         sfxVolume = Math.max(0, Math.min(1, value));
         if (masterGain && ctx) {
-            masterGain.gain.setValueAtTime(sfxVolume * 0.3, ctx.currentTime);
+            masterGain.gain.setValueAtTime(sfxVolume * 0.3 * (sfxMuted || globalMuted ? 0 : 1), ctx.currentTime);
         }
+        saveAudioPrefs();
     }
     
     function setSFXVolume(value) {
@@ -1246,6 +1297,7 @@ window.AudioSystem = (() => {
         if (masterGain && ctx) {
             masterGain.gain.setValueAtTime(sfxVolume * 0.3 * (sfxMuted || globalMuted ? 0 : 1), ctx.currentTime);
         }
+        saveAudioPrefs();
         return sfxMuted;
     }
     
@@ -1262,12 +1314,13 @@ window.AudioSystem = (() => {
         } else {
             // 恢复
             if (masterGain && ctx) {
-                masterGain.gain.setValueAtTime(sfxVolume * 0.3 * (sfxMuted ? 0 : 1), ctx.currentTime);
+                masterGain.gain.setValueAtTime(sfxVolume * 0.3 * (sfxMuted || isMuted ? 0 : 1), ctx.currentTime);
             }
-            if (bgmAudio && !bgmMuted) {
-                bgmAudio.volume = bgmVolume * (bgmMuted ? 0 : 1);
+            if (bgmAudio) {
+                bgmAudio.volume = effectiveBGMVolume(bgmVolume);
             }
         }
+        saveAudioPrefs();
         return globalMuted;
     }
 
@@ -1279,6 +1332,7 @@ window.AudioSystem = (() => {
         playHeartbeatAlert,
         playShatterSound,
         playMechanicalEngage,
+        playEmergencyCorrupt,
         playInstantArchive,
         playChainComplete,
         playGuardianEventTrigger,
@@ -1320,6 +1374,9 @@ window.AudioSystem = (() => {
         get isMuted() { return isMuted; },
         get isReady() { return isInitialized; },
         get isBGMMuted() { return bgmMuted; },
-        get bgmVolumeLevel() { return bgmVolume; }
+        get isSFXMuted() { return sfxMuted; },
+        get isGlobalMuted() { return globalMuted; },
+        get bgmVolumeLevel() { return bgmVolume; },
+        get sfxVolumeLevel() { return sfxVolume; }
     };
 })();

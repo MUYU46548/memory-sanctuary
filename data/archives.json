@@ -2891,6 +2891,50 @@
       "expiresAfter": 48,
       "discoveryMethod": "project_final_seal",
       "ngPlusExclusive": true
+    },
+    {
+      "id": "arch_bot_log_01",
+      "title": "工程机器人·启动日志",
+      "vault": 10,
+      "type": "document",
+      "dataCost": 5,
+      "energyCost": 3,
+      "description": "洛恩为第一台工程机器人写下的运行日志。",
+      "content": "「01号机，启动成功。它的伺服电机比我预想的安静——像是怕吵醒这座正在沉睡的圣所。我给它设定了第一条例程：在人类休息时，替我们巡视每一条管线。」\n\n日志的末尾有一行小字：「如果有一天我不在了，请替我记得它们曾替我们守夜。」",
+      "guardianReactions": {
+        "lorn": "它们不会累，不会怕，也不会抱怨。可靠的伙伴。",
+        "misha": "金属的心跳，也是心跳。"
+      },
+      "unlockCondition": {
+        "bots": 1
+      },
+      "availableAfter": 5,
+      "relatedArchives": [
+        "arch_bot_log_02"
+      ],
+      "hiddenContent": "在日志的夹层里有一张手绘电路图，角落签着一个陌生的名字——不属于这五位守护者。"
+    },
+    {
+      "id": "arch_bot_log_02",
+      "title": "工程机器人·协同日志",
+      "vault": 10,
+      "type": "document",
+      "dataCost": 6,
+      "energyCost": 4,
+      "description": "机器人编队协同维护圣所的调度记录。",
+      "content": "「03号机入列。现在它们学会了互相分担负载——一台检修通风管道时，另一台会自动接管它负责区域的巡检。洛恩管这叫『冗余』，缇卡管这叫『合唱』。」\n\n调度表上，机器人的巡检路线恰好连成一个五角星的形状，守护着圣所的最深处。",
+      "guardianReactions": {
+        "lorn": "工程的美学就是冗余。任何单点都不该是致命的。",
+        "tika": "它们真的在合唱。你听，伺服电机的嗡鸣是有调子的。"
+      },
+      "unlockCondition": {
+        "bots": 3
+      },
+      "availableAfter": 12,
+      "relatedArchives": [
+        "arch_bot_log_01"
+      ],
+      "hiddenContent": "五角星巡检路线的中心，标注着圣所建造者留下的原始坐标系——那是所有图纸都未曾记录的位置。"
     }
   ]
 }

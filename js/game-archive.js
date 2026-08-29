@@ -962,6 +962,14 @@ function isArchiveAvailable(entry) {
         return false;
     }
     
+    // 工程机器人门槛（数据驱动 unlockCondition.bots：专属条目只在拥有足量机器人期间可见）
+    if (entry.unlockCondition && entry.unlockCondition.bots) {
+        const botCount = (MemorySanctuary.state && MemorySanctuary.state.resources.engineeringBots) || 0;
+        if (botCount < entry.unlockCondition.bots) {
+            return false;
+        }
+    }
+    
     if (!entry.ngPlusExclusive) return true;
     const ngData = getNGPlusData();
     

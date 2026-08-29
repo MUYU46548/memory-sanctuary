@@ -216,6 +216,7 @@ function renderDispatchGuardians(expData) {
     
     const guardians = MemorySanctuary.data.guardians;
     const now = MemorySanctuary.state.week;
+    const exp = MemorySanctuary.state.exploration; // 疲劳分支需要读取 fatigue 表
     
     // Food cost display with current food
     const foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);

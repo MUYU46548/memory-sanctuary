@@ -56,6 +56,10 @@ function showTutorialStep() {
     // 高亮目标（同步滚动到目标，强制重排后再测量——smooth 异步滚动会在滚动完成前测量到旧坐标，导致高亮框/气泡错位）
     let rect = null;
     if (step.target) {
+        // 目标位于未激活标签页内时先切过去（否则目标 display:none，高亮框只能"对着空气"居中）
+        if (step.tab && typeof switchActionTab === 'function') {
+            switchActionTab(step.tab);
+        }
         const target = document.querySelector(step.target);
         if (target) {
             // 目标不可见（display:none / 零尺寸）时隐藏高亮框，避免定位到左上角「对着空气」
@@ -156,6 +160,8 @@ function endTutorial() {
     if (overlay) overlay.classList.add('hidden');
     tutorialActive = false;
     window.removeEventListener('resize', onTutorialResize);
+    // 引导中可能切到了存储室/守护者页，结束后回到归档页作为主操作起点
+    if (typeof switchActionTab === 'function') switchActionTab('archive');
     localStorage.setItem('memory-sanctuary-tutorial', 'completed');
     addLog('新手引导已完成。愿你的选择得到善待。', 'system');
 
