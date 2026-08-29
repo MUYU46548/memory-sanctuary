@@ -1165,6 +1165,83 @@
         }
       ],
       "foodCost": 8
+    },
+    {
+      "id": "exp_bot_depot",
+      "name": "自动化工程库房",
+      "description": "圣所地下的废弃工程库房。工程机器人可自主巡检，回收昔日备件与能源模块——无需守护者冒险外勤。",
+      "difficulty": 1,
+      "duration": 1,
+      "maxAttempts": 99,
+      "requiredSkills": [],
+      "requiredBots": 1,
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "energy",
+          "amount": 14,
+          "probability": 0.4,
+          "message": "机器人从货架上取下一枚满电的能源模块。"
+        },
+        {
+          "type": "resource",
+          "resource": "media",
+          "amount": 10,
+          "probability": 0.35,
+          "message": "回收了一批封装完好的光学存储盘。"
+        },
+        {
+          "type": "narrative",
+          "probability": 0.25,
+          "message": "库房的日志终端还亮着，记录着圣所建造者最后的值班。",
+          "revealsClue": "arch_bot_log_01"
+        },
+        {
+          "type": "risk",
+          "resource": "environment",
+          "amount": -4,
+          "probability": 0,
+          "message": ""
+        }
+      ],
+      "availableAfter": 20,
+      "foodCost": 0,
+      "botOnly": true
+    },
+    {
+      "id": "exp_bot_reactor_core",
+      "name": "深层反应堆核心",
+      "description": "地表下更深处的旧反应堆。只有工程机器人编队能承受那里的辐射与高温，取回残余的燃料棒。",
+      "difficulty": 3,
+      "duration": 2,
+      "maxAttempts": 99,
+      "requiredSkills": [],
+      "requiredBots": 3,
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "energy",
+          "amount": 38,
+          "probability": 0.45,
+          "message": "机器人从堆芯夹出了仍能使用的燃料棒，能源储备大幅回升。"
+        },
+        {
+          "type": "narrative",
+          "probability": 0.3,
+          "message": "反应堆的控制室墙上，刻着一行建造者的字：「愿后来者不必再走入黑暗。」",
+          "revealsClue": "arch_bot_log_02"
+        },
+        {
+          "type": "risk",
+          "resource": "environment",
+          "amount": -10,
+          "probability": 0.25,
+          "message": "辐射泄漏迫使机器人紧急撤离，环境储备受损。"
+        }
+      ],
+      "availableAfter": 30,
+      "foodCost": 0,
+      "botOnly": true
     }
   ]
 }

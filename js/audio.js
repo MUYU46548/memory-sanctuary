@@ -681,7 +681,7 @@ window.AudioSystem = (() => {
     
     // 播放机械启动音（项目面板/应急协议）
     function playMechanicalEngage() {
-        if (!ctx || isMuted) return;
+        if (!ctx || isMuted || sfxMuted || globalMuted) return;
         resume();
         
         const now = ctx.currentTime;
@@ -726,7 +726,7 @@ window.AudioSystem = (() => {
 
     // 播放应急协议腐化音效（诡异/失谐/腐化质感）
     function playEmergencyCorrupt() {
-        if (!ctx || isMuted) return;
+        if (!ctx || isMuted || sfxMuted || globalMuted) return;
         resume();
         
         const now = ctx.currentTime;

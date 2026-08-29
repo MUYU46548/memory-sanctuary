@@ -6690,3 +6690,34 @@ button.archive-btn.recommended {
     opacity: 0.5;
     cursor: not-allowed;
 }
+
+/* 机器人日志入口按钮 */
+.bots-log-btn {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 6px;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.bots-log-btn:hover {
+    background: var(--amber-bg-soft, rgba(201, 168, 124, 0.12));
+    border-color: var(--amber-primary, #c9a87c);
+}
+
+/* 勘探派遣：工程机器人协同加成提示 */
+.outcome-bot-bonus {
+    font-size: 0.75rem;
+    color: var(--amber-primary, #c9a87c);
+    background: var(--amber-bg-soft, rgba(201, 168, 124, 0.12));
+    border: 1px solid var(--amber-border, rgba(201, 168, 124, 0.4));
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+}

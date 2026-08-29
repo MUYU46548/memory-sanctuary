@@ -1197,6 +1197,7 @@ function renderEngineeringBotsPanel() {
         </div>
         ${isBlackout ? '<div class="bots-warning">⚠️ 能源不足，机器人停机中</div>' : ''}
         ${buildBtnHtml}
+        <button class="bots-log-btn hidden" id="bots-log-btn" title="查看工程机器人的运行日志（位于「建筑与工程」存储室）">📋 机器人日志</button>
     `;
 
     const buildBtn = document.getElementById('bots-build-btn');
@@ -1205,6 +1206,30 @@ function renderEngineeringBotsPanel() {
         buildBtn.addEventListener('click', () => {
             if (typeof startPanelBotBuild === 'function') startPanelBotBuild();
         });
+    }
+
+    // 机器人专属日志入口：拥有机器人且对应条目已解锁时，一键跳到建筑与工程存储室并高亮
+    const logBtn = document.getElementById('bots-log-btn');
+    if (logBtn) {
+        const hasLog = botCount >= 1; // arch_bot_log_01 需 1 台；arch_bot_log_02 需 3 台
+        if (hasLog) {
+            logBtn.classList.remove('hidden');
+            if (!logBtn._bound) {
+                logBtn._bound = true;
+                logBtn.addEventListener('click', () => {
+                    const logId = botCount >= 3 ? 'arch_bot_log_02' : 'arch_bot_log_01';
+                    if (typeof selectVault === 'function') selectVault(10);
+                    if (typeof switchActionTab === 'function') switchActionTab('archive');
+                    MemorySanctuary.recommendedArchiveId = logId;
+                    if (typeof renderAll === 'function') renderAll();
+                    if (typeof showTransientNotice === 'function') {
+                        showTransientNotice(`📋 已为你打开「建筑与工程」存储室，工程机器人日志在其中。`);
+                    }
+                });
+            }
+        } else {
+            logBtn.classList.add('hidden');
+        }
     }
 
     container.title = botCount > 0

@@ -840,9 +840,26 @@ const ENGINEERING_BOTS_CONFIG = {
     maintenanceCostPerBot: 1,  // 每回合每机器人消耗能源
     decayReductionPerBot: 0.10,  // 每机器人减少 10% 衰减
     maxDecayReduction: 0.50,  // 最多减少 50% 衰减
+    // 探索放大器：机器人自主巡检协同，提升地表勘探产出、压低风险
+    exploreYieldPerBot: 0.06,   // 每台 +6% 资源收益
+    exploreRiskCutPerBot: 0.03, // 每台 -3% 风险概率
+    maxExploreYield: 0.30,      // 资源收益加成上限 +30%
+    maxExploreRiskCut: 0.15,    // 风险减免上限 -15%
+    fatigueGuardPerBot: 0.5,    // 每台减免 50% 疲劳周数（机器人接替高风险外勤）
     buildCost: { energy: 30, media: 20 },  // 建造成本
     buildDuration: 3  // 建造耗时 3 周
 };
+
+/**
+ * 机器人是否在线（能源足以支付维护）
+ * 衰减减免 / 探索放大 / 疲劳守护 都只在在线时生效
+ */
+function areBotsOnline() {
+    const botCount = getEngineeringBotCount();
+    if (botCount <= 0) return false;
+    const maintenanceCost = botCount * ENGINEERING_BOTS_CONFIG.maintenanceCostPerBot;
+    return MemorySanctuary.state.resources.energy >= maintenanceCost;
+}
 
 /**
  * 获取当前工程机器人数量
@@ -855,18 +872,29 @@ function getEngineeringBotCount() {
  * 计算工程机器人提供的衰减减免
  */
 function getBotDecayReduction() {
+    if (!areBotsOnline()) return 0;
+    
     const botCount = getEngineeringBotCount();
-    if (botCount <= 0) return 0;
-    
-    const state = MemorySanctuary.state;
-    // 检查能源是否足够维护
-    const maintenanceCost = botCount * ENGINEERING_BOTS_CONFIG.maintenanceCostPerBot;
-    if (state.resources.energy < maintenanceCost) {
-        return 0;  // 能源不足，机器人停机
-    }
-    
     const reduction = botCount * ENGINEERING_BOTS_CONFIG.decayReductionPerBot;
     return Math.min(reduction, ENGINEERING_BOTS_CONFIG.maxDecayReduction);
+}
+
+/**
+ * 工程机器人对地表勘探的协同加成（在线时生效）
+ * 返回 { yieldBonus, riskCut }：资源收益加成、风险概率减免（均为 0~1 比例）
+ */
+function getBotExploreBonus() {
+    if (!areBotsOnline()) return { yieldBonus: 0, riskCut: 0 };
+    const botCount = getEngineeringBotCount();
+    const yieldBonus = Math.min(
+        botCount * ENGINEERING_BOTS_CONFIG.exploreYieldPerBot,
+        ENGINEERING_BOTS_CONFIG.maxExploreYield
+    );
+    const riskCut = Math.min(
+        botCount * ENGINEERING_BOTS_CONFIG.exploreRiskCutPerBot,
+        ENGINEERING_BOTS_CONFIG.maxExploreRiskCut
+    );
+    return { yieldBonus, riskCut };
 }
 
 /**
@@ -2035,6 +2063,7 @@ const TUTORIAL_STEPS = [
     },
     {
         target: '#entry-list',
+        tab: 'archive',
         text: '这里是待归档条目列表。\n\n每条条目都有录入成本（能源+介质）和过期时间。资源充足时请点击「录入归档」保存它们。\n\n⚠️ 过期的条目将永远消失！',
         position: 'left'
     },

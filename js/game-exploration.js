@@ -56,9 +56,10 @@ function openExplorePanel() {
         const dispatchEl = document.getElementById('explore-dispatch');
         const firstAvailable = (MemorySanctuary.data.explorations || []).find(e => {
             const now = MemorySanctuary.state.week;
-            const completed = isExplorationCompleted(e.id);
             const exp = MemorySanctuary.state.exploration;
-            return !(exp.deployedUntil > now) && !completed && (!e.availableAfter || now >= e.availableAfter);
+            const botReq = e.requiredBots || 0;
+            const botsMet = (MemorySanctuary.state.resources.engineeringBots || 0) >= botReq;
+            return !(exp.deployedUntil > now) && !completed && (!e.availableAfter || now >= e.availableAfter) && botsMet;
         });
         if (firstAvailable) {
             const item = document.querySelector(`.explore-item[data-exp-id="${firstAvailable.id}"]`);
@@ -114,14 +115,21 @@ function renderExploreList() {
         const completed = isExplorationCompleted(expData.id);
         if (completed) item.classList.add('completed');
 
-        // Check if exploration is available this week
-        const available = !expData.availableAfter || now >= expData.availableAfter;
+        // Check if exploration is available this week AND meets robot requirement
+        const botReq = expData.requiredBots || 0;
+        const botsHave = MemorySanctuary.state.resources.engineeringBots || 0;
+        const botsMet = botsHave >= botReq;
+        const available = (!expData.availableAfter || now >= expData.availableAfter) && botsMet;
         if (!available) item.classList.add('locked');
 
         const difficultyStars = '◆'.repeat(expData.difficulty) + '◇'.repeat(3 - expData.difficulty);
 
         const completedBadge = completed ? '<span class="explore-item-completed-badge"> ✓ 已完成</span>' : '';
-        const lockedBadge = !available ? `<span class="explore-item-locked-badge"> 🔒 第${expData.availableAfter}周解锁</span>` : '';
+        const lockedBadge = !available
+            ? (botReq > 0 && !botsMet
+                ? `<span class="explore-item-locked-badge"> 🔧 需工程机器人 ${botReq} 台（当前 ${botsHave}）</span>`
+                : `<span class="explore-item-locked-badge"> 🔒 第${expData.availableAfter}周解锁</span>`)
+            : '';
         const lastResult = exp.explorationLog && exp.explorationLog.find(l => l.id === expData.id);
         const lastResultText = lastResult ? `<div class="explore-item-last-result">上次：${lastResult.resultText}</div>` : '';
 
@@ -287,6 +295,18 @@ function renderOutcomeBars(expData) {
     const container = document.getElementById('dispatch-outcomes');
     container.innerHTML = '';
 
+    // 机器人协同加成提示（在线时显示，让玩家直观看到机器人的作用）
+    const botBonus = (typeof getBotExploreBonus === 'function') ? getBotExploreBonus() : { yieldBonus: 0, riskCut: 0 };
+    if (botBonus.yieldBonus > 0 || botBonus.riskCut > 0) {
+        const botNote = document.createElement('div');
+        botNote.className = 'outcome-bot-bonus';
+        const parts = [];
+        if (botBonus.yieldBonus > 0) parts.push(`资源收益 +${Math.round(botBonus.yieldBonus * 100)}%`);
+        if (botBonus.riskCut > 0) parts.push(`风险 -${Math.round(botBonus.riskCut * 100)}%`);
+        botNote.innerHTML = `🔧 工程机器人协同：${parts.join(' · ')}`;
+        container.appendChild(botNote);
+    }
+
     expData.outcomes.forEach(o => {
         const prob = calculateOutcomeProbability(o, expData);
         const bar = document.createElement('div');
@@ -310,10 +330,12 @@ function renderOutcomeBars(expData) {
 function calculateOutcomeProbability(outcome, expData) {
     let prob = outcome.probability;
     const matchedSkills = countMatchedSkills(expData);
+    // 工程机器人协同加成（在线时生效）：提升资源概率、压低风险概率
+    const botBonus = (typeof getBotExploreBonus === 'function') ? getBotExploreBonus() : { yieldBonus: 0, riskCut: 0 };
     if (outcome.type === 'risk') {
-        prob = Math.max(0.02, prob - matchedSkills * 0.04);
+        prob = Math.max(0.02, prob - matchedSkills * 0.04 - botBonus.riskCut);
     } else if (outcome.type === 'resource') {
-        prob = Math.min(0.6, prob + matchedSkills * 0.05);
+        prob = Math.min(0.6, prob + matchedSkills * 0.05 + botBonus.yieldBonus);
     }
     // 食物归零惩罚：资源型结果概率降低
     if (MemorySanctuary.state.resources.food <= 0 && outcome.type === 'resource') {
@@ -543,18 +565,31 @@ function applyExplorationResult(outcome, expData) {
 
     // Layer 4: Risk consequences — fatigue + potential mood penalty
     if (outcome.type === 'risk') {
+        // 工程机器人疲劳守护：每台减免 50% 疲劳周数（接替高风险外勤），最低保留 1 周
+        const botCount = (typeof getEngineeringBotCount === 'function') ? getEngineeringBotCount() : 0;
+        const fatigueGuard = (typeof ENGINEERING_BOTS_CONFIG !== 'undefined') ? ENGINEERING_BOTS_CONFIG.fatigueGuardPerBot : 0;
+        const online = (typeof areBotsOnline === 'function') ? areBotsOnline() : false;
+        const baseFatigueWeeks = 2;
+        const fatigueWeeks = online
+            ? Math.max(1, Math.round(baseFatigueWeeks * (1 - fatigueGuard * botCount)))
+            : baseFatigueWeeks;
+
         selectedGuardians.forEach(gid => {
-            // Fatigue: cannot deploy for 2 weeks
+            // Fatigue: cannot deploy for fatigueWeeks weeks
             if (!MemorySanctuary.state.exploration.fatigue) {
                 MemorySanctuary.state.exploration.fatigue = {};
             }
-            MemorySanctuary.state.exploration.fatigue[gid] = MemorySanctuary.state.week + 2;
+            MemorySanctuary.state.exploration.fatigue[gid] = MemorySanctuary.state.week + fatigueWeeks;
 
             // 50% chance of mood penalty
             if (Math.random() < 0.5) {
                 adjustGuardianMood(gid, -1);
             }
         });
+
+        if (online && fatigueWeeks < baseFatigueWeeks) {
+            addLog(`🔧 工程机器人接替了部分高风险外勤，守护者疲劳减轻（${fatigueWeeks} 周）。`, 'system');
+        }
     }
 
     // Layer 3: Narrative reveals clue
