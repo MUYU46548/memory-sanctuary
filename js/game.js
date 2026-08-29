@@ -222,6 +222,7 @@ function onTimeAdvanced(weeks) {
         // 且原 override 段引用未定义的 renderSaveSlots 抛 ReferenceError 导致整个 override 失效——
         // processActiveProjects 从未被调用，项目永远「建设中」。故改为函数体内直接调用。
         if (typeof processActiveProjects === 'function') processActiveProjects();
+        if (typeof processBotBuild === 'function') processBotBuild();
         if (typeof processFinaleEvents === 'function') processFinaleEvents();
         if (weeks > 0 && typeof checkNGPlusPersonalEvents === 'function') checkNGPlusPersonalEvents();
 
@@ -915,9 +916,59 @@ function buildEngineeringBot() {
     
     addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。`, 'success');
     if (typeof AudioSystem !== 'undefined') AudioSystem.playProjectComplete();
-    
+
     renderAll();
     return true;
+}
+
+/**
+ * 面板追建机器人：完成「建造工程机器人」项目后解锁，从机器人面板排期建造
+ * 首台由项目提供；此后每台按 ENGINEERING_BOTS_CONFIG.buildCost 扣费、buildDuration 周建成
+ */
+function startPanelBotBuild() {
+    const state = MemorySanctuary.state;
+    if (!state) return false;
+
+    if (!state.completedProjects || !state.completedProjects.includes('proj_bot_factory')) {
+        addLog('需要先完成「建造工程机器人」项目，才能批量建造机器人。', 'system');
+        return false;
+    }
+    if (getEngineeringBotCount() >= ENGINEERING_BOTS_CONFIG.maxBots) {
+        addLog('工程机器人数量已达上限（5台）。', 'system');
+        return false;
+    }
+    if (state.panelBotBuild) return false;
+
+    const cost = ENGINEERING_BOTS_CONFIG.buildCost;
+    if (state.resources.energy < cost.energy || state.resources.media < cost.media) {
+        addLog(`资源不足，无法开始建造工程机器人（需要 ◈${cost.energy} ◇${cost.media}）。`, 'system');
+        return false;
+    }
+
+    state.resources.energy -= cost.energy;
+    state.resources.media -= cost.media;
+    state.panelBotBuild = { remainingWeeks: ENGINEERING_BOTS_CONFIG.buildDuration };
+    addLog(`🔧 开始建造工程机器人（${ENGINEERING_BOTS_CONFIG.buildDuration} 周后完成）。`, 'system');
+    renderAll();
+    return true;
+}
+
+/**
+ * 每周推进面板机器人建造（挂载于 onTimeAdvanced，随 processActiveProjects 一同调用）
+ */
+function processBotBuild() {
+    const state = MemorySanctuary.state;
+    if (!state || !state.panelBotBuild) return;
+
+    state.panelBotBuild.remainingWeeks--;
+    if (state.panelBotBuild.remainingWeeks <= 0) {
+        state.panelBotBuild = null;
+        state.resources.engineeringBots = (state.resources.engineeringBots || 0) + 1;
+        addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。每台减少 10% 衰减，每回合消耗 2 能源。`, 'success');
+        if (typeof AudioSystem !== 'undefined' && AudioSystem.playProjectComplete) {
+            AudioSystem.playProjectComplete();
+        }
+    }
 }
 
 function triggerGameOver(reason) {

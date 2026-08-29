@@ -1131,7 +1131,25 @@ function renderEngineeringBotsPanel() {
     const maintenanceCost = botCount * 2;
     const reduction = (typeof getBotDecayReduction === 'function') ? getBotDecayReduction() : 0;
     const isBlackout = state.botBlackoutLogged;
-    
+
+    // 面板追建按钮状态（首台由「建造工程机器人」项目提供，此后可在此排期建造）
+    let buildBtnHtml = '';
+    if (!state.gameOver) {
+        const cfg = (typeof ENGINEERING_BOTS_CONFIG !== 'undefined') ? ENGINEERING_BOTS_CONFIG : { maxBots: 5, buildCost: { energy: 30, media: 20 }, buildDuration: 3 };
+        const projectDone = (state.completedProjects || []).includes('proj_bot_factory');
+        const building = state.panelBotBuild;
+        if (building) {
+            buildBtnHtml = `<button class="bots-build-btn" disabled title="建造进行中，随周推进结算">🔧 建造中 · 还需 ${building.remainingWeeks} 周</button>`;
+        } else if (botCount >= cfg.maxBots) {
+            buildBtnHtml = `<button class="bots-build-btn" disabled>已达上限（${cfg.maxBots} 台）</button>`;
+        } else if (!projectDone) {
+            buildBtnHtml = `<button class="bots-build-btn" disabled title="完成「建造工程机器人」项目后解锁批量建造">🔒 完成「建造工程机器人」项目后解锁</button>`;
+        } else {
+            const affordable = state.resources.energy >= cfg.buildCost.energy && state.resources.media >= cfg.buildCost.media;
+            buildBtnHtml = `<button class="bots-build-btn" id="bots-build-btn" ${affordable ? '' : 'disabled'} title="每台 ◈${cfg.buildCost.energy} ◇${cfg.buildCost.media}，${cfg.buildDuration} 周建成">${affordable ? `🔨 建造机器人（◈${cfg.buildCost.energy} ◇${cfg.buildCost.media} · ${cfg.buildDuration}周）` : '资源不足'}</button>`;
+        }
+    }
+
     container.innerHTML = `
         <div class="bots-panel-header" title="工程机器人：自动降低圣所资源衰减。维护成本每周从能源扣除；能源不足时停机（衰减减免归零）。">
             <span class="bots-panel-icon">🔧</span>
@@ -1149,7 +1167,20 @@ function renderEngineeringBotsPanel() {
             </div>
         </div>
         ${isBlackout ? '<div class="bots-warning">⚠️ 能源不足，机器人停机中</div>' : ''}
+        ${buildBtnHtml}
     `;
+
+    const buildBtn = document.getElementById('bots-build-btn');
+    if (buildBtn && !buildBtn._bound) {
+        buildBtn._bound = true;
+        buildBtn.addEventListener('click', () => {
+            if (typeof startPanelBotBuild === 'function') startPanelBotBuild();
+        });
+    }
+
+    container.title = botCount > 0
+        ? `当前 ${botCount} 台机器人运行中，提供 ${Math.round(reduction * 100)}% 衰减减免（每周维护 ◈${maintenanceCost} 能源）。`
+        : '尚未部署工程机器人。完成「建造工程机器人」项目获得首台后，可在此继续建造。';
     container.title = botCount > 0
         ? `当前 ${botCount} 台机器人运行中，提供 ${Math.round(reduction * 100)}% 衰减减免（每周维护 ◈${maintenanceCost} 能源）。`
         : '尚未部署工程机器人。可在「项目」中建造以减缓资源衰减。';

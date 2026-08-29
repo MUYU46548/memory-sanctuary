@@ -89,7 +89,6 @@
       "description": "在圣所内种植食物，补充储备。",
       "availableAfter": 2,
       "duration": 5,
-      "repeatable": true,
       "cost": {
         "energy": 15,
         "media": 10
@@ -214,10 +213,9 @@
     {
       "id": "proj_bot_factory",
       "name": "建造工程机器人",
-      "description": "建造一台工程机器人，自动维护圣所，减少资源衰减。每台机器人每回合消耗 2 能源，减少 10% 衰减（最多 50%）。",
+      "description": "建立机器人建造程序，并建造第一台工程机器人。此后可在守护者页面的机器人面板中继续建造（每台消耗资源，3 周/台）。",
       "availableAfter": 6,
       "duration": 3,
-      "repeatable": true,
       "cost": {
         "energy": 30,
         "media": 20

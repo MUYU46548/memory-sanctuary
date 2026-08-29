@@ -31,6 +31,7 @@ function saveGame(slot) {
             exploration: { ...MemorySanctuary.state.exploration },
             activeProjects: [...MemorySanctuary.state.activeProjects],
             completedProjects: [...MemorySanctuary.state.completedProjects],
+            panelBotBuild: MemorySanctuary.state.panelBotBuild ? { ...MemorySanctuary.state.panelBotBuild } : null,
             ongoingEffects: [...(MemorySanctuary.state.ongoingEffects || [])],
             resourceChanges: { ...(MemorySanctuary.state.resourceChanges || { energy: 0, media: 0, environment: 0, food: 0 }) },
             aiAssistantActive: !!MemorySanctuary.state.aiAssistantActive,
@@ -148,6 +149,9 @@ function loadGame(slot) {
         MemorySanctuary.state.exploration = { ...(saveData.state.exploration || {}) };
         MemorySanctuary.state.activeProjects = [...(saveData.state.activeProjects || [])];
         MemorySanctuary.state.completedProjects = [...(saveData.state.completedProjects || [])];
+        MemorySanctuary.state.panelBotBuild = (saveData.state.panelBotBuild && typeof saveData.state.panelBotBuild === 'object')
+            ? { remainingWeeks: Math.max(0, saveData.state.panelBotBuild.remainingWeeks || 0) }
+            : null;
         MemorySanctuary.state.ongoingEffects = [...(saveData.state.ongoingEffects || [])];
         MemorySanctuary.state.resourceChanges = { ...(saveData.state.resourceChanges || { energy: 0, media: 0, environment: 0, food: 0 }) };
         MemorySanctuary.state.aiAssistantActive = !!saveData.state.aiAssistantActive;
@@ -665,7 +669,8 @@ function sanitizeImportedSave(raw) {
             energy: intClamp(s.resources?.energy, 0, 999, 0),
             media: intClamp(s.resources?.media, 0, 999, 0),
             environment: intClamp(s.resources?.environment, 0, 999, 0),
-            food: intClamp(s.resources?.food, 0, 999, 0)
+            food: intClamp(s.resources?.food, 0, 999, 0),
+            engineeringBots: intClamp(s.resources?.engineeringBots, 0, 5, 0)
         },
         week: intClamp(s.week, 1, 48, 1),
         chapter: intClamp(s.chapter, 1, 12, 1),
@@ -681,7 +686,11 @@ function sanitizeImportedSave(raw) {
         unlockedBonuses: arr(s.unlockedBonuses).filter(x => x && typeof x === 'object'),
         exploration: obj(s.exploration),
         activeProjects: arr(s.activeProjects).filter(x => x && typeof x === 'object'),
-        completedProjects: arr(s.completedProjects).filter(x => x && typeof x === 'object'),
+        // completedProjects 存的是项目 id 字符串（此前误按对象过滤，导入后项目完成记录被清空）
+        completedProjects: arr(s.completedProjects).filter(x => typeof x === 'string'),
+        panelBotBuild: (s.panelBotBuild && typeof s.panelBotBuild === 'object')
+            ? { remainingWeeks: intClamp(s.panelBotBuild.remainingWeeks, 0, 10, 0) }
+            : null,
         ongoingEffects: arr(s.ongoingEffects),
         resourceChanges: obj(s.resourceChanges),
         aiAssistantActive: !!s.aiAssistantActive,
