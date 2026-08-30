@@ -2714,6 +2714,13 @@ function checkAchievements(context) {
                 if (unlockedCount >= c.value) earned = true;
                 break;
             }
+            case 'all_achievements': {
+                // 完美收藏家：解锁除自身外的全部成就
+                const allAchs = MemorySanctuary.data.achievements || [];
+                const unlockedList = getUnlockedAchievements();
+                if (allAchs.length > 0 && unlockedList.length >= allAchs.length - 1) earned = true;
+                break;
+            }
             case 'custom': {
                 // 丰衣足食：连续30周食物>0
                 if (c.value === 'never_starve_30' && state.weeksWithoutStarvation >= 30) earned = true;
@@ -2740,6 +2747,16 @@ function checkAchievements(context) {
                     const done = state.exploration && state.exploration.completedExplorations
                         ? Object.keys(state.exploration.completedExplorations).length : 0;
                     if (total > 0 && done >= total) earned = true;
+                }
+                // 归档专家：12 间存储室各归档至少 1 条条目
+                if (c.value === 'all_vaults_theme') {
+                    const completedVaults = new Set();
+                    (state.completedArchives || []).forEach(id => {
+                        const entry = (MemorySanctuary.data.archives || []).find(a => a.id === id);
+                        if (entry && entry.vault !== undefined && entry.vault !== null) completedVaults.add(entry.vault);
+                    });
+                    const vaultList = MemorySanctuary.data.vaults || [];
+                    if (vaultList.length > 0 && vaultList.every(v => completedVaults.has(v.id))) earned = true;
                 }
                 // 孤注一掷：激活过紧急勘探协议
                 if (c.value === 'emergency_explore_used' && state.emergencyExploreUsed) earned = true;

@@ -481,11 +481,11 @@
     {
       "id": "memory_keeper",
       "name": "记忆收集者",
-      "description": "解锁全部NG+专属条目",
+      "description": "解锁16条NG+专属条目",
       "icon": "🧠",
       "condition": {
         "type": "unlock_ng_entries",
-        "value": 25
+        "value": 16
       }
     },
     {
@@ -561,13 +561,13 @@
     {
       "id": "all_archives_union",
       "name": "万卷归藏",
-      "description": "跨周目累计归档100条记忆碎片",
+      "description": "跨周目累计归档过全部记忆碎片",
       "icon": "📚",
       "category": "collection",
       "hidden": false,
       "condition": {
         "type": "custom",
-        "value": 100
+        "value": "all_archives_union"
       }
     },
     {
@@ -609,7 +609,7 @@
     {
       "id": "theme_master",
       "name": "归档专家",
-      "description": "在 12 间存储室中各归档至少 1 条主题匹配条目。",
+      "description": "在全部 12 间存储室中各归档至少 1 条记忆碎片。",
       "icon": "📚",
       "category": "collection",
       "hidden": false,

@@ -2994,7 +2994,10 @@
       "description": "在整理归档时，你发现了一些不属于这个轮回的记忆碎片。它们来自上一个周目的圣所……",
       "trigger": {
         "type": "ng_plus",
-        "playthroughMin": 2
+        "playthroughMin": 2,
+        "weekMin": 20,
+        "weekMax": 32,
+        "probability": 0.15
       },
       "choices": [
         {

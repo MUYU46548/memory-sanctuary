@@ -59,25 +59,26 @@
           "type": "resource",
           "resource": "food",
           "amount": 18,
+          "probability": 0.4,
           "message": "在枯木根系下发现了可食用的菌落和浆果丛。"
         },
         {
           "type": "resource",
           "resource": "media",
           "amount": 24,
-          "probability": 0.35,
+          "probability": 0.21,
           "message": "在森林深处的实验室中找到了种子基因库。"
         },
         {
           "type": "resource",
           "resource": "environment",
           "amount": 12,
-          "probability": 0.25,
+          "probability": 0.15,
           "message": "发现了一处天然水源，净化后补充了环境储备。"
         },
         {
           "type": "narrative",
-          "probability": 0.25,
+          "probability": 0.15,
           "message": "森林沉默不语。土壤中残留的孢子提醒着生态崩溃的代价。",
           "revealsClue": "arc_ecology_01"
         },
@@ -85,7 +86,7 @@
           "type": "risk",
           "resource": "energy",
           "amount": -12,
-          "probability": 0.15,
+          "probability": 0.09,
           "message": "迷失在枯林中，消耗了大量能源才找到归路。"
         }
       ],
@@ -366,25 +367,26 @@
           "type": "resource",
           "resource": "food",
           "amount": 15,
+          "probability": 0.4,
           "message": "在废弃住宅的储藏室里找到了密封良好的罐头和干粮。"
         },
         {
           "type": "resource",
           "resource": "media",
           "amount": 17,
-          "probability": 0.35,
+          "probability": 0.21,
           "message": "在民居中找到了日记和家庭影像记录。"
         },
         {
           "type": "resource",
           "resource": "energy",
           "amount": 14,
-          "probability": 0.25,
+          "probability": 0.15,
           "message": "收集了分散的能源电池。"
         },
         {
           "type": "narrative",
-          "probability": 0.3,
+          "probability": 0.18,
           "message": "餐桌上还有未收拾的碗筷。末日来得比想象中更快。",
           "revealsClue": "arc_daily_01"
         },
@@ -392,7 +394,7 @@
           "type": "risk",
           "resource": "environment",
           "amount": -10,
-          "probability": 0.1,
+          "probability": 0.06,
           "message": "房屋结构不稳，撤退时损失了环境储备。"
         }
       ],
@@ -593,25 +595,26 @@
           "type": "resource",
           "resource": "food",
           "amount": 25,
+          "probability": 0.4,
           "message": "在灰绿之海的边缘采集到了藻类和贝类，足以支撑数周。"
         },
         {
           "type": "resource",
           "resource": "media",
           "amount": 30,
-          "probability": 0.35,
+          "probability": 0.21,
           "message": "在海岸带找到了海洋生物基因库。"
         },
         {
           "type": "resource",
           "resource": "environment",
           "amount": 18,
-          "probability": 0.25,
+          "probability": 0.15,
           "message": "回收了海水净化样本。"
         },
         {
           "type": "narrative",
-          "probability": 0.25,
+          "probability": 0.15,
           "message": "海面覆盖着一层灰绿色的膜。米莎说这是'最后的盛宴'——厌氧菌在吃同类的尸体。",
           "revealsClue": "arc_ocean_dead"
         },
@@ -619,7 +622,7 @@
           "type": "risk",
           "resource": "energy",
           "amount": -15,
-          "probability": 0.15,
+          "probability": 0.09,
           "message": "防护服被腐蚀，匆忙撤退中损失了能源。"
         }
       ],
@@ -641,25 +644,26 @@
           "type": "resource",
           "resource": "food",
           "amount": 22,
+          "probability": 0.4,
           "message": "村庄废墟中的地窖保存着完好的腌制食品和谷物储备。"
         },
         {
           "type": "resource",
           "resource": "media",
           "amount": 22,
-          "probability": 0.35,
+          "probability": 0.21,
           "message": "在废墟中找到了家庭影像记录。"
         },
         {
           "type": "resource",
           "resource": "energy",
           "amount": 18,
-          "probability": 0.25,
+          "probability": 0.15,
           "message": "收集了分散的能源电池。"
         },
         {
           "type": "narrative",
-          "probability": 0.3,
+          "probability": 0.18,
           "message": "土壤已经粉末化。洛恩说这不是风化，是死亡。",
           "revealsClue": "arc_soil_dust"
         },
@@ -667,7 +671,7 @@
           "type": "risk",
           "resource": "environment",
           "amount": -12,
-          "probability": 0.1,
+          "probability": 0.06,
           "message": "尘暴突然加剧，撤退时损失了环境储备。"
         }
       ],

@@ -342,7 +342,8 @@ function renderOutcomeBars(expData) {
 
 
 function calculateOutcomeProbability(outcome, expData) {
-    let prob = outcome.probability;
+    // 缺 probability 按 0 处理，避免 undefined 参与算术产生 NaN、污染整条累进概率链
+    let prob = outcome.probability || 0;
     const matchedSkills = countMatchedSkills(expData);
     // 工程机器人协同加成（在线时生效）：提升资源概率、压低风险概率
     const botBonus = (typeof getBotExploreBonus === 'function') ? getBotExploreBonus() : { yieldBonus: 0, riskCut: 0 };
