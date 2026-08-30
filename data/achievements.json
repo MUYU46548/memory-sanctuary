@@ -481,11 +481,11 @@
     {
       "id": "memory_keeper",
       "name": "记忆收集者",
-      "description": "解锁全部NG+专属条目",
+      "description": "解锁全部16条通过剧情自动解锁的NG+专属条目",
       "icon": "🧠",
       "condition": {
         "type": "unlock_ng_entries",
-        "value": 27
+        "value": 16
       }
     },
     {
