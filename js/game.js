@@ -388,9 +388,16 @@ function applyMoralePressure() {
     
     // 综合压力 = max(资源紧张) + 时间压力（封顶 1.0）
     const totalPressure = Math.min(1.0, Math.max(foodTension, energyTension, envTension) + timeTension);
-    
+
     // 压力转化为心情下降（每回合 -0.2 ~ -1.0）
-    const pressureDelta = -Math.round(totalPressure * 10) / 10; // 0.1步长
+    let pressureDelta = -Math.round(totalPressure * 10) / 10; // 0.1步长
+
+    // 科技树 moodDecaySlow（守护学派）：好感自然衰减减速（项目系统不碰好感衰减，独立来源）
+    // 减速后重新取整，保持 0.1 步长的设计口径
+    const techEnv = (typeof getTechEnvBonus === 'function') ? getTechEnvBonus() : null;
+    if (techEnv && techEnv.moodDecaySlow > 0) {
+        pressureDelta = Math.round(pressureDelta * (1 - techEnv.moodDecaySlow) * 10) / 10;
+    }
     
     // 追踪心情变化（用于音效触发）
     let anyMoodUp = false;
@@ -1644,14 +1651,16 @@ function guardianBoostSupply() {
     state.resourceChanges.food = (state.resourceChanges.food || 0) - foodCost;
     state.lastSupplyWeek = state.week;
     
-    // 所有守护者心情 +2（封顶10），性格权重影响
+    // 所有守护者心情 +2（封顶10），性格权重影响；科技树 supplyBonus（节用学派）提升配发收益
     const weights = getFoodMoodWeight();
+    const techEnv = (typeof getTechEnvBonus === 'function') ? getTechEnvBonus() : { supplyBonus: 0 };
+    const supplyMultiplier = 1 + (techEnv.supplyBonus || 0);
     Object.keys(state.guardianMoods || {}).forEach(gid => {
         const weight = weights[gid] || 1;
-        const gain = Math.round(2 * weight * 10) / 10;
+        const gain = Math.round(2 * weight * supplyMultiplier * 10) / 10;
         state.guardianMoods[gid] = Math.min(10, (state.guardianMoods[gid] || 0) + gain);
     });
-    
+
     addLog(`🎁 分发补给品：所有守护者心情提升（-${foodCost}食物）`, 'success');
     
     // 守护者反应
@@ -2073,6 +2082,12 @@ const TUTORIAL_STEPS = [
         position: 'top'
     },
     {
+        target: '#tech-panel',
+        tab: 'tech',
+        text: '这是科技研究面板（第 8 周起逐步解锁）。\n\n勘探 / 归档 / 环境三域各有一对互斥学说：选定一条路线后，同组另一分支将永久锁死，请按周目策略抉择。\n\n科技不直接产出资源（那是项目的职责），而是优化勘探收益、归档成本、士气与补给。',
+        position: 'left'
+    },
+    {
         target: '#explore-btn',
         text: '地表勘探可以派遣守护者外出搜寻物资与遗迹。\n\n不同地点产出不同资源，记得选择擅长对应技能的守护者。',
         position: 'top'
@@ -2179,14 +2194,13 @@ function initFuncBar() {
     }
 
     // 项目按钮
+    // 注：实际解锁由 data/projects.json 的 availableAfter 驱动（canStartProject）。
+    // 此处曾有 week<20 拦截，但因 ui.js initProjectPanel 也绑定了 click（面板照样打开），
+    // 拦截形同虚设、只留下一条误导日志，v0.2.4 移除以统一口径。
     const projectBtn = document.getElementById('project-btn');
     if (projectBtn) {
         projectBtn.addEventListener('click', () => {
             if (!MemorySanctuary.state) return;
-            if (MemorySanctuary.state.week < 20) {
-                addLog('圣所维护项目尚未解锁。', 'system');
-                return;
-            }
             openProjectPanel();
         });
     }
@@ -2488,14 +2502,23 @@ function showHelpModal() {
         {
             title: '⚖ 叙事互斥',
             content: `• 带 ⚖互斥 标记的条目之间存在叙事冲突：归档其中一条，另一条将永久消失
-• 悬停 ⚖互斥 标记可看到与哪条互斥
-• 互斥是剧情抉择：两条都读完简介后再决定保留哪一条`,
+• 研究「互斥洞察」科技后，⚖ 标记会直接显示互斥条目的名字
+• 未解锁科技时，悬停 ⚖ 徽章只有通用提示——互斥是剧情抉择，请读完两条简介再决定保留哪一条`,
+        },
+        {
+            title: '🔬 科技研究',
+            content: `• 第 8 周起可在「🔬 科技」标签页研究科技，消耗能源与介质
+• 三域各有互斥学说分支：勘探（高效↔守真）、归档（速录↔深研）、环境（守护↔节用）
+• 学说一选即锁：同组另一分支在本周目内永久不可研究
+• 科技效果与维护项目零重叠：优化勘探收益/风险、归档成本、隐藏叙事、好感衰减、补给收益
+• 与工程机器人加成独立叠加（如勘探收益：机器人 +6%/台，科技再 +15%）`,
         },
         {
             title: '🗺️ 进阶系统',
             content: `• 封印圣所（16 周起可预览，20 周后可触发）
 • 多周目奖励：守护者记忆继承 + 圣所状态保留
 • 圣所项目：投入资源换取持续增益
+• 🔬 科技树：三域互斥学说，优化勘探/归档/环境（第 8 周起）
 • 地表勘探：派出守护者获取资源
 • 应急协议：危急时使用非常规手段`,
             defaultOpen: false

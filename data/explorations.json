@@ -682,7 +682,8 @@
       "maxAttempts": 1,
       "requiredSkills": [
         "survival",
-        "exploration"
+        "exploration",
+        "documentation"
       ],
       "availableAfter": 29,
       "guardianSpecials": {
@@ -728,7 +729,8 @@
       "maxAttempts": 1,
       "requiredSkills": [
         "exploration",
-        "survival"
+        "survival",
+        "law"
       ],
       "availableAfter": 33,
       "outcomes": [
@@ -770,7 +772,8 @@
       "duration": 2,
       "maxAttempts": 1,
       "requiredSkills": [
-        "exploration"
+        "exploration",
+        "philosophy"
       ],
       "availableAfter": 37,
       "guardianSpecials": {
@@ -860,7 +863,10 @@
       "difficulty": 1,
       "duration": 1,
       "maxAttempts": 1,
-      "requiredSkills": [],
+      "requiredSkills": [
+        "engineering",
+        "documentation"
+      ],
       "availableAfter": 41,
       "guardianSpecials": {
         "lorn": "lorn_core"

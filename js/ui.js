@@ -45,6 +45,11 @@ function initUI() {
                 content.classList.remove('active');
             });
             document.getElementById('tab-' + tabName).classList.add('active');
+
+            // 科技面板打开反馈：机械咬合音（v0.2.4，参考「面板打开必须有动画+音效」教训）
+            if (tabName === 'tech' && typeof AudioSystem !== 'undefined' && AudioSystem.playMechanicalEngage) {
+                AudioSystem.playMechanicalEngage();
+            }
         });
     });
 
@@ -237,6 +242,7 @@ function renderAll() {
     renderSealTopbarButton();
     renderEngineeringBotsPanel();
     renderGuardianStoryProgress();
+    renderTechPanel();
     
     // Always keep resource changes up-to-date
     if (typeof recalculateResourceChanges === 'function') recalculateResourceChanges();
@@ -988,11 +994,20 @@ function renderArchiveEntries() {
             const isCompleted = isArchiveCompleted(entry.id);
             const isExpired = entry.expired;
             const canArchive = canArchiveEntry(entry);
-            
+
+            // 科技树归档加成（v0.2.4）：互斥洞察 / 线索织网
+            const techArchiveUi = (typeof getTechArchiveBonus === 'function') ? getTechArchiveBonus() : null;
+
             const item = document.createElement('div');
             item.className = `entry-item ${isCompleted ? 'archived' : ''} ${isExpired ? 'expired' : ''} ${entry.emergency ? 'emergency' : ''}`;
             
             const chainIndicator = (typeof getChainIndicator === 'function') ? getChainIndicator(entry) : '';
+            // 科技树「线索织网」(clueChainBoost)：高亮与已归档条目存在线索关联的待归档条目
+            const chainBoostActive = techArchiveUi && techArchiveUi.clueChain &&
+                entry.relatedArchives && entry.relatedArchives.length > 0 &&
+                entry.relatedArchives.some(id => isArchiveCompleted(id)) &&
+                !entry.relatedArchives.every(id => isArchiveCompleted(id));
+            if (chainBoostActive) item.classList.add('chain-active');
             
             // Calculate remaining weeks
             const remaining = entry.expiresAfter ? entry.expiresAfter - MemorySanctuary.state.week : null;
@@ -1013,9 +1028,15 @@ function renderArchiveEntries() {
             
             const themeIndicator = isThemeMatch !== null ? (isThemeMatch ? '<span class="theme-match" title="主题契合：此条目与当前存储室主题匹配，归档消耗 -20%">✓契合</span>' : '<span class="theme-mismatch" title="主题不合：此条目与当前存储室主题不符，归档消耗 +30%。改存到匹配主题的存储室可降低消耗">主题不合</span>') : '';
 
-            // 冲突警告
+            // 冲突警告（v0.2.4：具体互斥条目名由科技「互斥洞察」(conflictInsight) 开启；
+            // 未解锁时仅显示 ⚖ 徽章与通用提示，由玩家阅读简介自行推断）
             const conflict = (typeof checkArchiveConflict === 'function') ? checkArchiveConflict(entry.id) : null;
-            const conflictWarning = conflict ? `<span class="conflict-warning" title="叙事互斥：「${conflict.title}」与本条目互斥，归档此条目后它将永久消失。请先想好要保留哪一条">⚖互斥</span>` : '';
+            const hasInsight = !!(techArchiveUi && techArchiveUi.conflictInsight);
+            const conflictWarning = conflict
+                ? `<span class="conflict-warning${hasInsight ? ' insight' : ''}" title="${hasInsight
+                    ? `叙事互斥：「${conflict.title}」与本条目互斥，归档此条目后它将永久消失。请先想好要保留哪一条`
+                    : '检测到叙事互斥（研究「互斥洞察」科技可看到具体条目）。归档此条目后，互斥的另一方将永久消失。'}">⚖互斥${hasInsight ? `：「${esc(conflict.title)}」` : ''}</span>`
+                : '';
             
             // 隐藏内容标记
             const hiddenMarker = entry.hiddenContent ? '<span title="包含隐藏叙事">✨</span>' : '';
@@ -1235,6 +1256,120 @@ function renderEngineeringBotsPanel() {
     container.title = botCount > 0
         ? `当前 ${botCount} 台机器人运行中：衰减减免 ${Math.round(reduction * 100)}%、腐败侵蚀抑制 ${Math.round(reduction * 100)}%（每周维护 ◈${maintenanceCost} 能源，能源不足时停机）。拥有机器人期间，存储室会出现它们的专属日志条目。`
         : '尚未部署工程机器人。完成「建造工程机器人」项目获得首台后，可在此继续建造。';
+}
+
+// ==========================================
+// 科技研究面板（v0.2.4 通用科技树）
+// ==========================================
+
+/** 科技面板：按域分组渲染节点，学说互斥灰显，点击解锁走 unlockTech */
+function renderTechPanel() {
+    const listEl = document.getElementById('tech-list');
+    const summaryEl = document.getElementById('tech-doctrine-summary');
+    if (!listEl) return;
+
+    const state = MemorySanctuary.state;
+    if (!state) {
+        listEl.innerHTML = '';
+        return;
+    }
+    const techs = MemorySanctuary.data.tech || [];
+    if (techs.length === 0) {
+        listEl.innerHTML = '<p style="color: var(--text-dim); font-size: 0.8rem;">科技资料加载中……</p>';
+        return;
+    }
+    if (typeof initTechState === 'function') initTechState();
+
+    const domainNames = (MemorySanctuary.data.techMeta && MemorySanctuary.data.techMeta.domainNames) ||
+        { explore: '勘探域', archive: '归档域', env: '环境域' };
+    const doctrineNames = (MemorySanctuary.data.techMeta && MemorySanctuary.data.techMeta.doctrineNames) || {};
+    const domainOrder = ['explore', 'archive', 'env'];
+
+    // 学说路线摘要（已确定的分支）
+    if (summaryEl) {
+        const picks = Object.entries(state.techDoctrines || {})
+            .map(([key, id]) => {
+                const t = (typeof getTechById === 'function') ? getTechById(id) : null;
+                return t ? `${doctrineNames[key] || key}·「${t.name}」` : null;
+            })
+            .filter(Boolean);
+        summaryEl.innerHTML = picks.length > 0
+            ? `⚖ 已确定的学说路线：${picks.join('　·　')}（同组其余分支已锁死）`
+            : `⚖ 每域的学说分支互斥：选定一条路线后，同组其它分支将永久锁死。`;
+    }
+
+    listEl.innerHTML = '';
+
+    domainOrder.forEach(domain => {
+        const domainTechs = techs.filter(t => (t.domain || '') === domain);
+        if (domainTechs.length === 0) return;
+
+        const groupEl = document.createElement('div');
+        groupEl.className = 'tech-domain-group';
+
+        const groupHeader = document.createElement('div');
+        groupHeader.className = 'tech-domain-header';
+        groupHeader.textContent = domainNames[domain] || domain;
+        groupEl.appendChild(groupHeader);
+
+        domainTechs.forEach(tech => {
+            const check = (typeof getTechUnlockState === 'function') ? getTechUnlockState(tech.id) : { ok: false, reason: '' };
+            const unlocked = state.techUnlocked.includes(tech.id);
+            const isPickedDoctrine = !!(tech.doctrine && state.techDoctrines && state.techDoctrines[tech.doctrine] === tech.id);
+            const doctrineLocked = !unlocked && isDoctrineLocked(tech.doctrine, tech.id);
+
+            // 节点状态类：unlocked / available / locked（学说互斥单独标识）
+            let stateClass = 'locked';
+            if (unlocked) stateClass = 'unlocked';
+            else if (check.ok) stateClass = 'available';
+            else if (doctrineLocked) stateClass = 'doctrine-locked';
+
+            const cost = tech.cost || {};
+            const prereqNames = (tech.prereq || [])
+                .map(pid => (typeof getTechById === 'function' ? getTechById(pid) : null))
+                .filter(Boolean)
+                .map(t => t.name);
+
+            const node = document.createElement('div');
+            node.className = `tech-node ${stateClass}` + (isPickedDoctrine ? ' doctrine-picked' : '');
+
+            let badge = '';
+            if (unlocked) badge = '<span class="tech-badge unlocked">✓ 已解锁</span>';
+            else if (isPickedDoctrine) badge = '<span class="tech-badge unlocked">✓ 学说已定</span>';
+            else if (check.ok) badge = '<span class="tech-badge available">可研究</span>';
+            else badge = `<span class="tech-badge locked">${esc(check.reason)}</span>`;
+
+            node.innerHTML = `
+                <div class="tech-node-header">
+                    <span class="tech-node-icon">${tech.icon || '🔬'}</span>
+                    <span class="tech-node-name">${esc(tech.name)}</span>
+                    ${badge}
+                </div>
+                <div class="tech-node-desc">${esc(tech.description || '')}</div>
+                <div class="tech-node-meta">
+                    <span class="tech-effect" title="${esc(tech.effectText || '')}">◈效果：${esc(tech.effectText || '')}</span>
+                    <span class="tech-cost">成本 ◈${cost.energy || 0} ◇${cost.media || 0}</span>
+                    ${tech.unlockWeek ? `<span class="tech-week">第 ${tech.unlockWeek} 周解锁</span>` : ''}
+                    ${prereqNames.length > 0 ? `<span class="tech-prereq">前置：${esc(prereqNames.join('、'))}</span>` : ''}
+                    ${tech.doctrine ? `<span class="tech-doctrine">${esc(doctrineNames[tech.doctrine] || '学说')}分支${doctrineLocked ? '（互斥已锁）' : ''}</span>` : ''}
+                </div>
+            `;
+
+            if (check.ok) {
+                const btn = document.createElement('button');
+                btn.className = 'tech-unlock-btn';
+                btn.textContent = '🔬 研究';
+                btn.addEventListener('click', () => {
+                    if (typeof unlockTech === 'function') unlockTech(tech.id);
+                });
+                node.appendChild(btn);
+            }
+
+            groupEl.appendChild(node);
+        });
+
+        listEl.appendChild(groupEl);
+    });
 }
 
 // ==========================================

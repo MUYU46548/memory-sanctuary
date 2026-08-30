@@ -52,6 +52,7 @@ function openExplorePanel() {
         }
 
         // 默认选中第一个可用地点（避免玩家需要滑到列表底部才发现派遣区）
+        // 注：v0.2.4 修复——此处曾引用未定义变量 completed，默认选址逻辑每次都抛 ReferenceError 中断
         const placeholder = document.getElementById('explore-placeholder');
         const dispatchEl = document.getElementById('explore-dispatch');
         const firstAvailable = (MemorySanctuary.data.explorations || []).find(e => {
@@ -59,7 +60,8 @@ function openExplorePanel() {
             const exp = MemorySanctuary.state.exploration;
             const botReq = e.requiredBots || 0;
             const botsMet = (MemorySanctuary.state.resources.engineeringBots || 0) >= botReq;
-            return !(exp.deployedUntil > now) && !completed && (!e.availableAfter || now >= e.availableAfter) && botsMet;
+            return !(exp.deployedUntil > now) && !isExplorationCompleted(e.id) &&
+                (!e.availableAfter || now >= e.availableAfter) && botsMet;
         });
         if (firstAvailable) {
             const item = document.querySelector(`.explore-item[data-exp-id="${firstAvailable.id}"]`);
@@ -307,6 +309,18 @@ function renderOutcomeBars(expData) {
         container.appendChild(botNote);
     }
 
+    // 科技树勘探加成提示（v0.2.4）
+    const techBonus = (typeof getTechExploreBonus === 'function') ? getTechExploreBonus() : { yieldBonus: 0, riskCut: 0 };
+    if (techBonus.yieldBonus > 0 || techBonus.riskCut > 0) {
+        const techNote = document.createElement('div');
+        techNote.className = 'outcome-bot-bonus tech-bonus';
+        const parts = [];
+        if (techBonus.yieldBonus > 0) parts.push(`资源收益 +${Math.round(techBonus.yieldBonus * 100)}%`);
+        if (techBonus.riskCut > 0) parts.push(`风险 -${Math.round(techBonus.riskCut * 100)}%`);
+        techNote.innerHTML = `🔬 科技协同：${parts.join(' · ')}`;
+        container.appendChild(techNote);
+    }
+
     expData.outcomes.forEach(o => {
         const prob = calculateOutcomeProbability(o, expData);
         const bar = document.createElement('div');
@@ -332,10 +346,12 @@ function calculateOutcomeProbability(outcome, expData) {
     const matchedSkills = countMatchedSkills(expData);
     // 工程机器人协同加成（在线时生效）：提升资源概率、压低风险概率
     const botBonus = (typeof getBotExploreBonus === 'function') ? getBotExploreBonus() : { yieldBonus: 0, riskCut: 0 };
+    // 科技树勘探加成（v0.2.4）：在机器人加成之后叠加同类乘数，上限各自独立
+    const techBonus = (typeof getTechExploreBonus === 'function') ? getTechExploreBonus() : { yieldBonus: 0, riskCut: 0 };
     if (outcome.type === 'risk') {
-        prob = Math.max(0.02, prob - matchedSkills * 0.04 - botBonus.riskCut);
+        prob = Math.max(0.02, prob - matchedSkills * 0.04 - botBonus.riskCut - techBonus.riskCut);
     } else if (outcome.type === 'resource') {
-        prob = Math.min(0.6, prob + matchedSkills * 0.05 + botBonus.yieldBonus);
+        prob = Math.min(0.6, prob + matchedSkills * 0.05 + botBonus.yieldBonus + techBonus.yieldBonus);
     }
     // 食物归零惩罚：资源型结果概率降低
     if (MemorySanctuary.state.resources.food <= 0 && outcome.type === 'resource') {
@@ -570,9 +586,15 @@ function applyExplorationResult(outcome, expData) {
         const fatigueGuard = (typeof ENGINEERING_BOTS_CONFIG !== 'undefined') ? ENGINEERING_BOTS_CONFIG.fatigueGuardPerBot : 0;
         const online = (typeof areBotsOnline === 'function') ? areBotsOnline() : false;
         const baseFatigueWeeks = 2;
-        const fatigueWeeks = online
+        let fatigueWeeks = online
             ? Math.max(1, Math.round(baseFatigueWeeks * (1 - fatigueGuard * botCount)))
             : baseFatigueWeeks;
+
+        // 科技树疲劳减免（v0.2.4）：独立来源，与机器人减免叠加，最低保留 1 周
+        const techEnv = (typeof getTechEnvBonus === 'function') ? getTechEnvBonus() : { fatigueGuard: 0 };
+        if (techEnv.fatigueGuard > 0) {
+            fatigueWeeks = Math.max(1, fatigueWeeks - Math.round(techEnv.fatigueGuard));
+        }
 
         selectedGuardians.forEach(gid => {
             // Fatigue: cannot deploy for fatigueWeeks weeks
@@ -595,6 +617,17 @@ function applyExplorationResult(outcome, expData) {
     // Layer 3: Narrative reveals clue
     if (outcome.type === 'narrative' && outcome.revealsClue) {
         addLog(`这次发现让你想起了某份档案……也许应该回去检查一下。`, 'system');
+        // 科技树「守真勘探学说」（exploreIntel）：情报结果指认藏有隐藏叙事的未归档条目
+        const techExplore = (typeof getTechExploreBonus === 'function') ? getTechExploreBonus() : null;
+        if (techExplore && techExplore.intelReveal) {
+            const hiddenPending = (MemorySanctuary.data.archives || []).filter(a =>
+                a.hiddenContent && !isArchiveCompleted(a.id) && !a.expired &&
+                (!a.availableAfter || MemorySanctuary.state.week >= a.availableAfter) && !a.ngPlusExclusive);
+            if (hiddenPending.length > 0) {
+                const pick = hiddenPending[Math.floor(Math.random() * hiddenPending.length)];
+                addLog(`✦ 守真学派的耳朵捕捉到了更多细节：未归档的「${pick.title}」似乎藏有未被记录的叙事。`, 'guardian');
+            }
+        }
     }
 
     // Layer 3: Guardian special dialogue

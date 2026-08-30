@@ -27,6 +27,7 @@ You are a senior HTML5 game developer working on **记忆圣所（Memory Sanctua
                          game-ending.js      (ending condition / gallery / VN bridge)
                          game-exploration.js (surface exploration dispatch)
                          game-projects.js    (maintenance projects)
+                         game-tech.js        (tech tree: doctrines / unlockTech / getTech*Bonus)
                          game-events.js      (random/scheduled events)
                          game-log.js         (log system)
                          game-save.js        (save/load/export/import)

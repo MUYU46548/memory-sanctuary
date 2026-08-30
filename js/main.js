@@ -24,7 +24,7 @@ function esc(str, newlineToBr) {
 // ============================================================
 // 全局常量
 // ============================================================
-const GAME_VERSION = '0.2.3';
+const GAME_VERSION = '0.2.4';
 
 // ============================================================
 // 全局错误处理：防止加载失败白屏
@@ -51,7 +51,9 @@ window.MemorySanctuary = {
         vaults: [],
         guardians: [],
         events: [],
-        explorations: []
+        explorations: [],
+        tech: [],
+        techMeta: {}
     },
     currentVaultId: 1,
     activeEvent: null
@@ -234,6 +236,7 @@ async function loadGameData() {
     const eventsData = await safe('data/events.json', { events: [] }, 'events.json');
     const explorationsData = await safe('data/explorations.json', { explorations: [] }, 'explorations.json');
     const projectsData = await safe('data/projects.json', { projects: [] }, 'projects.json');
+    const techData = await safe('data/tech.json', { tech: [] }, 'tech.json');
 
     MemorySanctuary.data.archives = archivesData.archives;
     MemorySanctuary.data.vaults = vaultsData.vaults;
@@ -242,6 +245,11 @@ async function loadGameData() {
     MemorySanctuary.data.scheduledEvents = eventsData.events.filter(e => e.trigger?.type === 'scheduled');
     MemorySanctuary.data.explorations = explorationsData.explorations || [];
     MemorySanctuary.data.projects = projectsData.projects || [];
+    MemorySanctuary.data.tech = techData.tech || [];
+    MemorySanctuary.data.techMeta = {
+        doctrineNames: techData.doctrineNames || {},
+        domainNames: techData.domainNames || {}
+    };
     try {
         const endingsRes = await fetch('data/endings.json');
         MemorySanctuary.data.endings = (await endingsRes.json()).endings || [];
@@ -340,6 +348,9 @@ function initGameState() {
         batchArchiveUsedThisRun: false,
         nextWeekDecayPenalty: 0,
         modules: {},
+        // 通用科技树（v0.2.4）：已解锁科技 id 与学说路线（doctrineKey -> 节点 id）
+        techUnlocked: [],
+        techDoctrines: {},
         // 工程机器人系统
         botFactoryActive: false,
         botMaintenanceCost: 0,

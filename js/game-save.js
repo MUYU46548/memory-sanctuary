@@ -44,6 +44,9 @@ function saveGame(slot) {
             emergencyExploreUsed: !!MemorySanctuary.state.emergencyExploreUsed,
             famineSurvived: !!MemorySanctuary.state.famineSurvived,
             moraleStreak: { ...(MemorySanctuary.state.moraleStreak || { critical: 0, excellent: 0 }) },
+            // 通用科技树（v0.2.4）
+            techUnlocked: [...(MemorySanctuary.state.techUnlocked || [])],
+            techDoctrines: { ...(MemorySanctuary.state.techDoctrines || {}) },
             // DLC 模块状态隔离
             modules: { ...(MemorySanctuary.state.modules || {}) }
         },
@@ -164,6 +167,9 @@ function loadGame(slot) {
         MemorySanctuary.state.emergencyExploreUsed = !!saveData.state.emergencyExploreUsed;
         MemorySanctuary.state.famineSurvived = !!saveData.state.famineSurvived;
         MemorySanctuary.state.moraleStreak = { ...(saveData.state.moraleStreak || { critical: 0, excellent: 0 }) };
+        // 通用科技树（v0.2.4）：旧存档无此字段时回退为空（game-tech.js initTechState 兜底）
+        MemorySanctuary.state.techUnlocked = [...(saveData.state.techUnlocked || [])];
+        MemorySanctuary.state.techDoctrines = { ...(saveData.state.techDoctrines || {}) };
         MemorySanctuary.state.modules = { ...(saveData.state.modules || {}) };
         
         MemorySanctuary.state.gameOver = false;

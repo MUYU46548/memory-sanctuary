@@ -48,22 +48,29 @@ function canArchiveEntry(entry) {
 
 
 /**
- * 计算条目在目标存储室的实际消耗（含主题加成/惩罚）
+ * 计算条目在目标存储室的实际消耗（含主题加成/惩罚 + 科技树 archiveCostReduce）
+ * 科技减免乘算在主题修正之后、单步取整（与 balance-sim-v2.js 口径一致）
  */
 function getEffectiveCost(entry, vault) {
     if (!vault || !entry) return { energy: entry.energyCost, media: entry.dataCost };
-    
+
     const entryType = entry.type || '';
     const themeTags = vault.themeTags || [];
     const isMatch = themeTags.includes(entryType);
-    
+
     let modifier = 1.0;
     if (isMatch) {
         modifier = 1.0 - (vault.themeBonus || 0);
     } else {
         modifier = 1.0 + (vault.themePenalty || 0);
     }
-    
+
+    // 科技树「速录学派」（archiveCostReduce）：项目系统不碰归档成本，此处为唯一接入点
+    const techArchive = (typeof getTechArchiveBonus === 'function') ? getTechArchiveBonus() : null;
+    if (techArchive && techArchive.costReduce > 0) {
+        modifier *= (1 - techArchive.costReduce);
+    }
+
     return {
         energy: Math.round(entry.energyCost * modifier),
         media: Math.round(entry.dataCost * modifier),
@@ -432,17 +439,21 @@ function finishBatchArchive() {
 function applyArchiveMoraleBonus(entry) {
     const state = MemorySanctuary.state;
     if (!state.guardianMoods) return;
-    
+
+    // 科技树 archiveMoodBonus：归档获得的好感 ×(1 + moodBonus)
+    const techArchive = (typeof getTechArchiveBonus === 'function') ? getTechArchiveBonus() : { moodBonus: 0 };
+    const moodMultiplier = 1 + (techArchive.moodBonus || 0);
+
     // 基础归档奖励：所有守护者 +0.5
-    const baseGain = 0.5;
+    const baseGain = 0.5 * moodMultiplier;
     Object.keys(state.guardianMoods).forEach(gid => {
         state.guardianMoods[gid] = Math.min(10, (state.guardianMoods[gid] || 0) + baseGain);
     });
-    
+
     // 如果条目关联特定守护者，该守护者额外 +1
     const guardianId = Object.keys(entry.guardianReactions || {})[0];
     if (guardianId && state.guardianMoods[guardianId] !== undefined) {
-        state.guardianMoods[guardianId] = Math.min(10, state.guardianMoods[guardianId] + 1);
+        state.guardianMoods[guardianId] = Math.min(10, state.guardianMoods[guardianId] + 1 * moodMultiplier);
     }
 }
 
@@ -920,9 +931,12 @@ function showArchiveCompleteModal(entry, ritualType = 'standard') {
     
     let modalContent = `${entry.description}\n\n`;
     modalContent += `「${entry.content.substring(0, 120)}...」\n\n`;
-    
-    // 深度归档：解锁隐藏叙事
-    if (ritualType === 'deep' && entry.hiddenContent) {
+
+    // 深度归档解锁隐藏叙事；科技树 revealHidden（深研学派）让标准归档同样展示
+    // （v0.2.4 去重后仅归档域提供 revealHidden，勘探域守真勘探只做情报指认）
+    const techArchive = (typeof getTechArchiveBonus === 'function') ? getTechArchiveBonus() : null;
+    const revealHidden = ritualType === 'deep' || (techArchive && techArchive.revealHidden);
+    if (revealHidden && entry.hiddenContent) {
         modalContent += `━━ 隐藏叙事 ━━\n`;
         modalContent += `${entry.hiddenContent}\n\n`;
     }

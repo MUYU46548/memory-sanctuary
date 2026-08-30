@@ -20,7 +20,7 @@
         .boot-progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #c9a87c, #a07a30); transition: width 0.3s ease; border-radius: 2px; }
         .boot-status { font-size: 0.85rem; color: #888; letter-spacing: 0.1em; }
     </style>
-    <link rel="stylesheet" href="css/main.css?v=0.2.3">
+    <link rel="stylesheet" href="css/main.css?v=0.2.4">
 </head>
 <body>
     <!-- 启动画面 — 外部 CSS 加载前渲染 -->
@@ -153,6 +153,7 @@
                     <button class="action-tab active" data-tab="archive">📜 归档</button>
                     <button class="action-tab" data-tab="guardian">🦅 守护者</button>
                     <button class="action-tab" data-tab="vault">🏛️ 存储室</button>
+                    <button class="action-tab" data-tab="tech">🔬 科技</button>
                 </div>
 
                 <!-- 归档条目标签页 -->
@@ -213,6 +214,15 @@
                         <h2 class="panel-title">存储室</h2>
                         <div id="vault-tabs"></div>
                         <div id="vault-list"></div>
+                    </div>
+                </div>
+
+                <!-- 科技标签页（v0.2.4 通用科技树） -->
+                <div class="action-tab-content" id="tab-tech">
+                    <div id="tech-panel" class="panel">
+                        <h2 class="panel-title">科技研究</h2>
+                        <div id="tech-doctrine-summary" class="tech-doctrine-summary"></div>
+                        <div id="tech-list"></div>
                     </div>
                 </div>
             </section>
@@ -498,7 +508,7 @@
                     </label>
                     <div class="settings-volume-row">
                         <button class="settings-mute-btn" id="setting-check-update" title="手动检查是否有新版本">🔄 检查更新</button>
-                        <span class="settings-volume-value" id="check-update-status">当前 v0.2.2</span>
+                        <span class="settings-volume-value" id="check-update-status">当前 v0.2.4</span>
                     </div>
                     <div class="settings-desc">手动检查新版本。有新版时会在右下角提示并附下载链接。</div>
                 </div>
@@ -743,25 +753,26 @@
         </div>
     </div>
 
-    <script src="js/font-loader.js?v=0.2.3"></script>
-    <script src="js/main.js?v=0.2.3"></script>
-    <script src="js/update-check.js?v=0.2.3"></script>
-    <script src="js/game.js?v=0.2.3"></script>
-    <script src="js/game-log.js?v=0.2.3"></script>
-    <script src="js/game-events.js?v=0.2.3"></script>
-    <script src="js/game-exploration.js?v=0.2.3"></script>
-    <script src="js/game-projects.js?v=0.2.3"></script>
-    <script src="js/game-emergency.js?v=0.2.3"></script>
-    <script src="js/game-save.js?v=0.2.3"></script>
-    <script src="js/dlc.js?v=0.2.3"></script>
-    <script src="js/game-ending.js?v=0.2.3"></script>
-    <script src="js/game-archive.js?v=0.2.3"></script>
-    <script src="js/game-tutorial.js?v=0.2.3"></script>
-    <script src="js/debug-panel.js?v=0.2.3"></script>
-    <script src="js/ui.js?v=0.2.3"></script>
-    <script src="js/canvas.js?v=0.2.3"></script>
-    <script src="js/audio.js?v=0.2.3"></script>
-    <script src="js/vn.js?v=0.2.3"></script>
+    <script src="js/font-loader.js?v=0.2.4"></script>
+    <script src="js/main.js?v=0.2.4"></script>
+    <script src="js/update-check.js?v=0.2.4"></script>
+    <script src="js/game.js?v=0.2.4"></script>
+    <script src="js/game-log.js?v=0.2.4"></script>
+    <script src="js/game-events.js?v=0.2.4"></script>
+    <script src="js/game-exploration.js?v=0.2.4"></script>
+    <script src="js/game-projects.js?v=0.2.4"></script>
+    <script src="js/game-tech.js?v=0.2.4"></script>
+    <script src="js/game-emergency.js?v=0.2.4"></script>
+    <script src="js/game-save.js?v=0.2.4"></script>
+    <script src="js/dlc.js?v=0.2.4"></script>
+    <script src="js/game-ending.js?v=0.2.4"></script>
+    <script src="js/game-archive.js?v=0.2.4"></script>
+    <script src="js/game-tutorial.js?v=0.2.4"></script>
+    <script src="js/debug-panel.js?v=0.2.4"></script>
+    <script src="js/ui.js?v=0.2.4"></script>
+    <script src="js/canvas.js?v=0.2.4"></script>
+    <script src="js/audio.js?v=0.2.4"></script>
+    <script src="js/vn.js?v=0.2.4"></script>
 
     <!-- 结局结算页面 -->
     <div id="ending-overlay" class="hidden">

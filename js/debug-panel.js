@@ -49,8 +49,9 @@ function initDebugPanel() {
         });
     }
     
-    // Keyboard shortcut
+    // Keyboard shortcut（仅 DEBUG 模式可用；生产环境 DEBUG=false 时热键不响应）
     document.addEventListener('keydown', (e) => {
+        if (typeof DEBUG === 'undefined' || !DEBUG) return;
         if (e.ctrlKey && e.shiftKey && e.key === 'D') {
             e.preventDefault();
             toggleDebugPanel();
