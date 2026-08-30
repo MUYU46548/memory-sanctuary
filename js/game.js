@@ -828,32 +828,33 @@ function checkWeekLimit() {
 
 /**
  * 工程机器人系统
- * 
- * 机器人自动维护圣所，减少资源衰减。
+ *
+ * 机器人自动维护圣所，减少资源衰减，并协同地表勘探。
  * 每回合开始时，机器人会消耗能源进行维护。
  * 维护效果：
- *  1. 减少所有资源自然衰减（每台 10%，上限 50%）
+ *  1. 减少所有资源自然衰减（每台 18%，上限 65%）
  *  2. 抑制圣所腐败的持续侵蚀（在线机器人按相同比例削弱腐败惩罚）
- * 
- * 机器人需要维护：每回合消耗 1 能源。
+ *  3. 勘探协同放大器（在线时）：每台 +8% 资源收益、-5% 风险（上限 +40% / -25%）
+ *
+ * 机器人需要维护：每回合消耗 0.75 能源（v0.2.4 收尾由 1 下调）。
  * 如果能源不足，机器人会停机（无法提供维护加成）。
- * 
+ *
  * 机器人可以通过项目建造更多（最多 5 个）。
  * 机器人存在期间会解锁专属归档条目（data/archives.json unlockCondition.bots）。
  */
 
 const ENGINEERING_BOTS_CONFIG = {
     maxBots: 5,
-    maintenanceCostPerBot: 1,  // 每回合每机器人消耗能源
-    decayReductionPerBot: 0.10,  // 每机器人减少 10% 衰减
-    maxDecayReduction: 0.50,  // 最多减少 50% 衰减
-    // 探索放大器：机器人自主巡检协同，提升地表勘探产出、压低风险
-    exploreYieldPerBot: 0.06,   // 每台 +6% 资源收益
-    exploreRiskCutPerBot: 0.03, // 每台 -3% 风险概率
-    maxExploreYield: 0.30,      // 资源收益加成上限 +30%
-    maxExploreRiskCut: 0.15,    // 风险减免上限 -15%
+    maintenanceCostPerBot: 0.75,  // 每回合每机器人消耗能源（v0.2.4 收尾：1→0.75 减负 25%，自动化低耗）
+    decayReductionPerBot: 0.18,  // 每机器人减少 18% 衰减（原 10%，机器人的核心被动价值）
+    maxDecayReduction: 0.65,  // 最多减少 65% 衰减（原 50%）
+    // 探索放大器：机器人自主巡检协同，提升地表勘探产出、压低风险（对 AI 无感、对玩家显著）
+    exploreYieldPerBot: 0.08,   // 每台 +8% 资源收益（原 6%）
+    exploreRiskCutPerBot: 0.05, // 每台 -5% 风险概率（原 3%）
+    maxExploreYield: 0.40,      // 资源收益加成上限 +40%（原 30%）
+    maxExploreRiskCut: 0.25,    // 风险减免上限 -25%（原 15%）
     fatigueGuardPerBot: 0.5,    // 每台减免 50% 疲劳周数（机器人接替高风险外勤）
-    buildCost: { energy: 30, media: 20 },  // 建造成本
+    buildCost: { energy: 24, media: 16 },  // 建造成本（原 30/20，降低入坑门槛、改善边际回本）
     buildDuration: 3  // 建造耗时 3 周
 };
 
@@ -2167,16 +2168,8 @@ function initFuncBar() {
         });
     }
 
-    // 返回标题按钮
-    const titleBtn = document.getElementById('title-btn');
-    if (titleBtn) {
-        titleBtn.addEventListener('click', () => {
-            btnClick();
-            const slot = getCurrentSlot();
-            if (slot >= 1) saveGame(slot);
-            showTitleScreen();
-        });
-    }
+    // 返回标题按钮：统一由 main.js 的绑定处理（确认 → 自动保存 → 切换画面）。
+    // 此处曾与 main.js 双重绑定：无确认的处理器先执行、把画面切走，确认框形同虚设（取消也会退出）。v0.2.4 收尾移除。
 
     // 勘探按钮
     if (exploreBtn) {

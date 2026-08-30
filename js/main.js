@@ -27,6 +27,26 @@ function esc(str, newlineToBr) {
 const GAME_VERSION = '0.2.4';
 
 // ============================================================
+// 退出自动存档：关闭/刷新页面时把当前进度写入当前存档槽
+// （pagehide 覆盖移动端与标签页关闭，beforeunload 兜底桌面端；once 守卫防双写。
+//   gameOver 后不写，避免结局画面被意外覆盖为中途状态。）
+// ============================================================
+let exitAutoSaveDone = false;
+function performExitAutoSave() {
+    if (exitAutoSaveDone) return;
+    if (!window.MemorySanctuary || !MemorySanctuary.state || MemorySanctuary.state.gameOver) return;
+    const slot = getCurrentSlot();
+    if (slot >= 1) {
+        saveGame(slot);
+    }
+    exitAutoSaveDone = true;
+}
+window.addEventListener('pagehide', performExitAutoSave);
+window.addEventListener('beforeunload', performExitAutoSave);
+// 页面从 bfcache 恢复（前进/后退）后继续游戏时，允许下次退出再次存档
+window.addEventListener('pageshow', () => { exitAutoSaveDone = false; });
+
+// ============================================================
 // 全局错误处理：防止加载失败白屏
 // ============================================================
 window.addEventListener('unhandledrejection', (event) => {
@@ -512,9 +532,10 @@ function initTitleScreen() {
         });
     }
 
-    // Return to title from game
+    // Return to title from game（唯一绑定；此前与 game.js 双重绑定导致确认框形同虚设）
     if (titleBtn) {
         titleBtn.addEventListener('click', () => {
+            if (typeof btnClick === 'function') btnClick();
             if (confirm('确定要返回标题画面吗？当前进度将会自动保存。')) {
                 const currentSlot = getCurrentSlot();
                 if (currentSlot >= 1) {

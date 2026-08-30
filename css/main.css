@@ -129,6 +129,30 @@
     --tier-neutral: #aaa;
     --tier-friendly: #f39c12;
     --tier-intimate: #2e8b57;
+    /* 应急协议按钮红（v0.2.4 收尾：硬编码值转 CSS 变量） */
+    --emergency-red-deep: #8b3a3a;
+    --emergency-red: #a04040;
+    --emergency-red-light: #b55050;
+    /* 立即归档购买按钮绿 */
+    --archive-green-1: #5a8a3a;
+    --archive-green-2: #6b9a4a;
+    --archive-green-3: #7baa5a;
+}
+
+/* ========== 亮色主题可读性覆盖 ==========
+   作为正文/徽章文字使用的强调色在浅色背景下加深，保证对比度 ≥ 4.5:1。
+   注意：必须位于上方共享 :root 状态色块之后（同优先级后者胜出）。 */
+[data-theme="light"] {
+    --tier-cold: #2273a3;
+    --tier-neutral: #6b6b6b;
+    --tier-friendly: #9c5f06;
+    --tier-intimate: #1d6f47;
+    --change-positive: #2c7d43;
+    --change-negative: #bb3a2a;
+    --info-blue: #257593;
+    --archive-green-1: #41742e;
+    --archive-green-2: #4f8136;
+    --archive-green-3: #5f9142;
 }
 
 /* ========== 动画降级 — 尊重用户偏好 ========== */
@@ -357,8 +381,8 @@ button:focus-visible,
 }
 
 @keyframes chipBreath {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(160, 64, 64, 0); border-color: transparent; }
-    50% { box-shadow: 0 0 0 3px rgba(160, 64, 64, 0.35); border-color: var(--danger); }
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--project-purple-deep) 0%, transparent); border-color: transparent; }
+    50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--project-purple-deep) 35%, transparent); border-color: var(--danger); }
 }
 
 /* 关于弹窗样式 */
@@ -918,8 +942,8 @@ button:focus-visible,
 }
 
 @keyframes foodWarningPulse {
-    0%, 100% { box-shadow: 0 0 4px rgba(243, 156, 18, 0.3); }
-    50% { box-shadow: 0 0 12px rgba(243, 156, 18, 0.5); }
+    0%, 100% { box-shadow: 0 0 4px color-mix(in srgb, var(--tier-friendly) 30%, transparent); }
+    50% { box-shadow: 0 0 12px color-mix(in srgb, var(--tier-friendly) 50%, transparent); }
 }
 
 @keyframes foodCriticalPulse {
@@ -2071,7 +2095,7 @@ button.archive-btn.ai-assist-btn:hover {
 .guardian-detail-skill {
     font-size: 0.55rem;
     padding: 1px 5px;
-    background: rgba(243, 156, 18, 0.15);
+    background: color-mix(in srgb, var(--tier-friendly) 15%, transparent);
     color: var(--amber-primary);
     border-radius: 2px;
 }
@@ -2995,7 +3019,7 @@ button.archive-btn.recommended {
 .guardian-skill {
     font-size: 0.55rem;
     padding: 1px 4px;
-    background: rgba(243, 156, 18, 0.15);
+    background: color-mix(in srgb, var(--tier-friendly) 15%, transparent);
     color: var(--amber-primary);
     border-radius: 2px;
 }
@@ -3074,17 +3098,17 @@ button.archive-btn.recommended {
 
 #explore-result.result-resource {
     border-color: var(--amber-primary);
-    background: rgba(217, 164, 65, 0.05);
+    background: color-mix(in srgb, var(--amber-primary) 5%, transparent);
 }
 
 #explore-result.result-narrative {
     border-color: var(--info-blue);
-    background: rgba(107, 184, 201, 0.05);
+    background: color-mix(in srgb, var(--info-blue) 5%, transparent);
 }
 
 #explore-result.result-risk {
     border-color: var(--danger);
-    background: rgba(220, 53, 69, 0.05);
+    background: color-mix(in srgb, var(--danger-hard) 5%, transparent);
 }
 
 #result-icon {
@@ -3592,7 +3616,7 @@ button.archive-btn.recommended {
 }
 
 .debug-btn-danger:hover {
-    background: #c44a3a;
+    background: var(--danger-hard);
 }
 
 .debug-btn-row {
@@ -3958,7 +3982,7 @@ button.archive-btn.recommended {
 }
 
 .save-storage-warning {
-    background: rgba(231, 76, 60, 0.12);
+    background: color-mix(in srgb, var(--danger-hard) 12%, transparent);
     border: 1px solid var(--danger);
     color: var(--danger-hard);
 }
@@ -4269,7 +4293,7 @@ button.archive-btn.recommended {
     background: var(--amber-primary);
     color: var(--bg-panel);
     border-color: var(--amber-primary);
-    box-shadow: 0 0 8px rgba(201, 168, 124, 0.4);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--amber-bg) 40%, transparent);
 }
 
 /* 归档确认弹窗 */
@@ -4522,7 +4546,7 @@ button.archive-btn.recommended {
 
 #emergency-panel {
     background: var(--bg-panel);
-    border: 1px solid #c0392b;
+    border: 1px solid var(--danger-deep);
     border-radius: 8px;
     width: 520px;
     max-height: 80vh;
@@ -4530,7 +4554,7 @@ button.archive-btn.recommended {
     flex-direction: column;
     transform: scale(0.95);
     transition: transform 0.2s ease;
-    box-shadow: 0 0 30px rgba(192, 57, 43, 0.3);
+    box-shadow: 0 0 30px color-mix(in srgb, var(--danger-deep) 30%, transparent);
 }
 
 #emergency-overlay:not(.hidden) #emergency-panel {
@@ -4542,8 +4566,8 @@ button.archive-btn.recommended {
     justify-content: space-between;
     align-items: center;
     padding: 12px 16px;
-    border-bottom: 1px solid #c0392b;
-    background: rgba(192, 57, 43, 0.1);
+    border-bottom: 1px solid var(--danger-deep);
+    background: color-mix(in srgb, var(--danger-deep) 10%, transparent);
 }
 
 #emergency-panel-header h2 {
@@ -4624,12 +4648,12 @@ button.archive-btn.recommended {
 
 .emergency-item.usable {
     border-color: var(--danger-deep);
-    background: rgba(192, 57, 43, 0.05);
+    background: color-mix(in srgb, var(--danger-deep) 5%, transparent);
 }
 
 .emergency-item.usable:hover {
     border-color: var(--danger-hard);
-    background: rgba(192, 57, 43, 0.1);
+    background: color-mix(in srgb, var(--danger-deep) 10%, transparent);
 }
 
 .emergency-item.disabled {
@@ -4663,7 +4687,7 @@ button.archive-btn.recommended {
 .cooldown-badge {
     font-size: 0.7rem;
     color: var(--warning-hard);
-    background: rgba(230, 126, 34, 0.15);
+    background: color-mix(in srgb, var(--warning-hard) 15%, transparent);
     padding: 2px 6px;
     border-radius: 3px;
     font-weight: normal;
@@ -4694,7 +4718,7 @@ button.archive-btn.recommended {
 }
 
 .emergency-activate {
-    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    background: linear-gradient(135deg, var(--danger-deep), var(--danger-hard));
     border: none;
     color: white;
     padding: 6px 16px;
@@ -4707,7 +4731,7 @@ button.archive-btn.recommended {
 
 .emergency-activate:hover:not(:disabled) {
     transform: scale(1.05);
-    box-shadow: 0 0 12px rgba(231, 76, 60, 0.4);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--danger-hard) 40%, transparent);
 }
 
 .emergency-activate:disabled {
@@ -4718,8 +4742,8 @@ button.archive-btn.recommended {
 
 .emergency-warning {
     padding: 8px 12px;
-    background: rgba(231, 76, 60, 0.15);
-    border: 1px solid #e74c3c;
+    background: color-mix(in srgb, var(--danger-hard) 15%, transparent);
+    border: 1px solid var(--danger-hard);
     border-radius: 4px;
     font-size: 0.8rem;
     color: var(--danger-hard);
@@ -4727,7 +4751,7 @@ button.archive-btn.recommended {
 }
 
 .emergency-warning.moderate {
-    background: rgba(230, 126, 34, 0.1);
+    background: color-mix(in srgb, var(--warning-hard) 10%, transparent);
     border-color: var(--warning-hard);
     color: var(--warning-hard);
 }
@@ -4739,10 +4763,10 @@ button.archive-btn.recommended {
 
 @keyframes emergency-pulse {
     0%, 100% {
-        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
+        box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger-hard) 40%, transparent);
     }
     50% {
-        box-shadow: 0 0 0 8px rgba(231, 76, 60, 0);
+        box-shadow: 0 0 0 8px color-mix(in srgb, var(--danger-hard) 0%, transparent);
     }
 }
 
@@ -4849,8 +4873,8 @@ button.archive-btn.recommended {
 
 /* 应急协议按钮底部栏样式 */
 #func-bar button#emergency-btn {
-    background: linear-gradient(135deg, #8b3a3a 0%, #a04040 100%);
-    border-color: var(--project-purple-deep);
+    background: linear-gradient(135deg, var(--emergency-red-deep) 0%, var(--emergency-red) 100%);
+    border-color: var(--emergency-red);
     color: var(--white);
 }
 
@@ -4860,12 +4884,12 @@ button.archive-btn.recommended {
 }
 
 #func-bar button#emergency-btn:hover:not(:disabled) {
-    background: linear-gradient(135deg, #a04040 0%, #b55050 100%);
+    background: linear-gradient(135deg, var(--emergency-red) 0%, var(--emergency-red-light) 100%);
 }
 
 @keyframes pulse-emergency {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(180, 50, 50, 0.5); }
-    50% { box-shadow: 0 0 0 8px rgba(180, 50, 50, 0); }
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--emergency-red-light) 50%, transparent); }
+    50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--emergency-red-light) 0%, transparent); }
 }
 
 /* 紧急归档标识 */
@@ -5666,7 +5690,7 @@ button.archive-btn.recommended {
     width: 70%;
     max-width: 700px;
     min-height: 140px;
-    background: linear-gradient(180deg, rgba(18, 18, 26, 0.95), rgba(10, 10, 15, 0.98));
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-panel) 95%, transparent), color-mix(in srgb, var(--bg-deep) 98%, transparent));
     border: 1px solid var(--border-subtle);
     border-radius: 8px;
     padding: 20px 24px;
@@ -5844,11 +5868,11 @@ button.archive-btn.recommended {
 
 /* 浅色模式覆盖 */
 [data-theme="light"] #vn-overlay {
-    background: rgba(245, 240, 232, 0.9);
+    background: color-mix(in srgb, var(--bg-deep) 90%, transparent);
 }
 
 [data-theme="light"] #vn-dialogue-box {
-    background: linear-gradient(180deg, rgba(250, 247, 242, 0.98), rgba(245, 240, 232, 0.99));
+    background: linear-gradient(180deg, color-mix(in srgb, var(--bg-panel) 98%, transparent), color-mix(in srgb, var(--bg-deep) 99%, transparent));
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255,255,255,0.5);
 }
 
@@ -5931,12 +5955,12 @@ button.archive-btn.recommended {
 
 .rt-total.gain {
     color: var(--change-positive);
-    text-shadow: 0 0 6px rgba(90, 174, 90, 0.4);
+    text-shadow: 0 0 6px color-mix(in srgb, var(--change-positive) 40%, transparent);
 }
 
 .rt-total.loss {
     color: var(--change-negative);
-    text-shadow: 0 0 6px rgba(212, 74, 58, 0.4);
+    text-shadow: 0 0 6px color-mix(in srgb, var(--change-negative) 40%, transparent);
 }
 
 .rt-total.neutral {
@@ -6306,8 +6330,8 @@ button.archive-btn.recommended {
 
 /* 结局叙述块：玩家实际达成的结局（标题+描述），置于文明画像之上 */
 .ending-outcome {
-    background: var(--amber-bg-soft, rgba(201, 168, 124, 0.12));
-    border: 1px solid var(--amber-border, rgba(201, 168, 124, 0.4));
+    background: var(--amber-bg-soft, color-mix(in srgb, var(--amber-bg) 12%, transparent));
+    border: 1px solid var(--amber-border, color-mix(in srgb, var(--amber-bg) 40%, transparent));
     border-radius: 8px;
     padding: 14px 16px;
     margin-bottom: 18px;
@@ -6415,11 +6439,11 @@ button.archive-btn.recommended {
     border-radius: 3px;
 }
 
-.ending-guardian-tier.hostile { background: rgba(231, 76, 60, 0.2); color: var(--danger-hard); }
-.ending-guardian-tier.cold { background: rgba(93, 173, 226, 0.2); color: var(--tier-cold); }
-.ending-guardian-tier.neutral { background: rgba(170, 170, 170, 0.2); color: var(--tier-neutral); }
-.ending-guardian-tier.friendly { background: rgba(243, 156, 18, 0.2); color: var(--tier-friendly); }
-.ending-guardian-tier.intimate { background: rgba(46, 139, 87, 0.2); color: var(--tier-intimate); }
+.ending-guardian-tier.hostile { background: color-mix(in srgb, var(--danger-hard) 20%, transparent); color: var(--danger-hard); }
+.ending-guardian-tier.cold { background: color-mix(in srgb, var(--tier-cold) 20%, transparent); color: var(--tier-cold); }
+.ending-guardian-tier.neutral { background: color-mix(in srgb, var(--tier-neutral) 20%, transparent); color: var(--tier-neutral); }
+.ending-guardian-tier.friendly { background: color-mix(in srgb, var(--tier-friendly) 20%, transparent); color: var(--tier-friendly); }
+.ending-guardian-tier.intimate { background: color-mix(in srgb, var(--tier-intimate) 20%, transparent); color: var(--tier-intimate); }
 
 #ending-ng {
     background: var(--bg-deep);
@@ -6508,8 +6532,8 @@ button.archive-btn.recommended {
     align-items: center;
     gap: 10px;
     padding: 12px 16px;
-    background: linear-gradient(135deg, #5a8a3a 0%, #6b9a4a 100%);
-    border: 1px solid #6b9a4a;
+    background: linear-gradient(135deg, var(--archive-green-1) 0%, var(--archive-green-2) 100%);
+    border: 1px solid var(--archive-green-2);
     border-radius: 6px;
     color: var(--white);
     cursor: pointer;
@@ -6520,8 +6544,8 @@ button.archive-btn.recommended {
 }
 
 .instant-archive-buy:hover {
-    background: linear-gradient(135deg, #6b9a4a 0%, #7baa5a 100%);
-    box-shadow: 0 0 12px rgba(107, 154, 74, 0.4);
+    background: linear-gradient(135deg, var(--archive-green-2) 0%, var(--archive-green-3) 100%);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--archive-green-2) 40%, transparent);
 }
 
 .instant-archive-buy .emergency-btn-icon {
@@ -6713,7 +6737,7 @@ button.archive-btn.recommended {
 }
 
 .bots-log-btn:hover {
-    background: var(--amber-bg-soft, rgba(201, 168, 124, 0.12));
+    background: var(--amber-bg-soft, color-mix(in srgb, var(--amber-bg) 12%, transparent));
     border-color: var(--amber-primary, #c9a87c);
 }
 
@@ -6721,8 +6745,8 @@ button.archive-btn.recommended {
 .outcome-bot-bonus {
     font-size: 0.75rem;
     color: var(--amber-primary, #c9a87c);
-    background: var(--amber-bg-soft, rgba(201, 168, 124, 0.12));
-    border: 1px solid var(--amber-border, rgba(201, 168, 124, 0.4));
+    background: var(--amber-bg-soft, color-mix(in srgb, var(--amber-bg) 12%, transparent));
+    border: 1px solid var(--amber-border, color-mix(in srgb, var(--amber-bg) 40%, transparent));
     border-radius: 6px;
     padding: 6px 10px;
     margin-bottom: 8px;

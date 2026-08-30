@@ -217,8 +217,8 @@
       "availableAfter": 6,
       "duration": 3,
       "cost": {
-        "energy": 30,
-        "media": 20
+        "energy": 24,
+        "media": 16
       },
       "effect": {
         "type": "buildBot"
