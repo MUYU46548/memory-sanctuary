@@ -9,7 +9,7 @@ function saveGame(slot) {
     const ngData = getNGPlusData();
 
     const saveData = {
-        version: 2,  // 引入 DLC 系统，版本升至 2
+        version: 2,
         slot: slot,
         savedAt: Date.now(),
         playthrough: ngData.playthroughCount,
@@ -48,7 +48,46 @@ function saveGame(slot) {
             techUnlocked: [...(MemorySanctuary.state.techUnlocked || [])],
             techDoctrines: { ...(MemorySanctuary.state.techDoctrines || {}) },
             // DLC 模块状态隔离
-            modules: { ...(MemorySanctuary.state.modules || {}) }
+            modules: { ...(MemorySanctuary.state.modules || {}) },
+            // === 补全缺失的运行时字段（P1-2 修复） ===
+            gameOver: !!MemorySanctuary.state.gameOver,
+            _sealed: !!MemorySanctuary.state._sealed,
+            departedGuardians: [...(MemorySanctuary.state.departedGuardians || [])],
+            sacrificedGuardian: MemorySanctuary.state.sacrificedGuardian || null,
+            guardianSacrifice: !!MemorySanctuary.state.guardianSacrifice,
+            starvationWeeks: MemorySanctuary.state.starvationWeeks || 0,
+            weeksWithoutStarvation: MemorySanctuary.state.weeksWithoutStarvation || 0,
+            turnsSkipped: MemorySanctuary.state.turnsSkipped || 0,
+            emergencyArchiveUsed: MemorySanctuary.state.emergencyArchiveUsed || 0,
+            chaptersCompleted: [...(MemorySanctuary.state.chaptersCompleted || [])],
+            pendingEnding: MemorySanctuary.state.pendingEnding || null,
+            instantArchiveChances: MemorySanctuary.state.instantArchiveChances || 0,
+            lastSupplyWeek: MemorySanctuary.state.lastSupplyWeek || 0,
+            batchArchiveMode: !!MemorySanctuary.state.batchArchiveMode,
+            batchArchiveCount: MemorySanctuary.state.batchArchiveCount || 0,
+            batchArchiveUsedThisRun: !!MemorySanctuary.state.batchArchiveUsedThisRun,
+            nextWeekDecayPenalty: MemorySanctuary.state.nextWeekDecayPenalty || 0,
+            botFactoryActive: !!MemorySanctuary.state.botFactoryActive,
+            botMaintenanceCost: MemorySanctuary.state.botMaintenanceCost || 0,
+            inheritedProjects: [...(MemorySanctuary.state.inheritedProjects || [])],
+            inheritedVaultUsage: { ...(MemorySanctuary.state.inheritedVaultUsage || {}) },
+            memoryEchoSelection: [...(MemorySanctuary.state.memoryEchoSelection || [])],
+            deepArchiveCount: MemorySanctuary.state.deepArchiveCount || 0,
+            conflictLog: [...(MemorySanctuary.state.conflictLog || [])],
+            consecutiveSkips: MemorySanctuary.state.consecutiveSkips || 0,
+            sacrificeHistory: [...(MemorySanctuary.state.sacrificeHistory || [])],
+            loopCluesFound: [...(MemorySanctuary.state.loopCluesFound || [])],
+            // 季节 & 运行时标记
+            season: MemorySanctuary.state.season ? { ...MemorySanctuary.state.season } : null,
+            foodBonusLogged: !!MemorySanctuary.state.foodBonusLogged,
+            foodCrisisLogged: !!MemorySanctuary.state.foodCrisisLogged,
+            starvationLogged: !!MemorySanctuary.state.starvationLogged,
+            botBlackoutLogged: !!MemorySanctuary.state.botBlackoutLogged,
+            resourceCritical: !!MemorySanctuary.state.resourceCritical,
+            // 过期条目持久化（P1-3 修复）
+            expiredEntries: [...(MemorySanctuary.state.expiredEntries || [])],
+            // 周期事件追踪（P1-7 修复）
+            triggeredPeriodicEvents: [...(MemorySanctuary.state.triggeredPeriodicEvents || [])]
         },
         currentVaultId: MemorySanctuary.currentVaultId
     };
@@ -172,7 +211,53 @@ function loadGame(slot) {
         MemorySanctuary.state.techDoctrines = { ...(saveData.state.techDoctrines || {}) };
         MemorySanctuary.state.modules = { ...(saveData.state.modules || {}) };
         
-        MemorySanctuary.state.gameOver = false;
+        // === 补全缺失的运行时字段（P1-2 修复，旧档无此字段时回退默认值） ===
+        MemorySanctuary.state.gameOver = !!saveData.state.gameOver;
+        MemorySanctuary.state._sealed = !!saveData.state._sealed;
+        MemorySanctuary.state.departedGuardians = [...(saveData.state.departedGuardians || [])];
+        MemorySanctuary.state.sacrificedGuardian = saveData.state.sacrificedGuardian || null;
+        MemorySanctuary.state.guardianSacrifice = !!saveData.state.guardianSacrifice;
+        MemorySanctuary.state.starvationWeeks = saveData.state.starvationWeeks || 0;
+        MemorySanctuary.state.weeksWithoutStarvation = saveData.state.weeksWithoutStarvation || 0;
+        MemorySanctuary.state.turnsSkipped = saveData.state.turnsSkipped || 0;
+        MemorySanctuary.state.emergencyArchiveUsed = saveData.state.emergencyArchiveUsed || 0;
+        MemorySanctuary.state.chaptersCompleted = [...(saveData.state.chaptersCompleted || [])];
+        MemorySanctuary.state.pendingEnding = saveData.state.pendingEnding || null;
+        MemorySanctuary.state.instantArchiveChances = saveData.state.instantArchiveChances || 0;
+        MemorySanctuary.state.lastSupplyWeek = saveData.state.lastSupplyWeek || 0;
+        MemorySanctuary.state.batchArchiveMode = !!saveData.state.batchArchiveMode;
+        MemorySanctuary.state.batchArchiveCount = saveData.state.batchArchiveCount || 0;
+        MemorySanctuary.state.batchArchiveUsedThisRun = !!saveData.state.batchArchiveUsedThisRun;
+        MemorySanctuary.state.nextWeekDecayPenalty = saveData.state.nextWeekDecayPenalty || 0;
+        MemorySanctuary.state.botFactoryActive = !!saveData.state.botFactoryActive;
+        MemorySanctuary.state.botMaintenanceCost = saveData.state.botMaintenanceCost || 0;
+        MemorySanctuary.state.inheritedProjects = [...(saveData.state.inheritedProjects || [])];
+        MemorySanctuary.state.inheritedVaultUsage = { ...(saveData.state.inheritedVaultUsage || {}) };
+        MemorySanctuary.state.memoryEchoSelection = [...(saveData.state.memoryEchoSelection || [])];
+        MemorySanctuary.state.deepArchiveCount = saveData.state.deepArchiveCount || 0;
+        MemorySanctuary.state.conflictLog = [...(saveData.state.conflictLog || [])];
+        MemorySanctuary.state.consecutiveSkips = saveData.state.consecutiveSkips || 0;
+        MemorySanctuary.state.sacrificeHistory = [...(saveData.state.sacrificeHistory || [])];
+        MemorySanctuary.state.loopCluesFound = [...(saveData.state.loopCluesFound || [])];
+        MemorySanctuary.state.season = saveData.state.season ? { ...saveData.state.season } : null;
+        MemorySanctuary.state.foodBonusLogged = !!saveData.state.foodBonusLogged;
+        MemorySanctuary.state.foodCrisisLogged = !!saveData.state.foodCrisisLogged;
+        MemorySanctuary.state.starvationLogged = !!saveData.state.starvationLogged;
+        MemorySanctuary.state.botBlackoutLogged = !!saveData.state.botBlackoutLogged;
+        MemorySanctuary.state.resourceCritical = !!saveData.state.resourceCritical;
+        // 过期条目持久化（P1-3 修复）
+        MemorySanctuary.state.expiredEntries = [...(saveData.state.expiredEntries || [])];
+        // 周期事件追踪（P1-7 修复）
+        MemorySanctuary.state.triggeredPeriodicEvents = [...(saveData.state.triggeredPeriodicEvents || [])];
+        
+        // 读档后重新应用过期标记到 data.archives
+        if (MemorySanctuary.state.expiredEntries.length > 0 && MemorySanctuary.data.archives) {
+            MemorySanctuary.data.archives.forEach(entry => {
+                if (MemorySanctuary.state.expiredEntries.includes(entry.id)) {
+                    entry.expired = true;
+                }
+            });
+        }
         
         if (saveData.currentVaultId) {
             MemorySanctuary.currentVaultId = saveData.currentVaultId;
@@ -709,7 +794,43 @@ function sanitizeImportedSave(raw) {
         emergencyExploreUsed: !!s.emergencyExploreUsed,
         famineSurvived: !!s.famineSurvived,
         moraleStreak: obj(s.moraleStreak),
-        modules: obj(s.modules)
+        modules: obj(s.modules),
+        // === 补全缺失的运行时字段（P1-2 修复） ===
+        gameOver: !!s.gameOver,
+        _sealed: !!s._sealed,
+        departedGuardians: arr(s.departedGuardians).filter(x => typeof x === 'string'),
+        sacrificedGuardian: s.sacrificedGuardian || null,
+        guardianSacrifice: !!s.guardianSacrifice,
+        starvationWeeks: num(s.starvationWeeks, 0),
+        weeksWithoutStarvation: num(s.weeksWithoutStarvation, 0),
+        turnsSkipped: num(s.turnsSkipped, 0),
+        emergencyArchiveUsed: num(s.emergencyArchiveUsed, 0),
+        chaptersCompleted: arr(s.chaptersCompleted),
+        pendingEnding: s.pendingEnding || null,
+        instantArchiveChances: num(s.instantArchiveChances, 0),
+        lastSupplyWeek: num(s.lastSupplyWeek, 0),
+        batchArchiveMode: !!s.batchArchiveMode,
+        batchArchiveCount: num(s.batchArchiveCount, 0),
+        batchArchiveUsedThisRun: !!s.batchArchiveUsedThisRun,
+        nextWeekDecayPenalty: num(s.nextWeekDecayPenalty, 0),
+        botFactoryActive: !!s.botFactoryActive,
+        botMaintenanceCost: num(s.botMaintenanceCost, 0),
+        inheritedProjects: arr(s.inheritedProjects),
+        inheritedVaultUsage: obj(s.inheritedVaultUsage),
+        memoryEchoSelection: arr(s.memoryEchoSelection),
+        deepArchiveCount: num(s.deepArchiveCount, 0),
+        conflictLog: arr(s.conflictLog),
+        consecutiveSkips: num(s.consecutiveSkips, 0),
+        sacrificeHistory: arr(s.sacrificeHistory),
+        loopCluesFound: arr(s.loopCluesFound),
+        season: obj(s.season),
+        foodBonusLogged: !!s.foodBonusLogged,
+        foodCrisisLogged: !!s.foodCrisisLogged,
+        starvationLogged: !!s.starvationLogged,
+        botBlackoutLogged: !!s.botBlackoutLogged,
+        resourceCritical: !!s.resourceCritical,
+        expiredEntries: arr(s.expiredEntries).filter(x => typeof x === 'string'),
+        triggeredPeriodicEvents: arr(s.triggeredPeriodicEvents).filter(x => typeof x === 'string')
     };
 
     return {

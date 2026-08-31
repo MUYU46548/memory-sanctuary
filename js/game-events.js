@@ -48,7 +48,27 @@ function checkRandomEvent() {
         return;
     }
     
-    // 先处理章节过渡事件
+    // 先处理周期性事件（如地表残响）
+    const periodicEvents = MemorySanctuary.data.events.filter(e => {
+        if (e.trigger.type !== 'periodic') return false;
+        // P1-7 修复：周期事件通过单独的 triggeredPeriodicEvents 追踪，不记入 activeEventIds
+        if (MemorySanctuary.state.triggeredPeriodicEvents && MemorySanctuary.state.triggeredPeriodicEvents.includes(e.id)) return false;
+        // 检查是否到达触发周（每N周触发一次）
+        if (e.trigger.weekInterval) {
+            return week >= e.trigger.weekMin && 
+                   week <= e.trigger.weekMax && 
+                   (week - e.trigger.weekMin) % e.trigger.weekInterval === 0;
+        }
+        return false;
+    });
+    
+    // 周期性事件优先触发（100%概率）
+    if (periodicEvents.length > 0) {
+        triggerEvent(periodicEvents[0]);
+        return;
+    }
+    
+    // 章节过渡事件（一次性，记入 activeEventIds）
     const chapterTransitionEvents = MemorySanctuary.data.events.filter(e => {
         if (e.trigger.type !== 'chapter_transition') return false;
         if (MemorySanctuary.state.activeEventIds.includes(e.id)) return false;
@@ -72,25 +92,6 @@ function checkRandomEvent() {
         
         // Fallback: trigger event directly if no VN scene
         triggerEvent(eventToTrigger);
-        return;
-    }
-    
-    // 先处理周期性事件（如地表残响）
-    const periodicEvents = MemorySanctuary.data.events.filter(e => {
-        if (e.trigger.type !== 'periodic') return false;
-        if (MemorySanctuary.state.activeEventIds.includes(e.id)) return false;
-        // 检查是否到达触发周（每N周触发一次）
-        if (e.trigger.weekInterval) {
-            return week >= e.trigger.weekMin && 
-                   week <= e.trigger.weekMax && 
-                   (week - e.trigger.weekMin) % e.trigger.weekInterval === 0;
-        }
-        return false;
-    });
-    
-    // 周期性事件优先触发（100%概率）
-    if (periodicEvents.length > 0) {
-        triggerEvent(periodicEvents[0]);
         return;
     }
     
@@ -283,6 +284,15 @@ function checkNGPlusPersonalEvents() {
 function triggerEvent(event) {
     MemorySanctuary.activeEvent = event;
     MemorySanctuary.state.activeEventIds.push(event.id);
+    
+    // P1-7 修复：周期事件追踪到 triggeredPeriodicEvents（不影响 activeEventIds 的一次性事件过滤）
+    if (event.trigger.type === 'periodic') {
+        if (!MemorySanctuary.state.triggeredPeriodicEvents) MemorySanctuary.state.triggeredPeriodicEvents = [];
+        if (!MemorySanctuary.state.triggeredPeriodicEvents.includes(event.id)) {
+            MemorySanctuary.state.triggeredPeriodicEvents.push(event.id);
+        }
+    }
+    
     addLog(`突发事件：${event.title}`, 'event');
     
     // 守护者个人事件触发音效
@@ -327,22 +337,25 @@ function resolveEvent(choiceIndex) {
     
     const choice = event.choices[choiceIndex];
     
+    // 统一资源上限口径
+    const RESOURCE_CAPS = { energy: 150, media: 150, environment: 100, food: 80 };
+    
     // 应用效果
     if (choice.effect.energy) {
         MemorySanctuary.state.resources.energy = Math.max(0, 
-            MemorySanctuary.state.resources.energy + choice.effect.energy);
+            Math.min(RESOURCE_CAPS.energy, MemorySanctuary.state.resources.energy + choice.effect.energy));
     }
     if (choice.effect.media) {
         MemorySanctuary.state.resources.media = Math.max(0,
-            MemorySanctuary.state.resources.media + choice.effect.media);
+            Math.min(RESOURCE_CAPS.media, MemorySanctuary.state.resources.media + choice.effect.media));
     }
     if (choice.effect.environment) {
         MemorySanctuary.state.resources.environment = Math.max(0,
-            MemorySanctuary.state.resources.environment + choice.effect.environment);
+            Math.min(RESOURCE_CAPS.environment, MemorySanctuary.state.resources.environment + choice.effect.environment));
     }
     if (choice.effect.food) {
         MemorySanctuary.state.resources.food = Math.max(0,
-            MemorySanctuary.state.resources.food + choice.effect.food);
+            Math.min(RESOURCE_CAPS.food, MemorySanctuary.state.resources.food + choice.effect.food));
     }
     
     // 守护者个人事件效果
@@ -354,6 +367,10 @@ function resolveEvent(choiceIndex) {
         const archive = getArchiveById(choice.effect.revealArchive);
         if (archive) {
             addLog(`📜 新条目解锁：「${archive.title}」`, 'success');
+            // 实际解锁 NG+ 条目（P1-6 修复：revealArchive 不再只打日志）
+            if (archive.ngPlusExclusive) {
+                unlockNGPlusEntry(archive.id);
+            }
         }
     }
     

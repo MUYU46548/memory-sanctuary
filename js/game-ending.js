@@ -487,15 +487,22 @@ function triggerNarrativeChainEvents() {
 
 
 function sealSanctuary() {
+    // 幂等守卫：防止重复结算（封印后再次点击）
+    if (MemorySanctuary.state.gameOver && MemorySanctuary.state._sealed) {
+        return;
+    }
+    
     // 只有圣所模式才计入周目
     if (MemorySanctuary.activeModule !== 'sanctuary') {
         // DLC 模式：仅标记结束，不增加周目数
         MemorySanctuary.state.gameOver = true;
+        MemorySanctuary.state._sealed = true;
         if (typeof showTitleScreen === 'function') showTitleScreen();
         return;
     }
     
     MemorySanctuary.state.gameOver = true;
+    MemorySanctuary.state._sealed = true;
     const state = MemorySanctuary.state;
     
     // NG+ 结算：累计归档、守护者记录、周目递增（与崩溃/饥荒结局共用）
@@ -572,6 +579,9 @@ function showMemoryEchoSelection(ending) {
     content.innerHTML = html;
     overlay.classList.remove('hidden');
     
+    // 禁用背景点击关闭 + ESC 拦截（防止封印流程卡死）
+    overlay.dataset.locked = 'true';
+    
     // 限制选择数量
     const checks = content.querySelectorAll('.memory-echo-check');
     checks.forEach(check => {
@@ -586,6 +596,7 @@ function showMemoryEchoSelection(ending) {
     const proceed = (selected) => {
         state.memoryEchoSelection = selected;
         overlay.classList.add('hidden');
+        overlay.dataset.locked = '';
         playEndingSequence(ending);
     };
     
@@ -871,6 +882,12 @@ function renderSealButton() {
 
     // Only show seal button if game is active (state exists)
     if (!MemorySanctuary.state) {
+        container.innerHTML = '';
+        return;
+    }
+
+    // 封印后不再渲染按钮（防止重复结算）
+    if (MemorySanctuary.state.gameOver) {
         container.innerHTML = '';
         return;
     }

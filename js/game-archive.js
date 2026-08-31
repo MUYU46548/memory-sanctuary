@@ -56,7 +56,12 @@ function getEffectiveCost(entry, vault) {
 
     const entryType = entry.type || '';
     const themeTags = vault.themeTags || [];
-    const isMatch = themeTags.includes(entryType);
+    
+    // P1-10 修复：统一主题匹配口径
+    // 领域词（art/philosophy/ecology 等）需与 vault themeTags 匹配；
+    // 载体词（text/document/audio/image/record/data/letter/blueprint）为通用格式，任何存储室都可接纳
+    const CARRIER_TYPES = ['text', 'document', 'audio', 'image', 'record', 'data', 'letter', 'blueprint'];
+    const isMatch = themeTags.includes(entryType) || CARRIER_TYPES.includes(entryType);
 
     let modifier = 1.0;
     if (isMatch) {
@@ -1003,7 +1008,8 @@ function isArchiveAvailable(entry) {
     // Check if already unlocked in NG+ data
     if (ngData.unlockedEntries && ngData.unlockedEntries.includes(entry.id)) return true;
     
-    return true;
+    // ngPlusExclusive 条目：未在 unlockedEntries 中则不可用
+    return false;
 }
 
 

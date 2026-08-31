@@ -11,11 +11,16 @@ function initUI() {
     const overlay = document.getElementById('modal-overlay');
     if (overlay) {
         overlay.addEventListener('click', (e) => {
+            // 封印流程锁定时不允许背景点击关闭
+            if (e.target === overlay && overlay.dataset.locked) return;
             if (e.target === overlay) closeModal();
         });
     }
     
     document.addEventListener('keydown', (e) => {
+        // 封印流程锁定时不允许 ESC 关闭
+        const overlay = document.getElementById('modal-overlay');
+        if (overlay && overlay.dataset.locked) return;
         if (e.key === 'Escape') closeModal();
     });
 

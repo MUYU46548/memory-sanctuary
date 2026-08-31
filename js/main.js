@@ -384,7 +384,13 @@ function initGameState() {
         // 叙事连锁
         narrativeFlags: ['intro_complete'],
         sacrificeHistory: [],
-        loopCluesFound: []
+        loopCluesFound: [],
+        // P1-7 修复：周期事件追踪（不影响 activeEventIds）
+        triggeredPeriodicEvents: [],
+        // P1-3 修复：过期条目持久化
+        expiredEntries: [],
+        // P1-4 修复：封印幂等守卫
+        _sealed: false
     };
     
     MemorySanctuary.data.vaults.forEach(vault => {

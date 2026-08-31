@@ -50,7 +50,9 @@ function adjustResource(resource, amount) {
     const state = MemorySanctuary.state;
     if (!state) return;
     
-    const max = resource === 'media' ? 150 : (resource === 'food' ? 80 : 150);
+    // 统一资源上限口径：environment=100，其余 150/80
+    const RESOURCE_CAPS = { energy: 150, media: 150, environment: 100, food: 80 };
+    const max = RESOURCE_CAPS[resource] ?? 100;
     state.resources[resource] = Math.max(0, Math.min(max, state.resources[resource] + amount));
     
     // 资源变化后立即检查衰竭状态（勘探/事件奖励不推进时间）
@@ -101,25 +103,7 @@ function onTimeAdvanced(weeks) {
     
     try {
         // 资源自然衰减（生存压力核心）
-        const decay = getWeeklyDecay();
-        state.resources.energy = Math.max(0,
-            state.resources.energy - decay.energy * weeks
-        );
-        state.resources.media = Math.max(0,
-            state.resources.media - decay.media * weeks
-        );
-        state.resources.environment = Math.max(0,
-            state.resources.environment - decay.environment * weeks
-        );
-        state.resources.food = Math.max(0,
-            state.resources.food - decay.food * weeks
-        );
-        
-        // 追踪衰减为负值
-        state.resourceChanges.energy -= decay.energy * weeks;
-        state.resourceChanges.media -= decay.media * weeks;
-        state.resourceChanges.environment -= decay.environment * weeks;
-        state.resourceChanges.food -= decay.food * weeks;
+        const decay = applyWeeklyDecay(weeks);
 
         // 应用持续效果（如：每回合额外能源）
         applySustainedBonuses();
@@ -194,6 +178,11 @@ function onTimeAdvanced(weeks) {
                 if (remaining <= 0) {
                     addLog(`条目 "${entry.title}" 已永久消失。`, 'system');
                     entry.expired = true;
+                    // 同步到 state.expiredEntries（P1-3 修复：过期标记持久化）
+                    if (!MemorySanctuary.state.expiredEntries) MemorySanctuary.state.expiredEntries = [];
+                    if (!MemorySanctuary.state.expiredEntries.includes(entry.id)) {
+                        MemorySanctuary.state.expiredEntries.push(entry.id);
+                    }
                     if (typeof AudioSystem !== 'undefined') AudioSystem.playShatterSound();
                 }
             }
@@ -442,7 +431,11 @@ function getMoodTier(mood) {
 // 资源自然衰减 & 圣所衰竭系统
 // ==========================================
 
-function getWeeklyDecay() {
+// 拆分纯计算与副作用：calculateWeeklyDecay 纯计算返回衰减值；
+// applyWeeklyDecay 在 onTimeAdvanced 中调用并清零 nextWeekDecayPenalty。
+// 此前 getWeeklyDecay 内部直接清零 nextWeekDecayPenalty，导致 UI 预览（recalculateResourceChanges）
+// 把惩罚"消费"掉，真正推进时间时惩罚已为 0。
+function calculateWeeklyDecay() {
     const state = MemorySanctuary.state;
     let multiplier = 1;
     
@@ -454,12 +447,10 @@ function getWeeklyDecay() {
     if (res.environment <= 0) zeroCount++;
     
     if (zeroCount >= 2) {
-        multiplier = 2; // 已衰竭两种资源，剩余资源加速衰减
+        multiplier = 2;
     }
     
-    // 士气效率修正：高士气减少衰减，低士气增加衰减
-    // bonus: 1.15(excellent) … 0.85(critical)
-    // 衰减修正公式: decay * (2 - bonus)，使 1.15→0.85（减衰减），0.85→1.15（加衰减）
+    // 士气效率修正
     const moraleBonus = getMoraleEfficiencyBonus();
     const decayModifier = 2 - moraleBonus;
     
@@ -469,15 +460,14 @@ function getWeeklyDecay() {
     let environmentDecay = 0.5 * multiplier * decayModifier;
     let foodDecay = 0.3 * multiplier * decayModifier;
     
-    // 紧急归档协议惩罚：下周衰减+20%
+    // 紧急归档协议惩罚：下周衰减+20%（纯计算，不清零）
+    let penalty = 0;
     if (state.nextWeekDecayPenalty > 0) {
-        const penalty = state.nextWeekDecayPenalty;
+        penalty = state.nextWeekDecayPenalty;
         energyDecay *= (1 + penalty);
         mediaDecay *= (1 + penalty);
         environmentDecay *= (1 + penalty);
         foodDecay *= (1 + penalty);
-        // 消耗掉惩罚（仅生效一周）
-        state.nextWeekDecayPenalty = 0;
     }
     
     // 应用项目衰减减免（decayReduction 类型）
@@ -505,7 +495,36 @@ function getWeeklyDecay() {
         foodDecay *= (1 - botReduction);
     }
     
-    return { energy: energyDecay, media: mediaDecay, environment: environmentDecay, food: foodDecay };
+    return { energy: energyDecay, media: mediaDecay, environment: environmentDecay, food: foodDecay, penalty };
+}
+
+// 兼容旧调用：getWeeklyDecay 现在只做纯计算（不再清零 penalty）
+function getWeeklyDecay() {
+    return calculateWeeklyDecay();
+}
+
+// 在 onTimeAdvanced 中调用：应用衰减并清零惩罚
+function applyWeeklyDecay(weeks) {
+    const decay = calculateWeeklyDecay();
+    const state = MemorySanctuary.state;
+    
+    state.resources.energy = Math.max(0, state.resources.energy - decay.energy * weeks);
+    state.resources.media = Math.max(0, state.resources.media - decay.media * weeks);
+    state.resources.environment = Math.max(0, state.resources.environment - decay.environment * weeks);
+    state.resources.food = Math.max(0, state.resources.food - decay.food * weeks);
+    
+    // 追踪衰减为负值
+    state.resourceChanges.energy -= decay.energy * weeks;
+    state.resourceChanges.media -= decay.media * weeks;
+    state.resourceChanges.environment -= decay.environment * weeks;
+    state.resourceChanges.food -= decay.food * weeks;
+    
+    // 消耗掉惩罚（仅生效一周）
+    if (decay.penalty > 0) {
+        state.nextWeekDecayPenalty = 0;
+    }
+    
+    return decay;
 }
 
 function getEffectiveExpiryWeeks(entry) {
