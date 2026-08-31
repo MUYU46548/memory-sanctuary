@@ -1283,7 +1283,9 @@ window.AudioSystem = (() => {
     function setVolume(value) {
         sfxVolume = Math.max(0, Math.min(1, value));
         if (masterGain && ctx) {
-            masterGain.gain.setValueAtTime(sfxVolume * 0.3 * (sfxMuted || globalMuted ? 0 : 1), ctx.currentTime);
+            // P1-14 修复：静音时强制音量为 0
+            const effectiveVol = (isMuted || sfxMuted || globalMuted) ? 0 : sfxVolume * 0.3;
+            masterGain.gain.setValueAtTime(effectiveVol, ctx.currentTime);
         }
         saveAudioPrefs();
     }
@@ -1295,7 +1297,8 @@ window.AudioSystem = (() => {
     function toggleSFXMute() {
         sfxMuted = !sfxMuted;
         if (masterGain && ctx) {
-            masterGain.gain.setValueAtTime(sfxVolume * 0.3 * (sfxMuted || globalMuted ? 0 : 1), ctx.currentTime);
+            const effectiveVol = (isMuted || sfxMuted || globalMuted) ? 0 : sfxVolume * 0.3;
+            masterGain.gain.setValueAtTime(effectiveVol, ctx.currentTime);
         }
         saveAudioPrefs();
         return sfxMuted;
@@ -1322,6 +1325,15 @@ window.AudioSystem = (() => {
         }
         saveAudioPrefs();
         return globalMuted;
+    }
+    
+    // P1-14 修复：停止所有音频（BGM + 心跳 + drone）
+    function stopAll() {
+        stopBGM();
+        stopHeartbeat();
+        if (droneGain && ctx) {
+            droneGain.gain.setValueAtTime(0, ctx.currentTime);
+        }
     }
 
     return {
@@ -1366,6 +1378,7 @@ window.AudioSystem = (() => {
         playBGM,
         playBGMSync,
         stopBGM,
+        stopAll,
         setBGMVolume,
         toggleBGMMute,
         getCurrentBGM,

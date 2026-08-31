@@ -106,6 +106,15 @@ function checkHiddenEndings() {
         };
     }
 
+    // 1.5 完美封印（priority 110，高于守护者个人结局）- 需在守护者结局前检查
+    // 修复：此前守护者个人结局在 line 110 提前 return，perfect_seal 在 sorted 循环中永远不可达
+    const perfectSealCond = (data.endings || []).find(e => e.id === 'perfect_seal');
+    if (perfectSealCond && perfectSealCond.condition) {
+        if (checkEndingCondition(perfectSealCond.condition)) {
+            return { id: 'perfect_seal', title: perfectSealCond.title, description: perfectSealCond.description, priority: 110 };
+        }
+    }
+
     // 2. 守护者个人线结局
     if (guardianEndings.length > 0) {
         // 返回最高优先级的守护者结局

@@ -455,8 +455,9 @@
       "title": "安可",
       "trigger": {
         "type": "week",
-        "week": 46,
-        "probability": 0.5
+        "probability": 0.5,
+        "weekMin": 45,
+        "weekMax": 47
       },
       "description": "圣所的光已经调到了最暗。缇卡站上歌者之座：'最后一首。这次……你想听什么，我就唱什么。'",
       "choices": [
@@ -513,8 +514,9 @@
       "title": "索引的最后一行",
       "trigger": {
         "type": "week",
-        "week": 46,
-        "probability": 0.5
+        "probability": 0.5,
+        "weekMin": 45,
+        "weekMax": 47
       },
       "description": "芬恩捧着总索引：'该写最后一行了。写给谁看呢——是写给来检索的人，还是偶然推门进来的人？'",
       "choices": [
@@ -571,8 +573,9 @@
       "title": "种子银行的扉页",
       "trigger": {
         "type": "week",
-        "week": 46,
-        "probability": 0.5
+        "probability": 0.5,
+        "weekMin": 45,
+        "weekMax": 47
       },
       "description": "米莎把最后一批种子分成两箱：'一箱存最容易活下来的。一箱存最不像话的——比如那颗不可能发芽的。空间只够带走一箱的记录。'",
       "choices": [
@@ -629,8 +632,9 @@
       "title": "最后一次巡检",
       "trigger": {
         "type": "week",
-        "week": 47,
-        "probability": 0.5
+        "probability": 0.5,
+        "weekMin": 46,
+        "weekMax": 48
       },
       "description": "洛恩提起工具包：'最后一次全面巡检。通常我一个人走……这次，你要一起来吗？'",
       "choices": [
@@ -686,8 +690,9 @@
       "title": "告解",
       "trigger": {
         "type": "week",
-        "week": 45,
-        "probability": 0.5
+        "probability": 0.5,
+        "weekMin": 44,
+        "weekMax": 46
       },
       "description": "埃塞尔脱下祭司的旧袍，叠好。'最后的话，我不想以上帝的仆人的身份说。我想以埃塞尔的身份说。可以吗？'",
       "choices": [

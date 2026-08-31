@@ -385,7 +385,7 @@ const VN = (() => {
         
         markAsSeen(currentScene.id);
         hide();
-        if (onComplete) onComplete();
+        // P1-15 修复：onComplete 在 hide() 内部 setTimeout 中调用，此处不再双调用
     }
 
     function cancelSkip() {
@@ -395,6 +395,11 @@ const VN = (() => {
         if (typeof AudioSystem !== 'undefined' && AudioSystem.playVNCancel) {
             AudioSystem.playVNCancel();
         }
+    }
+    
+    // P1-15 修复：重置跳过确认框状态（防止下次打开时残留）
+    function resetSkipConfirm() {
+        if (els.confirmModal) els.confirmModal.classList.add('hidden');
     }
 
     function updateSkipButton() {

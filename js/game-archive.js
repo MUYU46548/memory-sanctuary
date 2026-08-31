@@ -565,6 +565,34 @@ function confirmArchive(archiveId) {
     confirmContainer.appendChild(skipLabel);
     confirmContainer.appendChild(confirmBtn);
     
+    // 深度归档按钮（P1-9 修复：增加深度归档 UI 入口）
+    const deepBtn = document.createElement('button');
+    deepBtn.id = 'modal-deep-btn';
+    deepBtn.textContent = '✨ 深度归档（+10能源解锁隐藏叙事）';
+    deepBtn.style.padding = '10px 20px';
+    deepBtn.style.background = 'transparent';
+    deepBtn.style.border = '1px solid var(--amber-primary)';
+    deepBtn.style.borderRadius = '4px';
+    deepBtn.style.color = 'var(--amber-primary)';
+    deepBtn.style.fontFamily = 'var(--font-cn)';
+    deepBtn.style.fontSize = '0.85rem';
+    deepBtn.style.cursor = 'pointer';
+    deepBtn.style.marginLeft = '8px';
+    deepBtn.title = '额外消耗 10 能源，解锁隐藏叙事与线索';
+    
+    deepBtn.onclick = () => {
+        if (skipCheckbox.checked) {
+            if (typeof getSettings === 'function') {
+                const s = getSettings();
+                s.skipConfirm = true;
+                localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
+            }
+        }
+        closeConfirmModal(archiveId, true, 'deep');
+    };
+    
+    confirmContainer.appendChild(deepBtn);
+    
     // 立即归档按钮（有机会时显示）
     if (instantChances > 0) {
         const instantBtn = document.createElement('button');

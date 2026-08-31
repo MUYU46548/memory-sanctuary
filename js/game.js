@@ -400,8 +400,8 @@ function applyMoralePressure() {
         state.guardianMoods[gid] = newMood;
         
         // 检测是否跨越关键阈值
-        const tierBefore = getMoodTier(before);
-        const tierAfter = getMoodTier(newMood);
+        const tierBefore = getMoodTierByValue(before);
+        const tierAfter = getMoodTierByValue(newMood);
         if (tierAfter > tierBefore) anyMoodUp = true;
         if (tierAfter < tierBefore) anyMoodDown = true;
     });
@@ -414,7 +414,7 @@ function applyMoralePressure() {
     }
 }
 
-function getMoodTier(mood) {
+function getMoodTierByValue(mood) {
     if (mood >= 6) return 3;      // intimate
     if (mood >= 3) return 2;      // friendly
     if (mood >= -2) return 1;     // neutral

@@ -963,7 +963,8 @@ function initSettings() {
     const animationSpeedSlider = document.getElementById('setting-animation-speed');
     const animationSpeedValue = document.getElementById('animation-speed-value');
     if (animationSpeedSlider) {
-        animationSpeedSlider.value = (getSettings().animationSpeed ?? 100);
+        const savedAnimSpeed = getSettings().animationSpeed ?? 100;
+        animationSpeedSlider.value = savedAnimSpeed;
         const setFill = () => {
             const min = parseInt(animationSpeedSlider.min, 10) || 0;
             const max = parseInt(animationSpeedSlider.max, 10) || 100;
@@ -973,8 +974,10 @@ function initSettings() {
         };
         setFill();
         if (animationSpeedValue) {
-            animationSpeedValue.textContent = animationSpeedSlider.value + '%';
+            animationSpeedValue.textContent = savedAnimSpeed + '%';
         }
+        // P1-16 修复：启动时应用动画速度（否则滑块动了才生效，重启后丢失）
+        document.documentElement.style.setProperty('--animation-speed', (savedAnimSpeed / 100).toFixed(2));
         animationSpeedSlider.addEventListener('input', () => {
             const val = parseInt(animationSpeedSlider.value, 10);
             if (animationSpeedValue) {
@@ -992,7 +995,8 @@ function initSettings() {
     const fontSizeSlider = document.getElementById('setting-font-size');
     const fontSizeValue = document.getElementById('font-size-value');
     if (fontSizeSlider) {
-        fontSizeSlider.value = (getSettings().fontSize ?? 17);
+        const savedFontSize = getSettings().fontSize ?? 17;
+        fontSizeSlider.value = savedFontSize;
         const setFill = () => {
             const min = parseInt(fontSizeSlider.min, 10) || 0;
             const max = parseInt(fontSizeSlider.max, 10) || 100;
@@ -1002,8 +1006,10 @@ function initSettings() {
         };
         setFill();
         if (fontSizeValue) {
-            fontSizeValue.textContent = fontSizeSlider.value + 'px';
+            fontSizeValue.textContent = savedFontSize + 'px';
         }
+        // P1-16 修复：启动时应用字体大小
+        document.documentElement.style.fontSize = savedFontSize + 'px';
         fontSizeSlider.addEventListener('input', () => {
             const val = parseInt(fontSizeSlider.value, 10);
             if (fontSizeValue) {

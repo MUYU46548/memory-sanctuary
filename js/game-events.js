@@ -237,7 +237,12 @@ function checkGuardianStoryEvent() {
         }
         
         if (trigger.type === 'week') {
-            if (state.week !== trigger.week) continue;
+            // P1-8 修复：支持 weekMin/weekMax 范围触发（避免单周掷骰失败永久错过）
+            if (trigger.weekMin !== undefined && trigger.weekMax !== undefined) {
+                if (state.week < trigger.weekMin || state.week > trigger.weekMax) continue;
+            } else {
+                if (state.week !== trigger.week) continue;
+            }
             if (Math.random() > (trigger.probability || 0.3)) continue;
             return story;
         }
@@ -493,7 +498,21 @@ function applyEventFeedback(choiceIndex) {
         MemorySanctuary.state.unlockedBonuses.push(choice.feedback.unlockBonus);
         addLog(`🔓 解锁持续效果：${choice.feedback.unlockBonus}`, 'success');
     }
-
+    
+    // P1-13 修复：处理守护者对话反馈（如牺牲剧情的台词）
+    const guardianIds = ['tika', 'finn', 'misha', 'lorn', 'ethel'];
+    for (const gid of guardianIds) {
+        if (choice.feedback[gid]) {
+            const guardian = getGuardianById(gid);
+            if (guardian) {
+                addLog(`${guardian.name}：「${choice.feedback[gid]}」`, 'guardian');
+            }
+        }
+    }
+    if (choice.feedback.narrator) {
+        addLog(`📖 ${choice.feedback.narrator}`, 'event');
+    }
+    
     // 处理特殊持续效果（如 foodBoostOverTime）
     if (choice.feedback.specialEffect) {
         const se = choice.feedback.specialEffect;
