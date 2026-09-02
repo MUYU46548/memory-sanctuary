@@ -19,7 +19,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 14,
+          "amount": 16,
           "probability": 0.3,
           "message": "从倒塌的档案室中回收了光学存储盘。"
         },
@@ -45,7 +45,7 @@
       "name": "枯萎之森",
       "description": "曾经繁茂的森林，现在只剩下扭曲的树干。",
       "difficulty": 2,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "ecology",
@@ -65,7 +65,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 24,
+          "amount": 28,
           "probability": 0.21,
           "message": "在森林深处的实验室中找到了种子基因库。"
         },
@@ -114,7 +114,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 22,
+          "amount": 25,
           "probability": 0.3,
           "message": "回收了天文观测数据硬盘。"
         },
@@ -154,7 +154,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 15,
+          "amount": 17,
           "probability": 0.3,
           "message": "找到了果园管理日志和土壤分析记录。"
         },
@@ -189,7 +189,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 18,
+          "amount": 21,
           "probability": 0.35,
           "message": "找到了医学研究数据库的备份。"
         },
@@ -234,7 +234,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 26,
+          "amount": 30,
           "probability": 0.4,
           "message": "在地下室找到了防水存储箱，内含珍贵文献。"
         },
@@ -267,7 +267,7 @@
       "name": "工业制造区",
       "description": "末日前的工业核心，锈迹斑斑的机械沉默着。",
       "difficulty": 3,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "engineering",
@@ -287,7 +287,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 30,
+          "amount": 34,
           "probability": 0.3,
           "message": "在控制室找到了生产日志和工艺图纸。"
         },
@@ -326,7 +326,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 22,
+          "amount": 25,
           "probability": 0.35,
           "message": "找到了宗教仪式的完整记录。"
         },
@@ -373,7 +373,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 17,
+          "amount": 20,
           "probability": 0.21,
           "message": "在民居中找到了日记和家庭影像记录。"
         },
@@ -406,7 +406,7 @@
       "name": "地热反应堆",
       "description": "圣所能源的源头，危险与机遇并存。",
       "difficulty": 3,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "engineering",
@@ -423,7 +423,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 24,
+          "amount": 28,
           "probability": 0.25,
           "message": "在反应堆控制室找到了运行日志。"
         },
@@ -449,7 +449,7 @@
       "name": "封存者地窖",
       "description": "末日前的秘密储藏室，地图上也找不到。",
       "difficulty": 2,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "exploration"
@@ -461,7 +461,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 34,
+          "amount": 39,
           "probability": 0.4,
           "message": "找到了封存者精心保存的文化遗产。"
         },
@@ -494,7 +494,7 @@
       "name": "轨道发射场",
       "description": "萨拉达斯太空梦想的起点，发射塔已倒塌。",
       "difficulty": 3,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "engineering",
@@ -514,7 +514,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 26,
+          "amount": 30,
           "probability": 0.3,
           "message": "找到了航天日志和轨道计算数据。"
         },
@@ -547,7 +547,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 24,
+          "amount": 28,
           "probability": 0.4,
           "message": "纪念碑底座中藏有完整的文明数据库。"
         },
@@ -580,7 +580,7 @@
       "name": "灰绿之海",
       "description": "曾经蔚蓝的海洋，如今覆盖着一层灰绿色的膜。",
       "difficulty": 2,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "ecology",
@@ -601,7 +601,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 30,
+          "amount": 34,
           "probability": 0.21,
           "message": "在海岸带找到了海洋生物基因库。"
         },
@@ -650,7 +650,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 22,
+          "amount": 25,
           "probability": 0.21,
           "message": "在废墟中找到了家庭影像记录。"
         },
@@ -682,7 +682,7 @@
       "name": "病变诊所",
       "description": "末日前的诊所，墙上还挂着'辐射病专科'的牌子。",
       "difficulty": 3,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "survival",
@@ -697,7 +697,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 34,
+          "amount": 39,
           "probability": 0.4,
           "message": "找到了辐射病研究的原始数据。"
         },
@@ -729,7 +729,7 @@
       "name": "暴动街区",
       "description": "曾经繁华的商业区，如今只剩下燃烧的商店和散落的配给券。",
       "difficulty": 3,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "exploration",
@@ -748,7 +748,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 30,
+          "amount": 34,
           "probability": 0.3,
           "message": "在废墟中找到了暴动日记。"
         },
@@ -773,7 +773,7 @@
       "name": "最终废墟",
       "description": "萨拉达斯最后的城镇废墟，墙壁上涂满了末日标语。",
       "difficulty": 2,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "exploration",
@@ -787,7 +787,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 26,
+          "amount": 30,
           "probability": 0.35,
           "message": "找到了末日期间的生活记录。"
         },
@@ -819,7 +819,7 @@
       "name": "温室废墟",
       "description": "末日前的生态温室，玻璃穹顶已破碎，但土壤中的种子仍在休眠。",
       "difficulty": 2,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "ecology",
@@ -840,7 +840,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 24,
+          "amount": 28,
           "probability": 0.3,
           "message": "发现了植物学家的研究日志和物种编目。"
         },
@@ -879,7 +879,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 24,
+          "amount": 28,
           "probability": 0.4,
           "message": "找到了圣所建造者的私人日记。"
         },
@@ -911,7 +911,7 @@
       "name": "地下菌窟",
       "description": "圣所下方的天然洞穴，恒温恒湿，菌丝在黑暗中蔓延。",
       "difficulty": 2,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "ecology",
@@ -932,7 +932,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 22,
+          "amount": 25,
           "probability": 0.3,
           "message": "找到了洞穴壁画和早期殖民者的生存日志。"
         },
@@ -970,7 +970,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 20,
+          "amount": 23,
           "probability": 0.35,
           "message": "在残破的乐谱架上找到了未被归档的曲目手稿。"
         },
@@ -1015,7 +1015,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 24,
+          "amount": 28,
           "probability": 0.4,
           "message": "找到了最后一位母语者的语音记录。"
         },
@@ -1047,7 +1047,7 @@
       "name": "休眠保险库",
       "description": "末日前的战略物资储备库，厚重的气密门后封存着紧急配给。",
       "difficulty": 2,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "engineering",
@@ -1065,7 +1065,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 20,
+          "amount": 23,
           "probability": 0.3,
           "message": "发现了战略储备库的管理日志和配给清单。"
         },
@@ -1103,7 +1103,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 28,
+          "amount": 32,
           "probability": 0.4,
           "message": "找到了完整的《萨拉达斯法典》抄本。"
         },
@@ -1135,7 +1135,7 @@
       "name": "祭祀遗址",
       "description": "末日前的秘密祭祀场所，墙上刻满了翼神教的符号。",
       "difficulty": 2,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 1,
       "requiredSkills": [
         "ritual",
@@ -1149,7 +1149,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 26,
+          "amount": 30,
           "probability": 0.35,
           "message": "找到了翼神教的仪式手稿和神学论述。"
         },
@@ -1196,7 +1196,7 @@
         {
           "type": "resource",
           "resource": "media",
-          "amount": 10,
+          "amount": 12,
           "probability": 0.35,
           "message": "回收了一批封装完好的光学存储盘。"
         },
@@ -1216,7 +1216,7 @@
       "name": "深层反应堆核心",
       "description": "地表下更深处的旧反应堆。只有工程机器人编队能承受那里的辐射与高温，取回残余的燃料棒。",
       "difficulty": 3,
-      "duration": 2,
+      "duration": 1,
       "maxAttempts": 99,
       "requiredSkills": [],
       "requiredBots": 3,

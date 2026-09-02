@@ -580,13 +580,17 @@ function applyExplorationResult(outcome, expData) {
         adjustGuardianMood(gid, 1);
     });
 
-    // Layer 4: Risk consequences — fatigue + potential mood penalty
-    if (outcome.type === 'risk') {
+    // Layer 4: Fatigue — 疲劳随勘探产生（A1 调整 2026-09-02）
+    // 原口径：仅 risk 结果产生疲劳（平均风险 10%，diff1 多为 5-10% → 约 90% 勘探无疲劳，
+    //         玩家可无限派遣同一守护者，疲劳机制形同虚设）。
+    // A1 新口径：diff≥2 高难度点基础派遣即产生 1 周疲劳（无论结果）；risk 结果 2 周；diff1 非 risk 仍无疲劳。
+    const isHighDifficulty = (expData.difficulty || 1) >= 2;
+    const baseFatigueWeeks = outcome.type === 'risk' ? 2 : (isHighDifficulty ? 1 : 0);
+    if (baseFatigueWeeks > 0) {
         // 工程机器人疲劳守护：每台减免 50% 疲劳周数（接替高风险外勤），最低保留 1 周
         const botCount = (typeof getEngineeringBotCount === 'function') ? getEngineeringBotCount() : 0;
         const fatigueGuard = (typeof ENGINEERING_BOTS_CONFIG !== 'undefined') ? ENGINEERING_BOTS_CONFIG.fatigueGuardPerBot : 0;
         const online = (typeof areBotsOnline === 'function') ? areBotsOnline() : false;
-        const baseFatigueWeeks = 2;
         let fatigueWeeks = online
             ? Math.max(1, Math.round(baseFatigueWeeks * (1 - fatigueGuard * botCount)))
             : baseFatigueWeeks;
@@ -604,15 +608,16 @@ function applyExplorationResult(outcome, expData) {
                 MemorySanctuary.state.exploration.fatigue = {};
             }
             MemorySanctuary.state.exploration.fatigue[gid] = MemorySanctuary.state.week + fatigueWeeks + 1;
-
-            // 50% chance of mood penalty
-            if (Math.random() < 0.5) {
-                adjustGuardianMood(gid, -1);
-            }
         });
 
         if (online && fatigueWeeks < baseFatigueWeeks) {
             addLog(`🔧 工程机器人接替了部分高风险外勤，守护者疲劳减轻（${fatigueWeeks} 周）。`, 'system');
+        }
+        // 心情惩罚仅保留在 risk 结果（风险的额外代价），基础派遣疲劳不额外扣心情
+        if (outcome.type === 'risk') {
+            selectedGuardians.forEach(gid => {
+                if (Math.random() < 0.5) adjustGuardianMood(gid, -1);
+            });
         }
     }
 
