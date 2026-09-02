@@ -1342,14 +1342,27 @@ function showGuardianDialogue(guardianId, type) {
     const guardian = getGuardianById(guardianId);
     if (!guardian) return;
     
-    let dialogues;
-    // Use mood-based dialogue for idle type
-    if (type === 'idle' && guardian.moodDialogues) {
-        dialogues = getMoodDialogue(guardianId);
-    } else if (guardian.dialogues[type]) {
-        dialogues = guardian.dialogues[type];
-    } else {
-        return;
+    let dialogues = null;
+    // NG+ 牺牲记忆（sacrifice_memory_* 叙事 flag 消费端，T4-4 遗留接线）：
+    // 上周目牺牲过的守护者，本轮首次 idle 交谈时优先播放专属追忆台词，随后消费该 flag（一次性叙事节拍，
+    // 不覆盖常规心情台词；牺牲的持久记录由 ngData.sacrificeHistory 承担）。
+    if (type === 'idle' && guardian.dialogues && guardian.dialogues.sacrifice) {
+        const flags = MemorySanctuary.state.narrativeFlags || [];
+        const i = flags.indexOf('sacrifice_memory_' + guardianId);
+        if (i !== -1) {
+            dialogues = guardian.dialogues.sacrifice;
+            flags.splice(i, 1);
+        }
+    }
+    if (!dialogues) {
+        // Use mood-based dialogue for idle type
+        if (type === 'idle' && guardian.moodDialogues) {
+            dialogues = getMoodDialogue(guardianId);
+        } else if (guardian.dialogues[type]) {
+            dialogues = guardian.dialogues[type];
+        } else {
+            return;
+        }
     }
     
     const randomDialogue = dialogues[Math.floor(Math.random() * dialogues.length)];
@@ -2345,11 +2358,18 @@ const EMERGENCY_PROTOCOLS = [
             state.emergencyExploreFoodFree = true;
         },
         extraEffect: (state) => {
-            const guardians = MemorySanctuary.data.guardians;
-            guardians.forEach(g => {
-                if (state.exploration.fatigue) {
-                    state.exploration.fatigue[g.id] = (state.exploration.fatigue[g.id] || 0) + 1;
-                }
+            // 遗留项修复（与 T1-3 统一疲劳语义）：疲劳表存「周数截止线」（返回周起 N 周不可再派），
+            // 与 game-exploration.js applyExplorationResult / balance-sim-v2.js 同口径。
+            // 紧急勘探「疲劳仅+1周」：本周立刻派遣，下一周不可再派，week+2 恢复；
+            // 已疲劳者在原截止线基础上再 +1 周。
+            // 旧实现用计数语义 `(old||0)+1`：对未疲劳守护者设 1，`1 > week` 恒 false，
+            // 实际不产生任何疲劳——纯计数与周数截止线混用，现改为真实截止线。
+            const exp = state.exploration;
+            if (!exp) return;
+            if (!exp.fatigue) exp.fatigue = {};
+            const deadline = state.week + 2;
+            MemorySanctuary.data.guardians.forEach(g => {
+                exp.fatigue[g.id] = Math.max((exp.fatigue[g.id] || 0) + 1, deadline);
             });
         }
     },

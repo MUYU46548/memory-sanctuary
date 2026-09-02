@@ -464,6 +464,10 @@ function applyEventFeedback(choiceIndex) {
     if (!choice.feedback) return;
     
     // 应用长期效果
+    // narrativeFlag：叙事决策台账（预留 ledger）。
+    // 当前全库消费端仅 sacrifice_memory_*（见 game.js showGuardianDialogue）。
+    // 其余 47 个事件 flag（repaired_light_rain / sided_with_finn / tika_finale_song 等）目前无消费端，
+    // 属「预留叙事数据」而非死数据：保留它们等于保留历史决策记录，未来做 flag 门控内容时无需存档迁移。
     if (choice.feedback.narrativeFlag) {
         MemorySanctuary.state.narrativeFlags.push(choice.feedback.narrativeFlag);
     }
