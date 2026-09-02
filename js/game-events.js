@@ -215,7 +215,7 @@ function checkGuardianPersonalEvent() {
 
 /**
  * 检查守护者故事线事件
- * 碎片化暗示叙事，每个守护者有 3 个连续故事
+ * 碎片化暗示叙事，每个守护者有 5 个连续故事
  */
 function checkGuardianStoryEvent() {
     const state = MemorySanctuary.state;
