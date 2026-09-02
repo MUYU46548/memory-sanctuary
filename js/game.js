@@ -1045,7 +1045,7 @@ function triggerGameOver(reason) {
     if (!overlay || !title || !content) return;
 
     let titleText = '圣所已崩溃';
-    let contentText = '能源、介质与环境稳定度全部归零。\n\n圣所的系统一个接一个地停止了运转。最后的灯光熄灭，空气变得沉默。\n\n你未能保存萨拉达斯的遗产。后世将永远不知道这里曾存在过一个文明。\n\n「我们曾存在，但没有人记得。」';
+    let contentText = '能源、介质与环境稳定度全部归零。\n\n圣所的系统一个接一个地停止了运转。最后的灯光熄灭，空气变得沉默。\n\n你未能保存洛斯耶马的遗产。后世将永远不知道这里曾存在过一个文明。\n\n「我们曾存在，但没有人记得。」';
 
     const archivedCount = MemorySanctuary.state.completedArchives.length;
     const totalCount = MemorySanctuary.data.archives.length;
@@ -1065,7 +1065,7 @@ function triggerGameOver(reason) {
         
         if (reason === 'starvation') {
             titleText = '🍂 饥荒降临';
-            contentText = '连续三周的饥饿摧毁了圣所。\n\n守护者们一个接一个倒下，圣所的核心停止了运转。没有食物，没有希望。\n\n后世永远不会知道萨拉达斯曾存在过——因为没有人活下来讲述这个故事。\n\n「饥饿是最古老的死刑。」';
+            contentText = '连续三周的饥饿摧毁了圣所。\n\n守护者们一个接一个倒下，圣所的核心停止了运转。没有食物，没有希望。\n\n后世永远不会知道洛斯耶马曾存在过——因为没有人活下来讲述这个故事。\n\n「饥饿是最古老的死刑。」';
             // 直接使用饥荒结局场景
             endingSceneId = 'starvation';
             const starvationEnding = MemorySanctuary.data.endings.find(e => e.id === 'starvation');
@@ -2085,7 +2085,7 @@ const TUTORIAL_STEPS = [
     {
         target: '#vault-tabs',
         tab: 'vault',
-        text: '圣所共有 12 间存储室，记录着萨拉达斯文明的不同侧面：\n\n语言、历史、灾难、艺术、哲学、科学、生态、法律、生活、建筑、医学与星象。\n\n已为你打开「存储室」页——点击标签切换存储室，查看各室的容量与已存条目。',
+        text: '圣所共有 12 间存储室，记录着洛斯耶马文明的不同侧面：\n\n语言、历史、灾难、艺术、哲学、科学、生态、法律、生活、建筑、医学与星象。\n\n已为你打开「存储室」页——点击标签切换存储室，查看各室的容量与已存条目。',
         position: 'bottom'
     },
     {
@@ -2128,7 +2128,7 @@ const TUTORIAL_STEPS = [
     },
     {
         target: null,
-        text: '准备就绪。\n\n你的选择决定了后世「看到」怎样的萨拉达斯文明。\n\n每一段记忆都值得被认真对待。\n\n——终来之刻，何物当存？',
+        text: '准备就绪。\n\n你的选择决定了后世「看到」怎样的洛斯耶马文明。\n\n每一段记忆都值得被认真对待。\n\n——终来之刻，何物当存？',
         position: 'center'
     }
 ];
@@ -2498,7 +2498,7 @@ function showHelpModal() {
     const helpSections = [
         {
             title: '🎯 游戏目标',
-            content: `• 在有限的 48 周内，尽可能多地归档文明碎片，为后世保存萨拉达斯文明的记忆
+            content: `• 在有限的 48 周内，尽可能多地归档文明碎片，为后世保存洛斯耶马文明的记忆
 • 20 周后可封印圣所提前结算，48 周为极限挑战`,
         },
         {

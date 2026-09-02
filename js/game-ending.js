@@ -100,7 +100,7 @@ function checkHiddenEndings() {
         return {
             id: 'complete_memory',
             title: ending ? ending.title : '🌟 永恒记忆',
-            description: ending ? ending.description : '你保存了萨拉达斯文明的每一片碎片。',
+            description: ending ? ending.description : '你保存了洛斯耶马文明的每一片碎片。',
             priority: 100,
             allGuardiansHappy: guardianEndings.length >= 3
         };
@@ -155,10 +155,10 @@ function checkHiddenEndings() {
     // ⚠ ID 必须与 endings.json 图鉴条目一致（历史上 fallback 曾用 fragment_keeper/whisper_keeper 等旧 ID，
     //   与图鉴的 finale_* 对不上，导致通关后结局图鉴全部显示锁定）
     const pct = total > 0 ? completed.length / total : 0;
-    if (pct >= 0.6) return { id: 'guardian_of_remnants', title: '文明守护者', description: '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的萨拉达斯。', priority: 50 };
-    if (pct >= 0.4) return { id: 'finale_guardian_of_fragments', title: '碎片收集者', description: `你保存了萨拉达斯的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。`, priority: 50 };
-    if (pct >= 0.1) return { id: 'finale_whisper_keeper', title: '微光守护者', description: `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。`, priority: 30 };
-    if (state.week >= 20) return { id: 'finale_silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。也许……遗忘也是一种选择。', priority: 10 };
+    if (pct >= 0.6) return { id: 'guardian_of_remnants', title: '文明守护者', description: '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的洛斯耶马。', priority: 50 };
+    if (pct >= 0.4) return { id: 'finale_guardian_of_fragments', title: '碎片收集者', description: `你保存了洛斯耶马的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。`, priority: 50 };
+    if (pct >= 0.1) return { id: 'finale_whisper_keeper', title: '微光守护者', description: `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到洛斯耶马的零星片段，但至少——他们知道这里曾经存在过一个文明。`, priority: 30 };
+    if (state.week >= 20) return { id: 'finale_silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道洛斯耶马曾存在过。也许……遗忘也是一种选择。', priority: 10 };
 
     return null;
 }
@@ -260,13 +260,13 @@ function checkConflictEnding() {
     
     if (sacredRatio >= 0.7) {
         title = '🛡️ 守圣者';
-        description = `你坚定地守护着萨拉达斯的神圣记忆。${totalChoices} 次抉择中，${themes.sacred} 次选择了正统与信仰。后世将看到一个纯净、高贵的文明——它的歌声、它的律法、它的信仰，都如星辰般永恒。`;
+        description = `你坚定地守护着洛斯耶马的神圣记忆。${totalChoices} 次抉择中，${themes.sacred} 次选择了正统与信仰。后世将看到一个纯净、高贵的文明——它的歌声、它的律法、它的信仰，都如星辰般永恒。`;
     } else if (profaneRatio >= 0.7) {
         title = '🔥 破茧者';
-        description = `你勇敢地拥抱了萨拉达斯的另一面。${totalChoices} 次抉择中，${themes.profane} 次选择了异见与怀疑。后世将看到一个真实、复杂的文明——它的挣扎、它的质疑、它的蜕变，都如火焰般炽热。`;
+        description = `你勇敢地拥抱了洛斯耶马的另一面。${totalChoices} 次抉择中，${themes.profane} 次选择了异见与怀疑。后世将看到一个真实、复杂的文明——它的挣扎、它的质疑、它的蜕变，都如火焰般炽热。`;
     } else {
         title = '⚖️ 平衡者';
-        description = `你在萨拉达斯的记忆中寻找平衡。${totalChoices} 次抉择中，你既守护了神圣，也拥抱了异见。后世将看到一个完整、矛盾的文明——它既有歌声也有质疑，既有信仰也有思考。`;
+        description = `你在洛斯耶马的记忆中寻找平衡。${totalChoices} 次抉择中，你既守护了神圣，也拥抱了异见。后世将看到一个完整、矛盾的文明——它既有歌声也有质疑，既有信仰也有思考。`;
     }
     
     return {
@@ -320,7 +320,7 @@ function getEndingModalData(ending) {
         }
     }
 
-    modalContent += `\n你的选择决定了后世「看到」怎样的萨拉达斯文明。\n`;
+    modalContent += `\n你的选择决定了后世「看到」怎样的洛斯耶马文明。\n`;
     modalContent += `「——终来之刻，何物当存？」`;
 
     return modalContent;
@@ -955,16 +955,16 @@ function generateCivilizationPortrait() {
     const vaultNames = dominant.map(d => vaults.find(v => v.id === d.id)?.name || '');
     
     let title = '无名守护者';
-    let description = '你选择了沉默。后世将永远不知道萨拉达斯曾存在过。';
+    let description = '你选择了沉默。后世将永远不知道洛斯耶马曾存在过。';
     
     const totalPercent = completed.length / archives.length;
     
     if (totalPercent >= 1) {
         title = '永恒记忆';
-        description = '你保存了萨拉达斯文明的全部碎片。后世将看到一个完整的文明——它的语言、历史、灾难、艺术、信仰、科学、生态、法律、生活、建筑、医学与星空。这是你对时间的反抗。';
+        description = '你保存了洛斯耶马文明的全部碎片。后世将看到一个完整的文明——它的语言、历史、灾难、艺术、信仰、科学、生态、法律、生活、建筑、医学与星空。这是你对时间的反抗。';
     } else if (totalPercent >= 0.7) {
         title = '文明守护者';
-        description = '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的萨拉达斯——它的歌声、它的挣扎、它的智慧、它的爱。';
+        description = '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的洛斯耶马——它的歌声、它的挣扎、它的智慧、它的爱。';
     } else if (totalPercent >= 0.4) {
         // Check for specific combinations
         const hasLanguage = vaultCounts[1] >= 3;
@@ -982,35 +982,35 @@ function generateCivilizationPortrait() {
         
         if (hasLanguage && hasArt) {
             title = '歌与诗之声';
-            description = '你保存了萨拉达斯的语言与艺术。后世将听到它的歌声、看到它的色彩、感受它的舞蹈。这是一个用美回应末日的文明。';
+            description = '你保存了洛斯耶马的语言与艺术。后世将听到它的歌声、看到它的色彩、感受它的舞蹈。这是一个用美回应末日的文明。';
         } else if (hasHistory && hasLaw) {
             title = '律法与秩序';
-            description = '你保存了萨拉达斯的历史与法律。后世将看到它的兴衰、它的制度、它的抉择。这是一个在混乱中坚守秩序的文明。';
+            description = '你保存了洛斯耶马的历史与法律。后世将看到它的兴衰、它的制度、它的抉择。这是一个在混乱中坚守秩序的文明。';
         } else if (hasScience && hasAstronomy) {
             title = '追光者';
-            description = '你保存了萨拉达斯的科学与星象。后世将看到它的智慧、它的好奇、它的仰望。这是一个试图理解宇宙的文明。';
+            description = '你保存了洛斯耶马的科学与星象。后世将看到它的智慧、它的好奇、它的仰望。这是一个试图理解宇宙的文明。';
         } else if (hasEcology && hasMedicine) {
             title = '生命回响';
-            description = '你保存了萨拉达斯的生态与医学。后世将看到它的生命、它的脆弱、它的顽强。这是一个与星球共生的文明。';
+            description = '你保存了洛斯耶马的生态与医学。后世将看到它的生命、它的脆弱、它的顽强。这是一个与星球共生的文明。';
         } else if (hasDisaster && hasHistory) {
             title = '灾难见证者';
-            description = '你保存了萨拉达斯的灾难与历史。后世将看到它的终结、它的痛苦、它的反抗。这是一个在末日面前记录一切的文明。';
+            description = '你保存了洛斯耶马的灾难与历史。后世将看到它的终结、它的痛苦、它的反抗。这是一个在末日面前记录一切的文明。';
         } else if (hasDaily && hasPhilosophy) {
             title = '爱与记忆';
-            description = '你保存了萨拉达斯的日常生活与哲学。后世将看到它的平凡、它的思考、它的温暖。这是一个用日常抵抗遗忘的文明。';
+            description = '你保存了洛斯耶马的日常生活与哲学。后世将看到它的平凡、它的思考、它的温暖。这是一个用日常抵抗遗忘的文明。';
         } else if (hasPhilosophy && hasArt) {
             title = '星空之梦';
-            description = '你保存了萨拉达斯的哲学与艺术。后世将看到它的梦想、它的追问、它的美。这是一个仰望星空的文明。';
+            description = '你保存了洛斯耶马的哲学与艺术。后世将看到它的梦想、它的追问、它的美。这是一个仰望星空的文明。';
         } else {
             title = '碎片收集者';
-            description = `你保存了萨拉达斯的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。${vaultNames.slice(0, 2).join('、')}——这些是你在黑暗中选择守护的。`;
+            description = `你保存了洛斯耶马的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。${vaultNames.slice(0, 2).join('、')}——这些是你在黑暗中选择守护的。`;
         }
     } else if (totalPercent >= 0.1) {
         title = '微光守护者';
-        description = `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到萨拉达斯的零星片段，但至少——他们知道这里曾经存在过一个文明。${vaultNames.length > 0 ? '你特别守护了' + vaultNames[0] + '。' : ''}`;
+        description = `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到洛斯耶马的零星片段，但至少——他们知道这里曾经存在过一个文明。${vaultNames.length > 0 ? '你特别守护了' + vaultNames[0] + '。' : ''}`;
     } else {
         title = '寂静圣所';
-        description = '你选择了沉默。圣所中空空如也，后世将永远不知道萨拉达斯曾存在过。也许……遗忘也是一种选择。';
+        description = '你选择了沉默。圣所中空空如也，后世将永远不知道洛斯耶马曾存在过。也许……遗忘也是一种选择。';
     }
     
     return { title, description, totalPercent: Math.round(totalPercent * 100) };
@@ -1089,7 +1089,7 @@ function renderAtlas() {
     ctx.fillStyle = accentColor;
     ctx.font = 'bold 18px "Noto Serif SC", serif';
     ctx.textAlign = 'center';
-    ctx.fillText('萨拉达斯文明图谱', width / 2, 30);
+    ctx.fillText('洛斯耶马文明图谱', width / 2, 30);
     
     // Draw completion
     const totalDone = completedArchives.length;

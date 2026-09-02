@@ -33,7 +33,7 @@ const DLC_MODULES = {
         id: 'ascension',
         name: '升天之仪',
         icon: '🪶',
-        description: '扮演执仪者，在萨拉达斯文明覆灭前最后七日，选择将哪些文明碎片封装进祈愿瓶发射至深空。',
+        description: '扮演执仪者，在洛斯耶马文明覆灭前最后七日，选择将哪些文明碎片封装进祈愿瓶发射至深空。',
         unlockRequirement: { type: 'playthrough', count: 1 },
         unlockLabel: '通关 1 周目解锁',
         systems: ['ascension'],
