@@ -1,6 +1,6 @@
 # 记忆圣所 (Memory Sanctuary)
 
-![Version](https://img.shields.io/badge/version-v0.2.4-blue)
+![Version](https://img.shields.io/badge/version-v0.2.6-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tech](https://img.shields.io/badge/tech-HTML5%20%2B%20CSS3%20%2B%20Vanilla%20JS-orange)
 
@@ -306,6 +306,17 @@ memory-sanctuary/
 ---
 
 ## 版本历史
+
+### v0.2.6 (2026-09-02)
+
+> 承接 v0.2.4，含 P1（16 项）+ P2（24 项）+ 遗留项收尾（2 项）全量修复。版本号自 v0.2.4 直接升至 v0.2.6（P1 原计划记 v0.2.5，未单独发布）。
+
+- ✅ **存档系统根治**：`saveGame` 补全 35+ 运行时字段（读档不再丢数据）；过期条目迁移至 `state.expiredEntries`（不再复活）；封印结算/记忆回响加幂等守卫（不再卡死/重复结算）
+- ✅ **核心机制修复**：紧急归档「下周衰减+20%」真实生效（拆分纯计算/副作用）；NG+ 解锁条目/周期事件重复触发/主题契合匹配/资源上限校准
+- ✅ **内容补完**：终章守护者故事线改为周数范围触发（不再单周掷骰错过）；深度归档 UI 按钮；牺牲剧情演出恢复；音频/过场/设置项修复
+- ✅ **边缘一致性与体验（P2）**：勘探线索前缀一致化、米莎事件死引用修复、文明抉择结局补 VN 场景、疲劳 off-by-one 修正、紧急归档不再净赚、亮色主题对比度达标（WCAG AA）、结算页转义、字体超时兜底、机器人文案校正、成就/结局图鉴补全
+- ✅ **遗留项收尾**：`emergency_explore` 疲劳语义统一（「疲劳仅+1周」现真实生效）；`sacrifice_memory_*` 接入消费端——NG+ 牺牲守护者首次交谈播放专属追忆台词
+- 🐛 版本号全链路同步 v0.2.6（web 缓存号 / 更新检查 / 打包脚本 / 桌面配置）
 
 ### v0.2.4 (2026-08-30)
 
