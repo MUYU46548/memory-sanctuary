@@ -768,6 +768,9 @@ function sanitizeImportedSave(raw) {
         completedArchives: arr(s.completedArchives).filter(x => typeof x === 'string' || typeof x === 'number'),
         vaultUsage: obj(s.vaultUsage),
         narrativeFlags: arr(s.narrativeFlags).filter(x => typeof x === 'string'),
+        // T1-7 修复：通用科技树（v0.2.4）解锁字段此前未进白名单，导入存档后已解锁科技被丢弃
+        techUnlocked: arr(s.techUnlocked).filter(x => typeof x === 'string'),
+        techDoctrines: obj(s.techDoctrines),
         deterioration: obj(s.deterioration),
         emergencyCorruption: num(s.emergencyCorruption, 0),
         emergencyCooldowns: obj(s.emergencyCooldowns),

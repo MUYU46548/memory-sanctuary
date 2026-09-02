@@ -50,6 +50,9 @@ class FontLoader {
 
         if (this.loaded > 0) {
             this._applyFonts();
+        } else {
+            // T3-5 修复：字体加载超时/失败时显式应用可读的 CJK 回退字体栈（避免落到浏览器默认字体）
+            this._applyFallbackFonts();
         }
 
         onProgress(100, '完成');
@@ -179,6 +182,15 @@ class FontLoader {
         root.style.setProperty('--font-ui', '"WenKai", "Noto Sans SC", "Source Han Sans SC", sans-serif');
         root.style.setProperty('--font-en', '"WenKai", "Courier New", monospace');
         if (DEBUG) console.log('[FontLoader] 字体已应用到 CSS 变量');
+    }
+
+    // T3-5：字体未加载成功（超时/失败）时应用系统回退栈，确保界面可读而非落到浏览器默认字体
+    _applyFallbackFonts() {
+        const root = document.documentElement;
+        root.style.setProperty('--font-cn', '"Noto Serif SC", "Source Han Serif SC", "Microsoft YaHei", "PingFang SC", serif');
+        root.style.setProperty('--font-ui', '"Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif');
+        root.style.setProperty('--font-en', '"Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", monospace');
+        if (DEBUG) console.warn('[FontLoader] 字体加载失败，已应用系统字体回退栈');
     }
 
     _delay(ms) {

@@ -440,6 +440,7 @@
     },
     {
       "id": "reincarnator",
+      "category": "playthrough",
       "name": "轮回者",
       "description": "完成3个周目",
       "icon": "🔄",
@@ -450,6 +451,7 @@
     },
     {
       "id": "eternal_keeper",
+      "category": "playthrough",
       "name": "永恒守护者",
       "description": "完成5个周目",
       "icon": "♾️",
@@ -460,6 +462,7 @@
     },
     {
       "id": "beyond_time",
+      "category": "playthrough",
       "name": "超越时间",
       "description": "在第5周目打破循环",
       "icon": "✨",
@@ -470,6 +473,7 @@
     },
     {
       "id": "chapter_complete_12",
+      "category": "milestone",
       "name": "终章见证者",
       "description": "经历全部12个章节过渡",
       "icon": "📖",
@@ -480,6 +484,7 @@
     },
     {
       "id": "memory_keeper",
+      "category": "collection",
       "name": "记忆收集者",
       "description": "解锁全部16条通过剧情自动解锁的NG+专属条目",
       "icon": "🧠",
@@ -490,6 +495,7 @@
     },
     {
       "id": "ai_assist_first",
+      "category": "milestone",
       "name": "机魂共呜",
       "description": "第一次请求档案AI助理辅助归档",
       "icon": "🤖",
@@ -500,6 +506,7 @@
     },
     {
       "id": "ai_assist_10",
+      "category": "milestone",
       "name": "人机协作",
       "description": "档案AI助理累计辅助归档10条",
       "icon": "🛰️",
@@ -510,6 +517,7 @@
     },
     {
       "id": "guardian_aid_first",
+      "category": "guardian",
       "name": "临时援手",
       "description": "以食物作为报酬，邀请守护者临时协助归档",
       "icon": "🍖",
@@ -520,6 +528,7 @@
     },
     {
       "id": "explore_10",
+      "category": "collection",
       "name": "步履不停",
       "description": "单周目完成10次地表勘探",
       "icon": "🥾",
@@ -530,6 +539,7 @@
     },
     {
       "id": "all_explorations",
+      "category": "collection",
       "name": "地表全图",
       "description": "完成全部地表勘探点",
       "icon": "🗺️",
@@ -540,6 +550,7 @@
     },
     {
       "id": "emergency_gambit",
+      "category": "challenge",
       "name": "孤注一掷",
       "description": "激活紧急勘探协议，用腐败换机会",
       "icon": "🔭",
@@ -550,6 +561,7 @@
     },
     {
       "id": "survived_famine",
+      "category": "challenge",
       "name": "劫后余生",
       "description": "食物归零后，圣所成功恢复生机",
       "icon": "🌾",

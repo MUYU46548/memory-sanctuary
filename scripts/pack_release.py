@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-记忆圣所 0.2.0 打包脚本 — 生成发布 zip
+记忆圣所 0.2.4 打包脚本 — 生成发布 zip
 预设方案：零构建原生静态文件包，玩家解压后通过 HTTP 服务器运行
 """
 import os
@@ -10,7 +10,7 @@ from pathlib import Path
 
 BASE = Path(r"E:/CODE/CangKu/memory-sanctuary")
 OUT_DIR = Path(r"E:/下载E")
-OUT_NAME = "记忆圣所_Memory_Sanctuary_v0.2.1.zip"
+OUT_NAME = "记忆圣所_Memory_Sanctuary_v0.2.4.zip"
 OUT_PATH = OUT_DIR / OUT_NAME
 
 # 发布包含的顶层条目（黑名单排除开发文件）

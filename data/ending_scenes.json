@@ -1025,5 +1025,48 @@
         "text": "「饥饿是最古老的死刑。」"
       }
     ]
+  },
+  "conflict_choice": {
+    "title": "⚖️ 文明抉择",
+    "background": "partial_vault",
+    "speakers": [
+      "narrator",
+      "tika",
+      "finn"
+    ],
+    "dialogue": [
+      {
+        "speaker": "narrator",
+        "text": "互斥的记忆被摆在你面前。你只能带走其一，留下另一个在黑暗中沉睡。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "你从未逃避这些抉择。每一条被保留的记忆背后，都有一份被反复掂量的分量。"
+      },
+      {
+        "speaker": "tika",
+        "text": "我们留下了最明亮的歌声。可是……那个雨夜的故事，就这样被遗忘了吗？"
+      },
+      {
+        "speaker": "narrator",
+        "text": "缇卡问。你没有回答——因为答案早已写进你一路走来的每一次取舍。"
+      },
+      {
+        "speaker": "finn",
+        "text": "编年史只能承载一种真相。我们选择了最接近真实、也最温柔的那一个。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "后世所看到的萨拉达斯，并不完整——它是一个由你的偏见与坚持塑造的文明。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "没有标准答案，只有你给出的答案。"
+      },
+      {
+        "speaker": "narrator",
+        "text": "「每一个被留下的记忆，都是一次对遗忘的宣战。」"
+      }
+    ]
   }
 }

@@ -1645,7 +1645,7 @@
       "title": "米莎的发现",
       "description": "米莎兴奋地找到你：'我发现了一种新的植物！它能在极端环境下生存！'",
       "trigger": {
-        "type": "scheduled",
+        "type": "random",
         "weekMin": 12,
         "weekMax": 20,
         "probability": 0.15

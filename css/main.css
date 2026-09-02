@@ -84,7 +84,8 @@
     --glow-alpha: 0.2;
     --ng-glow: #a07a30;
 
-    --explore-green: #5aa86e;
+    /* T3-1：light 主题 --explore-green 加深以满足 WCAG AA（#5aa86e 在浅底仅 2.71:1） */
+    --explore-green: #2d6b46;
     --bg-title-start: #f5f0e8;
     --bg-title-mid: #e8e0d8;
     --bg-title-end: #f5f0e8;
@@ -190,9 +191,10 @@ html {
 
 /* ========== 字体 ========== */
 :root {
-    --font-cn: "WenKai", "Noto Serif SC", "Source Han Serif SC", serif;
-    --font-en: "WenKai", "Courier New", monospace;
-    --font-ui: "WenKai", "Noto Sans SC", "Source Han Sans SC", sans-serif;
+    /* T3-5：补充广泛可用的 CJK 回退（微软雅黑/苹方），字体加载失败时也不落浏览器默认字体 */
+    --font-cn: "WenKai", "Noto Serif SC", "Source Han Serif SC", "Microsoft YaHei", "PingFang SC", serif;
+    --font-en: "WenKai", "Courier New", "Microsoft YaHei", monospace;
+    --font-ui: "WenKai", "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif;
 }
 
 * {
@@ -1194,9 +1196,9 @@ button:focus-visible,
 }
 
 .panel-title-btn.active {
-    background: var(--danger, #d44);
+    background: var(--danger);
     color: var(--bg-deep);
-    border-color: var(--danger, #d44);
+    border-color: var(--danger);
     font-weight: bold;
 }
 
@@ -2657,12 +2659,12 @@ button.archive-btn.recommended {
 }
 
 #func-bar button#explore-btn {
-    border-color: var(--explore-green, #5aa86e);
-    color: var(--explore-green, #5aa86e);
+    border-color: var(--explore-green);
+    color: var(--explore-green);
 }
 
 #func-bar button#explore-btn:hover {
-    background: var(--explore-green, #5aa86e);
+    background: var(--explore-green);
     color: var(--bg-deep);
 }
 
@@ -2832,7 +2834,7 @@ button.archive-btn.recommended {
 }
 
 .explore-item:hover {
-    border-color: var(--explore-green, #5aa86e);
+    border-color: var(--explore-green);
     background: var(--bg-panel-hover);
 }
 
@@ -2889,8 +2891,8 @@ button.archive-btn.recommended {
 }
 
 .skill-tag.matched {
-    border-color: var(--explore-green, #5aa86e);
-    color: var(--explore-green, #5aa86e);
+    border-color: var(--explore-green);
+    color: var(--explore-green);
 }
 
 /* 派遣界面（右侧常驻，无需滚动提示） */
@@ -2996,7 +2998,7 @@ button.archive-btn.recommended {
 }
 
 .dispatch-guardian.selected {
-    border-color: var(--explore-green, #5aa86e);
+    border-color: var(--explore-green);
     background: color-mix(in srgb, var(--explore-green) 10%, transparent);
 }
 
@@ -3026,13 +3028,13 @@ button.archive-btn.recommended {
 
 .guardian-skill.matched {
     background: color-mix(in srgb, var(--explore-green) 25%, transparent);
-    color: var(--explore-green, #5aa86e);
-    border: 1px solid var(--explore-green, #5aa86e);
+    color: var(--explore-green);
+    border: 1px solid var(--explore-green);
 }
 
 .guardian-bonus {
     font-size: 0.55rem;
-    color: var(--explore-green, #5aa86e);
+    color: var(--explore-green);
     font-weight: bold;
 }
 
@@ -3067,7 +3069,7 @@ button.archive-btn.recommended {
 #dispatch-btn {
     width: 100%;
     padding: 8px;
-    background: var(--explore-green, #5aa86e);
+    background: var(--explore-green);
     border: none;
     border-radius: 4px;
     color: var(--bg-deep);
@@ -3144,8 +3146,8 @@ button.archive-btn.recommended {
 }
 
 .result-effect.positive {
-    border: 1px solid var(--explore-green, #5aa86e);
-    color: var(--explore-green, #5aa86e);
+    border: 1px solid var(--explore-green);
+    color: var(--explore-green);
 }
 
 .result-effect.negative {
@@ -3180,7 +3182,7 @@ button.archive-btn.recommended {
     top: -80px;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--explore-green, #5aa86e);
+    background: var(--explore-green);
     color: var(--bg-deep);
     padding: 12px 24px;
     border-radius: 0 0 8px 8px;
@@ -3209,7 +3211,7 @@ button.archive-btn.recommended {
 }
 
 .explore-item-completed-badge {
-    color: var(--explore-green, #5aa86e);
+    color: var(--explore-green);
     font-size: 0.65rem;
     margin-left: 4px;
 }
@@ -3607,7 +3609,7 @@ button.archive-btn.recommended {
 }
 
 .debug-btn:hover {
-    background: var(--amber-glow, #e8b85c);
+    background: var(--amber-glow);
 }
 
 .debug-btn-danger {
@@ -4855,7 +4857,7 @@ button.archive-btn.recommended {
 
 /* 项目按钮底部栏样式（改用琥珀色系，避免紫色带来的"不可点"观感） */
 #func-bar button#project-btn {
-    background: linear-gradient(135deg, #b5894a 0%, var(--amber-primary) 100%);
+    background: linear-gradient(135deg, var(--amber-glow) 0%, var(--amber-primary) 100%);
     border-color: var(--amber-primary);
     color: var(--bg-deep);
     font-weight: 500;
@@ -6338,7 +6340,7 @@ button.archive-btn.recommended {
 }
 
 .ending-outcome h3 {
-    color: var(--amber-primary, #c9a87c);
+    color: var(--amber-primary);
     font-size: 1.05rem;
     margin: 0 0 8px 0;
     letter-spacing: 0.02em;
@@ -6738,13 +6740,13 @@ button.archive-btn.recommended {
 
 .bots-log-btn:hover {
     background: var(--amber-bg-soft, color-mix(in srgb, var(--amber-bg) 12%, transparent));
-    border-color: var(--amber-primary, #c9a87c);
+    border-color: var(--amber-primary);
 }
 
 /* 勘探派遣：工程机器人协同加成提示 */
 .outcome-bot-bonus {
     font-size: 0.75rem;
-    color: var(--amber-primary, #c9a87c);
+    color: var(--amber-primary);
     background: var(--amber-bg-soft, color-mix(in srgb, var(--amber-bg) 12%, transparent));
     border: 1px solid var(--amber-border, color-mix(in srgb, var(--amber-bg) 40%, transparent));
     border-radius: 6px;

@@ -470,19 +470,17 @@ function triggerNarrativeChainEvents() {
     
     // 第2周目：守护者幻影事件
     if (pt === 2) {
-        state.narrativeFlags.push('ghost_vision_available');
+        // T4-4：narrativeFlags 全库无任何消费端（只写不读），移除死 push，保留氛围日志
         addLog('🌀 你感觉到圣所中似乎有什么东西在注视着你……', 'system');
     }
     
     // 第3周目：轮回裂缝事件
     if (pt === 3) {
-        state.narrativeFlags.push('loop_crack_available');
         addLog('⚡ 圣所的墙壁上出现了奇怪的裂缝，似乎通向另一个时空……', 'system');
     }
     
     // 第5周目：真结局线索
     if (pt >= 5) {
-        state.narrativeFlags.push('true_ending_clue');
         addLog('✨ 你感觉到，这一次，一切都将不同……', 'system');
     }
     
@@ -793,8 +791,8 @@ function showEndingSummaryPage(ending, isGameOver = false) {
         </div>`;
     }
     portraitEl.innerHTML = outcomeHtml + `
-        <h3>${portrait.title}</h3>
-        <p>${portrait.description}</p>
+        <h3>${esc(portrait.title, true)}</h3>
+        <p>${esc(portrait.description, true)}</p>
     `;
     
     // Stats section
@@ -826,8 +824,8 @@ function showEndingSummaryPage(ending, isGameOver = false) {
                 const indicator = getMoodIndicator(guardianId);
                 guardianRows.push(`
                     <div class="ending-guardian-row">
-                        <span class="ending-guardian-avatar">${guardian.avatar}</span>
-                        <span class="ending-guardian-name">${guardian.name}</span>
+                        <span class="ending-guardian-avatar">${esc(guardian.avatar, false)}</span>
+                        <span class="ending-guardian-name">${esc(guardian.name, false)}</span>
                         <span class="ending-guardian-tier ${tier}">${indicator} ${tierNames[tier]}</span>
                     </div>
                 `);

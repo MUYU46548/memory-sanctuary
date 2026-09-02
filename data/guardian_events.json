@@ -77,7 +77,7 @@
       "guardianId": "misha",
       "trigger": {
         "type": "exploration_complete",
-        "explorationId": "exp_surface_01",
+        "explorationId": "exp_forest_02",
         "probability": 0.4
       },
       "description": "米莎从地表带回一颗枯萎的种子。'它在错误的时间发芽了……但我想试试。'",

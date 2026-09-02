@@ -729,12 +729,8 @@ function checkStarvation() {
             const penalty = state.starvationWeeks >= 2 ? 3 * weight : 2 * weight;
             state.guardianMoods[gid] = (state.guardianMoods[gid] || 0) - penalty;
         });
-        // 食物归零额外惩罚：勘探成功率下降（通过 fatigue 模拟）
-        if (state.exploration && state.exploration.fatigue) {
-            Object.keys(state.exploration.fatigue).forEach(gid => {
-                state.exploration.fatigue[gid] = Math.min(3, (state.exploration.fatigue[gid] || 0) + 1);
-            });
-        }
+        // 注：此处不再触碰 exploration.fatigue——fatigue 存的是「解禁周数」（week + fatigueWeeks），
+        // 用计数语义（+1 / cap 3）会覆盖周数，导致已疲劳守护者被误清。饥饿代价已由心情惩罚承担。
     } else {
         if (state.starvationLogged) {
             addLog('🍖 食物恢复，守护者松了一口气。', 'success');
@@ -1025,7 +1021,7 @@ function processBotBuild() {
     if (state.panelBotBuild.remainingWeeks <= 0) {
         state.panelBotBuild = null;
         state.resources.engineeringBots = (state.resources.engineeringBots || 0) + 1;
-        addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。每台减少 10% 衰减并抑制腐败侵蚀，每回合消耗 1 能源。`, 'success');
+        addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。每台减少 18% 衰减并抑制腐败侵蚀，每回合消耗 0.75 能源。`, 'success');
         if (typeof AudioSystem !== 'undefined' && AudioSystem.playProjectComplete) {
             AudioSystem.playProjectComplete();
         }
@@ -2362,12 +2358,15 @@ const EMERGENCY_PROTOCOLS = [
         name: '介质豁免',
         icon: '📼',
         desc: '豁免本次归档的介质消耗（能源消耗加倍）',
-        cost: '本回合生效',
+        cost: '环境 -10 · 本回合生效',
         gain: '介质 0 消耗',
         cooldown: 2,
         corruption: 10,
-        available: (state) => true,
+        // T1-4 修复：激活即付出环境稳定代价（与批量归档协议 enterBatchArchiveMode 的 -10 环境一致），
+        // 防止「开应急→0介质归档→关」循环净赚介质；环境不足 10 时不可激活
+        available: (state) => (state.resources.environment || 0) >= 10,
         execute: (state) => {
+            state.resources.environment = Math.max(0, (state.resources.environment || 0) - 10);
             state.emergencyArchiveActive = true;
             state.emergencyArchiveUsed = (state.emergencyArchiveUsed || 0) + 1;
         }
@@ -2495,7 +2494,7 @@ function showHelpModal() {
 • 存储介质 ◇：归档必需品，归零后无法录入新条目
 • 环境稳定 ○：影响条目保存条件，归零后条目过期速度翻倍
 • 食物 🍖：维持守护者士气，影响资源衰减效率
-• 工程机器人 🔧：自动维护圣所，减少资源衰减并抑制腐败侵蚀（每台消耗 1 能源/周）
+• 工程机器人 🔧：自动维护圣所，减少资源衰减并抑制腐败侵蚀（每台消耗 0.75 能源/周）
 提示：点击顶栏对应资源图标可随时查看当周变化明细。`,
         },
         {

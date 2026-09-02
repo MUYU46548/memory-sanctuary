@@ -27,7 +27,7 @@
           "type": "narrative",
           "probability": 0.25,
           "message": "风在废墟中低语，但没有找到有用的物资。只带走了几行褪色的文字。",
-          "revealsClue": "arc_language_01"
+          "revealsClue": "arch_language_01"
         },
         {
           "type": "risk",
@@ -80,7 +80,7 @@
           "type": "narrative",
           "probability": 0.15,
           "message": "森林沉默不语。土壤中残留的孢子提醒着生态崩溃的代价。",
-          "revealsClue": "arc_ecology_01"
+          "revealsClue": "arch_ecology_01"
         },
         {
           "type": "risk",
@@ -122,7 +122,7 @@
           "type": "narrative",
           "probability": 0.3,
           "message": "透过破损的穹顶，最后一次看到了星空。星图被刻入记忆。",
-          "revealsClue": "arc_astronomy_01"
+          "revealsClue": "arch_astronomy_01"
         },
         {
           "type": "risk",
@@ -162,7 +162,7 @@
           "type": "narrative",
           "probability": 0.2,
           "message": "果树虽死，但根系仍在等待一场不会到来的春雨。",
-          "revealsClue": "arc_orchard_dead"
+          "revealsClue": "arch_orchard_dead"
         },
         {
           "type": "risk",
@@ -204,7 +204,7 @@
           "type": "narrative",
           "probability": 0.25,
           "message": "病房里只剩下空床。墙上的涂鸦写着'我们曾在此抗争'。",
-          "revealsClue": "arc_medicine_01"
+          "revealsClue": "arch_medicine_01"
         },
         {
           "type": "risk",
@@ -249,7 +249,7 @@
           "type": "narrative",
           "probability": 0.3,
           "message": "一本书还能翻开。字迹已经模糊，但记忆不会。",
-          "revealsClue": "arc_history_01"
+          "revealsClue": "arch_history_01"
         },
         {
           "type": "risk",
@@ -295,7 +295,7 @@
           "type": "narrative",
           "probability": 0.25,
           "message": "流水线上还有未完成的零件。它们将永远停滞在这一刻。",
-          "revealsClue": "arc_science_01"
+          "revealsClue": "arch_science_01"
         },
         {
           "type": "risk",
@@ -341,7 +341,7 @@
           "type": "narrative",
           "probability": 0.3,
           "message": "阳光透过破碎的彩色玻璃，在地面投下斑斓的光斑。",
-          "revealsClue": "arc_philosophy_01"
+          "revealsClue": "arch_philosophy_01"
         },
         {
           "type": "risk",
@@ -388,7 +388,7 @@
           "type": "narrative",
           "probability": 0.18,
           "message": "餐桌上还有未收拾的碗筷。末日来得比想象中更快。",
-          "revealsClue": "arc_daily_01"
+          "revealsClue": "arch_daily_01"
         },
         {
           "type": "risk",
@@ -431,7 +431,7 @@
           "type": "narrative",
           "probability": 0.25,
           "message": "反应堆的轰鸣是末日中唯一不变的声音。",
-          "revealsClue": "arc_energy_01"
+          "revealsClue": "arch_energy_01"
         },
         {
           "type": "risk",
@@ -476,7 +476,7 @@
           "type": "narrative",
           "probability": 0.25,
           "message": "墙上刻着：'给未来的人——我们曾经存在过。'",
-          "revealsClue": "arc_art_01"
+          "revealsClue": "arch_art_01"
         },
         {
           "type": "risk",
@@ -522,7 +522,7 @@
           "type": "narrative",
           "probability": 0.3,
           "message": "发射塔的残骸指向天空。他们曾梦想星辰，却未能离开地面。",
-          "revealsClue": "arc_astronomy_02"
+          "revealsClue": "arch_astronomy_02"
         },
         {
           "type": "risk",
@@ -562,7 +562,7 @@
           "type": "narrative",
           "probability": 0.25,
           "message": "你找到了建造这座纪念碑的工匠的名字。他叫阿索尔。",
-          "revealsClue": "arc_disaster_01"
+          "revealsClue": "arch_disaster_01"
         },
         {
           "type": "risk",
@@ -616,7 +616,7 @@
           "type": "narrative",
           "probability": 0.15,
           "message": "海面覆盖着一层灰绿色的膜。米莎说这是'最后的盛宴'——厌氧菌在吃同类的尸体。",
-          "revealsClue": "arc_ocean_dead"
+          "revealsClue": "arch_ocean_dead"
         },
         {
           "type": "risk",
@@ -665,7 +665,7 @@
           "type": "narrative",
           "probability": 0.18,
           "message": "土壤已经粉末化。洛恩说这不是风化，是死亡。",
-          "revealsClue": "arc_soil_dust"
+          "revealsClue": "arch_soil_dust"
         },
         {
           "type": "risk",
@@ -712,7 +712,7 @@
           "type": "narrative",
           "probability": 0.25,
           "message": "病历显示羽毛病变是全新的疾病。没有先例。没有治疗。",
-          "revealsClue": "arc_plague_new"
+          "revealsClue": "arch_plague_new"
         },
         {
           "type": "risk",
@@ -756,7 +756,7 @@
           "type": "narrative",
           "probability": 0.25,
           "message": "墙上写着：'配给不足，共享公约已死。'",
-          "revealsClue": "arc_riot_cause"
+          "revealsClue": "arch_riot_cause"
         },
         {
           "type": "risk",
@@ -802,7 +802,7 @@
           "type": "narrative",
           "probability": 0.3,
           "message": "墙上写着：'我们存在过。请记住我们。'",
-          "revealsClue": "arc_last_words"
+          "revealsClue": "arch_last_words"
         },
         {
           "type": "risk",
@@ -848,7 +848,7 @@
           "type": "narrative",
           "probability": 0.2,
           "message": "一株幼苗在裂缝中顽强生长。米莎说这是末日前的物种，它不该出现在这里。",
-          "revealsClue": "arc_greenhouse_life"
+          "revealsClue": "arch_greenhouse_life"
         },
         {
           "type": "risk",
@@ -894,7 +894,7 @@
           "type": "narrative",
           "probability": 0.25,
           "message": "墙上刻着：'给未来的人——我们存在过。'",
-          "revealsClue": "arc_builder_final"
+          "revealsClue": "arch_builder_final"
         },
         {
           "type": "risk",
@@ -940,7 +940,7 @@
           "type": "narrative",
           "probability": 0.2,
           "message": "米莎说这里的菌丝是末日前的物种，它们在黑暗中存活了数百年。",
-          "revealsClue": "arc_mushroom_cave"
+          "revealsClue": "arch_mushroom_cave"
         },
         {
           "type": "risk",
@@ -985,7 +985,7 @@
           "type": "narrative",
           "probability": 0.3,
           "message": "舞台上还留着演出的痕迹。你想象着最后一个夜晚，有人在这里独自歌唱。",
-          "revealsClue": "arc_opera_final"
+          "revealsClue": "arch_opera_final"
         },
         {
           "type": "risk",
@@ -1030,7 +1030,7 @@
           "type": "narrative",
           "probability": 0.3,
           "message": "研究笔记上写着：'语言死亡的最后阶段，是没有人再用它做梦。'",
-          "revealsClue": "arc_language_death"
+          "revealsClue": "arch_language_death"
         },
         {
           "type": "risk",
@@ -1073,7 +1073,7 @@
           "type": "narrative",
           "probability": 0.2,
           "message": "仓库墙上贴着告示：\"紧急配给仅供末日事件启动。\"事件启动了，但没有人来领取。",
-          "revealsClue": "arc_vault_sealed"
+          "revealsClue": "arch_vault_sealed"
         },
         {
           "type": "risk",
@@ -1118,7 +1118,7 @@
           "type": "narrative",
           "probability": 0.25,
           "message": "法典最后一页用红笔写着：'当法律无法执行时，我们还能称之为文明吗？'",
-          "revealsClue": "arc_law_final"
+          "revealsClue": "arch_law_final"
         },
         {
           "type": "risk",
@@ -1164,7 +1164,7 @@
           "type": "narrative",
           "probability": 0.3,
           "message": "祭坛上刻着：'翼神不会拯救我们。但我们可以拯救自己的记忆。'",
-          "revealsClue": "arc_ritual_truth"
+          "revealsClue": "arch_ritual_truth"
         },
         {
           "type": "risk",
@@ -1205,13 +1205,6 @@
           "probability": 0.25,
           "message": "库房的日志终端还亮着，记录着圣所建造者最后的值班。",
           "revealsClue": "arch_bot_log_01"
-        },
-        {
-          "type": "risk",
-          "resource": "environment",
-          "amount": -4,
-          "probability": 0,
-          "message": ""
         }
       ],
       "availableAfter": 20,

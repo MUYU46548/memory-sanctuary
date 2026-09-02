@@ -192,10 +192,8 @@ function updateBatchArchiveBtn() {
 }
 
 function initProjectPanel() {
-    const projectBtn = document.getElementById('project-btn');
-    if (projectBtn) {
-        projectBtn.addEventListener('click', () => openProjectPanel());
-    }
+    // 注：#project-btn 的 click 绑定由 game.js initFuncBar 统一处理（带点击音效 + state 守卫）。
+    // T3-6 修复：此处曾重复绑定 openProjectPanel，点击会双响并双开面板，已移除。
     
     const closeBtn = document.getElementById('project-close');
     if (closeBtn) {
@@ -215,6 +213,8 @@ function initProjectPanel() {
 // ============================================================
 let renderScheduled = false;
 let renderFullScheduled = false;
+// 成就 Toast 自动隐藏定时器（T3-3：连续触发时清除旧定时器，避免提前隐藏）
+let achievementToastTimer = null;
 
 function requestRender(full = false) {
     if (full) {
@@ -1661,7 +1661,9 @@ function showAchievementToast(achievement) {
     toast.classList.remove('hidden');
     toast.classList.add('show');
 
-    setTimeout(() => {
+    // T3-3 修复：保存 timer ID，连续解锁新成就时先清除旧定时器，避免旧 timer 提前隐藏新 toast
+    clearTimeout(achievementToastTimer);
+    achievementToastTimer = setTimeout(() => {
         toast.classList.remove('show');
         toast.classList.add('hidden');
     }, 3000);

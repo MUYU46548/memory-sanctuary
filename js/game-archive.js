@@ -238,6 +238,8 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     }
     
     state.completedArchives.push(archiveId);
+    // 归档成功即中断连续跳过（跳过惩罚归零）
+    if (typeof resetConsecutiveSkips === 'function') resetConsecutiveSkips();
     // 紧急归档不消耗介质，所以不增加 vaultUsage
     if (!isEmergencyArchive) {
         state.vaultUsage[vault.id] = currentUsage + mediaCost;

@@ -5,6 +5,9 @@ C:\Users\47219\AppData\Local\Temp\hermes-verify-*.js
 # Hermes 桌面附件缓存
 .hermes/desktop-attachments/
 
+# 会话附件/临时文件
+.opensquilla/
+
 # IDE / 系统文件
 .DS_Store
 Thumbs.db

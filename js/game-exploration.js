@@ -598,11 +598,12 @@ function applyExplorationResult(outcome, expData) {
         }
 
         selectedGuardians.forEach(gid => {
-            // Fatigue: cannot deploy for fatigueWeeks weeks
+            // Fatigue: cannot deploy for fatigueWeeks weeks AFTER the return week
+            // 语义：返回周起后续 fatigueWeeks 周不可再派遣（N=1 时下周仍疲劳，验证：N=1 部署后下周不可再派）
             if (!MemorySanctuary.state.exploration.fatigue) {
                 MemorySanctuary.state.exploration.fatigue = {};
             }
-            MemorySanctuary.state.exploration.fatigue[gid] = MemorySanctuary.state.week + fatigueWeeks;
+            MemorySanctuary.state.exploration.fatigue[gid] = MemorySanctuary.state.week + fatigueWeeks + 1;
 
             // 50% chance of mood penalty
             if (Math.random() < 0.5) {
