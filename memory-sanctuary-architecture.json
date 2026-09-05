@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "记忆圣所 Memory Sanctuary",
+    "locale": "zh-CN",
+    "quality_profile": "showcase"
+  },
+  "layout": { "mode": "grid", "cols": 5, "gapX": 60, "gapY": 80 },
+  "components": [
+    { "id": "html-shell", "type": "frontend", "label": "index.html", "row": 0, "col": 0 },
+    { "id": "main-js", "type": "frontend", "label": "main.js", "row": 0, "col": 1 },
+    { "id": "game-js", "type": "backend", "label": "game.js", "row": 0, "col": 2 },
+    { "id": "game-subsystems", "type": "backend", "label": "game-*.js", "row": 0, "col": 3 },
+    { "id": "data-json", "type": "database", "label": "data/*.json", "row": 0, "col": 4 },
+    { "id": "ui-js", "type": "frontend", "label": "ui.js", "row": 1, "col": 1 },
+    { "id": "audio-js", "type": "frontend", "label": "audio.js", "row": 1, "col": 2 }
+  ],
+  "connections": [
+    { "from": "html-shell", "to": "main-js", "variant": "emphasis" },
+    { "from": "main-js", "to": "game-js", "variant": "emphasis" },
+    { "from": "main-js", "to": "ui-js" },
+    { "from": "main-js", "to": "audio-js" },
+    { "from": "game-js", "to": "game-subsystems" },
+    { "from": "game-subsystems", "to": "data-json" }
+  ],
+  "cards": [
+    { "dot": "amber", "title": "数据驱动", "items": ["12 个 JSON 定义全部内容", "零业务逻辑硬编码"] },
+    { "dot": "emerald", "title": "主题系统", "items": ["CSS 变量驱动暗/亮双主题", "Canvas 颜色动态读取"] },
+    { "dot": "violet", "title": "零构建原生", "items": ["纯 HTML5 + ES6+", "Cache API 缓存字体"] }
+  ]
+}
