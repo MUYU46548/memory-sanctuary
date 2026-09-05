@@ -381,6 +381,10 @@ function initGameState() {
         deepArchiveCount: 0,
         conflictLog: [],
         consecutiveSkips: 0,
+        // 勘探重设计（2026-09-03）：已发现的地表/机器人碎片条目 id 列表 + 机器人被动产出计时
+        unlockedFragments: [],
+        botPassiveTick: 0,
+        botStabilizeLogged: false,
         // 叙事连锁
         narrativeFlags: ['intro_complete'],
         sacrificeHistory: [],

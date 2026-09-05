@@ -145,6 +145,16 @@ function archiveEntry(archiveId, ritualType = 'standard') {
         renderAll();
         return false;
     }
+
+    // 碎片发现门控（勘探重设计 2026-09-03）：未发现的碎片不可直接归档（列表已隐藏，此处兜底）
+    if ((entry.fragmentFrom || entry.botPassive)) {
+        const fragUnlocked = (state.unlockedFragments || []).includes(archiveId);
+        if (!fragUnlocked) {
+            addLog(`「${entry.title}」尚未被发现——先通过地表勘探或机器人定期任务找到它。`, 'system');
+            renderAll();
+            return false;
+        }
+    }
     
     // 速记（快速归档）每回合限 1 次：牺牲叙事深度，不可滥用
     if (ritualType === 'quick') {
@@ -1017,6 +1027,13 @@ function isArchiveAvailable(entry) {
         if (botCount < entry.unlockCondition.bots) {
             return false;
         }
+    }
+
+    // 地表碎片 / 机器人碎片（勘探重设计 2026-09-03）：必须先经勘探或机器人定期产出「发现」
+    // fragmentFrom = 勘探点 ID（地表碎片与机器人勘探碎片）；botPassive = 机器人定期产出日志
+    if ((entry.fragmentFrom || entry.botPassive) && MemorySanctuary.state) {
+        const unlocked = MemorySanctuary.state.unlockedFragments || [];
+        if (!unlocked.includes(entry.id)) return false;
     }
     
     if (!entry.ngPlusExclusive) return true;

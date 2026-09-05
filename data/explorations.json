@@ -38,7 +38,10 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 5
+      "foodCost": 5,
+      "fragments": [
+        "arch_sf_ruins_01"
+      ]
     },
     {
       "id": "exp_forest_02",
@@ -91,7 +94,10 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 8
+      "foodCost": 8,
+      "fragments": [
+        "arch_sf_forest_02"
+      ]
     },
     {
       "id": "exp_observatory_03",
@@ -133,7 +139,11 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 8
+      "foodCost": 8,
+      "fragments": [
+        "arch_sf_obs_03a",
+        "arch_sf_obs_03b"
+      ]
     },
     {
       "id": "exp_abandoned_orchard_04",
@@ -173,7 +183,10 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 5
+      "foodCost": 5,
+      "fragments": [
+        "arch_sf_orchard_04"
+      ]
     },
     {
       "id": "exp_life_support_04",
@@ -215,7 +228,10 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 5
+      "foodCost": 5,
+      "fragments": [
+        "arch_sf_lifesupport_04"
+      ]
     },
     {
       "id": "exp_library_05",
@@ -260,7 +276,10 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 5
+      "foodCost": 5,
+      "fragments": [
+        "arch_sf_library_05"
+      ]
     },
     {
       "id": "exp_factory_06",
@@ -306,7 +325,11 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 12
+      "foodCost": 12,
+      "fragments": [
+        "arch_sf_factory_06a",
+        "arch_sf_factory_06b"
+      ]
     },
     {
       "id": "exp_temple_07",
@@ -352,7 +375,10 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 5
+      "foodCost": 5,
+      "fragments": [
+        "arch_sf_temple_07"
+      ]
     },
     {
       "id": "exp_suburb_08",
@@ -399,7 +425,10 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 5
+      "foodCost": 5,
+      "fragments": [
+        "arch_sf_suburb_08"
+      ]
     },
     {
       "id": "exp_reactor_09",
@@ -442,7 +471,11 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 12
+      "foodCost": 12,
+      "fragments": [
+        "arch_sf_reactor_09a",
+        "arch_sf_reactor_09b"
+      ]
     },
     {
       "id": "exp_crypt_10",
@@ -487,7 +520,11 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 8
+      "foodCost": 8,
+      "fragments": [
+        "arch_sf_crypt_10a",
+        "arch_sf_crypt_10b"
+      ]
     },
     {
       "id": "exp_shipyard_11",
@@ -533,7 +570,11 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 12
+      "foodCost": 12,
+      "fragments": [
+        "arch_sf_shipyard_11a",
+        "arch_sf_shipyard_11b"
+      ]
     },
     {
       "id": "exp_memorial_12",
@@ -573,7 +614,10 @@
         }
       ],
       "availableAfter": 1,
-      "foodCost": 5
+      "foodCost": 5,
+      "fragments": [
+        "arch_sf_memorial_12"
+      ]
     },
     {
       "id": "exp_gray_ocean_21",
@@ -626,7 +670,11 @@
           "message": "防护服被腐蚀，匆忙撤退中损失了能源。"
         }
       ],
-      "foodCost": 8
+      "foodCost": 8,
+      "fragments": [
+        "arch_sf_ocean_21a",
+        "arch_sf_ocean_21b"
+      ]
     },
     {
       "id": "exp_dust_village_25",
@@ -675,7 +723,10 @@
           "message": "尘暴突然加剧，撤退时损失了环境储备。"
         }
       ],
-      "foodCost": 8
+      "foodCost": 8,
+      "fragments": [
+        "arch_sf_village_25"
+      ]
     },
     {
       "id": "exp_plague_clinic_29",
@@ -722,7 +773,11 @@
           "message": "接触了泄漏的化学试剂，损失了存储介质。"
         }
       ],
-      "foodCost": 12
+      "foodCost": 12,
+      "fragments": [
+        "arch_sf_clinic_29a",
+        "arch_sf_clinic_29b"
+      ]
     },
     {
       "id": "exp_riot_zone_33",
@@ -766,7 +821,11 @@
           "message": "遭遇了残余的自动防御系统，损失了大量能源。"
         }
       ],
-      "foodCost": 12
+      "foodCost": 12,
+      "fragments": [
+        "arch_sf_riot_33a",
+        "arch_sf_riot_33b"
+      ]
     },
     {
       "id": "exp_ruins_final_37",
@@ -812,7 +871,10 @@
           "message": "建筑突然倒塌，匆忙中损失了部分设备。"
         }
       ],
-      "foodCost": 8
+      "foodCost": 8,
+      "fragments": [
+        "arch_sf_final_37"
+      ]
     },
     {
       "id": "exp_greenhouse_ruins_37",
@@ -858,7 +920,10 @@
           "message": "温室中有毒气体泄漏，净化设备受损。"
         }
       ],
-      "foodCost": 8
+      "foodCost": 8,
+      "fragments": [
+        "arch_sf_greenhouse_37"
+      ]
     },
     {
       "id": "exp_sanctuary_core_41",
@@ -904,7 +969,10 @@
           "message": "触发了古老的机关，损失了少量环境储备。"
         }
       ],
-      "foodCost": 5
+      "foodCost": 5,
+      "fragments": [
+        "arch_sf_core_41"
+      ]
     },
     {
       "id": "exp_underground_mushroom_15",
@@ -950,7 +1018,11 @@
           "message": "洞穴通风不畅，勘探队携带的净化设备受损。"
         }
       ],
-      "foodCost": 8
+      "foodCost": 8,
+      "fragments": [
+        "arch_sf_mushroom_15a",
+        "arch_sf_mushroom_15b"
+      ]
     },
     {
       "id": "exp_opera_ruins_15",
@@ -995,7 +1067,10 @@
           "message": "天花板突然掉落，匆忙中损失了能源设备。"
         }
       ],
-      "foodCost": 5
+      "foodCost": 5,
+      "fragments": [
+        "arch_sf_opera_15"
+      ]
     },
     {
       "id": "exp_language_tower_18",
@@ -1040,7 +1115,10 @@
           "message": "书架倒塌时砸坏了部分存储设备。"
         }
       ],
-      "foodCost": 5
+      "foodCost": 5,
+      "fragments": [
+        "arch_sf_langtower_18"
+      ]
     },
     {
       "id": "exp_hibernation_vault_18",
@@ -1083,7 +1161,10 @@
           "message": "气密门卡死，强行开启消耗了大量能源。"
         }
       ],
-      "foodCost": 8
+      "foodCost": 8,
+      "fragments": [
+        "arch_sf_hibernation_18"
+      ]
     },
     {
       "id": "exp_legal_archive_22",
@@ -1128,7 +1209,10 @@
           "message": "触发了档案室的防盗机关，消耗了额外能源。"
         }
       ],
-      "foodCost": 8
+      "foodCost": 8,
+      "fragments": [
+        "arch_sf_legal_22"
+      ]
     },
     {
       "id": "exp_ritual_site_26",
@@ -1174,7 +1258,11 @@
           "message": "地下通道坍塌，消耗了大量能源才脱困。"
         }
       ],
-      "foodCost": 8
+      "foodCost": 8,
+      "fragments": [
+        "arch_sf_ritual_26a",
+        "arch_sf_ritual_26b"
+      ]
     },
     {
       "id": "exp_bot_depot",
@@ -1209,7 +1297,10 @@
       ],
       "availableAfter": 20,
       "foodCost": 0,
-      "botOnly": true
+      "botOnly": true,
+      "fragments": [
+        "arch_bf_depot_01"
+      ]
     },
     {
       "id": "exp_bot_reactor_core",
@@ -1244,7 +1335,271 @@
       ],
       "availableAfter": 30,
       "foodCost": 0,
-      "botOnly": true
+      "botOnly": true,
+      "fragments": [
+        "arch_bf_reactor_01",
+        "arch_bf_reactor_02"
+      ]
+    },
+    {
+      "id": "exp_bot_sewer_16",
+      "name": "地下管网维护区",
+      "description": "圣所旧管网系统的维护中枢，管道网络纵横如迷宫。工程机器人可自主深入巡检，回收密封备件与流体样本——人类体型反而进不去。",
+      "difficulty": 1,
+      "duration": 1,
+      "maxAttempts": 99,
+      "requiredSkills": [],
+      "requiredBots": 1,
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "energy",
+          "amount": 12,
+          "probability": 0.4,
+          "message": "机器人在泵站找到一组满电的备用电池。"
+        },
+        {
+          "type": "resource",
+          "resource": "media",
+          "amount": 10,
+          "probability": 0.35,
+          "message": "从控制终端导出了管网维护的历史记录。"
+        },
+        {
+          "type": "narrative",
+          "probability": 0.25,
+          "message": "管网最深处的一扇闸门上，刻着维护工人们的名字——每一个名字旁边都画着一滴水。",
+          "revealsClue": "arch_bf_sewer_01"
+        }
+      ],
+      "availableAfter": 16,
+      "foodCost": 0,
+      "botOnly": true,
+      "fragments": [
+        "arch_bf_sewer_01"
+      ]
+    },
+    {
+      "id": "exp_bot_archive_vault_20",
+      "name": "自动档案库",
+      "description": "地表世界遗留的全自动档案库，检索机器仍在空转。工程机器人可直接与旧系统对接，导出封存的索引记录。",
+      "difficulty": 1,
+      "duration": 1,
+      "maxAttempts": 99,
+      "requiredSkills": [],
+      "requiredBots": 1,
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "media",
+          "amount": 16,
+          "probability": 0.45,
+          "message": "机器人从旧档案库中导出了大量光学存储盘的内容。"
+        },
+        {
+          "type": "resource",
+          "resource": "energy",
+          "amount": 8,
+          "probability": 0.3,
+          "message": "回收了档案库备用电源中的残余能源。"
+        },
+        {
+          "type": "narrative",
+          "probability": 0.25,
+          "message": "检索系统的最后一次查询记录，停留在灾变后第 3 天。",
+          "revealsClue": "arch_bf_archive_01"
+        }
+      ],
+      "availableAfter": 20,
+      "foodCost": 0,
+      "botOnly": true,
+      "fragments": [
+        "arch_bf_archive_01"
+      ]
+    },
+    {
+      "id": "exp_bot_farm_auto_24",
+      "name": "自动化农场废墟",
+      "description": "地表自动化农场的废墟，滴灌系统仍在按计划供水。工程机器人编队可修复部分设备，回收作物样本与控制系统数据。",
+      "difficulty": 2,
+      "duration": 1,
+      "maxAttempts": 99,
+      "requiredSkills": [],
+      "requiredBots": 2,
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "food",
+          "amount": 14,
+          "probability": 0.4,
+          "message": "机器人在温室废墟中找到了尚可食用的脱水粮与种子。"
+        },
+        {
+          "type": "resource",
+          "resource": "media",
+          "amount": 12,
+          "probability": 0.3,
+          "message": "导出了农场的作物生长数据库。"
+        },
+        {
+          "type": "resource",
+          "resource": "environment",
+          "amount": 8,
+          "probability": 0.15,
+          "message": "修复了一处灌溉泵，地下水重新汇入生态循环。"
+        },
+        {
+          "type": "risk",
+          "resource": "environment",
+          "amount": -8,
+          "probability": 0.15,
+          "message": "农药储罐泄漏，机器人紧急撤离，环境储备受损。"
+        }
+      ],
+      "availableAfter": 24,
+      "foodCost": 0,
+      "botOnly": true,
+      "fragments": [
+        "arch_bf_farm_01",
+        "arch_bf_farm_02"
+      ]
+    },
+    {
+      "id": "exp_bot_transit_28",
+      "name": "轨道交通中枢",
+      "description": "城市轨道交通的调度中枢，列车静静停在各站。工程机器人可接入调度系统，回收车厢中的遗留物资与运行记录。",
+      "difficulty": 2,
+      "duration": 1,
+      "maxAttempts": 99,
+      "requiredSkills": [],
+      "requiredBots": 2,
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "media",
+          "amount": 14,
+          "probability": 0.4,
+          "message": "机器人在调度中心回收了车载记录仪的存储模块。"
+        },
+        {
+          "type": "resource",
+          "resource": "energy",
+          "amount": 10,
+          "probability": 0.3,
+          "message": "从列车充电桩中回收了残余能源。"
+        },
+        {
+          "type": "narrative",
+          "probability": 0.15,
+          "message": "调度屏定格在末班车时刻表上——那班车准点发出，准点抵达。",
+          "revealsClue": "arch_bf_transit_01"
+        },
+        {
+          "type": "risk",
+          "resource": "energy",
+          "amount": -10,
+          "probability": 0.15,
+          "message": "隧道坍塌阻断了返回路线，机器人绕行消耗了大量能源。"
+        }
+      ],
+      "availableAfter": 28,
+      "foodCost": 0,
+      "botOnly": true,
+      "fragments": [
+        "arch_bf_transit_01",
+        "arch_bf_transit_02"
+      ]
+    },
+    {
+      "id": "exp_bot_antenna_32",
+      "name": "通讯天线阵列",
+      "description": "地表通讯天线阵列的废墟，巨大的抛物面指向天空。工程机器人可攀上塔架检修馈源，尝试导出最后的通讯记录。",
+      "difficulty": 2,
+      "duration": 1,
+      "maxAttempts": 99,
+      "requiredSkills": [],
+      "requiredBots": 2,
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "media",
+          "amount": 12,
+          "probability": 0.35,
+          "message": "从主控机房导出了通讯记录数据库。"
+        },
+        {
+          "type": "resource",
+          "resource": "energy",
+          "amount": 12,
+          "probability": 0.3,
+          "message": "回收了塔架上的太阳能板与储能单元。"
+        },
+        {
+          "type": "narrative",
+          "probability": 0.2,
+          "message": "接收日志里，最后一条信号持续了 47 分钟——那是有人对天空说的话。",
+          "revealsClue": "arch_bf_antenna_01"
+        },
+        {
+          "type": "risk",
+          "resource": "environment",
+          "amount": -8,
+          "probability": 0.15,
+          "message": "塔架锈蚀断裂，机器人紧急停机避险，环境储备受损。"
+        }
+      ],
+      "availableAfter": 32,
+      "foodCost": 0,
+      "botOnly": true,
+      "fragments": [
+        "arch_bf_antenna_01"
+      ]
+    },
+    {
+      "id": "exp_bot_forge_36",
+      "name": "全自动锻炉",
+      "description": "地表深处的全自动锻炉车间，炉火早已熄灭，但控制核心仍在待机。工程机器人编队可深入熔铸区，取回配方库与核心日志。",
+      "difficulty": 3,
+      "duration": 1,
+      "maxAttempts": 99,
+      "requiredSkills": [],
+      "requiredBots": 3,
+      "outcomes": [
+        {
+          "type": "resource",
+          "resource": "media",
+          "amount": 22,
+          "probability": 0.35,
+          "message": "机器人取回了锻炉的完整配方数据库。"
+        },
+        {
+          "type": "resource",
+          "resource": "energy",
+          "amount": 18,
+          "probability": 0.3,
+          "message": "从熔铸区的蓄能器中回收了大量残余热能。"
+        },
+        {
+          "type": "narrative",
+          "probability": 0.2,
+          "message": "控制核心的日志芯片上刻着一行字：「此炉由三代铁匠共同维护。」",
+          "revealsClue": "arch_bf_forge_01"
+        },
+        {
+          "type": "risk",
+          "resource": "environment",
+          "amount": -12,
+          "probability": 0.15,
+          "message": "车间顶棚坍塌，机器人编队被埋在废墟下数小时才脱困。"
+        }
+      ],
+      "availableAfter": 36,
+      "foodCost": 0,
+      "botOnly": true,
+      "fragments": [
+        "arch_bf_forge_01",
+        "arch_bf_forge_02"
+      ]
     }
   ]
 }

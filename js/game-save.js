@@ -87,7 +87,11 @@ function saveGame(slot) {
             // 过期条目持久化（P1-3 修复）
             expiredEntries: [...(MemorySanctuary.state.expiredEntries || [])],
             // 周期事件追踪（P1-7 修复）
-            triggeredPeriodicEvents: [...(MemorySanctuary.state.triggeredPeriodicEvents || [])]
+            triggeredPeriodicEvents: [...(MemorySanctuary.state.triggeredPeriodicEvents || [])],
+            // 勘探重设计（2026-09-03）：已发现碎片条目 + 机器人被动产出计时
+            unlockedFragments: [...(MemorySanctuary.state.unlockedFragments || [])],
+            botPassiveTick: MemorySanctuary.state.botPassiveTick || 0,
+            botStabilizeLogged: !!MemorySanctuary.state.botStabilizeLogged
         },
         currentVaultId: MemorySanctuary.currentVaultId
     };
@@ -249,6 +253,10 @@ function loadGame(slot) {
         MemorySanctuary.state.expiredEntries = [...(saveData.state.expiredEntries || [])];
         // 周期事件追踪（P1-7 修复）
         MemorySanctuary.state.triggeredPeriodicEvents = [...(saveData.state.triggeredPeriodicEvents || [])];
+        // 勘探重设计（2026-09-03）：旧档无此字段时回退默认值
+        MemorySanctuary.state.unlockedFragments = [...(saveData.state.unlockedFragments || [])];
+        MemorySanctuary.state.botPassiveTick = saveData.state.botPassiveTick || 0;
+        MemorySanctuary.state.botStabilizeLogged = !!saveData.state.botStabilizeLogged;
         
         // 读档后重新应用过期标记到 data.archives
         if (MemorySanctuary.state.expiredEntries.length > 0 && MemorySanctuary.data.archives) {
@@ -833,7 +841,11 @@ function sanitizeImportedSave(raw) {
         botBlackoutLogged: !!s.botBlackoutLogged,
         resourceCritical: !!s.resourceCritical,
         expiredEntries: arr(s.expiredEntries).filter(x => typeof x === 'string'),
-        triggeredPeriodicEvents: arr(s.triggeredPeriodicEvents).filter(x => typeof x === 'string')
+        triggeredPeriodicEvents: arr(s.triggeredPeriodicEvents).filter(x => typeof x === 'string'),
+        // 勘探重设计（2026-09-03）
+        unlockedFragments: arr(s.unlockedFragments).filter(x => typeof x === 'string'),
+        botPassiveTick: num(s.botPassiveTick, 0),
+        botStabilizeLogged: !!s.botStabilizeLogged
     };
 
     return {

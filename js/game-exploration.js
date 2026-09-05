@@ -138,9 +138,16 @@ function renderExploreList() {
         const foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
         const foodCostHtml = foodCost > 0 ? `<span class="food-cost">🍖 ${foodCost}</span>` : '';
 
+        // 地表/机器人碎片提示（勘探重设计 2026-09-03：勘探产出从纯资源改为独家内容）
+        const fragCount = expData.fragments ? expData.fragments.length : 0;
+        const fragBadge = fragCount > 0
+            ? `<span class="explore-item-frag" title="返回时必定发现地表碎片；碎片仅在特定周数内可归档，过期即永久消失">🗒 碎片×${fragCount}</span>`
+            : '';
+        const botBadge = expData.botOnly ? `<span class="explore-item-locked-badge">🤖 机器人专属</span>` : '';
+
         item.innerHTML = `
             <div class="explore-item-header">
-                <div class="explore-item-name">${expData.name}${completedBadge}${lockedBadge}${foodCostHtml}</div>
+                <div class="explore-item-name">${expData.name}${completedBadge}${lockedBadge}${foodCostHtml}${fragBadge}${botBadge}</div>
                 <div class="explore-item-difficulty">${difficultyStars}</div>
             </div>
             <div class="explore-item-desc">${expData.description}</div>
@@ -204,13 +211,16 @@ function selectExploration(expData, element) {
     renderDispatchGuardians(expData);
     renderOutcomeBars(expData);
     
-    // Check food sufficiency and disable button if needed（紧急勘探免食物额度时不禁用）
+    // Check food sufficiency and disable button if needed（紧急勘探免食物额度时不禁用；机器人专属点免食物）
     const foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
+    const isBotOnly = !!expData.botOnly;
     const dispatchBtn = document.getElementById('dispatch-btn');
     const currentFood = MemorySanctuary.state.resources.food;
     const foodFree = !!MemorySanctuary.state.emergencyExploreFoodFree;
-    dispatchBtn.disabled = !foodFree && currentFood < foodCost;
-    if (foodFree) {
+    dispatchBtn.disabled = !foodFree && !isBotOnly && currentFood < foodCost;
+    if (isBotOnly) {
+        dispatchBtn.textContent = '派遣机器人编队';
+    } else if (foodFree) {
         dispatchBtn.textContent = '派遣勘探队（免食物）';
     } else if (currentFood < foodCost) {
         dispatchBtn.textContent = `食物不足 (${currentFood}/${foodCost})`;
@@ -223,6 +233,16 @@ function selectExploration(expData, element) {
 function renderDispatchGuardians(expData) {
     const container = document.getElementById('dispatch-guardians');
     container.innerHTML = '';
+
+    // 机器人专属勘探点：无需守护者，编队自动执行（勘探重设计 2026-09-03）
+    if (expData.botOnly) {
+        const botDiv = document.createElement('div');
+        botDiv.className = 'dispatch-bot-only';
+        botDiv.innerHTML = `🔧 工程机器人编队将自动执行本次勘探：无需守护者、不消耗食物、不产生疲劳。` +
+            `<div class="dispatch-bot-cost">消耗：编队待机能源（维护费已按周扣除）· 耗时 ${expData.duration || 1} 周</div>`;
+        container.appendChild(botDiv);
+        return;
+    }
     
     const guardians = MemorySanctuary.data.guardians;
     const now = MemorySanctuary.state.week;
@@ -296,6 +316,15 @@ function getGuardianBonusText(guardian, expData) {
 function renderOutcomeBars(expData) {
     const container = document.getElementById('dispatch-outcomes');
     container.innerHTML = '';
+
+    // 地表/机器人碎片提示（勘探重设计 2026-09-03）：返回时必定发现，窗口过期即消失
+    const fragCount = expData.fragments ? expData.fragments.length : 0;
+    if (fragCount > 0) {
+        const fragNote = document.createElement('div');
+        fragNote.className = 'outcome-bot-bonus frag-bonus';
+        fragNote.innerHTML = `🗒 碎片 ×${fragCount}：返回时必定发现；仅在特定周数窗口内可归档，过时不候`;
+        container.appendChild(fragNote);
+    }
 
     // 机器人协同加成提示（在线时显示，让玩家直观看到机器人的作用）
     const botBonus = (typeof getBotExploreBonus === 'function') ? getBotExploreBonus() : { yieldBonus: 0, riskCut: 0 };
@@ -382,7 +411,9 @@ function executeExploration() {
     const expData = data.explorations.find(e => e.id === selectedExplorationId);
     if (!expData) return;
 
-    // 食物消耗：按难度分档，默认 0（紧急勘探激活时本次免食物）
+    const isBotOnly = !!expData.botOnly;
+
+    // 食物消耗：按难度分档，默认 0（紧急勘探激活时本次免食物；机器人专属点恒为 0）
     let foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
     const state = MemorySanctuary.state;
     if (state.emergencyExploreFoodFree) {
@@ -455,10 +486,47 @@ function executeExploration() {
         return g ? g.name : '';
     }).filter(n => n).join('、');
 
-    addLog(`派出勘探队前往 ${expData.name}。成员：${guardianNames || '无'}。预计 ${expData.duration} 周后返回。`, 'system');
+    addLog(`${isBotOnly ? '派出工程机器人编队' : `派出勘探队前往 ${expData.name}`}。${isBotOnly ? '机器人' : `成员：${guardianNames || '无'}`}。预计 ${expData.duration} 周后返回。`, 'system');
 
     document.getElementById('explore-overlay').classList.add('hidden');
     advanceTime(expData.duration);
+}
+
+
+/**
+ * 地表/机器人碎片解锁（勘探重设计 2026-09-03）
+ * 勘探点返回时必定发现其关联碎片条目（fragments 数组），产出从纯资源改为独家内容。
+ * 碎片本身有独立 availableAfter/expiresAfter 窗口：
+ *  - 窗口未开：先记录发现，第 N 周起才可归档；
+ *  - 窗口已过（含环境归零加速风化）：碎片永久失去，仅留日志。
+ * 解锁状态持久化于 state.unlockedFragments（存档字段）。
+ */
+function unlockFragmentsForPoint(expData, effects) {
+    const state = MemorySanctuary.state;
+    if (!expData || !expData.fragments || expData.fragments.length === 0) return;
+    if (!state.unlockedFragments) state.unlockedFragments = [];
+
+    expData.fragments.forEach(fid => {
+        const entry = (MemorySanctuary.data.archives || []).find(a => a.id === fid);
+        if (!entry) return;
+        if (state.completedArchives.includes(fid) || state.unlockedFragments.includes(fid)) return;
+
+        // 窗口已过：碎片已风化（与 onTimeAdvanced 过期口径一致）
+        const effectiveExpiry = (typeof getEffectiveExpiryWeeks === 'function')
+            ? getEffectiveExpiryWeeks(entry)
+            : (entry.expiresAfter || 0);
+        if (entry.expired || (entry.expiresAfter && MemorySanctuary.state.week > effectiveExpiry)) {
+            addLog(`💨 ${expData.name} 本可找到「${entry.title}」，但它的时代已经过去，只留下一捧细沙。`, 'system');
+            return;
+        }
+
+        state.unlockedFragments.push(fid);
+        const notYet = entry.availableAfter && MemorySanctuary.state.week < entry.availableAfter;
+        const hint = notYet ? `（第 ${entry.availableAfter} 周起可在存储室归档）` : '';
+        const prefix = expData.botOnly ? '🤖 机器人回收' : '🗒 地表碎片';
+        addLog(`${prefix}：「${entry.title}」已发现${hint}——过期前前往对应存储室归档。`, 'success');
+        if (effects) effects.push({ name: `${prefix}「${entry.title}」`, positive: true });
+    });
 }
 
 
@@ -496,6 +564,9 @@ function applyExplorationResult(outcome, expData) {
         if (outcome.resource === 'environment') adjustResource('environment', outcome.amount);
         if (outcome.resource === 'food') adjustResource('food', outcome.amount);
     }
+
+    // 碎片解锁（勘探重设计 2026-09-03）：返回时必定发现关联碎片，写入 effects 展示
+    unlockFragmentsForPoint(expData, effects);
 
     document.getElementById('result-text').textContent = outcome.message;
 

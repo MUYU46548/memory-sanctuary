@@ -153,7 +153,7 @@ function applyProjectEffect(project, isCompletion) {
             // 建造工程机器人
             if (isCompletion) {
                 state.resources.engineeringBots = (state.resources.engineeringBots || 0) + 1;
-                addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。每台减少 18% 衰减，每回合消耗 0.75 能源。`, 'success');
+                addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。每台减少 ${Math.round(ENGINEERING_BOTS_CONFIG.decayReductionPerBot * 100)}% 衰减，每回合消耗 ${ENGINEERING_BOTS_CONFIG.maintenanceCostPerBot} 能源。`, 'success');
             }
             break;
     }
