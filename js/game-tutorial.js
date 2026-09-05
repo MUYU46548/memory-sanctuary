@@ -162,6 +162,10 @@ function endTutorial() {
     window.removeEventListener('resize', onTutorialResize);
     // 引导中可能切到了存储室/守护者页，结束后回到归档页作为主操作起点
     if (typeof switchActionTab === 'function') switchActionTab('archive');
+    // UI 审查修复（2026-09-05）：引导的 scrollIntoView 会把右侧操作面板滚到深处，
+    // 结束时重置滚动位置，避免顶部常驻的事件面板/横幅被顶出视口
+    const actionPanel = document.getElementById('action-panel');
+    if (actionPanel) actionPanel.scrollTop = 0;
     localStorage.setItem('memory-sanctuary-tutorial', 'completed');
     addLog('新手引导已完成。愿你的选择得到善待。', 'system');
 
