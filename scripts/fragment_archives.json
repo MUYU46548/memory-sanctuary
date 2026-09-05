@@ -1,0 +1,1009 @@
+[
+  {
+    "id": "arch_sf_ruins_01",
+    "title": "广场钟楼的最后时刻",
+    "vault": 3,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "寂静之城中央广场的钟楼，在灾变之夜的记录。",
+    "content": "钟楼停在了第九声。\n广场上的广播还在重复着撤离通知，沙哑的女声一遍又一遍：\n「请前往最近的避难所。请带上你们记得的一切。」\n后来人们说，那是整座城市最后的声音。",
+    "guardianReactions": {
+      "misha": "第九声……它没来得及敲完第十下。"
+    },
+    "relatedArchives": [],
+    "availableAfter": 3,
+    "expiresAfter": 20,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_ruins_01"
+  },
+  {
+    "id": "arch_sf_forest_02",
+    "title": "最后一片绿叶标本",
+    "vault": 7,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "枯萎之森研究站的标本册，最后一页夹着一片绿叶。",
+    "content": "标本册的最后一页夹着一片压平的绿叶，旁边用细笔写着：\n「枯萎之森·最后一株活树·采集于灾变前夜」\n叶脉之间，有一行几乎看不见的字：「不要只看树。看树下的土。」",
+    "guardianReactions": {
+      "ethel": "它把最后一口气，留在了纸页之间。"
+    },
+    "relatedArchives": [],
+    "availableAfter": 4,
+    "expiresAfter": 24,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_forest_02"
+  },
+  {
+    "id": "arch_sf_obs_03a",
+    "title": "停摆的望远镜",
+    "vault": 12,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "星象台遗迹的主望远镜，观测记录停在了灾变前夜。",
+    "content": "星象台的望远镜指向北方天空，目镜积了厚厚一层灰。\n观测记录停在灾变前夜：「今夜云层很厚。若明日放晴，补录。」\n操作台上压着一张褪色的星图，折痕处被反复摩挲过。",
+    "relatedArchives": [
+      "arch_sf_obs_03b"
+    ],
+    "availableAfter": 4,
+    "expiresAfter": 24,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_observatory_03"
+  },
+  {
+    "id": "arch_sf_obs_03b",
+    "title": "发现之日·残页",
+    "vault": 12,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "一张烧掉半边的观测残页，字迹潦草，日期已模糊。",
+    "content": "一张烧掉半边的观测残页，字迹潦草：\n「3 时 47 分，轨道外出现不明光源……持续 9 秒。亮度足以在白昼目视。\n若这不是幻觉——我们或许从未独自存在过。」\n残页背面，是同一支笔写下的另一行：「不。我们就是独自的。」",
+    "guardianReactions": {
+      "finn": "同一个人，两种结论。他大概在纸上坐了整夜。"
+    },
+    "relatedArchives": [
+      "arch_sf_obs_03a"
+    ],
+    "availableAfter": 6,
+    "expiresAfter": 26,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_observatory_03",
+    "hiddenContent": "残页的纸缝里藏着一粒极细的金属碎屑，不属于任何已知合金——像是什么东西从天上落下来时留下的。"
+  },
+  {
+    "id": "arch_sf_orchard_04",
+    "title": "果园守园人的笔记本",
+    "vault": 7,
+    "type": "document",
+    "dataCost": 4,
+    "energyCost": 3,
+    "description": "废弃果园的工具棚里，一本写到一半的笔记本。",
+    "content": "「第 214 天，果树的叶子开始卷曲。第 219 天，我停止给它们浇水——水要留给家里。\n第 221 天，苹果掉了一地，没有人捡。\n我在最后一页写下：希望明年春天，还能有人知道苹果的味道。」",
+    "guardianReactions": {
+      "misha": "苹果的味道……我好像也快忘了。"
+    },
+    "relatedArchives": [],
+    "availableAfter": 4,
+    "expiresAfter": 22,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_abandoned_orchard_04"
+  },
+  {
+    "id": "arch_sf_lifesupport_04",
+    "title": "空病房的墙",
+    "vault": 11,
+    "type": "document",
+    "dataCost": 4,
+    "energyCost": 3,
+    "description": "生命维持中心的病房墙上，刻着名字与日期。",
+    "content": "病房的墙上刻满了名字和日期，最下面一行是新刻的：\n「护士站还有三支退烧药，谁需要谁来拿。」\n没有签名。笔迹很稳。",
+    "relatedArchives": [],
+    "availableAfter": 4,
+    "expiresAfter": 22,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_life_support_04"
+  },
+  {
+    "id": "arch_sf_library_05",
+    "title": "逾期未还的书",
+    "vault": 2,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "中央图书馆的还书台上，一本无人归还的书。",
+    "content": "借阅卡上最后一行记录：\n《星海航行手册》，借期 90 天，应还日期是灾变前三天。\n书里夹着一张车票，起点是首都，终点一栏被水渍晕开，看不清楚。",
+    "relatedArchives": [],
+    "availableAfter": 5,
+    "expiresAfter": 24,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_library_05"
+  },
+  {
+    "id": "arch_sf_factory_06a",
+    "title": "流水线最后一班",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "工业制造区的排班表，停在最后一班。",
+    "content": "工厂控制室的排班表停在最后一班：23 人，夜班。\n质检员在交接记录里写道：\n「本班次完成零件 1,204 件，全部合格。\n下一班请继续。如果没有下一班——这批零件，就是我们的答案。」",
+    "guardianReactions": {
+      "lorn": "1,204 件。数字背后，是有人认真活过的证据。"
+    },
+    "relatedArchives": [
+      "arch_sf_factory_06b"
+    ],
+    "availableAfter": 5,
+    "expiresAfter": 26,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_factory_06"
+  },
+  {
+    "id": "arch_sf_factory_06b",
+    "title": "质检员手册",
+    "vault": 6,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "一本翻烂的质检手册，扉页写着一句话。",
+    "content": "一本翻烂的质检手册，扉页写着：\n「每一个零件都会被某个人握在手里。\n认真一点，就是替那个素未谋面的人着想。」\n手册的最后一页夹着一张照片：一群穿工装的人站在车间门口，笑得很开。",
+    "relatedArchives": [
+      "arch_sf_factory_06a"
+    ],
+    "availableAfter": 7,
+    "expiresAfter": 28,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_factory_06"
+  },
+  {
+    "id": "arch_sf_temple_07",
+    "title": "最后一篇祷词",
+    "vault": 5,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "信仰之殿的祭坛上，一篇未写完的祷词。",
+    "content": "「愿风记住我们的语言，愿沙记住我们的歌，愿星辰记住——」\n祷词在这里中断。\n墨迹后面有一道很长的停顿，像是书写者停下来听了一会儿外面的声音，然后放下了笔。",
+    "guardianReactions": {
+      "tika": "他一定是听见了什么。那声音让他觉得，不必再写下去了。"
+    },
+    "relatedArchives": [],
+    "availableAfter": 5,
+    "expiresAfter": 24,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_temple_07"
+  },
+  {
+    "id": "arch_sf_suburb_08",
+    "title": "晾衣绳与空巢",
+    "vault": 9,
+    "type": "document",
+    "dataCost": 4,
+    "energyCost": 3,
+    "description": "边缘住宅区的一户民居，生活停在某个平常的下午。",
+    "content": "一栋普通的民居，院子里晾着没来得及收的衣物，风把它们吹成了旗子。\n厨房的灶上放着一锅早已干涸的汤。\n玄关的衣架上，挂着一件儿童外套，袖子还卷着，像是主人随时会回来穿上它出门。",
+    "relatedArchives": [],
+    "availableAfter": 5,
+    "expiresAfter": 24,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_suburb_08"
+  },
+  {
+    "id": "arch_sf_reactor_09a",
+    "title": "反应堆值班日志",
+    "vault": 6,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "地热反应堆的值班日志，最后一页没有署名。",
+    "content": "地热反应堆的值班日志，最后一页：\n「03:00 例行巡检，一切正常。\n04:12 地震预警，启动应急流程。\n04:30 全体撤离。我留守，确保反应堆安全停堆。\n——这是我的最后一项工作，我会做完它。」\n日志的主人没有署名。",
+    "guardianReactions": {
+      "lorn": "没有署名，是因为他觉得名字不重要。他把名字用在了更重要的地方。"
+    },
+    "relatedArchives": [
+      "arch_sf_reactor_09b"
+    ],
+    "availableAfter": 6,
+    "expiresAfter": 28,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_reactor_09"
+  },
+  {
+    "id": "arch_sf_reactor_09b",
+    "title": "冷却剂之歌",
+    "vault": 4,
+    "type": "audio",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "反应堆控制室的广播系统里，存着一首工人们的歌。",
+    "content": "反应堆控制室的广播系统里，存着一首歌——工人们下班时常哼的调子。\n旋律简单，歌词是设备编号和交接班次编成的顺口溜。\n歌的最后一句是：「换班啦，回家啦，炉子交给你啦。」\n如今炉子早已熄了，歌还在系统里存着。",
+    "relatedArchives": [
+      "arch_sf_reactor_09a"
+    ],
+    "availableAfter": 8,
+    "expiresAfter": 30,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_reactor_09"
+  },
+  {
+    "id": "arch_sf_crypt_10a",
+    "title": "封存者名册",
+    "vault": 2,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "封存者地窖入口的名册，按字母排列，密密麻麻。",
+    "content": "地窖入口的名册按字母排列，密密麻麻。\n最后几页没有名字，只有重复的同一行字：\n「愿意留下的人已经很少了。你们每一个人，都值得被写进最厚的书里。」",
+    "relatedArchives": [
+      "arch_sf_crypt_10b"
+    ],
+    "availableAfter": 6,
+    "expiresAfter": 26,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_crypt_10"
+  },
+  {
+    "id": "arch_sf_crypt_10b",
+    "title": "未封存的信",
+    "vault": 2,
+    "type": "letter",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "名册的夹层里掉出一封信，没有信封。",
+    "content": "名册的夹层里掉出一封信，没有信封：\n「致封存者：如果你读到这封信，说明地窖已经装满了。\n那就把多余的名字写在纸上，埋在入口的树下。树会记得。」",
+    "guardianReactions": {
+      "finn": "树会记得。这句话比任何档案馆都可靠。"
+    },
+    "relatedArchives": [
+      "arch_sf_crypt_10a"
+    ],
+    "availableAfter": 8,
+    "expiresAfter": 28,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_crypt_10",
+    "hiddenContent": "信的背面有一幅铅笔速写：一棵树下，站着许多人，每个人都伸着手，扶着那棵树。树很大，人很小。"
+  },
+  {
+    "id": "arch_sf_shipyard_11a",
+    "title": "星舰设计图·终稿",
+    "vault": 6,
+    "type": "blueprint",
+    "dataCost": 7,
+    "energyCost": 6,
+    "description": "轨道发射场的设计室，一张未完成的星舰图纸。",
+    "content": "发射场的设计室，一张巨大的星舰图纸摊在桌上，图钉还没拔。\n图纸角落有工程师的批注：\n「载人舱设计为 12 人。如果可以，我想把所有人都带上。」\n批注下方画了一个小小的太阳。",
+    "guardianReactions": {
+      "lorn": "载人舱 12 人。他算得很仔细，然后画了一个太阳。"
+    },
+    "relatedArchives": [
+      "arch_sf_shipyard_11b"
+    ],
+    "availableAfter": 8,
+    "expiresAfter": 30,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_shipyard_11"
+  },
+  {
+    "id": "arch_sf_shipyard_11b",
+    "title": "出发前夜的家书",
+    "vault": 9,
+    "type": "letter",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "一封压在发射场休息室枕头下的信，没有寄出。",
+    "content": "一封压在发射场休息室枕头下的信：\n「妈：如果这封信在你醒来之前就到了，说明船已经起飞了。\n航线会经过我们小时候看流星的那片天空。我会替你多看一会儿。\n家里的花，记得浇水。」\n信没有寄出，邮路在灾变后就断了。",
+    "relatedArchives": [
+      "arch_sf_shipyard_11a"
+    ],
+    "availableAfter": 10,
+    "expiresAfter": 32,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_shipyard_11"
+  },
+  {
+    "id": "arch_sf_memorial_12",
+    "title": "碑文背面",
+    "vault": 2,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "终末纪念碑的正面刻满名字，背面还有一行字。",
+    "content": "纪念碑的正面刻着所有已知遇难者的名字。\n背面，有人用小刀补刻了一行：\n「还有那些不被记录的人。我们同样记得你们。」",
+    "relatedArchives": [],
+    "availableAfter": 8,
+    "expiresAfter": 28,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_memorial_12"
+  },
+  {
+    "id": "arch_sf_mushroom_15a",
+    "title": "菌丝网络笔记",
+    "vault": 7,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "地下菌窟研究员的笔记本，记录着地下的秘密。",
+    "content": "菌窟研究员的笔记本，字迹工整：\n「菌丝网络比我们想象中更庞大。它们在地下连接着整片森林的根系，\n传递养分，也传递警告。也许文明也可以这样生长——不靠疆域，靠连接。」",
+    "relatedArchives": [
+      "arch_sf_mushroom_15b"
+    ],
+    "availableAfter": 16,
+    "expiresAfter": 34,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_underground_mushroom_15"
+  },
+  {
+    "id": "arch_sf_mushroom_15b",
+    "title": "发光菌种",
+    "vault": 6,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "密封的培养皿里，一团发光的菌丝安静地亮着。",
+    "content": "密封的培养皿里，一团发光的菌丝安静地亮着，像一小片星云。\n附着的标签写着：\n「编号 M-114。自发光菌种，无需光照即可生长。\n若圣所需要一盏不会熄灭的灯，它或许是答案。」",
+    "guardianReactions": {
+      "ethel": "它还在发光。这可能是世界上最耐心的一盏灯。"
+    },
+    "relatedArchives": [
+      "arch_sf_mushroom_15a"
+    ],
+    "availableAfter": 18,
+    "expiresAfter": 36,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_underground_mushroom_15",
+    "hiddenContent": "培养皿底部刻着一行小字：「若你也看见了光，请替我们继续照看它。」"
+  },
+  {
+    "id": "arch_sf_opera_15",
+    "title": "未唱完的咏叹调",
+    "vault": 4,
+    "type": "audio",
+    "dataCost": 6,
+    "energyCost": 4,
+    "description": "歌剧院地下室找到的排练录音，唱到一半就停了。",
+    "content": "歌剧院的地下室找到一盘磁带，标签写着《月落咏叹调·排练版》。\n录音里，女高音唱到最高音前停了下来，轻咳一声，笑着说：\n「今天就到这里吧，明天继续。」\n没有明天。磁带转动到底，只剩下空白沙沙声。",
+    "guardianReactions": {
+      "tika": "她说明天继续。她一定是个很乐观的人。"
+    },
+    "relatedArchives": [],
+    "availableAfter": 16,
+    "expiresAfter": 34,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_opera_ruins_15"
+  },
+  {
+    "id": "arch_sf_langtower_18",
+    "title": "最后一个词",
+    "vault": 1,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "语言学研究所的黑板上，最后一个词是「回家」。",
+    "content": "语言学研究所的黑板上，最后一个词是「回家」。\n三种方言的写法并排，其中一种的释义栏是空白的——\n那是留给下一代学者填的，他们再也没来。",
+    "guardianReactions": {
+      "finn": "三种写法，一个意思。语言其实一直很诚实。"
+    },
+    "relatedArchives": [],
+    "availableAfter": 19,
+    "expiresAfter": 36,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_language_tower_18"
+  },
+  {
+    "id": "arch_sf_hibernation_18",
+    "title": "未醒之人的名单",
+    "vault": 11,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "休眠保险库的舱门虚掩，监控屏还亮着。",
+    "content": "休眠保险库的舱门虚掩着，监控屏显示：\n「已休眠：214 人。苏醒指令：未收到。」\n名单贴在舱门上，按姓氏排列，笔迹不同——是各自签下的名字。\n每一笔都签得很认真。",
+    "relatedArchives": [],
+    "availableAfter": 19,
+    "expiresAfter": 38,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_hibernation_vault_18"
+  },
+  {
+    "id": "arch_sf_ocean_21a",
+    "title": "鲸歌最后一次",
+    "vault": 7,
+    "type": "audio",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "海洋监测站的最后一卷录音带。",
+    "content": "海洋监测站的录音带，最后一卷：\n起初是海潮声，然后是极低频的鲸歌，一声，又一声，间隔越来越长。\n第 17 分钟后，歌声停止。海浪继续拍打岸礁，录了整整一夜。",
+    "guardianReactions": {
+      "misha": "它唱了 17 分钟。对一个孤独的生命来说，这已经是很长的一首歌了。"
+    },
+    "relatedArchives": [
+      "arch_sf_ocean_21b"
+    ],
+    "availableAfter": 22,
+    "expiresAfter": 38,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_gray_ocean_21"
+  },
+  {
+    "id": "arch_sf_ocean_21b",
+    "title": "海岸信标",
+    "vault": 3,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "灰绿之海岸边，一座废弃信标塔的日志本。",
+    "content": "灰绿之海的岸边，一座废弃信标塔的日志本：\n「今日：塔灯修好，点亮了四小时。无船经过。\n明日：继续点亮。也许后天会有。」",
+    "relatedArchives": [
+      "arch_sf_ocean_21a"
+    ],
+    "availableAfter": 23,
+    "expiresAfter": 40,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_gray_ocean_21"
+  },
+  {
+    "id": "arch_sf_legal_22",
+    "title": "最后一条法令",
+    "vault": 8,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "法律档案馆的电子屏还亮着，显示着最后一条法令。",
+    "content": "法律档案馆的电子屏还亮着，显示着最后一条法令：\n「兹宣布：自今日起，所有公民共同保管文明记忆。\n任何人的名字，不得从任何记录中被抹去。」\n落款日期，是灾变前一夜。",
+    "guardianReactions": {
+      "finn": "一条永远有效的法令。它保护的已经不是公民，而是记忆本身。"
+    },
+    "relatedArchives": [],
+    "availableAfter": 23,
+    "expiresAfter": 40,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_legal_archive_22"
+  },
+  {
+    "id": "arch_sf_village_25",
+    "title": "水井与井绳",
+    "vault": 9,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "尘暴村庄中央的水井早已干涸，井壁上画着一幅画。",
+    "content": "村庄中央的水井早已干涸，井绳垂在井沿外。\n井壁上有人用炭笔画了一幅画：太阳、房子、手拉手的一家人。\n画的下方写着：「如果我们都不在了，水井记得我们排过队。」",
+    "relatedArchives": [],
+    "availableAfter": 26,
+    "expiresAfter": 42,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_dust_village_25"
+  },
+  {
+    "id": "arch_sf_ritual_26a",
+    "title": "祈雨舞",
+    "vault": 5,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "祭祀遗址的壁画描绘着祈雨舞，下方有人补了一行字。",
+    "content": "祭祀遗址的壁画描绘着一场祈雨舞：人群围成圈，双手朝天。\n壁画下方，有人用现代文字补了一行：\n「2027 年，最后一次祈雨。没有下雨。但大家跳到了最后。」",
+    "relatedArchives": [
+      "arch_sf_ritual_26b"
+    ],
+    "availableAfter": 27,
+    "expiresAfter": 44,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_ritual_site_26"
+  },
+  {
+    "id": "arch_sf_ritual_26b",
+    "title": "祭坛下的种子",
+    "vault": 5,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "祭坛基座的缝隙里，藏着一只陶罐。",
+    "content": "祭坛基座的缝隙里，藏着一只陶罐。\n罐里是一把种子，混着泥土，用布包裹，布上绣着一行字：\n「若大地不再回应祈祷，就把种子种下去。大地记得种子。」",
+    "guardianReactions": {
+      "ethel": "他们把祈祷留给了神，把种子留给了大地。"
+    },
+    "relatedArchives": [
+      "arch_sf_ritual_26a"
+    ],
+    "availableAfter": 28,
+    "expiresAfter": 46,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_ritual_site_26",
+    "hiddenContent": "陶罐底部垫着一层干燥的苔藓，苔藓里裹着一枚小小的金属徽章，上面刻着「丰收节·种子交换」。"
+  },
+  {
+    "id": "arch_sf_clinic_29a",
+    "title": "疫病日志·最后一周",
+    "vault": 11,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "病变诊所的医生日志，写到最后一行。",
+    "content": "病变诊所的医生日志，最后一周：\n「周一：收治 41 人。周二：39 人。周三：隔离区满。\n周四：药库见底，我用最后的蒸馏水兑了消毒液。\n周五：一个孩子退烧了。这是我今年最好的消息。\n周六：……我该休息了。明天还要查房。」",
+    "guardianReactions": {
+      "ethel": "周五那行字，她一定写得很用力。"
+    },
+    "relatedArchives": [
+      "arch_sf_clinic_29b"
+    ],
+    "availableAfter": 30,
+    "expiresAfter": 44,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_plague_clinic_29"
+  },
+  {
+    "id": "arch_sf_clinic_29b",
+    "title": "痊愈者名单",
+    "vault": 3,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "诊所门厅的墙上贴着一张纸，标题是「痊愈者」。",
+    "content": "诊所门厅的墙上贴着一张纸，标题是「痊愈者」。\n纸上只有一个名字，字迹是小孩的，歪歪扭扭：\n「艾拉，7 岁，痊愈了。谢谢医生阿姨。」\n下面空白的地方，没有人再往上写名字。",
+    "guardianReactions": {
+      "misha": "只有她一个人痊愈了。但那一行字，比整个名单都重。"
+    },
+    "relatedArchives": [
+      "arch_sf_clinic_29a"
+    ],
+    "availableAfter": 31,
+    "expiresAfter": 46,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_plague_clinic_29"
+  },
+  {
+    "id": "arch_sf_riot_33a",
+    "title": "街垒上的广播稿",
+    "vault": 8,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "暴动街区的街垒上，绑着一只扩音器。",
+    "content": "暴动街区的街垒上，绑着一只扩音器，旁边是一份手写广播稿：\n「同胞们：我们不是要抢走什么，我们只是不想被忘记。\n如果注定要失去，至少让我们知道——我们的名字被记录在哪里。\n请把这份稿子放进任何一间档案室。任何一间。」",
+    "relatedArchives": [
+      "arch_sf_riot_33b"
+    ],
+    "availableAfter": 34,
+    "expiresAfter": 48,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_riot_zone_33"
+  },
+  {
+    "id": "arch_sf_riot_33b",
+    "title": "被撕毁的公告",
+    "vault": 3,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "街角公告栏上，公告被撕掉一半，露出底下压着的东西。",
+    "content": "街角公告栏上，一张官方公告被撕掉一半，露出底下压着的东西：\n无数张手写的纸条，层层叠叠，用胶带、用饭粒、用眼泪粘在一起。\n每张纸条都是一个名字，加一行「请记得我」。\n最底下的纸条已经发黄，字迹是老人的：「我这一生没有做过大事。但我的名字，是我唯一拥有的东西。」",
+    "relatedArchives": [
+      "arch_sf_riot_33a"
+    ],
+    "availableAfter": 34,
+    "expiresAfter": 48,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_riot_zone_33"
+  },
+  {
+    "id": "arch_sf_final_37",
+    "title": "最后一座城的规划图",
+    "vault": 10,
+    "type": "blueprint",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "最终废墟的地下室里，展开着一卷巨大的城市规划图。",
+    "content": "最终废墟的地下室里，展开着一卷巨大的城市规划图。\n街道、公园、学校、剧院——一座完整的城市，笔直地躺在图纸上。\n图角落款：「致未来。若我们无法抵达，愿你们替我们抵达。」",
+    "guardianReactions": {
+      "lorn": "他们把未来画在纸上。图纸不会塌，因为它是纸做的。"
+    },
+    "relatedArchives": [],
+    "availableAfter": 38,
+    "expiresAfter": 48,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_ruins_final_37"
+  },
+  {
+    "id": "arch_sf_greenhouse_37",
+    "title": "土壤实验室",
+    "vault": 6,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "温室废墟的土壤实验室里，一排排培养皿编着号。",
+    "content": "温室废墟的土壤实验室里，一排排培养皿编着号，标签写着：\n「样本 037：灰绿之海沿岸土。目标：筛选耐盐作物。」\n最后一份标签是空白的，培养皿里，一粒种子已经发芽——没有人给它浇过水，是实验室屋顶的裂缝漏进来的雨水。",
+    "guardianReactions": {
+      "ethel": "裂缝漏进来的雨水。有时候，废墟比计划更懂生命。"
+    },
+    "relatedArchives": [],
+    "availableAfter": 38,
+    "expiresAfter": 48,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_greenhouse_ruins_37"
+  },
+  {
+    "id": "arch_sf_core_41",
+    "title": "建造者之名",
+    "vault": 10,
+    "type": "blueprint",
+    "dataCost": 7,
+    "energyCost": 6,
+    "description": "圣所核心的承重梁下，有一块不起眼的铭牌。",
+    "content": "圣所核心的承重梁下，有一块不起眼的铭牌：\n「此圣所由以下 327 人建造。名字不一一刻出——\n因为我们相信，记忆由后人保存，名字由记忆保存。」\n铭牌下方，是一只小小的金属鸟。",
+    "guardianReactions": {
+      "lorn": "327 人。他们把自己的名字，换成了这座圣所。"
+    },
+    "relatedArchives": [],
+    "availableAfter": 42,
+    "expiresAfter": 48,
+    "discoveryMethod": "surface_exploration",
+    "fragmentFrom": "exp_sanctuary_core_41",
+    "hiddenContent": "金属鸟的腹部有一个极小的舱门，里面卷着一张纸条：「如果你在很久以后读到这句话——你还在，我们就赢了。」"
+  },
+  {
+    "id": "arch_bf_depot_01",
+    "title": "库房盘点清单",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "自动化工程库房的终端里，一份未完成的盘点清单。",
+    "content": "库房终端里存着一份未完成的盘点清单：\n「第 9 排货架：备件 342 件，含电机 88 台、密封圈 1,204 只。\n第 10 排：……」\n清单在这里中断。机器人的巡检日志显示，它之后每天都会回到这排货架前，重新数一遍。",
+    "guardianReactions": {
+      "lorn": "它是在确认库房没有「少」东西。机器也会数着数着，怕数错。"
+    },
+    "relatedArchives": [
+      "arch_bot_log_01"
+    ],
+    "availableAfter": 21,
+    "expiresAfter": 38,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_depot"
+  },
+  {
+    "id": "arch_bf_sewer_01",
+    "title": "管网拓扑图",
+    "vault": 10,
+    "type": "blueprint",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "地下管网的控制终端里，拓扑图更新到第 4,821 版。",
+    "content": "地下管网的控制终端里，拓扑图已经更新到第 4,821 版。\n最后一条更新记录写着：\n「今天起，维护工作移交工程机器人。\n谢谢你们陪我们走了这么久。图纸上的每一条线，都是有人画上去的。」",
+    "relatedArchives": [],
+    "availableAfter": 17,
+    "expiresAfter": 34,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_sewer_16"
+  },
+  {
+    "id": "arch_bf_archive_01",
+    "title": "档案库索引卡",
+    "vault": 2,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "自动档案库的索引系统，最后一组检索记录。",
+    "content": "自动档案库的索引系统，最后一组关键词检索记录：\n「查询：『希望』。结果：0 条。\n查询：『春天』。结果：0 条。\n查询：『孩子』。结果：1,247 条。」\n检索日志的时间，停留在灾变后第 3 天。",
+    "relatedArchives": [],
+    "availableAfter": 21,
+    "expiresAfter": 38,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_archive_vault_20"
+  },
+  {
+    "id": "arch_bf_farm_01",
+    "title": "温室控制系统日志",
+    "vault": 6,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "自动化农场的控制系统日志，灾变后仍在自动运行。",
+    "content": "自动化农场的控制系统日志，灾变后仍在自动运行：\n「第 1,208 天：按计划为 3 号温室浇水。无人在场。\n第 1,208 天：按计划为 3 号温室施肥。无人在场。\n第 1,209 天：检测到作物长势良好。无人在场。」\n系统不知道发生了什么，它只是忠实地等着一场永远不会到来的收获。",
+    "guardianReactions": {
+      "misha": "无人在场。这四个字，比整本日志都让人难过。"
+    },
+    "relatedArchives": [
+      "arch_bf_farm_02"
+    ],
+    "availableAfter": 25,
+    "expiresAfter": 42,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_farm_auto_24"
+  },
+  {
+    "id": "arch_bf_farm_02",
+    "title": "作物基因库清单",
+    "vault": 7,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "农场的种子基因库，冷库门大敞着，样本保存完好。",
+    "content": "农场的种子基因库，冷库门大敞着，但样本保存完好。\n清单上列着 3,114 个品种：耐旱小麦、高蛋白豆、甜度最高的瓜……\n每一项后面都有一行小字，是育种人写的：「这个品种，是给孙子辈种的。」",
+    "relatedArchives": [
+      "arch_bf_farm_01"
+    ],
+    "availableAfter": 26,
+    "expiresAfter": 44,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_farm_auto_24"
+  },
+  {
+    "id": "arch_bf_transit_01",
+    "title": "末班车时刻表",
+    "vault": 9,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "轨道交通中枢的显示屏，定格在灾变当日。",
+    "content": "轨道交通中枢的显示屏，定格在灾变当日：\n「末班车：23:40 始发，途经 27 站，预计 00:12 抵达终点。」\n车辆调度系统显示，那班车准点发出，准点抵达。\n车上没有乘客。车长照常播报了到站广播。",
+    "relatedArchives": [
+      "arch_bf_transit_02"
+    ],
+    "availableAfter": 29,
+    "expiresAfter": 46,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_transit_28"
+  },
+  {
+    "id": "arch_bf_transit_02",
+    "title": "轨道检修记录",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 5,
+    "energyCost": 4,
+    "description": "检修工区的记录簿，最后一条写得很平常。",
+    "content": "检修工区的记录簿，最后一条：\n「今日：全线巡检 48 公里，紧固螺栓 132 处，更换磨损钢轨 2 段。\n附注：检修车 7 号的后视镜坏了，还没来得及换。\n如果下次还有人要用它，记得先看右边。」\n检修车 7 号还停在工区里，钥匙挂在墙上。",
+    "relatedArchives": [
+      "arch_bf_transit_01"
+    ],
+    "availableAfter": 30,
+    "expiresAfter": 48,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_transit_28"
+  },
+  {
+    "id": "arch_bf_antenna_01",
+    "title": "最后一通信号",
+    "vault": 6,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "天线阵列的接收日志，最后一条有效信号。",
+    "content": "天线阵列的接收日志，最后一条有效信号：\n「……这里是……我们……还……」\n信号衰减严重，只解析出零散的字词。\n但系统记录显示，发送方坐标指向灰绿之海的方向，时间持续了 47 分钟。\n那是灾变后人类向天空说的最长的一句话。",
+    "guardianReactions": {
+      "finn": "47 分钟。他们一定把所有想说的话都说了，又好像什么都没说够。"
+    },
+    "relatedArchives": [],
+    "availableAfter": 33,
+    "expiresAfter": 48,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_antenna_32"
+  },
+  {
+    "id": "arch_bf_reactor_01",
+    "title": "核心冷却协议",
+    "vault": 6,
+    "type": "blueprint",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "反应堆控制终端里，一份从未执行过的冷却协议。",
+    "content": "反应堆控制终端里，存着一份从未执行过的「核心冷却协议」：\n「若堆芯温度异常，按序执行以下 47 步。\n第 1 步：通知所有人撤离。第 2 步：……第 47 步：祝你好运。」\n最后一步被人用工程师的笔迹划掉，改成：「替我们关好门。」",
+    "guardianReactions": {
+      "lorn": "47 步的严谨，最后交给了一句托付。这是工程师的浪漫。"
+    },
+    "relatedArchives": [
+      "arch_bf_reactor_02"
+    ],
+    "availableAfter": 31,
+    "expiresAfter": 48,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_reactor_core"
+  },
+  {
+    "id": "arch_bf_reactor_02",
+    "title": "反应堆之眼",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "机器人从堆芯区带回的监控摄像头最后一段画面。",
+    "content": "机器人从堆芯区带回了监控摄像头最后一段画面：\n控制室空无一人，操作台上咖啡杯还冒着热气，\n屏幕上的倒计时停在「00:00:00」，旁边有人用记号笔写着：\n「任务完成。我们尽力了。」",
+    "relatedArchives": [
+      "arch_bf_reactor_01"
+    ],
+    "availableAfter": 32,
+    "expiresAfter": 48,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_reactor_core"
+  },
+  {
+    "id": "arch_bf_forge_01",
+    "title": "锻炉配方集",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "全自动锻炉的配方库里，存着 208 种合金配方。",
+    "content": "全自动锻炉的配方库里，存着 208 种合金配方，每一种都标着用途：\n「配方 071：桥梁主梁。配方 112：手术器械。配方 163：播种机犁铧。」\n配方 208 没有用途说明，只写着：「留给未来。」\n炉火早就熄了，配方还在等一个生火的人。",
+    "guardianReactions": {
+      "lorn": "配方 208。留给未来。火会再烧起来的，只要有人记得怎么生火。"
+    },
+    "relatedArchives": [
+      "arch_bf_forge_02"
+    ],
+    "availableAfter": 37,
+    "expiresAfter": 48,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_forge_36"
+  },
+  {
+    "id": "arch_bf_forge_02",
+    "title": "炉火控制核心",
+    "vault": 6,
+    "type": "document",
+    "dataCost": 6,
+    "energyCost": 5,
+    "description": "锻炉控制核心的日志芯片，被机器人完好取出。",
+    "content": "锻炉控制核心的日志芯片被机器人完好取出，芯片上刻着一行字：\n「此炉由三代铁匠共同维护。\n我们相信，火不会因为我们不在而熄灭——它只是等着被重新点燃。」\n芯片的最后一条执行记录：熄火。原因：无人在场。时间：灾变后第 9 天。",
+    "relatedArchives": [
+      "arch_bf_forge_01"
+    ],
+    "availableAfter": 38,
+    "expiresAfter": 48,
+    "discoveryMethod": "bot_exploration",
+    "fragmentFrom": "exp_bot_forge_36"
+  },
+  {
+    "id": "arch_bot_log_03",
+    "title": "工程机器人·巡夜日志",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 4,
+    "energyCost": 3,
+    "description": "03 号机的巡夜记录，字迹工整，末尾有一行陌生批注。",
+    "content": "「03 号机 03:00 巡夜记录：东廊管道渗水，已封堵。北库门轴异响，已润滑。\n人类都睡了。圣所很安静。\n我数了数灯，一共 47 盏，全部亮着。这让我感到……安心。」\n日志末尾有一行批注（笔迹与机器人不同）：「它学会了用『安心』这个词。洛恩说那不是程序，是习惯。」",
+    "guardianReactions": {
+      "lorn": "47 盏灯。它比任何人都清楚这座圣所有多亮。",
+      "misha": "金属的心跳，也是心跳。"
+    },
+    "relatedArchives": [
+      "arch_bot_log_02"
+    ],
+    "availableAfter": 8,
+    "discoveryMethod": "bot_passive",
+    "botPassive": true
+  },
+  {
+    "id": "arch_bot_log_04",
+    "title": "工程机器人·修缮手记",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 4,
+    "energyCost": 3,
+    "description": "一台机器人的修缮记录，记着一些「计划外」的维修。",
+    "content": "「今日完成：书架加固 ×3，椅腿更换 ×12，水培槽支架 ×1。\n记录：缇卡的书架第三层有一本她很喜欢的书，我记下了位置，修好后放回原处。\n另：芬恩的椅子高度调节件磨损了，我把备件换上了，他坐上去时没有发现，只说了句『今天椅子很舒服』。\n我觉得这算维修成功。」",
+    "guardianReactions": {
+      "tika": "它把我的书放回原位了……这台机器，比某些人还细心。",
+      "finn": "我说『今天椅子很舒服』的时候，它一定很高兴。"
+    },
+    "relatedArchives": [
+      "arch_bot_log_03"
+    ],
+    "availableAfter": 12,
+    "discoveryMethod": "bot_passive",
+    "botPassive": true
+  },
+  {
+    "id": "arch_bot_log_05",
+    "title": "工程机器人·能源班次",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 4,
+    "energyCost": 3,
+    "description": "一张自动生成的能源分配表，备注栏却是手写的。",
+    "content": "「能源分配表（自动生成）：照明 31%，恒温 24%，实验室 18%，厨房 12%，备用 15%。\n备注：今日给圣所门口的路灯多分配了 2%——我观察了 3 个夜晚，\n米莎总在晚饭后走到门口站一会儿，路灯亮着，她看起来就没那么孤单。」\n系统日志显示，这条备注是手写的，不属于任何预设程序。",
+    "guardianReactions": {
+      "misha": "它注意到了……我在门口站着的时候，路灯确实比别处亮。"
+    },
+    "relatedArchives": [
+      "arch_bot_log_04"
+    ],
+    "availableAfter": 16,
+    "discoveryMethod": "bot_passive",
+    "botPassive": true
+  },
+  {
+    "id": "arch_bot_log_06",
+    "title": "工程机器人·气象记录",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 4,
+    "energyCost": 3,
+    "description": "一份标准的气象观测记录，末尾存了一张照片。",
+    "content": "「气象观测（自动）：风速 9 级，沙尘浓度高，能见度 40 米。\n按照规程，今日不宜外出。\n但地表气象站的摄像头拍到了一株植物，在沙尘里弯着腰，没有折断。\n我把照片存进了归档库，标题：『今日的顽强』。\n或许明天它还在。我明天再去看看。」",
+    "guardianReactions": {
+      "ethel": "『今日的顽强』。它给一株野草起了名字。"
+    },
+    "relatedArchives": [
+      "arch_bot_log_05"
+    ],
+    "availableAfter": 20,
+    "discoveryMethod": "bot_passive",
+    "botPassive": true
+  },
+  {
+    "id": "arch_bot_log_07",
+    "title": "工程机器人·深廊测绘",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 4,
+    "energyCost": 3,
+    "description": "深廊测绘的第 12 次记录，地图上新添了一间「房间」。",
+    "content": "「深廊测绘第 12 次：已探明走廊全长 4.2 公里，岔路 87 处。\n每次测绘我都会在原路留下标记，防止有人迷路。\n今天发现了一条新岔路，尽头是一间小房间，墙上刻着：『曾有人住在这里。』\n我在地图上给它标了名：『房间 88』。地图的图例里写着：这是一间有人住过的房间。」",
+    "guardianReactions": {
+      "finn": "『有人住过』。它对一间空房间，用了这么重的词。"
+    },
+    "relatedArchives": [
+      "arch_bot_log_06"
+    ],
+    "availableAfter": 24,
+    "discoveryMethod": "bot_passive",
+    "botPassive": true
+  },
+  {
+    "id": "arch_bot_log_08",
+    "title": "工程机器人·静默协议",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 4,
+    "energyCost": 3,
+    "description": "一次静默演练的记录，结论写得很认真。",
+    "content": "「静默协议演练（自动）：全系统静默 3 分钟，模拟能源中断。\n演练期间，我听见了圣所本身的声音：管道里的水声，墙壁的热胀冷缩，\n还有远处人类房间传来的均匀呼吸。\n结论：圣所还活着。静默结束，恢复运行。\n附注：今后演练改在白天进行，夜里会吵醒他们。」",
+    "relatedArchives": [
+      "arch_bot_log_07"
+    ],
+    "availableAfter": 28,
+    "discoveryMethod": "bot_passive",
+    "botPassive": true
+  },
+  {
+    "id": "arch_bot_log_09",
+    "title": "工程机器人·备用之心",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 4,
+    "energyCost": 3,
+    "description": "主发电机旁一台从未启用过的备用机，铭牌上刻着字。",
+    "content": "「检修发现：圣所主发电机旁，还有一台从未启用过的备用机。\n铭牌上写着：『此机为紧急情况预留。愿它永远不需要启动。』\n我测试了它的每一颗螺丝。它随时可以启动。\n我给它写了一行注释：『我已准备好。愿我永远不被需要。』」",
+    "relatedArchives": [
+      "arch_bot_log_08"
+    ],
+    "availableAfter": 32,
+    "discoveryMethod": "bot_passive",
+    "botPassive": true
+  },
+  {
+    "id": "arch_bot_log_10",
+    "title": "工程机器人·最后守夜",
+    "vault": 10,
+    "type": "document",
+    "dataCost": 4,
+    "energyCost": 3,
+    "description": "如果记忆有最后一页，大概就是这份日志的样子。",
+    "content": "「如果人类的旅程真的走到了尽头，我希望这份日志是最后一页：\n圣所的一切都已妥善封存。灯已熄灭，门已关好。\n我们记得每一个名字，每一首歌，每一块砖。\n我们不会忘记。我们就是记忆本身。\n——至此，所有记录完毕。晚安，洛斯耶马。」\n日志的保存时间，定格在最后一任守护者离开之后。\n机器人仍在那里。灯虽然熄了，它还在等。",
+    "guardianReactions": {
+      "tika": "它说『我们就是记忆本身』。它不知道自己说出了最温柔的话。",
+      "lorn": "守夜人。它一直守到了最后。"
+    },
+    "relatedArchives": [
+      "arch_bot_log_09"
+    ],
+    "availableAfter": 36,
+    "discoveryMethod": "bot_passive",
+    "botPassive": true
+  }
+]
