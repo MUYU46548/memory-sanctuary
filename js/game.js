@@ -98,6 +98,9 @@ function advanceTime(weeks) {
 function onTimeAdvanced(weeks) {
     const state = MemorySanctuary.state;
     
+    // P0-2 修复：事件保底计数器随周推进递增（事件触发时清零，见 triggerEvent）
+    state.weeksSinceLastEvent = (state.weeksSinceLastEvent || 0) + weeks;
+    
     // 重置每回合资源变化追踪
     state.resourceChanges = { energy: 0, media: 0, environment: 0, food: 0 };
     
@@ -645,7 +648,7 @@ function checkStuckState() {
         else if (lowMedia) reason = '介质已耗尽';
         else reason = '资源不足以归档任何条目';
         
-        // 全局死局：允许提前封印（不受 20 周门槛限制），并提供明确的绝境提示
+        // 全局死局：允许提前封印（不受 16 周门槛限制），并提供明确的绝境提示
         const canSeal = canSealSanctuary() || globalDeadlock;
         const sealLabel = globalDeadlock ? '提前封印' : '封印圣所';
         
@@ -1550,6 +1553,105 @@ function showGuardianDialogue(guardianId, type) {
 }
 
 // ==========================================
+// P1-4 守护者交谈分支（v0.2.7）
+// 点击「💬 交谈」后，除常规台词外展示 2-3 个叙事分支选项：
+// 不同选择 → 不同好感变化 + 不同回应台词；高好感解锁个人任务（消耗资源，换取专属回报）。
+// 数据驱动：guardians.json 的 chatTopics / personalTask 字段。
+// ==========================================
+
+function showGuardianChatOptions(guardianId) {
+    const container = document.getElementById('guardian-chat-choices');
+    if (!container) return;
+    const guardian = getGuardianById(guardianId);
+    if (!guardian) return;
+    
+    container.innerHTML = '';
+    container.classList.remove('hidden');
+    
+    const topics = guardian.chatTopics || [];
+    const task = guardian.personalTask;
+    const tier = getMoodTier(guardianId);
+    const mood = getMoodLevel(guardianId);
+    
+    topics.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = 'guardian-chat-choice';
+        btn.textContent = t.label;
+        btn.title = t.hint || '';
+        btn.addEventListener('click', () => {
+            applyGuardianChatChoice(guardian, t);
+        });
+        container.appendChild(btn);
+    });
+    
+    // 高好感个人任务（friendly 及以上档位出现）
+    if (task && tier !== 'hostile' && tier !== 'cold' && mood >= (task.moodReq || 4)) {
+        const btn = document.createElement('button');
+        btn.className = 'guardian-chat-choice task';
+        btn.textContent = `✦ ${task.label}`;
+        btn.title = '完成守护者的私人请求：消耗资源，提升大量好感并可能获得额外回报';
+        btn.addEventListener('click', () => {
+            applyGuardianPersonalTask(guardian, task);
+        });
+        container.appendChild(btn);
+    }
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'guardian-chat-choice close';
+    closeBtn.textContent = '结束交谈';
+    closeBtn.addEventListener('click', () => container.classList.add('hidden'));
+    container.appendChild(closeBtn);
+}
+
+function applyGuardianChatChoice(guardian, topic) {
+    const delta = topic.mood || 0.5;
+    adjustGuardianMood(guardian.id, delta);
+    const dialogueEl = document.getElementById('guardian-dialogue');
+    if (dialogueEl) dialogueEl.textContent = topic.reply || '……';
+    addLog(`💬 与 ${guardian.name} 交谈：「${topic.label}」→ 好感 ${delta >= 0 ? '+' : ''}${delta}`, 'success');
+    
+    // 短暂禁用选项后收起，避免重复选择
+    const container = document.getElementById('guardian-chat-choices');
+    if (container) {
+        container.querySelectorAll('button').forEach(b => b.disabled = true);
+        setTimeout(() => container.classList.add('hidden'), 2600);
+    }
+    if (typeof renderGuardianMood === 'function') renderGuardianMood();
+}
+
+function applyGuardianPersonalTask(guardian, task) {
+    const state = MemorySanctuary.state;
+    const cost = task.cost || {};
+    if ((state.resources.energy || 0) < (cost.energy || 0) ||
+        (state.resources.media || 0) < (cost.media || 0)) {
+        addLog(`◈ 资源不足，暂时无法帮 ${guardian.name} 完成请求。`, 'system');
+        return;
+    }
+    state.resources.energy -= cost.energy || 0;
+    state.resources.media -= cost.media || 0;
+    
+    adjustGuardianMood(guardian.id, task.mood || 2);
+    const reward = task.reward || {};
+    const rewardParts = [];
+    if (reward.media) { state.resources.media = Math.min(150, state.resources.media + reward.media); rewardParts.push(`介质+${reward.media}`); }
+    if (reward.energy) { state.resources.energy = Math.min(150, state.resources.energy + reward.energy); rewardParts.push(`能源+${reward.energy}`); }
+    if (reward.environment) { state.resources.environment = Math.min(100, state.resources.environment + reward.environment); rewardParts.push(`环境+${reward.environment}`); }
+    if (reward.food) { state.resources.food = Math.min(80, state.resources.food + reward.food); rewardParts.push(`食物+${reward.food}`); }
+    
+    const dialogueEl = document.getElementById('guardian-dialogue');
+    if (dialogueEl) dialogueEl.textContent = task.reply || '……';
+    addLog(`✦ 个人任务完成：${guardian.name} 的请求已达成（好感 +${task.mood || 2}${rewardParts.length > 0 ? '，' + rewardParts.join('、') : ''}）`, 'success');
+    
+    if (typeof AudioSystem !== 'undefined' && AudioSystem.playExploreReturnNarrative) {
+        AudioSystem.playExploreReturnNarrative();
+    }
+    
+    const container = document.getElementById('guardian-chat-choices');
+    if (container) container.classList.add('hidden');
+    if (typeof renderAll === 'function') renderAll();
+}
+
+// ==========================================
 // 守护者好感度系统
 // ==========================================
 
@@ -1773,9 +1875,13 @@ function initGuardianInteraction() {
                     // After VN, update the guardian panel text
                     const dialogueEl = document.getElementById('guardian-dialogue');
                     if (dialogueEl) dialogueEl.textContent = text;
+                    // P1-4 修复：VN 结束后展示交谈分支选项
+                    if (typeof showGuardianChatOptions === 'function') showGuardianChatOptions(currentGuardian);
                 });
             } else {
                 showGuardianDialogue(currentGuardian, 'idle');
+                // P1-4 修复：直接展示交谈分支选项
+                if (typeof showGuardianChatOptions === 'function') showGuardianChatOptions(currentGuardian);
             }
             
             menu.classList.add('hidden');
@@ -2130,6 +2236,9 @@ function triggerGuardianInitiative(event) {
     const guardian = getGuardianById(event.guardianId);
     if (!guardian) return;
     
+    // P0-2 修复：守护者主动事件同样重置事件保底计数器
+    MemorySanctuary.state.weeksSinceLastEvent = 0;
+    
     // 更新守护者面板
     showGuardianDialogue(event.guardianId, 'event');
     
@@ -2271,7 +2380,7 @@ const TUTORIAL_STEPS = [
     {
         target: '#tech-panel',
         tab: 'tech',
-        text: '这是科技研究面板（第 8 周起逐步解锁）。\n\n勘探 / 归档 / 环境三域各有一对互斥学说：选定一条路线后，同组另一分支将永久锁死，请按周目策略抉择。\n\n科技不直接产出资源（那是项目的职责），而是优化勘探收益、归档成本、士气与补给。',
+        text: '这是科技研究面板（第 5 周起逐步解锁）。\n\n勘探 / 归档 / 环境三域各有一对互斥学说：选定一条路线后，同组另一分支将永久锁死，请按周目策略抉择。\n\n科技不直接产出资源（那是项目的职责），而是优化勘探收益、归档成本、士气与补给。已解锁学说可继续「升级」强化效果。',
         position: 'left'
     },
     {
@@ -2657,7 +2766,7 @@ function showHelpModal() {
         {
             title: '🎯 游戏目标',
             content: `• 在有限的 48 周内，尽可能多地归档文明碎片，为后世保存洛斯耶马文明的记忆
-• 20 周后可封印圣所提前结算，48 周为极限挑战`,
+• 16 周后可封印圣所提前结算，48 周为极限挑战`,
         },
         {
             title: '🎮 核心操作',
@@ -2696,18 +2805,19 @@ function showHelpModal() {
         },
         {
             title: '🔬 科技研究',
-            content: `• 第 8 周起可在「🔬 科技」标签页研究科技，消耗能源与介质
+            content: `• 第 5 周起可在「🔬 科技」标签页研究科技，消耗能源与介质
 • 三域各有互斥学说分支：勘探（高效↔守真）、归档（速录↔深研）、环境（守护↔节用）
 • 学说一选即锁：同组另一分支在本周目内永久不可研究
+• 已解锁科技可继续「升级」：投入资源强化效果（如速录学派 25% → 50% 成本减免）
 • 科技效果与维护项目零重叠：优化勘探收益/风险、归档成本、隐藏叙事、好感衰减、补给收益
 • 与工程机器人加成独立叠加（如勘探收益：机器人 +8%/台，科技再 +15%）`,
         },
         {
             title: '🗺️ 进阶系统',
-            content: `• 封印圣所（16 周起可预览，20 周后可触发）
+            content: `• 封印圣所（12 周起可预览，16 周后可触发）
 • 多周目奖励：守护者记忆继承 + 圣所状态保留
 • 圣所项目：投入资源换取持续增益
-• 🔬 科技树：三域互斥学说，优化勘探/归档/环境（第 8 周起）
+• 🔬 科技树：三域互斥学说，优化勘探/归档/环境（第 5 周起）
 • 地表勘探：派出守护者获取资源，并带回「地表碎片」——只能在勘探点发现的独家归档条目，且只在特定周数窗口内可归档，过期即永久消失
 • 机器人编队：机器人可独立勘探专属地点（无需守护者）、定期产出工程日志、环境危急时自动稳定；维护费低廉（0.3 能源/台·周）
 • 应急协议：危急时使用非常规手段`,

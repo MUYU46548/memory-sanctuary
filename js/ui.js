@@ -171,9 +171,9 @@ function updateBatchArchiveBtn() {
         return;
     }
     
-    // 未解锁（<30周）
-    if (state.week < 30) {
-        btn.textContent = `🚨 紧急归档 (${state.week}/30)`;
+    // 未解锁（<24周）
+    if (state.week < 24) {
+        btn.textContent = `🚨 紧急归档 (${state.week}/24)`;
         btn.classList.add('locked');
         btn.classList.remove('active');
         return;
@@ -330,8 +330,8 @@ function renderSealTopbarButton() {
     const archivedCount = state.completedArchives.length;
     const canSeal = canSealSanctuary();
 
-    // week < 16: 隐藏按钮
-    if (week < 16) {
+    // week < 12: 隐藏按钮（v0.2.7 封印门槛 20→16，预览 16→12）
+    if (week < 12) {
         btn.classList.add('hidden');
         return;
     }
@@ -346,7 +346,7 @@ function renderSealTopbarButton() {
         btn.textContent = `⚠ 封印（${archivedCount} 条）`;
         btn.title = '终局将至！点击封印圣所以保存记忆';
         btn.disabled = false;
-    } else if (week >= 20) {
+    } else if (week >= 16) {
         // 可封印 — 琥珀色脉冲
         btn.classList.add('sealable-ready');
         btn.textContent = `封印（${archivedCount} 条）`;
@@ -356,7 +356,7 @@ function renderSealTopbarButton() {
         // 预览 — 灰色不可点击
         btn.classList.add('sealable-preview');
         btn.textContent = `封印圣所`;
-        btn.title = `再运行 ${20 - week} 周即可开启封印`;
+        btn.title = `再运行 ${16 - week} 周即可开启封印`;
         btn.disabled = true;
     }
 }
@@ -691,7 +691,7 @@ function renderWeekDisplay() {
             weekEl.addEventListener('click', () => {
                 const w = MemorySanctuary.state.week;
                 const remain = MAX_WEEK - w;
-                addLog(`📅 第 ${w} 周：剩余 ${remain} 周。封印需满 20 周，全周目上限 ${MAX_WEEK} 周。`, 'system');
+                addLog(`📅 第 ${w} 周：剩余 ${remain} 周。封印需满 16 周，全周目上限 ${MAX_WEEK} 周。`, 'system');
             });
         }
     }
@@ -891,6 +891,19 @@ function renderVaultTabs() {
 // 存储室状态
 // ==========================================
 
+/**
+ * P0-3 修复：归档成功后存储室发光反馈
+ * 在 .vault-item 上挂载短暂的发光动画，让「归档」有即时的视觉回报。
+ */
+function flashVault(vaultId) {
+    const el = document.querySelector(`.vault-item[data-vault-id="${vaultId}"]`);
+    if (!el) return;
+    el.classList.remove('vault-flash');
+    void el.offsetWidth; // 强制重排以重新触发动画
+    el.classList.add('vault-flash');
+    setTimeout(() => el.classList.remove('vault-flash'), 1400);
+}
+
 function renderVaultStatus() {
     const container = document.getElementById('vault-list');
     if (!container) return;
@@ -904,12 +917,26 @@ function renderVaultStatus() {
         
         const item = document.createElement('div');
         item.className = `vault-item ${isActive ? 'active' : ''}`;
+        item.dataset.vaultId = vault.id;
         item.style.borderLeftColor = vault.accentColor;
         item.style.cursor = 'pointer';
         item.title = `点击查看「${vault.name}」的待归档条目`;
         
+        // P0-3/P2-7 修复：按充盈度分档视觉效果（25%/50%/75%/100%）+ 容量将满预警
+        let fillClass = 'vault-fill-low';
+        if (status.percent >= 100) fillClass = 'vault-fill-full';
+        else if (status.percent >= 75) fillClass = 'vault-fill-high';
+        else if (status.percent >= 50) fillClass = 'vault-fill-mid';
+        else if (status.percent >= 25) fillClass = 'vault-fill-25';
+        item.classList.add(fillClass);
+        
+        const nearFull = status.percent >= 80;
+        const fullWarn = nearFull
+            ? `<span class="vault-capacity-warn" title="存储室接近满载，归档前请注意剩余空间">⚠ 容量将满</span>`
+            : '';
+        
         item.innerHTML = `
-            <div class="vault-name" style="color: ${vault.accentColor}">${vault.name}</div>
+            <div class="vault-name" style="color: ${vault.accentColor}">${vault.name}${fullWarn}</div>
             <div class="vault-capacity">
                 <div class="vault-bar">
                     <div class="vault-bar-fill" style="width: ${status.percent}%; background: ${vault.accentColor}"></div>
@@ -1359,6 +1386,10 @@ function renderTechPanel() {
         domainTechs.forEach(tech => {
             const check = (typeof getTechUnlockState === 'function') ? getTechUnlockState(tech.id) : { ok: false, reason: '' };
             const unlocked = state.techUnlocked.includes(tech.id);
+            const upgraded = !!(state.techUpgrades || []).includes(tech.id);
+            const upgradeCheck = unlocked && tech.upgrade
+                ? ((typeof getTechUpgradeState === 'function') ? getTechUpgradeState(tech.id) : { ok: false, reason: '' })
+                : null;
             const isPickedDoctrine = !!(tech.doctrine && state.techDoctrines && state.techDoctrines[tech.doctrine] === tech.id);
             const doctrineLocked = !unlocked && isDoctrineLocked(tech.doctrine, tech.id);
 
@@ -1378,7 +1409,8 @@ function renderTechPanel() {
             node.className = `tech-node ${stateClass}` + (isPickedDoctrine ? ' doctrine-picked' : '');
 
             let badge = '';
-            if (unlocked) badge = '<span class="tech-badge unlocked">✓ 已解锁</span>';
+            if (upgraded) badge = '<span class="tech-badge upgraded">★ 已升级</span>';
+            else if (unlocked) badge = '<span class="tech-badge unlocked">✓ 已解锁</span>';
             else if (isPickedDoctrine) badge = '<span class="tech-badge unlocked">✓ 学说已定</span>';
             else if (check.ok) badge = '<span class="tech-badge available">可研究</span>';
             else badge = `<span class="tech-badge locked">${esc(check.reason)}</span>`;
@@ -1394,6 +1426,7 @@ function renderTechPanel() {
                     <span class="tech-effect" title="${esc(tech.effectText || '')}">◈效果：${esc(tech.effectText || '')}</span>
                     <span class="tech-cost">成本 ◈${cost.energy || 0} ◇${cost.media || 0}</span>
                     ${tech.unlockWeek ? `<span class="tech-week">第 ${tech.unlockWeek} 周解锁</span>` : ''}
+                    ${tech.upgrade ? `<span class="tech-upgrade-hint" title="${esc(tech.upgrade.text || '')}">↑ 可升级：${esc(tech.upgrade.text || '')}</span>` : ''}
                     ${prereqNames.length > 0 ? `<span class="tech-prereq">前置：${esc(prereqNames.join('、'))}</span>` : ''}
                     ${tech.doctrine ? `<span class="tech-doctrine">${esc(doctrineNames[tech.doctrine] || '学说')}分支${doctrineLocked ? '（互斥已锁）' : ''}</span>` : ''}
                 </div>
@@ -1407,6 +1440,29 @@ function renderTechPanel() {
                     if (typeof unlockTech === 'function') unlockTech(tech.id);
                 });
                 node.appendChild(btn);
+            }
+
+            // P1-6 修复：已解锁科技显示升级入口（效果强化，科技树不再一次性消费）
+            if (unlocked && tech.upgrade) {
+                const up = document.createElement('button');
+                if (upgraded) {
+                    up.className = 'tech-upgrade-btn done';
+                    up.textContent = '★ 已升级';
+                    up.disabled = true;
+                } else if (upgradeCheck && upgradeCheck.ok) {
+                    up.className = 'tech-upgrade-btn';
+                    const upCost = tech.upgrade.cost || {};
+                    up.textContent = `↑ 升级（◈${upCost.energy || 0} ◇${upCost.media || 0}）`;
+                    up.addEventListener('click', () => {
+                        if (typeof upgradeTech === 'function') upgradeTech(tech.id);
+                    });
+                } else {
+                    up.className = 'tech-upgrade-btn disabled';
+                    up.textContent = '↑ 升级';
+                    up.disabled = true;
+                    if (upgradeCheck) up.title = upgradeCheck.reason;
+                }
+                node.appendChild(up);
             }
 
             groupEl.appendChild(node);
@@ -1460,10 +1516,18 @@ function updateProjectButton() {
     const hasLockedButRelevant = MemorySanctuary.data.projects &&
         MemorySanctuary.data.projects.some(p => p.availableAfter && week >= p.availableAfter - 4);
     
-    if (hasAvailableProjects || hasLockedButRelevant) {
+    // P1-5 修复：在建项目数徽标（项目按钮常驻可见进度信息）
+    const activeCount = (MemorySanctuary.state.activeProjects || []).length;
+    const activeLabel = activeCount > 0 ? `（${activeCount} 在建）` : '';
+    if (btn.dataset.baseLabel === undefined) {
+        btn.dataset.baseLabel = btn.textContent;
+    }
+    btn.textContent = `🏗️ 项目${activeLabel}`;
+    
+    if (hasAvailableProjects || hasLockedButRelevant || activeCount > 0) {
         btn.disabled = false;
-        btn.title = hasAvailableProjects ? '圣所维护项目（可开始）' : '圣所维护项目';
-        btn.classList.toggle('ready', hasAvailableProjects);
+        btn.title = hasAvailableProjects ? '圣所维护项目（可开始）' : (activeCount > 0 ? `圣所维护项目（${activeCount} 个在建）` : '圣所维护项目');
+        btn.classList.toggle('ready', hasAvailableProjects || activeCount > 0);
     } else {
         btn.disabled = true;
         btn.title = '圣所维护项目（第 8 周解锁）';
@@ -1508,7 +1572,18 @@ function renderProjectList() {
             buttonHtml = `<button class="project-btn" disabled>第${project.availableAfter}周解锁</button>`;
         } else if (isActive) {
             const active = state.activeProjects.find(p => p.id === project.id);
-            buttonHtml = `<button class="project-btn" disabled>建设中 · 还需 ${active.remainingWeeks} 周</button>`;
+            // P1-5 修复：在建项目显示进度条（已完成/总时长）+ 即将完成高亮
+            const elapsed = project.duration - active.remainingWeeks;
+            const pct = project.duration > 0 ? Math.max(0, Math.min(100, Math.round((elapsed / project.duration) * 100))) : 0;
+            const nearDone = active.remainingWeeks <= 2;
+            item.classList.toggle('project-near-done', nearDone);
+            buttonHtml = `
+                <div class="project-progress">
+                    <div class="project-progress-bar">
+                        <div class="project-progress-fill" style="width:${pct}%"></div>
+                    </div>
+                    <span class="project-progress-text">${nearDone ? '⏳ 即将完成 · ' : ''}还需 ${active.remainingWeeks} 周（${pct}%）</span>
+                </div>`;
         } else if (isCompleted && !project.repeatable) {
             // 解锁类项目标注「已生效」，其余显示「已完成」
             const isUnlock = project.effect && project.effect.type === 'unlockArchives';
@@ -1567,6 +1642,8 @@ function getProjectEffectText(project) {
             return `解锁 AI 助理辅助归档（每回合可减半费用额外归档一条）`;
         case 'buildBot':
             return `建造工程机器人（减少资源衰减）`;
+        case 'vaultExpand':
+            return `全部存储室容量 +${Math.round((e.capacityPercent || 0) * 100)}%`;
         default:
             return '';
     }
@@ -2207,9 +2284,9 @@ function buildWeekPopover() {
 
     // 里程碑
     const milestones = [
-        { week: 16, label: '封印圣所可预览' },
-        { week: 20, label: '可提前封印结算' },
-        { week: 30, label: '紧急归档协议解锁' },
+        { week: 12, label: '封印圣所可预览' },
+        { week: 16, label: '可提前封印结算' },
+        { week: 24, label: '紧急归档协议解锁' },
         { week: 48, label: '终局 · 强制封印' }
     ];
     const msHtml = milestones.map(m => {

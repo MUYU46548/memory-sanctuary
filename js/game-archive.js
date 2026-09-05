@@ -255,6 +255,9 @@ function archiveEntry(archiveId, ritualType = 'standard') {
         state.vaultUsage[vault.id] = currentUsage + mediaCost;
     }
     
+    // P0-3 修复：归档成功后存储室发光反馈（充盈度进度条同步刷新）
+    if (typeof flashVault === 'function') flashVault(vault.id);
+    
     // 检查冲突：归档此条目是否导致另一条消失
     const conflict = checkArchiveConflict(archiveId);
     if (conflict) {
@@ -348,16 +351,16 @@ function archiveEntry(archiveId, ritualType = 'standard') {
 
 /**
  * 进入紧急归档协议（批量归档）
- * 第30周后解锁，可一回合归档最多3条，不消耗时间
+ * 第24周后解锁，可一回合归档最多3条，不消耗时间
  * 代价：环境-10、全体守护者心情-2、下周衰减+20%
  */
 function enterBatchArchiveMode() {
     const state = MemorySanctuary.state;
     if (!state) return;
     
-    // 解锁条件：第30周后
-    if (state.week < 30) {
-        addLog('⚠️ 紧急归档协议尚未解锁（第30周后解锁）。', 'system');
+    // 解锁条件：第24周后（v0.2.7 由 30 周前移，配合封印门槛 16 周形成更紧凑的中后期节奏）
+    if (state.week < 24) {
+        addLog('⚠️ 紧急归档协议尚未解锁（第24周后解锁）。', 'system');
         return;
     }
     
@@ -794,6 +797,9 @@ function useInstantArchive(archiveId) {
     state.completedArchives.push(archiveId);
     state.vaultUsage[vault.id] = currentUsage + entry.dataCost;
     
+    // P0-3 修复：立即归档同样触发存储室反馈
+    if (typeof flashVault === 'function') flashVault(vault.id);
+    
     addLog(`⚡ 立即归档：「${entry.title}」（剩余机会：${state.instantArchiveChances}）`, 'success');
     
     // 音效
@@ -916,6 +922,9 @@ function aiAssistArchive(archiveId) {
     state.aiAssistCount = (state.aiAssistCount || 0) + 1;
     state.completedArchives.push(archiveId);
     state.vaultUsage[vault.id] = currentUsage + entry.dataCost;
+    
+    // P0-3 修复：AI 辅助归档同样触发存储室反馈
+    if (typeof flashVault === 'function') flashVault(vault.id);
 
     addLog(`🤖 AI 助理辅助归档：「${entry.title}」（费用减半 ◈${energyCost} ◇${dataCost}，环境稳定度 -${AI_ASSIST_ENV_COST}）`, 'success');
 

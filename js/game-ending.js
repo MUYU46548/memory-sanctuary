@@ -158,7 +158,7 @@ function checkHiddenEndings() {
     if (pct >= 0.6) return { id: 'guardian_of_remnants', title: '文明守护者', description: '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的洛斯耶马。', priority: 50 };
     if (pct >= 0.4) return { id: 'finale_guardian_of_fragments', title: '碎片收集者', description: `你保存了洛斯耶马的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。`, priority: 50 };
     if (pct >= 0.1) return { id: 'finale_whisper_keeper', title: '微光守护者', description: `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到洛斯耶马的零星片段，但至少——他们知道这里曾经存在过一个文明。`, priority: 30 };
-    if (state.week >= 20) return { id: 'finale_silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道洛斯耶马曾存在过。也许……遗忘也是一种选择。', priority: 10 };
+    if (state.week >= 16) return { id: 'finale_silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道洛斯耶马曾存在过。也许……遗忘也是一种选择。', priority: 10 };
 
     return null;
 }
@@ -329,7 +329,8 @@ function getEndingModalData(ending) {
 
 function canSealSanctuary() {
     if (!MemorySanctuary.state) return false;
-    return MemorySanctuary.state.week >= 20;
+    // v0.2.7：封印门槛 20 → 16 周，给玩家更早的自由抉择期
+    return MemorySanctuary.state.week >= 16;
 }
 
 
@@ -903,8 +904,8 @@ function renderSealButton() {
     const archivedCount = MemorySanctuary.state.completedArchives.length;
 
     if (!canSeal) {
-        const weeksLeft = 20 - MemorySanctuary.state.week;
-        container.innerHTML = `圣所需运行至少 20 周方可封印。还需 ${weeksLeft} 周。`;
+        const weeksLeft = 16 - MemorySanctuary.state.week;
+        container.innerHTML = `圣所需运行至少 16 周方可封印。还需 ${weeksLeft} 周。`;
         return;
     }
 

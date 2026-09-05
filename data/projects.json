@@ -223,6 +223,22 @@
       "effect": {
         "type": "buildBot"
       }
+    },
+    {
+      "id": "proj_vault_expand",
+      "name": "扩建存储室",
+      "description": "为全部 12 间存储室加装临时货架与介质架，容量提升 20%。归档空间紧张时的长期解药。",
+      "availableAfter": 8,
+      "duration": 3,
+      "repeatable": false,
+      "cost": {
+        "energy": 30,
+        "media": 20
+      },
+      "effect": {
+        "type": "vaultExpand",
+        "capacityPercent": 0.2
+      }
     }
   ]
 }

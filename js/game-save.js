@@ -47,6 +47,8 @@ function saveGame(slot) {
             // 通用科技树（v0.2.4）
             techUnlocked: [...(MemorySanctuary.state.techUnlocked || [])],
             techDoctrines: { ...(MemorySanctuary.state.techDoctrines || {}) },
+            // 科技升级（P1-6 修复，v0.2.7）
+            techUpgrades: [...(MemorySanctuary.state.techUpgrades || [])],
             // DLC 模块状态隔离
             modules: { ...(MemorySanctuary.state.modules || {}) },
             // === 补全缺失的运行时字段（P1-2 修复） ===
@@ -75,6 +77,8 @@ function saveGame(slot) {
             deepArchiveCount: MemorySanctuary.state.deepArchiveCount || 0,
             conflictLog: [...(MemorySanctuary.state.conflictLog || [])],
             consecutiveSkips: MemorySanctuary.state.consecutiveSkips || 0,
+            // 事件保底计数器（P0-2 修复，v0.2.7）
+            weeksSinceLastEvent: MemorySanctuary.state.weeksSinceLastEvent || 0,
             sacrificeHistory: [...(MemorySanctuary.state.sacrificeHistory || [])],
             loopCluesFound: [...(MemorySanctuary.state.loopCluesFound || [])],
             // 季节 & 运行时标记
@@ -241,6 +245,10 @@ function loadGame(slot) {
         MemorySanctuary.state.deepArchiveCount = saveData.state.deepArchiveCount || 0;
         MemorySanctuary.state.conflictLog = [...(saveData.state.conflictLog || [])];
         MemorySanctuary.state.consecutiveSkips = saveData.state.consecutiveSkips || 0;
+        // 事件保底计数器（P0-2 修复，v0.2.7；旧档缺省按 0 处理）
+        MemorySanctuary.state.weeksSinceLastEvent = saveData.state.weeksSinceLastEvent || 0;
+        // 科技升级（P1-6 修复，v0.2.7；旧档缺省为空数组）
+        MemorySanctuary.state.techUpgrades = [...(saveData.state.techUpgrades || [])];
         MemorySanctuary.state.sacrificeHistory = [...(saveData.state.sacrificeHistory || [])];
         MemorySanctuary.state.loopCluesFound = [...(saveData.state.loopCluesFound || [])];
         MemorySanctuary.state.season = saveData.state.season ? { ...saveData.state.season } : null;
@@ -779,6 +787,8 @@ function sanitizeImportedSave(raw) {
         // T1-7 修复：通用科技树（v0.2.4）解锁字段此前未进白名单，导入存档后已解锁科技被丢弃
         techUnlocked: arr(s.techUnlocked).filter(x => typeof x === 'string'),
         techDoctrines: obj(s.techDoctrines),
+        // 科技升级（P1-6 修复，v0.2.7）
+        techUpgrades: arr(s.techUpgrades).filter(x => typeof x === 'string'),
         deterioration: obj(s.deterioration),
         emergencyCorruption: num(s.emergencyCorruption, 0),
         emergencyCooldowns: obj(s.emergencyCooldowns),
@@ -832,6 +842,8 @@ function sanitizeImportedSave(raw) {
         deepArchiveCount: num(s.deepArchiveCount, 0),
         conflictLog: arr(s.conflictLog),
         consecutiveSkips: num(s.consecutiveSkips, 0),
+        // 事件保底计数器（P0-2 修复，v0.2.7）
+        weeksSinceLastEvent: num(s.weeksSinceLastEvent, 0),
         sacrificeHistory: arr(s.sacrificeHistory),
         loopCluesFound: arr(s.loopCluesFound),
         season: obj(s.season),

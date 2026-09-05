@@ -80,6 +80,11 @@ function processActiveProjects() {
         const project = getProjectById(active.id);
         if (!project) continue;
 
+        // P1-5 修复：项目即将完成预警（剩余 2 周时提示，让玩家有准备时间）
+        if (active.remainingWeeks === 2) {
+            addLog(`⏳ 项目「${project.name}」将在下周完成，请注意查收。`, 'system');
+        }
+
         // 先发放本周收益（修复 off-by-one：duration 内每一周都应有收益）
         applyProjectEffect(project, false);
 
@@ -154,6 +159,15 @@ function applyProjectEffect(project, isCompletion) {
             if (isCompletion) {
                 state.resources.engineeringBots = (state.resources.engineeringBots || 0) + 1;
                 addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。每台减少 ${Math.round(ENGINEERING_BOTS_CONFIG.decayReductionPerBot * 100)}% 衰减，每回合消耗 ${ENGINEERING_BOTS_CONFIG.maintenanceCostPerBot} 能源。`, 'success');
+            }
+            break;
+        case 'vaultExpand':
+            // P2-7 修复：存储室扩容——全部存储室容量 +N%
+            if (isCompletion && effect.capacityPercent) {
+                (MemorySanctuary.data.vaults || []).forEach(v => {
+                    v.capacity = Math.round((v.capacity || 0) * (1 + effect.capacityPercent));
+                });
+                addLog(`🏛️ 存储室扩建完成：全部 ${(MemorySanctuary.data.vaults || []).length} 间存储室容量 +${Math.round(effect.capacityPercent * 100)}%。`, 'success');
             }
             break;
     }

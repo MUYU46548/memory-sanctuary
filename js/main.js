@@ -371,6 +371,8 @@ function initGameState() {
         // 通用科技树（v0.2.4）：已解锁科技 id 与学说路线（doctrineKey -> 节点 id）
         techUnlocked: [],
         techDoctrines: {},
+        // 科技升级（P1-6 修复，v0.2.7）：已升级科技 id 列表
+        techUpgrades: [],
         // 工程机器人系统
         botFactoryActive: false,
         botMaintenanceCost: 0,
@@ -381,6 +383,8 @@ function initGameState() {
         deepArchiveCount: 0,
         conflictLog: [],
         consecutiveSkips: 0,
+        // 事件保底计数器（P0-2 修复，v0.2.7）：连续无事件周数，事件触发后清零
+        weeksSinceLastEvent: 0,
         // 勘探重设计（2026-09-03）：已发现的地表/机器人碎片条目 id 列表 + 机器人被动产出计时
         unlockedFragments: [],
         botPassiveTick: 0,

@@ -119,6 +119,7 @@ function checkRandomEvent() {
     // 士气高昂 → 事件更少且偏正面；士气崩溃 → 事件更多且偏负面
     const mods = getMoraleEventMods();
     
+    let triggered = false;
     for (const event of availableEvents) {
         let prob = event.trigger.probability || 0.15;
         prob *= mods.freq;
@@ -127,8 +128,31 @@ function checkRandomEvent() {
         prob = Math.max(0, Math.min(1, prob));
         if (Math.random() < prob) {
             triggerEvent(event);
+            triggered = true;
             break;
         }
+    }
+    if (triggered) return;
+    
+    // P0-2 修复：事件保底机制——连续多周无事件时强制触发，杜绝「空转」
+    // 计数器由 onTimeAdvanced 每周递增，任何事件触发（triggerEvent/triggerScheduledEvent/
+    // triggerGuardianInitiative）都会清零。
+    const weeksSinceLast = MemorySanctuary.state.weeksSinceLastEvent || 0;
+    if (weeksSinceLast >= 5) {
+        // 连续 5 周无事件：强制触发守护者个人事件（故事线优先，情感浓度拉满）
+        const forcedGuardian = checkGuardianPersonalEvent();
+        if (forcedGuardian) {
+            addLog('🕯️ 长久的寂静被打破了——有人主动向你走来。', 'system');
+            triggerEvent(forcedGuardian);
+            return;
+        }
+    }
+    if (weeksSinceLast >= 3 && availableEvents.length > 0) {
+        // 连续 3 周无事件：第 4 周强制从可用事件池随机触发一个
+        const forced = availableEvents[Math.floor(Math.random() * availableEvents.length)];
+        addLog('🕯️ 风带来了远方的低语……圣所之外的世界仍在发生着什么。', 'system');
+        triggerEvent(forced);
+        return;
     }
 }
 
@@ -289,6 +313,8 @@ function checkNGPlusPersonalEvents() {
 function triggerEvent(event) {
     MemorySanctuary.activeEvent = event;
     MemorySanctuary.state.activeEventIds.push(event.id);
+    // P0-2 修复：事件已触发，事件保底计数器清零
+    MemorySanctuary.state.weeksSinceLastEvent = 0;
     
     // P1-7 修复：周期事件追踪到 triggeredPeriodicEvents（不影响 activeEventIds 的一次性事件过滤）
     if (event.trigger.type === 'periodic') {
@@ -599,6 +625,8 @@ function triggerScheduledEvent(eventId) {
     // 使用与随机事件相同的触发机制
     MemorySanctuary.activeEvent = event;
     MemorySanctuary.state.activeEventIds.push(event.id);
+    // P0-2 修复：调度事件同样重置事件保底计数器
+    MemorySanctuary.state.weeksSinceLastEvent = 0;
     addLog(`📅 ${event.title}`, 'event');
     renderEvent(event);
 }

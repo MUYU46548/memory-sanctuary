@@ -3,6 +3,11 @@
  * 包含: isGuardianFatigued, isExplorationCompleted, getExplorationAttempts...
  */
 
+// P0-1 修复：守护者专属事件挂起标记（guardianSpecials 生效）
+// 派遣时记录匹配的守护者与对话键，返回时在 applyExplorationResult 中结算专属奖励分支。
+// 模块级变量即可：不随存档持久化，一次性勘探流程内有效。
+let pendingGuardianSpecial = null;
+
 function isGuardianFatigued(guardianId) {
     const exp = MemorySanctuary.state.exploration;
     if (!exp.fatigue) return false;
@@ -264,6 +269,10 @@ function renderDispatchGuardians(expData) {
         const div = document.createElement('div');
         div.className = 'dispatch-guardian';
         
+        // P0-1 修复：熟悉此地的守护者标记（guardianSpecials）——让「派谁去」有真实区别
+        const isSpecial = expData.guardianSpecials && expData.guardianSpecials[g.id];
+        if (isSpecial) div.classList.add('guardian-special');
+        
         // Show skills with match indication
         const skillsHtml = g.skills ? g.skills.map(s => {
             const isMatch = expData.requiredSkills && expData.requiredSkills.includes(s);
@@ -276,6 +285,7 @@ function renderDispatchGuardians(expData) {
         div.innerHTML = `
             <span class="guardian-avatar">${g.avatar}</span>
             <span class="guardian-name">${g.name}</span>
+            ${isSpecial ? '<div class="guardian-special-badge" title="这位守护者与此地有特殊羁绊，派遣时将触发专属发现">✦ 熟悉此地</div>' : ''}
             <div class="guardian-skills">${skillsHtml}</div>
             ${bonusText ? `<div class="guardian-bonus">${bonusText}</div>` : ''}
         `;
@@ -324,6 +334,19 @@ function renderOutcomeBars(expData) {
         fragNote.className = 'outcome-bot-bonus frag-bonus';
         fragNote.innerHTML = `🗒 碎片 ×${fragCount}：返回时必定发现；仅在特定周数窗口内可归档，过时不候`;
         container.appendChild(fragNote);
+    }
+
+    // P0-1 修复：守护者专属发现提示——选中熟悉此地的守护者时，在结果栏明确告知专属奖励
+    const specialGuardian = Array.from(selectedGuardians).find(gid =>
+        expData.guardianSpecials && expData.guardianSpecials[gid]);
+    if (specialGuardian) {
+        const g = MemorySanctuary.data.guardians.find(x => x.id === specialGuardian);
+        if (g) {
+            const specNote = document.createElement('div');
+            specNote.className = 'outcome-bot-bonus special-bonus';
+            specNote.innerHTML = `✦ ${g.name} 熟悉此地：本次勘探将触发专属发现（额外资源 + 好感）`;
+            container.appendChild(specNote);
+        }
     }
 
     // 机器人协同加成提示（在线时显示，让玩家直观看到机器人的作用）
@@ -445,6 +468,21 @@ function executeExploration() {
 
     const now = MemorySanctuary.state.week;
     MemorySanctuary.state.exploration.deployedUntil = now + expData.duration;
+    
+    // P0-1 修复：记录本次勘探的守护者专属事件匹配（返回时在 applyExplorationResult 结算）
+    pendingGuardianSpecial = null;
+    if (expData.guardianSpecials) {
+        for (const gid of selectedGuardians) {
+            if (expData.guardianSpecials[gid]) {
+                pendingGuardianSpecial = {
+                    expId: expData.id,
+                    guardianId: gid,
+                    dialogueKey: expData.guardianSpecials[gid]
+                };
+                break;
+            }
+        }
+    }
     
     consumeResources(0, 0, foodCost);
 
@@ -568,7 +606,35 @@ function applyExplorationResult(outcome, expData) {
     // 碎片解锁（勘探重设计 2026-09-03）：返回时必定发现关联碎片，写入 effects 展示
     unlockFragmentsForPoint(expData, effects);
 
-    document.getElementById('result-text').textContent = outcome.message;
+    // P0-1 修复：守护者专属事件结算（guardianSpecials 真正生效）
+    // 派遣了熟悉此地的守护者 → 触发专属奖励分支：额外资源 + 专属叙事文本 + 好感提升
+    let specialNarrative = '';
+    if (pendingGuardianSpecial && pendingGuardianSpecial.expId === expData.id) {
+        const spec = pendingGuardianSpecial;
+        const g = MemorySanctuary.data.guardians.find(x => x.id === spec.guardianId);
+        if (g) {
+            const reward = expData.guardianSpecialReward || { media: 10, energy: 5, mood: 2 };
+            const gains = [];
+            if (reward.media) { adjustResource('media', reward.media); gains.push(`介质+${reward.media}`); }
+            if (reward.energy) { adjustResource('energy', reward.energy); gains.push(`能源+${reward.energy}`); }
+            if (reward.food) { adjustResource('food', reward.food); gains.push(`食物+${reward.food}`); }
+            if (reward.environment) { adjustResource('environment', reward.environment); gains.push(`环境+${reward.environment}`); }
+            adjustGuardianMood(spec.guardianId, reward.mood || 2);
+            gains.push(`好感+${reward.mood || 2}`);
+            effects.push({ name: `✦ ${g.name}的专属发现（${gains.join('、')}）`, positive: true });
+            specialNarrative = expData.guardianSpecialText ||
+                `${g.name} 凭着对这片土地的熟悉，找到了寻常勘探队会错过的东西——那是只属于他/她的记忆。`;
+            addLog(`✦ 专属事件：${g.name} 在 ${expData.name} 触发了特殊羁绊。`, 'event');
+            if (typeof AudioSystem !== 'undefined' && AudioSystem.playExploreReturnNarrative) {
+                AudioSystem.playExploreReturnNarrative();
+            }
+        }
+    }
+    pendingGuardianSpecial = null;
+
+    document.getElementById('result-text').textContent = specialNarrative
+        ? `${outcome.message}\n\n${specialNarrative}`
+        : outcome.message;
 
     // 守护者专属语录（匹配 guardianSpecials）
     const quoteEl = document.getElementById('result-guardian-quote');

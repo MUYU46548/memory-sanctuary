@@ -28,6 +28,7 @@ function initTechState() {
     const state = MemorySanctuary.state;
     if (!state) return;
     if (!Array.isArray(state.techUnlocked)) state.techUnlocked = [];
+    if (!Array.isArray(state.techUpgrades)) state.techUpgrades = [];
     if (!state.techDoctrines || typeof state.techDoctrines !== 'object') state.techDoctrines = {};
 }
 
@@ -131,6 +132,67 @@ function unlockTech(id) {
 }
 
 /**
+ * P1-6 修复：科技升级判定（v0.2.7）
+ * 解锁后的学说根节点可继续投入资源「升级」，强化既有效果，让科技树不再是一次性消费。
+ * 返回 { ok: bool, reason: string }
+ */
+function getTechUpgradeState(id) {
+    const state = MemorySanctuary.state;
+    if (!state) return { ok: false, reason: '尚未开始游戏' };
+    initTechState();
+    const tech = getTechById(id);
+    if (!tech || !tech.upgrade) return { ok: false, reason: '无升级路径' };
+    if (!state.techUnlocked.includes(id)) return { ok: false, reason: '需先解锁' };
+    if (state.techUpgrades.includes(id)) return { ok: false, reason: '已升级' };
+    const cost = tech.upgrade.cost || {};
+    if ((state.resources.energy || 0) < (cost.energy || 0) ||
+        (state.resources.media || 0) < (cost.media || 0)) {
+        return { ok: false, reason: `资源不足（需 ◈${cost.energy || 0} ◇${cost.media || 0}）` };
+    }
+    return { ok: true, reason: '可升级' };
+}
+
+/** 执行科技升级：校验 → 扣费 → 写入 techUpgrades。返回是否成功 */
+function upgradeTech(id) {
+    const state = MemorySanctuary.state;
+    if (!state || state.gameOver) return false;
+
+    const check = getTechUpgradeState(id);
+    if (!check.ok) {
+        addLog(`🔬 无法升级「${(getTechById(id) || {}).name || id}」：${check.reason}。`, 'system');
+        return false;
+    }
+
+    const tech = getTechById(id);
+    const cost = tech.upgrade.cost || {};
+    state.resources.energy -= cost.energy || 0;
+    state.resources.media -= cost.media || 0;
+    if (!state.techUpgrades) state.techUpgrades = [];
+    state.techUpgrades.push(id);
+
+    addLog(`🔬 科技升级：「${tech.upgrade.name || tech.name + '·进阶'}」—— ${tech.upgrade.text || ''}`, 'success');
+    if (typeof AudioSystem !== 'undefined' && AudioSystem.playProjectComplete) {
+        AudioSystem.playProjectComplete();
+    }
+
+    renderAll();
+    return true;
+}
+
+/** 汇总某科技的基础效果 + 升级效果（供 getTech*Bonus 共用） */
+function getTechEffectValues(id) {
+    const state = MemorySanctuary.state;
+    const values = [];
+    const tech = getTechById(id);
+    if (!tech) return values;
+    if (tech.effect && tech.effect.type) values.push(tech.effect);
+    if (tech.upgrade && state && state.techUpgrades && state.techUpgrades.includes(id) && tech.upgrade.effect) {
+        values.push(tech.upgrade.effect);
+    }
+    return values;
+}
+
+/**
  * 勘探域科技加成：{ yieldBonus, riskCut, intelReveal }
  * 叠加规则（开发清单 1.4）：在 getBotExploreBonus() 之后叠加同类乘数，上限各自独立
  * intelReveal（守真勘探 exploreIntel）：勘探情报指认藏有隐藏叙事的未归档条目（纯叙事指引）
@@ -141,10 +203,12 @@ function getTechExploreBonus() {
     if (!state || !state.techUnlocked || state.techUnlocked.length === 0) return bonus;
     state.techUnlocked.forEach(id => {
         const tech = getTechById(id);
-        if (!tech || !tech.effect) return;
-        if (tech.effect.type === 'exploreYield') bonus.yieldBonus += tech.effect.value || 0;
-        if (tech.effect.type === 'exploreRiskCut') bonus.riskCut += tech.effect.value || 0;
-        if (tech.effect.type === 'exploreIntel') bonus.intelReveal = true;
+        if (!tech) return;
+        getTechEffectValues(id).forEach(effect => {
+            if (effect.type === 'exploreYield') bonus.yieldBonus += effect.value || 0;
+            if (effect.type === 'exploreRiskCut') bonus.riskCut += effect.value || 0;
+            if (effect.type === 'exploreIntel') bonus.intelReveal = true;
+        });
     });
     return bonus;
 }
@@ -159,14 +223,16 @@ function getTechArchiveBonus() {
     if (!state || !state.techUnlocked || state.techUnlocked.length === 0) return bonus;
     state.techUnlocked.forEach(id => {
         const tech = getTechById(id);
-        if (!tech || !tech.effect) return;
-        switch (tech.effect.type) {
-            case 'archiveCostReduce': bonus.costReduce += tech.effect.value || 0; break;
-            case 'archiveMoodBonus': bonus.moodBonus += tech.effect.value || 0; break;
-            case 'revealHidden': bonus.revealHidden = true; break;
-            case 'conflictInsight': bonus.conflictInsight = true; break;
-            case 'clueChainBoost': bonus.clueChain = true; break;
-        }
+        if (!tech) return;
+        getTechEffectValues(id).forEach(effect => {
+            switch (effect.type) {
+                case 'archiveCostReduce': bonus.costReduce += effect.value || 0; break;
+                case 'archiveMoodBonus': bonus.moodBonus += effect.value || 0; break;
+                case 'revealHidden': bonus.revealHidden = true; break;
+                case 'conflictInsight': bonus.conflictInsight = true; break;
+                case 'clueChainBoost': bonus.clueChain = true; break;
+            }
+        });
     });
     return bonus;
 }
@@ -181,10 +247,12 @@ function getTechEnvBonus() {
     if (!state || !state.techUnlocked || state.techUnlocked.length === 0) return bonus;
     state.techUnlocked.forEach(id => {
         const tech = getTechById(id);
-        if (!tech || !tech.effect) return;
-        if (tech.effect.type === 'fatigueGuard') bonus.fatigueGuard += tech.effect.value || 0;
-        if (tech.effect.type === 'moodDecaySlow') bonus.moodDecaySlow += tech.effect.value || 0;
-        if (tech.effect.type === 'supplyBonus') bonus.supplyBonus += tech.effect.value || 0;
+        if (!tech) return;
+        getTechEffectValues(id).forEach(effect => {
+            if (effect.type === 'fatigueGuard') bonus.fatigueGuard += effect.value || 0;
+            if (effect.type === 'moodDecaySlow') bonus.moodDecaySlow += effect.value || 0;
+            if (effect.type === 'supplyBonus') bonus.supplyBonus += effect.value || 0;
+        });
     });
     return bonus;
 }

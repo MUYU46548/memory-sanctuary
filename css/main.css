@@ -7020,3 +7020,167 @@ button.archive-btn.recommended {
     color: var(--danger);
     border-color: var(--danger);
 }
+
+/* ============================================================
+   v0.2.7 体验修复样式（P0-3 存储室反馈 / P1-4 交谈分支 / P1-5 项目进度 / P1-6 科技升级 / P0-1 勘探专属）
+   ============================================================ */
+
+/* ---- P0-3：归档后存储室发光反馈 ---- */
+@keyframes vault-glow-flash {
+    0%   { box-shadow: 0 0 0 0 rgba(255, 200, 100, 0); }
+    25%  { box-shadow: 0 0 20px 6px rgba(255, 200, 100, 0.55); }
+    60%  { box-shadow: 0 0 10px 3px rgba(255, 200, 100, 0.3); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 200, 100, 0); }
+}
+.vault-item.vault-flash {
+    animation: vault-glow-flash 1.3s ease-out;
+}
+
+/* ---- P0-3/P2-7：存储室充盈度分档视觉（烛光渐亮） ---- */
+.vault-item.vault-fill-25 .vault-bar-fill { opacity: 0.9; }
+.vault-item.vault-fill-mid .vault-bar-fill { opacity: 1; filter: saturate(1.15); }
+.vault-item.vault-fill-high {
+    box-shadow: inset 0 0 0 1px rgba(255, 180, 90, 0.35);
+}
+.vault-item.vault-fill-high .vault-bar-fill { filter: saturate(1.3) brightness(1.08); }
+.vault-item.vault-fill-full {
+    box-shadow: inset 0 0 14px 2px rgba(255, 160, 60, 0.4), 0 0 6px rgba(255, 160, 60, 0.25);
+    animation: vault-full-pulse 2.4s ease-in-out infinite;
+}
+@keyframes vault-full-pulse {
+    0%, 100% { box-shadow: inset 0 0 14px 2px rgba(255, 160, 60, 0.4), 0 0 6px rgba(255, 160, 60, 0.25); }
+    50%      { box-shadow: inset 0 0 18px 4px rgba(255, 160, 60, 0.55), 0 0 10px rgba(255, 160, 60, 0.4); }
+}
+.vault-capacity-warn {
+    font-size: 0.65rem;
+    color: #e8a23d;
+    margin-left: 6px;
+    font-weight: normal;
+}
+
+/* ---- P1-4：守护者交谈分支 ---- */
+.guardian-chat-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border-color, rgba(128, 128, 128, 0.35));
+}
+.guardian-chat-choice {
+    text-align: left;
+    padding: 7px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color, rgba(128, 128, 128, 0.4));
+    background: var(--bg-panel, rgba(255, 255, 255, 0.06));
+    color: var(--text-main, #e8e4da);
+    font-family: var(--font-cn, inherit);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+}
+.guardian-chat-choice:hover:not(:disabled) {
+    background: rgba(255, 200, 100, 0.12);
+    border-color: var(--amber-primary, #c9a24b);
+    transform: translateX(2px);
+}
+.guardian-chat-choice:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+.guardian-chat-choice.task {
+    border-color: rgba(255, 200, 100, 0.55);
+    background: rgba(255, 200, 100, 0.08);
+}
+.guardian-chat-choice.task:hover:not(:disabled) {
+    background: rgba(255, 200, 100, 0.18);
+}
+.guardian-chat-choice.close {
+    text-align: center;
+    font-size: 0.72rem;
+    opacity: 0.7;
+    border-style: dashed;
+}
+
+/* ---- P1-5：项目进度条 ---- */
+.project-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 8px 0;
+}
+.project-progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(128, 128, 128, 0.25);
+    overflow: hidden;
+}
+.project-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #c9a24b, #e8c87a);
+    transition: width 0.4s ease;
+}
+.project-progress-text {
+    font-size: 0.72rem;
+    color: var(--text-dim, #a89f8a);
+}
+.project-item.project-near-done {
+    border-color: rgba(255, 200, 100, 0.6);
+    animation: vault-full-pulse 2.2s ease-in-out infinite;
+}
+
+/* ---- P1-6：科技升级 ---- */
+.tech-upgrade-btn {
+    margin-top: 8px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 200, 100, 0.5);
+    background: rgba(255, 200, 100, 0.08);
+    color: var(--amber-primary, #c9a24b);
+    font-family: var(--font-cn, inherit);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.tech-upgrade-btn:hover:not(:disabled) {
+    background: rgba(255, 200, 100, 0.2);
+}
+.tech-upgrade-btn.done {
+    border-color: rgba(120, 200, 140, 0.5);
+    color: var(--success, #7ec99b);
+    background: rgba(120, 200, 140, 0.08);
+}
+.tech-upgrade-btn.disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+.tech-badge.upgraded {
+    background: rgba(120, 200, 140, 0.15);
+    color: var(--success, #7ec99b);
+    border: 1px solid rgba(120, 200, 140, 0.4);
+}
+.tech-upgrade-hint {
+    color: var(--amber-primary, #c9a24b);
+    font-size: 0.7rem;
+}
+
+/* ---- P0-1：勘探守护者专属 ---- */
+.dispatch-guardian.guardian-special {
+    border-color: rgba(255, 200, 100, 0.55);
+    box-shadow: 0 0 8px rgba(255, 200, 100, 0.2);
+}
+.dispatch-guardian.guardian-special.selected {
+    border-color: var(--explore-green, #5aa86e);
+    box-shadow: 0 0 10px rgba(255, 200, 100, 0.35);
+}
+.guardian-special-badge {
+    font-size: 0.68rem;
+    color: var(--amber-primary, #c9a24b);
+    margin: 3px 0;
+}
+.outcome-bot-bonus.special-bonus {
+    color: var(--amber-primary, #c9a24b);
+    border-color: rgba(255, 200, 100, 0.4);
+    background: rgba(255, 200, 100, 0.06);
+}

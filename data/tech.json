@@ -18,11 +18,17 @@
       "icon": "⚙",
       "description": "以工程流程标准化勘探作业：同样的废墟，带回更多物资。",
       "prereq": [],
-      "unlockWeek": 8,
+      "unlockWeek": 5,
       "cost": { "energy": 18, "media": 10 },
       "effect": { "type": "exploreYield", "value": 0.15 },
       "effectText": "勘探资源收益 +15%（与机器人协同加成叠加）",
-      "doctrine": "exp_doctrine"
+      "doctrine": "exp_doctrine",
+      "upgrade": {
+        "name": "高效勘探学说·进阶",
+        "cost": { "energy": 24, "media": 12 },
+        "effect": { "type": "exploreYield", "value": 0.15 },
+        "text": "勘探资源收益再 +15%（累计 +30%）"
+      }
     },
     {
       "id": "tech_exp_truth",
@@ -31,7 +37,7 @@
       "icon": "✦",
       "description": "勘探不止为物资——每一处遗迹的叙事本身，也是需要保存的真相。",
       "prereq": [],
-      "unlockWeek": 8,
+      "unlockWeek": 5,
       "cost": { "energy": 18, "media": 10 },
       "effect": { "type": "exploreIntel" },
       "effectText": "勘探「情报」将指认藏有隐藏叙事的未归档条目",
@@ -44,7 +50,7 @@
       "icon": "🧭",
       "description": "路线预勘、备用信标与撤离预案，把风险变成可计算的变量。",
       "prereq": ["tech_exp_efficiency"],
-      "unlockWeek": 16,
+      "unlockWeek": 10,
       "cost": { "energy": 22, "media": 14 },
       "effect": { "type": "exploreRiskCut", "value": 0.12 },
       "effectText": "勘探风险概率 -12%（与机器人风险减免叠加）",
@@ -57,7 +63,7 @@
       "icon": "🛌",
       "description": "守护者小队按周轮换外勤，疲劳不再累积成伤病。",
       "prereq": ["tech_exp_truth"],
-      "unlockWeek": 16,
+      "unlockWeek": 10,
       "cost": { "energy": 22, "media": 14 },
       "effect": { "type": "fatigueGuard", "value": 1 },
       "effectText": "勘探疲劳 -1 周（独立于机器人减免，可叠加）",
@@ -70,11 +76,17 @@
       "icon": "◈",
       "description": "重构录入索引结构，同一段记忆的封存成本大幅下降。",
       "prereq": [],
-      "unlockWeek": 10,
+      "unlockWeek": 6,
       "cost": { "energy": 20, "media": 12 },
       "effect": { "type": "archiveCostReduce", "value": 0.25 },
       "effectText": "条目归档有效消耗 -25%（作用于主题修正后的成本）",
-      "doctrine": "arch_doctrine"
+      "doctrine": "arch_doctrine",
+      "upgrade": {
+        "name": "速录学派·进阶",
+        "cost": { "energy": 26, "media": 14 },
+        "effect": { "type": "archiveCostReduce", "value": 0.25 },
+        "text": "条目归档有效消耗再 -25%（累计 -50%）"
+      }
     },
     {
       "id": "tech_arch_deep",
@@ -83,7 +95,7 @@
       "icon": "✨",
       "description": "逐字逐句地读，而不是匆匆收录——被略过的批注往往藏着真相。",
       "prereq": [],
-      "unlockWeek": 10,
+      "unlockWeek": 6,
       "cost": { "energy": 20, "media": 12 },
       "effect": { "type": "revealHidden" },
       "effectText": "标准归档即展示隐藏叙事（无需深度归档仪式）",
@@ -96,7 +108,7 @@
       "icon": "⚖",
       "description": "从叙事结构反推：哪两份记录，不可能同时为真。",
       "prereq": ["tech_arch_fast"],
-      "unlockWeek": 18,
+      "unlockWeek": 12,
       "cost": { "energy": 24, "media": 16 },
       "effect": { "type": "conflictInsight" },
       "effectText": "归档列表的 ⚖互斥 徽章将显示具体互斥条目",
@@ -109,7 +121,7 @@
       "icon": "🔗",
       "description": "把零散条目编成线索网络，让关联记录自己浮出水面。",
       "prereq": ["tech_arch_deep"],
-      "unlockWeek": 18,
+      "unlockWeek": 12,
       "cost": { "energy": 24, "media": 16 },
       "effect": { "type": "clueChainBoost" },
       "effectText": "高亮与已归档条目存在线索关联的待归档条目",
@@ -122,11 +134,17 @@
       "icon": "🌿",
       "description": "以温和的日常维护代替高压管制——人心比机器更经不起骤冷骤热。",
       "prereq": [],
-      "unlockWeek": 12,
+      "unlockWeek": 7,
       "cost": { "energy": 16, "media": 8 },
       "effect": { "type": "moodDecaySlow", "value": 0.25 },
       "effectText": "守护者好感自然衰减 -25%",
-      "doctrine": "env_doctrine"
+      "doctrine": "env_doctrine",
+      "upgrade": {
+        "name": "守护学派·进阶",
+        "cost": { "energy": 20, "media": 10 },
+        "effect": { "type": "moodDecaySlow", "value": 0.25 },
+        "text": "守护者好感自然衰减再 -25%（累计 -50%）"
+      }
     },
     {
       "id": "tech_env_frugal",
@@ -135,11 +153,17 @@
       "icon": "📦",
       "description": "把每一份补给都用在刀刃上，配发效率就是生存效率。",
       "prereq": [],
-      "unlockWeek": 12,
+      "unlockWeek": 7,
       "cost": { "energy": 16, "media": 8 },
       "effect": { "type": "supplyBonus", "value": 0.20 },
       "effectText": "分发补给品的心情收益 +20%",
-      "doctrine": "env_doctrine"
+      "doctrine": "env_doctrine",
+      "upgrade": {
+        "name": "节用学派·进阶",
+        "cost": { "energy": 20, "media": 10 },
+        "effect": { "type": "supplyBonus", "value": 0.20 },
+        "text": "分发补给品的心情收益再 +20%（累计 +40%）"
+      }
     },
     {
       "id": "tech_env_resilience",
@@ -148,7 +172,7 @@
       "icon": "🌾",
       "description": "在圣所内重建微型生态圈，让系统拥有自我修复的余量。",
       "prereq": ["tech_env_guard"],
-      "unlockWeek": 20,
+      "unlockWeek": 14,
       "cost": { "energy": 24, "media": 16 },
       "effect": { "type": "moodDecaySlow", "value": 0.25 },
       "effectText": "守护者好感自然衰减 -25%（与守护学派叠加至 -50%）",
@@ -161,7 +185,7 @@
       "icon": "♻",
       "description": "建立补给轮换台账，先进先出，损耗趋近于零。",
       "prereq": ["tech_env_frugal"],
-      "unlockWeek": 20,
+      "unlockWeek": 14,
       "cost": { "energy": 24, "media": 16 },
       "effect": { "type": "supplyBonus", "value": 0.20 },
       "effectText": "分发补给品的心情收益 +20%（与节用学派叠加至 +40%）",
