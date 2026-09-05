@@ -72,8 +72,8 @@
       "prereq": [],
       "unlockWeek": 10,
       "cost": { "energy": 20, "media": 12 },
-      "effect": { "type": "archiveCostReduce", "value": 0.15 },
-      "effectText": "条目归档有效消耗 -15%（作用于主题修正后的成本）",
+      "effect": { "type": "archiveCostReduce", "value": 0.25 },
+      "effectText": "条目归档有效消耗 -25%（作用于主题修正后的成本）",
       "doctrine": "arch_doctrine"
     },
     {

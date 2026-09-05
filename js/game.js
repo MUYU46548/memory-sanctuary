@@ -110,6 +110,11 @@ function onTimeAdvanced(weeks) {
         
         // 工程机器人维护消耗
         if (typeof applyBotMaintenance === 'function') applyBotMaintenance();
+
+        // 机器人定期产出（每 4 周解锁一条被动日志）与紧急稳定（环境 <20% 自动加固）
+        // （勘探重设计 2026-09-03：机器人从纯消耗型衰减减免器变为内容生产单位 + 保险机制）
+        if (typeof processBotPassiveOutput === 'function') processBotPassiveOutput();
+        if (typeof applyBotEmergencyStabilization === 'function') applyBotEmergencyStabilization();
         
         // 士气持续压力（资源/环境影响心情）
         applyMoralePressure();
@@ -618,6 +623,9 @@ function checkStuckState() {
     // Check if player is stuck (no actionable entries, but potential exists)
     const isStuck = actionable === 0 && potential > 0;
     
+    // 全局死局判定：卡住 + 跳过也无法恢复 + 勘探无法破局（P0 修复，见 isGlobalDeadlock）
+    const globalDeadlock = isStuck && isGlobalDeadlock();
+    
     // Check if all entries are done
     const allDone = potential === 0;
     
@@ -637,12 +645,22 @@ function checkStuckState() {
         else if (lowMedia) reason = '介质已耗尽';
         else reason = '资源不足以归档任何条目';
         
-        const canSeal = canSealSanctuary();
-        banner.innerHTML = `
-            <span>⚠️ ${reason}。</span>
-            <span>可选择<a href="#" id="stuck-skip">跳过回合</a>恢复资源${canSeal ? '，或<a href="#" id="stuck-seal">封印圣所</a>结束游戏' : ''}。</span>
-        `;
-        banner.className = 'stuck-banner warning';
+        // 全局死局：允许提前封印（不受 20 周门槛限制），并提供明确的绝境提示
+        const canSeal = canSealSanctuary() || globalDeadlock;
+        const sealLabel = globalDeadlock ? '提前封印' : '封印圣所';
+        
+        if (globalDeadlock) {
+            banner.innerHTML = `
+                <span>☠️ 圣所已陷入绝境：${reason}，且即使跳过回合，恢复的资源也无法达到可归档水平。</span>
+                <span>可选择<a href="#" id="stuck-skip">跳过回合</a>等待转机${canSeal ? '，或<a href="#" id="stuck-seal">' + sealLabel + '</a>结束本周目（提前结算）' : ''}。</span>
+            `;
+        } else {
+            banner.innerHTML = `
+                <span>⚠️ ${reason}。</span>
+                <span>可选择<a href="#" id="stuck-skip">跳过回合</a>恢复资源${canSeal ? '，或<a href="#" id="stuck-seal">' + sealLabel + '</a>结束游戏' : ''}。</span>
+            `;
+        }
+        banner.className = 'stuck-banner warning' + (globalDeadlock ? ' deadlock' : '');
         
         // Bind events immediately (DOM is already updated via innerHTML)
         const skipLink = document.getElementById('stuck-skip');
@@ -651,11 +669,77 @@ function checkStuckState() {
         }
         const sealLink = document.getElementById('stuck-seal');
         if (sealLink) {
-            sealLink.onclick = (e) => { e.preventDefault(); if (canSealSanctuary()) sealSanctuary(); };
+            sealLink.onclick = (e) => { e.preventDefault(); if (canSealSanctuary() || globalDeadlock) sealSanctuary(); };
         }
     } else {
         banner.className = 'stuck-banner hidden';
     }
+}
+
+/**
+ * 全局死局判定（P0 修复，2026-09-05）：
+ * 在「无条目可归档」基础上，进一步确认以下任一成立：
+ *  A. 按下一跳的真实恢复量模拟后，仍无一可见条目可归档（跳过只是慢性死亡）；
+ *  B. 食物为 0 且连续饥饿 ≥2 周——下一跳必然触发饥饿崩溃，且跳过不恢复食物
+ *     （onTimeAdvanced 中 checkFailureCondition 先于项目结算，项目救不了食物死锁）；
+ *  C. 当前或跳过 1 周后，没有任何勘探点可以派遣（含机器人专属点/免食物/守护者疲劳恢复）。
+ * 以上（A 或 B 任一成立，且 C 成立）才算全局死局——此时向玩家提供「提前封印」出口，
+ * 避免陷入「无法行动、无法跳过、只能干等崩溃」的无出口局面。
+ * 注意：这是建议性判定，横幅仍同时保留「跳过回合」选项，玩家保留自主选择权。
+ */
+function isGlobalDeadlock() {
+    const state = MemorySanctuary.state;
+    if (!state || state.gameOver) return false;
+    const week = state.week;
+    const archives = MemorySanctuary.data.archives || [];
+    
+    // 1. 基础卡住判定（与 checkStuckState 口径一致：可见条目无一可归档）
+    const visible = archives.filter(a => a.availableAfter <= week && !isArchiveCompleted(a.id) && !a.expired);
+    if (visible.length === 0) return false;
+    if (visible.some(a => canArchiveEntry(a))) return false;
+    
+    // 2. 跳过也无法恢复：
+    //    A. 能源/介质死锁——按 skipTurn 的下一跳真实恢复量模拟（连续跳过递减 25%，下限 25%），
+    //       模拟后仍无一可见条目可归档（模拟后资源为正，能源衰竭加倍惩罚已解除，按正常成本判定）；
+    //    B. 饥饿死亡螺旋——食物为 0 且连续饥饿 ≥2 周，下一跳必然崩溃（跳过不恢复食物）。
+    const skipCount = (state.consecutiveSkips || 0) + 1;
+    const ratio = Math.max(0.25, 1 - (skipCount - 1) * 0.25);
+    const simEnergy = Math.min(150, state.resources.energy + Math.round(18 * ratio));
+    const simMedia = Math.min(150, state.resources.media + Math.round(12 * ratio));
+    const afterSkipAffordable = visible.some(a => {
+        if (state.emergencyArchiveActive) return simEnergy >= (a.energyCost || 0) * 2;
+        return simEnergy >= (a.energyCost || 0) && simMedia >= (a.dataCost || 0);
+    });
+    const starvationDoom = (state.resources.food || 0) <= 0 && (state.starvationWeeks || 0) >= 2;
+    if (afterSkipAffordable && !starvationDoom) return false;
+    
+    // 3. 勘探破局：队伍在外（返回即可能破局）或当前/跳过后有可派遣勘探点 → 非死局
+    const exp = state.exploration || {};
+    if (exp.deployedUntil > week) return false;
+    const spots = MemorySanctuary.data.explorations || [];
+    const nextWeek = week + 1;
+    const fatigue = exp.fatigue || {};
+    const hasFreeGuardian = (MemorySanctuary.data.guardians || []).some(g => {
+        if (!isGuardianFatigued(g.id)) return true;
+        const until = fatigue[g.id];
+        return until && until <= nextWeek; // 跳过 1 周后疲劳解除
+    });
+    
+    for (const spot of spots) {
+        if (isExplorationCompleted(spot.id)) continue;
+        // 跳过 1 周后仍未解锁的点，本周目内更晚才可用，不视为近期破局手段
+        if (spot.availableAfter && nextWeek < spot.availableAfter) continue;
+        const botReq = spot.requiredBots || 0;
+        if ((state.resources.engineeringBots || 0) < botReq) continue;
+        if (spot.botOnly) return false; // 机器人专属：免食物、免守护者
+        const foodCost = spot.foodCost ?? (spot.difficulty === 3 ? 12 : spot.difficulty === 2 ? 8 : 5);
+        const foodOk = (state.resources.food || 0) >= foodCost || !!state.emergencyExploreFoodFree;
+        if (!foodOk) continue;
+        if (hasFreeGuardian) return false;
+    }
+    
+    // 条件全部成立 → 全局死局
+    return true;
 }
 
 function initStuckBanner() {
@@ -844,25 +928,27 @@ function checkWeekLimit() {
 /**
  * 工程机器人系统
  *
- * 机器人自动维护圣所，减少资源衰减，并协同地表勘探。
+ * 机器人自动维护圣所，减少资源衰减，协同地表勘探，并作为独立内容生产单位。
  * 每回合开始时，机器人会消耗能源进行维护。
  * 维护效果：
- *  1. 减少所有资源自然衰减（每台 18%，上限 65%）
+ *  1. 减少所有资源自然衰减（每台 12%，上限 50%）
  *  2. 抑制圣所腐败的持续侵蚀（在线机器人按相同比例削弱腐败惩罚）
  *  3. 勘探协同放大器（在线时）：每台 +8% 资源收益、-5% 风险（上限 +40% / -25%）
+ *  4. 定期产出工程日志（每 4 周解锁一条机器人被动条目）
+ *  5. 紧急稳定：环境稳定度 <20% 时自动消耗能源加固环境（防崩溃保险）
  *
- * 机器人需要维护：每回合消耗 0.75 能源（v0.2.4 收尾由 1 下调）。
+ * 机器人需要维护：每回合消耗 0.3 能源（v0.2.6 重设计：0.75 → 0.3）。
  * 如果能源不足，机器人会停机（无法提供维护加成）。
  *
  * 机器人可以通过项目建造更多（最多 5 个）。
- * 机器人存在期间会解锁专属归档条目（data/archives.json unlockCondition.bots）。
+ * 机器人存在期间会解锁专属归档条目（data/archives.json unlockCondition.bots / botPassive）。
  */
 
 const ENGINEERING_BOTS_CONFIG = {
     maxBots: 5,
-    maintenanceCostPerBot: 0.75,  // 每回合每机器人消耗能源（v0.2.4 收尾：1→0.75 减负 25%，自动化低耗）
-    decayReductionPerBot: 0.18,  // 每机器人减少 18% 衰减（原 10%，机器人的核心被动价值）
-    maxDecayReduction: 0.65,  // 最多减少 65% 衰减（原 50%）
+    maintenanceCostPerBot: 0.3,  // 每回合每机器人消耗能源（v0.2.6 重设计：0.75→0.3，配合内容化重做）
+    decayReductionPerBot: 0.12,  // 每机器人减少 12% 衰减（v0.2.6 重设计：18%→12%，改由内容产出补足价值）
+    maxDecayReduction: 0.50,  // 最多减少 50% 衰减（v0.2.6 重设计：65%→50%）
     // 探索放大器：机器人自主巡检协同，提升地表勘探产出、压低风险（对 AI 无感、对玩家显著）
     exploreYieldPerBot: 0.08,   // 每台 +8% 资源收益（原 6%）
     exploreRiskCutPerBot: 0.05, // 每台 -5% 风险概率（原 3%）
@@ -872,6 +958,9 @@ const ENGINEERING_BOTS_CONFIG = {
     buildCost: { energy: 24, media: 16 },  // 建造成本（原 30/20，降低入坑门槛、改善边际回本）
     buildDuration: 3  // 建造耗时 3 周
 };
+
+// 机器人定期产出间隔（周）：每满 N 周且机器人在线，解锁下一条被动日志（勘探重设计 2026-09-03）
+const BOT_PASSIVE_INTERVAL = 4;
 
 /**
  * 机器人是否在线（能源足以支付维护）
@@ -950,6 +1039,75 @@ function applyBotMaintenance() {
 }
 
 /**
+ * 机器人定期产出（勘探重设计 2026-09-03）
+ * 固定间隔（BOT_PASSIVE_INTERVAL 周）且机器人在线时，解锁下一条 botPassive 被动日志条目。
+ * 按 availableAfter 顺序依次产出，全部解锁后停止计时。
+ * 产出条目不设过期窗口（自家机器人持续产出，无「归档 vs 勘探」竞争）。
+ */
+function processBotPassiveOutput() {
+    const state = MemorySanctuary.state;
+    if (!state || state.gameOver) return;
+    if (getEngineeringBotCount() <= 0 || !areBotsOnline()) return;
+    if (!state.unlockedFragments) state.unlockedFragments = [];
+
+    // 存在可解锁的被动条目（窗口已开、未发现、未归档、未过期）
+    const pending = (MemorySanctuary.data.archives || []).filter(a =>
+        a.botPassive &&
+        !state.unlockedFragments.includes(a.id) &&
+        !state.completedArchives.includes(a.id) &&
+        !a.expired &&
+        (!a.availableAfter || state.week >= a.availableAfter));
+    if (pending.length === 0) return;
+
+    state.botPassiveTick = (state.botPassiveTick || 0) + 1;
+    if (state.botPassiveTick < BOT_PASSIVE_INTERVAL) return;
+    state.botPassiveTick = 0;
+
+    // 按可归档周排序，产出最早可用的那一条
+    pending.sort((a, b) => (a.availableAfter || 99) - (b.availableAfter || 99));
+    const pick = pending[0];
+    state.unlockedFragments.push(pick.id);
+    addLog(`🤖 工程机器人完成了一项定期任务：「${pick.title}」已归档入圣所——可在「建筑与工程」存储室查看。`, 'success');
+    if (typeof AudioSystem !== 'undefined' && AudioSystem.playArchiveChime) AudioSystem.playArchiveChime();
+}
+
+/**
+ * 机器人紧急稳定（勘探重设计 2026-09-03）
+ * 环境稳定度 <20% 时，在线机器人自动消耗少量能源加固环境（防崩溃保险，被动触发）。
+ * 恢复上限 24：缓解崩溃压力但不完全消除威胁，能源不足时自然停机。
+ */
+function applyBotEmergencyStabilization() {
+    const state = MemorySanctuary.state;
+    if (!state || state.gameOver) return;
+    if (state.resources.environment >= 20) {
+        state.botStabilizeLogged = false;
+        return;
+    }
+    const botCount = getEngineeringBotCount();
+    if (botCount <= 0 || !areBotsOnline()) return;
+
+    // 扣能源：0.5/台（最低 1），且必须预留本周维护费
+    const cost = Math.max(1, Math.round(botCount * 0.5));
+    const maintenance = botCount * ENGINEERING_BOTS_CONFIG.maintenanceCostPerBot;
+    if (state.resources.energy < cost + maintenance) return;
+
+    state.resources.energy = Math.max(0, state.resources.energy - cost);
+    state.resourceChanges.energy = (state.resourceChanges.energy || 0) - cost;
+
+    const before = state.resources.environment;
+    state.resources.environment = Math.min(24, state.resources.environment + 2 + Math.floor(botCount / 2));
+    const gained = state.resources.environment - before;
+    if (gained > 0) {
+        state.resourceChanges.environment = (state.resourceChanges.environment || 0) + gained;
+    }
+
+    if (!state.botStabilizeLogged) {
+        state.botStabilizeLogged = true;
+        addLog(`🤖 环境稳定度跌破 20%，工程机器人启动紧急稳定程序，消耗 ${cost} 能源加固环境（+${gained}）。`, 'warning');
+    }
+}
+
+/**
  * 建造工程机器人
  */
 function buildEngineeringBot() {
@@ -1021,7 +1179,7 @@ function processBotBuild() {
     if (state.panelBotBuild.remainingWeeks <= 0) {
         state.panelBotBuild = null;
         state.resources.engineeringBots = (state.resources.engineeringBots || 0) + 1;
-        addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。每台减少 18% 衰减并抑制腐败侵蚀，每回合消耗 0.75 能源。`, 'success');
+        addLog(`🔧 工程机器人建造完成（当前：${state.resources.engineeringBots} 台）。每台减少 ${Math.round(ENGINEERING_BOTS_CONFIG.decayReductionPerBot * 100)}% 衰减并抑制腐败侵蚀，每回合消耗 ${ENGINEERING_BOTS_CONFIG.maintenanceCostPerBot} 能源。`, 'success');
         if (typeof AudioSystem !== 'undefined' && AudioSystem.playProjectComplete) {
             AudioSystem.playProjectComplete();
         }
@@ -2514,7 +2672,7 @@ function showHelpModal() {
 • 存储介质 ◇：归档必需品，归零后无法录入新条目
 • 环境稳定 ○：影响条目保存条件，归零后条目过期速度翻倍
 • 食物 🍖：维持守护者士气，影响资源衰减效率
-• 工程机器人 🔧：自动维护圣所，减少资源衰减并抑制腐败侵蚀（每台消耗 0.75 能源/周）
+• 工程机器人 🔧：自动维护圣所，减少资源衰减并抑制腐败侵蚀（每台消耗 0.3 能源/周）；定期产出工程日志，环境 <20% 时自动稳定
 提示：点击顶栏对应资源图标可随时查看当周变化明细。`,
         },
         {
@@ -2550,7 +2708,8 @@ function showHelpModal() {
 • 多周目奖励：守护者记忆继承 + 圣所状态保留
 • 圣所项目：投入资源换取持续增益
 • 🔬 科技树：三域互斥学说，优化勘探/归档/环境（第 8 周起）
-• 地表勘探：派出守护者获取资源
+• 地表勘探：派出守护者获取资源，并带回「地表碎片」——只能在勘探点发现的独家归档条目，且只在特定周数窗口内可归档，过期即永久消失
+• 机器人编队：机器人可独立勘探专属地点（无需守护者）、定期产出工程日志、环境危急时自动稳定；维护费低廉（0.3 能源/台·周）
 • 应急协议：危急时使用非常规手段`,
             defaultOpen: false
         },

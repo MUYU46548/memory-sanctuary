@@ -3223,6 +3223,14 @@ button.archive-btn.recommended {
     font-style: italic;
 }
 
+/* 地表/机器人碎片徽章（勘探重设计 2026-09-03） */
+.explore-item-frag {
+    color: var(--amber-primary);
+    font-size: 0.65rem;
+    margin-left: 4px;
+    font-weight: 600;
+}
+
 .explore-item.locked {
     opacity: 0.4;
     cursor: not-allowed;
@@ -4360,6 +4368,47 @@ button.archive-btn.recommended {
 
 .stuck-banner a:hover {
     color: var(--amber-glow);
+}
+
+/* 全局死局（P0 修复 2026-09-05）：跳过也无法恢复时的绝境提示，红色呼吸警示 */
+.stuck-banner.deadlock {
+    background: color-mix(in srgb, var(--danger) 18%, transparent);
+    color: var(--danger);
+    border-color: var(--danger);
+    animation: deadlockPulse 2s ease-in-out infinite;
+}
+
+.stuck-banner.deadlock a {
+    color: var(--amber-primary);
+}
+
+@keyframes deadlockPulse {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--danger) 25%, transparent); }
+    50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--danger) 15%, transparent); }
+}
+
+/* 环境失控持续警告（P1 修复 2026-09-05）：环境归零期间的常驻横幅 */
+.env-warning {
+    padding: 8px 16px;
+    text-align: center;
+    font-size: 0.85rem;
+    border-bottom: 1px solid var(--danger);
+    background: color-mix(in srgb, var(--danger) 14%, transparent);
+    color: var(--danger);
+    animation: envWarningPulse 2s ease-in-out infinite;
+}
+
+.env-warning.hidden {
+    display: none;
+}
+
+.env-warning strong {
+    font-weight: bold;
+}
+
+@keyframes envWarningPulse {
+    0%, 100% { background: color-mix(in srgb, var(--danger) 10%, transparent); }
+    50% { background: color-mix(in srgb, var(--danger) 18%, transparent); }
 }
 
 @keyframes slideDown {
@@ -6752,6 +6801,31 @@ button.archive-btn.recommended {
     border-radius: 6px;
     padding: 6px 10px;
     margin-bottom: 8px;
+}
+
+/* 碎片奖励提示（勘探重设计 2026-09-03）：区别于机器人/科技协同的金色，用蓝色系区分「内容奖励」 */
+.outcome-bot-bonus.frag-bonus {
+    color: var(--explore-green);
+    border-color: color-mix(in srgb, var(--explore-green) 40%, transparent);
+    background: color-mix(in srgb, var(--explore-green) 10%, transparent);
+}
+
+/* 机器人专属勘探点：自动派遣提示（勘探重设计 2026-09-03） */
+.dispatch-bot-only {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    background: var(--bg-deep);
+    border: 1px dashed var(--amber-border, color-mix(in srgb, var(--amber-bg) 40%, transparent));
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.dispatch-bot-only .dispatch-bot-cost {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 4px;
 }
 
 /* ==========================================

@@ -161,6 +161,7 @@ function updateBatchArchiveBtn() {
     if (!btn) return;
     
     const state = MemorySanctuary.state;
+    if (!state) return;
     
     // 正在批量模式
     if (state.batchArchiveMode) {
@@ -189,6 +190,42 @@ function updateBatchArchiveBtn() {
     // 可用状态
     btn.textContent = '🚨 紧急归档';
     btn.classList.remove('locked', 'active');
+}
+
+/**
+ * 环境失控持续警告（P1 修复，2026-09-05）：
+ * 环境稳定度归零是「隐性损失」（过期速度翻倍 + 士气承压），此前只在归零瞬间打一条日志，
+ * 玩家看不到持续影响。此处提供常驻横幅：归零期间一直显示，恢复后自动隐藏。
+ */
+function updateEnvironmentWarning() {
+    const state = MemorySanctuary.state;
+    if (!state) return;
+
+    const envZero = (state.resources.environment || 0) <= 0;
+    let warn = document.getElementById('env-warning');
+
+    if (envZero) {
+        if (!warn) {
+            warn = document.createElement('div');
+            warn.id = 'env-warning';
+            warn.className = 'env-warning';
+            // 插入到 top-bar 之后（stuck-banner 之前，保持 warning 栈顺序）
+            const topBar = document.getElementById('top-bar');
+            const stuck = document.getElementById('stuck-banner');
+            if (stuck && stuck.parentNode) {
+                stuck.parentNode.insertBefore(warn, stuck.nextSibling);
+            } else if (topBar && topBar.parentNode) {
+                topBar.parentNode.insertBefore(warn, topBar.nextSibling);
+            }
+        }
+        // 归零期间保持显示（含持续期提示：过期翻倍 + 士气承压）
+        warn.innerHTML = `
+            <span>⚠️ <strong>环境失控</strong>：条目保存条件恶化，过期速度翻倍；守护者士气持续承压。恢复环境稳定度（如完成维护项目或等待机器人紧急稳定）可解除。</span>
+        `;
+        warn.classList.remove('hidden');
+    } else if (warn) {
+        warn.classList.add('hidden');
+    }
 }
 
 function initProjectPanel() {
@@ -244,6 +281,7 @@ function renderAll() {
     updateProjectButton();
     updateEmergencyButton();
     updateBatchArchiveBtn();
+    updateEnvironmentWarning();
     renderSealTopbarButton();
     renderEngineeringBotsPanel();
     renderGuardianStoryProgress();
@@ -943,9 +981,10 @@ function renderArchiveEntries() {
     let filteredEntries = entries.filter(entry => {
         if (entry.availableAfter && MemorySanctuary.state.week < entry.availableAfter) return false;
 
-        // 条件解锁门槛（unlockCondition，如机器人专属条目 / NG+ 条目）：
+        // 条件解锁门槛（unlockCondition / ngPlusExclusive / 碎片发现）：
         // 不满足条件的条目直接不显示，而不是显示出来却无法归档
-        if ((entry.unlockCondition || entry.ngPlusExclusive)
+        // （勘探重设计 2026-09-03：fragmentFrom / botPassive 条目须先「发现」才进入列表）
+        if ((entry.unlockCondition || entry.ngPlusExclusive || entry.fragmentFrom || entry.botPassive)
             && typeof isArchiveAvailable === 'function' && !isArchiveAvailable(entry)) {
             return false;
         }
@@ -1259,7 +1298,7 @@ function renderEngineeringBotsPanel() {
     }
 
     container.title = botCount > 0
-        ? `当前 ${botCount} 台机器人运行中：衰减减免 ${Math.round(reduction * 100)}%、腐败侵蚀抑制 ${Math.round(reduction * 100)}%（每周维护 ◈${maintenanceCost} 能源，能源不足时停机）。拥有机器人期间，存储室会出现它们的专属日志条目。`
+        ? `当前 ${botCount} 台机器人运行中：衰减减免 ${Math.round(reduction * 100)}%、腐败侵蚀抑制 ${Math.round(reduction * 100)}%（每周维护 ◈${maintenanceCost} 能源，能源不足时停机）；每 4 周定期产出工程日志；环境稳定度 <20% 时自动消耗能源稳定环境。拥有机器人期间，存储室会出现它们的专属日志条目。`
         : '尚未部署工程机器人。完成「建造工程机器人」项目获得首台后，可在此继续建造。';
 }
 
@@ -2243,9 +2282,9 @@ function buildMoralePopover() {
 const RESOURCE_DESCRIPTIONS = {
     energy: '维持圣所运转与归档的核心资源。归零后归档能耗加倍。',
     media: '归档必需品。归零后无法录入新条目（应急协议的介质豁免除外）。',
-    environment: '保护设备与条目保存条件。归零后条目过期速度翻倍。',
+    environment: '保护设备与条目保存条件。环境稳定度越低，守护者士气压力越大；归零后条目过期速度翻倍，且触发常驻「环境失控」警告。环境 <20% 时机器人在线会自动消耗能源紧急稳定。',
     food: '维持守护者士气。耗尽后归档能耗 +20%，并可能触发饥荒。',
-    engineeringBots: '自动维护圣所：每台减少 18% 资源衰减（上限 65%），并按同比例抑制腐败侵蚀；每台每周消耗 0.75 能源，能源不足时停机。勘探协同：每台 +8% 资源收益、-5% 风险（上限 +40%/-25%）。拥有机器人期间，存储室出现其专属日志条目。'
+    engineeringBots: '自动维护圣所：每台减少 12% 资源衰减（上限 50%），并按同比例抑制腐败侵蚀；每台每周消耗 0.3 能源，能源不足时停机。勘探协同：每台 +8% 资源收益、-5% 风险（上限 +40%/-25%）；每 4 周定期产出工程日志条目；环境稳定度 <20% 时自动消耗能源稳定环境。拥有机器人期间，存储室出现其专属日志条目。'
 };
 
 function buildResourceTooltip(resourceKey) {
