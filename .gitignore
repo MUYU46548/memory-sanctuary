@@ -1,6 +1,8 @@
 # 临时验证脚本（开发期一次性工具，不入库）
 scripts/hermes-verify-*.js
 scripts/*
+# 发版打包脚本例外（稳定流程，入库防丢）
+!scripts/pack_release.py
 C:\Users\47219\AppData\Local\Temp\hermes-verify-*.js
 
 # Hermes 桌面附件缓存
@@ -41,6 +43,7 @@ js/balance-sim*.js
 
 # 发布打包产物
 *.zip
+release/
 
 # Python 缓存（headless 验证脚本）
 __pycache__/
