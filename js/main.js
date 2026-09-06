@@ -440,15 +440,14 @@ function initTheme() {
     }
 
     // 封印圣所按钮（顶部栏）
+    // 注：不弹原生 confirm（Neutralino/webview 壳对 window.confirm 支持不佳，点击会"无反应"）；
+    // 封印流程自带「记忆回响」确认步骤，足够防止误操作。
     const sealBtn = document.getElementById('seal-topbar-btn');
     if (sealBtn) {
         sealBtn.addEventListener('click', () => {
             if (!MemorySanctuary.state) return;
-            const archivedCount = MemorySanctuary.state.completedArchives.length;
-            const week = MemorySanctuary.state.week;
-            if (confirm(`确定封印圣所吗？\n\n已归档条目：${archivedCount}\n运行周数：${week}\n\n这将结束当前周目并解锁多周目奖励。`)) {
-                sealSanctuary();
-            }
+            if (MemorySanctuary.state.gameOver) return;
+            sealSanctuary();
         });
     }
 }

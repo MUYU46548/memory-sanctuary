@@ -495,53 +495,72 @@ function triggerNarrativeChainEvents() {
 
 
 function sealSanctuary() {
-    // 幂等守卫：防止重复结算（封印后再次点击）
-    if (MemorySanctuary.state.gameOver && MemorySanctuary.state._sealed) {
-        return;
-    }
-    
-    // 只有圣所模式才计入周目
-    if (MemorySanctuary.activeModule !== 'sanctuary') {
-        // DLC 模式：仅标记结束，不增加周目数
-        MemorySanctuary.state.gameOver = true;
-        MemorySanctuary.state._sealed = true;
-        if (typeof showTitleScreen === 'function') showTitleScreen();
-        return;
-    }
-    
-    MemorySanctuary.state.gameOver = true;
-    MemorySanctuary.state._sealed = true;
     const state = MemorySanctuary.state;
-    
-    // NG+ 结算：累计归档、守护者记录、周目递增（与崩溃/饥荒结局共用）
-    finalizePlaythrough();
-    
-    // Check for hidden endings first
-    const ending = checkHiddenEndings();
+    if (!state) return;
 
-    // 记入结局图鉴（实际达成的结局，持久化到 NG+ 数据）
-    if (typeof recordUnlockedEnding === 'function') recordUnlockedEnding(ending ? ending.id : 'finale_silent_sanctuary');
+    // 幂等守卫：防止重复结算（封印后再次点击）。
+    // 注意：_sealed 在结局流程成功完成后才写入（见下方 finally），
+    // 若中途抛异常（数据缺失/UI 异常），玩家可再次点击重试，而非被静默吞掉。
+    if (state.gameOver && state._sealed) {
+        return;
+    }
+    if (state._sealing) return; // 防止连点并发进入
 
-    // Show unlock message for guardian endings
-    if (ending && ending.id && ending.id.startsWith('guardian_') && ending.id.endsWith('_finale')) {
-        const gid = ending.id.replace('guardian_', '').replace('_finale', '');
-        const guardian = getGuardianById(gid);
-        if (guardian) {
-            addLog(`💕 解锁${guardian.name}的专属结局！`, 'success');
+    state._sealing = true;
+    try {
+        // 只有圣所模式才计入周目
+        if (MemorySanctuary.activeModule !== 'sanctuary') {
+            // DLC 模式：仅标记结束，不增加周目数
+            state.gameOver = true;
+            state._sealed = true;
+            if (typeof showTitleScreen === 'function') showTitleScreen();
+            return;
         }
-    }
-    
-    // Check seal achievements
-    if (typeof checkSealAchievements === 'function') {
-        checkSealAchievements(ending ? ending.id : null, state.week);
-    }
-    
-    // 记忆回响：让玩家选择最珍贵的 3 条记忆
-    if (state.completedArchives.length >= 3) {
-        showMemoryEchoSelection(ending);
-    } else {
-        // 不足 3 条，直接播放结局
-        playEndingSequence(ending);
+
+        state.gameOver = true;
+
+        // NG+ 结算：累计归档、守护者记录、周目递增（与崩溃/饥荒结局共用）
+        finalizePlaythrough();
+
+        // Check for hidden endings first
+        const ending = checkHiddenEndings();
+
+        // 记入结局图鉴（实际达成的结局，持久化到 NG+ 数据）
+        if (typeof recordUnlockedEnding === 'function') recordUnlockedEnding(ending ? ending.id : 'finale_silent_sanctuary');
+
+        // Show unlock message for guardian endings
+        if (ending && ending.id && ending.id.startsWith('guardian_') && ending.id.endsWith('_finale')) {
+            const gid = ending.id.replace('guardian_', '').replace('_finale', '');
+            const guardian = getGuardianById(gid);
+            if (guardian) {
+                addLog(`💕 解锁${guardian.name}的专属结局！`, 'success');
+            }
+        }
+
+        // Check seal achievements
+        if (typeof checkSealAchievements === 'function') {
+            checkSealAchievements(ending ? ending.id : null, state.week);
+        }
+
+        // 记忆回响：让玩家选择最珍贵的 3 条记忆
+        if (state.completedArchives.length >= 3) {
+            showMemoryEchoSelection(ending);
+        } else {
+            // 不足 3 条，直接播放结局
+            playEndingSequence(ending);
+        }
+
+        // 结局流程已完整展示，此时才允许幂等守卫拦截重复点击
+        state._sealed = true;
+    } catch (e) {
+        state.gameOver = false;
+        console.error('[封印] 结算失败，已回滚 gameOver 以便重试:', e);
+        if (typeof addLog === 'function') {
+            addLog(`⚠️ 封印结算遇到问题：${e && e.message ? e.message : e}。请重试或反馈开发者。`, 'warning');
+        }
+        throw e;
+    } finally {
+        state._sealing = false;
     }
 }
 
@@ -913,8 +932,9 @@ function renderSealButton() {
     const sealBtn = document.createElement('button');
     sealBtn.id = 'seal-btn';
     sealBtn.textContent = `封印圣所（已归档 ${archivedCount} 条）`;
+    // 不弹原生 confirm（桌面壳支持不佳）；封印流程自带「记忆回响」确认步骤
     sealBtn.addEventListener('click', () => {
-        if (confirm('确定封印圣所吗？这将结束当前周目并解锁多周目奖励。')) {
+        if (MemorySanctuary.state && !MemorySanctuary.state.gameOver) {
             sealSanctuary();
         }
     });

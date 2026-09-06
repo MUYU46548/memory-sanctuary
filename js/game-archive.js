@@ -57,16 +57,19 @@ function getEffectiveCost(entry, vault) {
     const entryType = entry.type || '';
     const themeTags = vault.themeTags || [];
     
-    // P1-10 修复：统一主题匹配口径
-    // 领域词（art/philosophy/ecology 等）需与 vault themeTags 匹配；
-    // 载体词（text/document/audio/image/record/data/letter/blueprint）为通用格式，任何存储室都可接纳
+    // v0.2.8 修正（问题：✓契合⚖互斥同现）：
+    // 三档语义，取代 P1-10 的「载体词任何存储室都算契合」过度修正——
+    // 旧逻辑让 95% 条目在任何存储室都显示 ✓契合，主题匹配机制被架空，
+    // 且互斥条目（多为 document/text 载体词）必然同时亮起 ✓契合 与 ⚖互斥 徽章。
+    // 现在：领域词命中 = 契合（-20%）；载体词 = 中性（1.0，不显示契合徽章也不标"主题不合"）；其他 = 不契合（+30%）。
     const CARRIER_TYPES = ['text', 'document', 'audio', 'image', 'record', 'data', 'letter', 'blueprint'];
-    const isMatch = themeTags.includes(entryType) || CARRIER_TYPES.includes(entryType);
+    const isMatch = themeTags.includes(entryType);
+    const isNeutral = CARRIER_TYPES.includes(entryType);
 
     let modifier = 1.0;
     if (isMatch) {
         modifier = 1.0 - (vault.themeBonus || 0);
-    } else {
+    } else if (!isNeutral) {
         modifier = 1.0 + (vault.themePenalty || 0);
     }
 
@@ -80,7 +83,8 @@ function getEffectiveCost(entry, vault) {
         energy: Math.round(entry.energyCost * modifier),
         media: Math.round(entry.dataCost * modifier),
         modifier: modifier,
-        isMatch: isMatch
+        isMatch: isMatch,
+        isNeutral: isNeutral
     };
 }
 
@@ -581,6 +585,7 @@ function confirmArchive(archiveId) {
     confirmContainer.appendChild(confirmBtn);
     
     // 深度归档按钮（P1-9 修复：增加深度归档 UI 入口）
+    // v0.2.8：资源不足时禁用并说明原因——"可点击但点了没反应"就是 bug。
     const deepBtn = document.createElement('button');
     deepBtn.id = 'modal-deep-btn';
     deepBtn.textContent = '✨ 深度归档（+10能源解锁隐藏叙事）';
@@ -594,6 +599,23 @@ function confirmArchive(archiveId) {
     deepBtn.style.cursor = 'pointer';
     deepBtn.style.marginLeft = '8px';
     deepBtn.title = '额外消耗 10 能源，解锁隐藏叙事与线索';
+
+    // 深度归档资源预检：能源 ≥ 基础能耗+10 且介质足够
+    const vaultForCost = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
+    const deepCost = getEffectiveCost(entry, vaultForCost);
+    const deepEnergyNeed = deepCost.energy + 10;
+    const deepMediaNeed = deepCost.media;
+    const canDeepArchive = MemorySanctuary.state.resources.energy >= deepEnergyNeed &&
+        MemorySanctuary.state.resources.media >= deepMediaNeed;
+    if (!canDeepArchive) {
+        deepBtn.disabled = true;
+        deepBtn.style.opacity = '0.4';
+        deepBtn.style.cursor = 'not-allowed';
+        const lack = [];
+        if (MemorySanctuary.state.resources.energy < deepEnergyNeed) lack.push(`能源 ${MemorySanctuary.state.resources.energy}/${deepEnergyNeed}`);
+        if (MemorySanctuary.state.resources.media < deepMediaNeed) lack.push(`介质 ${MemorySanctuary.state.resources.media}/${deepMediaNeed}`);
+        deepBtn.title = `资源不足，无法深度归档：${lack.join('，')}`;
+    }
     
     deepBtn.onclick = () => {
         if (skipCheckbox.checked) {

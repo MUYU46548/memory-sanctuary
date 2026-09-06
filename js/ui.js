@@ -1090,14 +1090,19 @@ function renderArchiveEntries() {
             const isThemeMatch = effectiveCost ? effectiveCost.isMatch : null;
             const themeModifier = effectiveCost ? effectiveCost.modifier : 1;
             
-            // 根据主题匹配添加边框颜色
+            // 根据主题匹配添加边框颜色（载体词为中性，不加任何边框）
+            const isNeutralMatch = effectiveCost && effectiveCost.isNeutral;
             if (isThemeMatch === true) {
                 item.classList.add('theme-match-border');
-            } else if (isThemeMatch === false) {
+            } else if (isThemeMatch === false && !isNeutralMatch) {
                 item.classList.add('theme-mismatch-border');
             }
             
-            const themeIndicator = isThemeMatch !== null ? (isThemeMatch ? '<span class="theme-match" title="主题契合：此条目与当前存储室主题匹配，归档消耗 -20%">✓契合</span>' : '<span class="theme-mismatch" title="主题不合：此条目与当前存储室主题不符，归档消耗 +30%。改存到匹配主题的存储室可降低消耗">主题不合</span>') : '';
+            const themeIndicator = isThemeMatch === true
+                ? '<span class="theme-match" title="主题契合：此条目与当前存储室主题匹配，归档消耗 -20%">✓契合</span>'
+                : (isThemeMatch === false && effectiveCost && !effectiveCost.isNeutral
+                    ? '<span class="theme-mismatch" title="主题不合：此条目与当前存储室主题不符，归档消耗 +30%。改存到匹配主题的存储室可降低消耗">主题不合</span>'
+                    : '');
 
             // 冲突警告（v0.2.4：具体互斥条目名由科技「互斥洞察」(conflictInsight) 开启；
             // 未解锁时仅显示 ⚖ 徽章与通用提示，由玩家阅读简介自行推断）

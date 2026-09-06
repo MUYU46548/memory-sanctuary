@@ -146,7 +146,7 @@ function renderExploreList() {
         // 地表/机器人碎片提示（勘探重设计 2026-09-03：勘探产出从纯资源改为独家内容）
         const fragCount = expData.fragments ? expData.fragments.length : 0;
         const fragBadge = fragCount > 0
-            ? `<span class="explore-item-frag" title="返回时必定发现地表碎片；碎片仅在特定周数内可归档，过期即永久消失">🗒 碎片×${fragCount}</span>`
+            ? `<span class="explore-item-frag" title="返回时必定发现地表碎片；碎片仅在特定周数内可归档，过期即永久消失">▤ 碎片×${fragCount}</span>`
             : '';
         const botBadge = expData.botOnly ? `<span class="explore-item-locked-badge">🤖 机器人专属</span>` : '';
 
@@ -157,7 +157,7 @@ function renderExploreList() {
             </div>
             <div class="explore-item-desc">${expData.description}</div>
             <div class="explore-item-meta">
-                <span>耗时 ${expData.duration} 周</span>
+                <span>休整 ${expData.duration} 周（不消耗回合）</span>
                 <div class="explore-item-skills">
                     ${expData.requiredSkills.length > 0
                         ? expData.requiredSkills.map(s => `<span class="skill-tag">${skillName(s)}</span>`).join('')
@@ -244,7 +244,7 @@ function renderDispatchGuardians(expData) {
         const botDiv = document.createElement('div');
         botDiv.className = 'dispatch-bot-only';
         botDiv.innerHTML = `🔧 工程机器人编队将自动执行本次勘探：无需守护者、不消耗食物、不产生疲劳。` +
-            `<div class="dispatch-bot-cost">消耗：编队待机能源（维护费已按周扣除）· 耗时 ${expData.duration || 1} 周</div>`;
+            `<div class="dispatch-bot-cost">消耗：编队待机能源（维护费已按周扣除）· 不消耗回合，派遣后休整 ${expData.duration || 1} 周</div>`;
         container.appendChild(botDiv);
         return;
     }
@@ -332,7 +332,7 @@ function renderOutcomeBars(expData) {
     if (fragCount > 0) {
         const fragNote = document.createElement('div');
         fragNote.className = 'outcome-bot-bonus frag-bonus';
-        fragNote.innerHTML = `🗒 碎片 ×${fragCount}：返回时必定发现；仅在特定周数窗口内可归档，过时不候`;
+        fragNote.innerHTML = `碎片 ×${fragCount}：返回时必定发现；仅在特定周数窗口内可归档，过时不候`;
         container.appendChild(fragNote);
     }
 
@@ -462,13 +462,15 @@ function executeExploration() {
     
     if (fatiguedGuardians.length > 0) {
         const names = fatiguedGuardians.map(f => `${f.name}（疲劳剩余 ${f.weeks} 周）`).join('、');
-        const confirmed = confirm(`以下守护者疲劳中，派遣后疲劳将延长：\n${names}\n\n确定要派遣吗？`);
-        if (!confirmed) return;
+        // 桌面壳不支持原生 confirm：改为日志提示直接放行（派遣后疲劳延长由机制自然处理）
+        addLog(`⚠️ ${names} 仍在疲劳中，派遣后疲劳将延长。`, 'warning');
     }
 
     const now = MemorySanctuary.state.week;
+    // v0.2.8：勘探不再推进时间（回合是真正不可再生资源）。
+    // deployedUntil 保留为「该点休整期」（休整期间不可再派），不占用回合。
     MemorySanctuary.state.exploration.deployedUntil = now + expData.duration;
-    
+
     // P0-1 修复：记录本次勘探的守护者专属事件匹配（返回时在 applyExplorationResult 结算）
     pendingGuardianSpecial = null;
     if (expData.guardianSpecials) {
@@ -483,7 +485,7 @@ function executeExploration() {
             }
         }
     }
-    
+
     consumeResources(0, 0, foodCost);
 
     const roll = Math.random();
@@ -498,24 +500,18 @@ function executeExploration() {
         }
     }
 
-    // Apply effects after time advance
-    const checkReturn = () => {
-        if (MemorySanctuary.state.week >= MemorySanctuary.state.exploration.deployedUntil) {
-            // 途中事件判定
-            if (Math.random() < 0.2) {
-                triggerMidwayEvent(expData);
-            }
-            applyExplorationResult(chosen, expData);
-        } else {
-            setTimeout(checkReturn, 100);
-        }
-    };
-    setTimeout(checkReturn, 100);
+    // v0.2.8：不再等待周数推进轮询返回，勘探即时结算（不推进时间）
+    if (Math.random() < 0.2) {
+        triggerMidwayEvent(expData);
+    }
+    applyExplorationResult(chosen, expData);
 
     const dispatchBtn = document.getElementById('dispatch-btn');
-    dispatchBtn.disabled = true;
-    dispatchBtn.classList.add('deploying');
-    setTimeout(() => dispatchBtn.classList.remove('deploying'), 600);
+    if (dispatchBtn) dispatchBtn.disabled = true;
+    if (dispatchBtn && dispatchBtn.classList) {
+        dispatchBtn.classList.add('deploying');
+        setTimeout(() => dispatchBtn.classList.remove('deploying'), 600);
+    }
 
     if (typeof AudioSystem !== 'undefined') AudioSystem.playExploreDeploy();
 
@@ -524,10 +520,10 @@ function executeExploration() {
         return g ? g.name : '';
     }).filter(n => n).join('、');
 
-    addLog(`${isBotOnly ? '派出工程机器人编队' : `派出勘探队前往 ${expData.name}`}。${isBotOnly ? '机器人' : `成员：${guardianNames || '无'}`}。预计 ${expData.duration} 周后返回。`, 'system');
+    addLog(`${isBotOnly ? '派出工程机器人编队' : `派出勘探队前往 ${expData.name}`}。${isBotOnly ? '机器人' : `成员：${guardianNames || '无'}`}。勘探不消耗时间，该点休整 ${expData.duration} 周。`, 'system');
 
     document.getElementById('explore-overlay').classList.add('hidden');
-    advanceTime(expData.duration);
+    renderAll();
 }
 
 
@@ -561,7 +557,7 @@ function unlockFragmentsForPoint(expData, effects) {
         state.unlockedFragments.push(fid);
         const notYet = entry.availableAfter && MemorySanctuary.state.week < entry.availableAfter;
         const hint = notYet ? `（第 ${entry.availableAfter} 周起可在存储室归档）` : '';
-        const prefix = expData.botOnly ? '🤖 机器人回收' : '🗒 地表碎片';
+        const prefix = expData.botOnly ? '🤖 机器人回收' : '地表碎片';
         addLog(`${prefix}：「${entry.title}」已发现${hint}——过期前前往对应存储室归档。`, 'success');
         if (effects) effects.push({ name: `${prefix}「${entry.title}」`, positive: true });
     });
