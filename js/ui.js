@@ -166,6 +166,7 @@ function updateBatchArchiveBtn() {
     // 正在批量模式
     if (state.batchArchiveMode) {
         btn.textContent = `🚨 紧急归档中 (${state.batchArchiveCount || 0}/3)`;
+        btn.title = '紧急归档协议进行中：本回合已选 ' + (state.batchArchiveCount || 0) + '/3 条';
         btn.classList.add('active');
         btn.classList.remove('locked');
         return;
@@ -174,6 +175,7 @@ function updateBatchArchiveBtn() {
     // 未解锁（<24周）
     if (state.week < 24) {
         btn.textContent = `🚨 紧急归档 (${state.week}/24)`;
+        btn.title = `紧急归档协议：第 ${state.week}/24 周解锁（一回合可归档最多 3 条，但会付出代价）`;
         btn.classList.add('locked');
         btn.classList.remove('active');
         return;
@@ -182,6 +184,7 @@ function updateBatchArchiveBtn() {
     // 已使用过
     if (state.batchArchiveUsedThisRun) {
         btn.textContent = '🚨 紧急归档 (已使用)';
+        btn.title = '本周目已使用过紧急归档协议';
         btn.classList.add('locked');
         btn.classList.remove('active');
         return;
@@ -189,6 +192,7 @@ function updateBatchArchiveBtn() {
     
     // 可用状态
     btn.textContent = '🚨 紧急归档';
+    btn.title = '紧急归档协议：一回合可归档最多 3 条，但会付出代价（本周目仅一次）';
     btn.classList.remove('locked', 'active');
 }
 

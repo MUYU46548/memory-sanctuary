@@ -21,6 +21,74 @@ function esc(str, newlineToBr) {
 }
 
 
+/**
+ * 通用确认弹窗（v0.2.8：替代原生 window.confirm）
+ * 桌面壳（Neutralino webview）对原生 confirm 支持不佳，点击会"无反应"；
+ * 统一改用游戏内弹窗，视觉与交互一致，支持 ESC/遮罩点击取消。
+ * @param {string} title 标题
+ * @param {string} message 正文（\n 自动换行）
+ * @param {Function} onConfirm 确认回调
+ * @param {Object} [opts] { confirmText, cancelText, danger, onCancel }
+ */
+function showConfirmDialog(title, message, onConfirm, opts) {
+    opts = opts || {};
+    const overlay = document.getElementById('confirm-overlay');
+    if (!overlay) {
+        // 组件缺失兜底：直接执行（不阻塞游戏流程）
+        if (onConfirm) onConfirm();
+        return;
+    }
+
+    const titleEl = document.getElementById('confirm-title');
+    const msgEl = document.getElementById('confirm-message');
+    const okBtn = document.getElementById('confirm-ok');
+    const cancelBtn = document.getElementById('confirm-cancel');
+
+    titleEl.textContent = title;
+    msgEl.innerHTML = esc(message, true);
+    okBtn.textContent = opts.confirmText || '确定';
+    cancelBtn.textContent = opts.cancelText || '取消';
+    cancelBtn.style.display = opts.hideCancel ? 'none' : '';
+    okBtn.classList.toggle('danger', !!opts.danger);
+
+    // 解绑旧监听（避免重复绑定累积）
+    if (okBtn._onConfirm) okBtn.removeEventListener('click', okBtn._onConfirm);
+    if (cancelBtn._onCancel) cancelBtn.removeEventListener('click', cancelBtn._onCancel);
+    if (overlay._onKey) document.removeEventListener('keydown', overlay._onKey);
+
+    const doConfirm = () => {
+        hideConfirmDialog();
+        if (onConfirm) onConfirm();
+    };
+    const doCancel = () => {
+        hideConfirmDialog();
+        if (opts.onCancel) opts.onCancel();
+    };
+    const onKey = (e) => { if (e.key === 'Escape') doCancel(); };
+
+    okBtn.addEventListener('click', doConfirm);
+    cancelBtn.addEventListener('click', doCancel);
+    okBtn._onConfirm = doConfirm;
+    cancelBtn._onCancel = doCancel;
+    overlay._onKey = onKey;
+    document.addEventListener('keydown', onKey);
+    overlay.onclick = (e) => { if (e.target === overlay) doCancel(); };
+
+    overlay.classList.remove('hidden');
+    okBtn.focus();
+}
+
+function hideConfirmDialog() {
+    const overlay = document.getElementById('confirm-overlay');
+    if (!overlay) return;
+    overlay.classList.add('hidden');
+    if (overlay._onKey) {
+        document.removeEventListener('keydown', overlay._onKey);
+        overlay._onKey = null;
+    }
+}
+
+
 // ============================================================
 // 全局常量
 // ============================================================
@@ -549,13 +617,14 @@ function initTitleScreen() {
     if (titleBtn) {
         titleBtn.addEventListener('click', () => {
             if (typeof btnClick === 'function') btnClick();
-            if (confirm('确定要返回标题画面吗？当前进度将会自动保存。')) {
+            // v0.2.8：原生 confirm 桌面壳不支持 → 游戏内确认弹窗
+            showConfirmDialog('返回标题', '确定要返回标题画面吗？当前进度将会自动保存。', () => {
                 const currentSlot = getCurrentSlot();
                 if (currentSlot >= 1) {
                     saveGame(currentSlot);
                 }
                 showTitleScreen();
-            }
+            }, { confirmText: '返回标题' });
         });
     }
 }

@@ -321,6 +321,18 @@
         </div>
     </div>
 
+    <!-- 通用确认弹窗（v0.2.8：替代原生 window.confirm——桌面壳 Neutralino webview 对原生 confirm 支持不佳，点击会"无反应"） -->
+    <div id="confirm-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+        <div id="confirm-box">
+            <h2 id="confirm-title">确认</h2>
+            <div id="confirm-message"></div>
+            <div id="confirm-actions">
+                <button id="confirm-cancel" class="modal-btn ghost">取消</button>
+                <button id="confirm-ok" class="modal-btn primary">确定</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 新手引导遮罩 -->
     <div id="tutorial-overlay" class="hidden">
         <div id="tutorial-highlight"></div>

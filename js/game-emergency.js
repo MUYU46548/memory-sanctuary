@@ -126,10 +126,11 @@ function openEmergencyProtocol() {
             addLog(`食物不足：守护者临时协助需要 ${GUARDIAN_AID_FOOD_COST} 食物作为加急报酬。`, 'system');
             return;
         }
-        if (confirm(`以 ${GUARDIAN_AID_FOOD_COST} 食物作为报酬，邀请守护者临时协助归档？（当前可协助次数：${currentChances}）`)) {
+        // v0.2.8：原生 confirm 桌面壳不支持 → 游戏内确认弹窗
+        showConfirmDialog('守护者临时协助', `以 ${GUARDIAN_AID_FOOD_COST} 食物作为报酬，邀请守护者临时协助归档？（当前可协助次数：${currentChances}）`, () => {
             buyInstantArchiveWithFood();
             openEmergencyProtocol(); // refresh
-        }
+        }, { confirmText: '协助归档' });
     });
     
     list.appendChild(buyArchiveBtn);

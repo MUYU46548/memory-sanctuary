@@ -147,16 +147,18 @@ function loadGame(slot) {
         saveData = JSON.parse(raw);
     } catch (e) {
         if (DEBUG) console.error(`[存档] 槽位 ${slot} 数据损坏:`, e);
-        // 尝试从备份恢复
+        // 尝试从备份恢复（v0.2.8：原生 confirm 桌面壳不支持 → 游戏内确认弹窗；
+        // 确认后备份已写回，重新 loadGame 走正常解析路径，保持"确认后继续加载"语义）
         const backup = tryRecoverFromBackup(slot);
         if (backup) {
-            if (confirm(`检测到槽位 ${slot} 的存档损坏，但发现自动备份。是否从备份恢复？\n\n注意：备份最多保留到上次保存后 ${BACKUP_INTERVAL} 次操作前的状态。`)) {
-                saveData = backup;
-                // 立即用备份覆盖损坏的存档
+            showConfirmDialog('恢复存档', `检测到槽位 ${slot} 的存档损坏，但发现自动备份。是否从备份恢复？\n\n注意：备份最多保留到上次保存后 ${BACKUP_INTERVAL} 次操作前的状态。`, () => {
                 localStorage.setItem(SAVE_KEY_PREFIX + slot, JSON.stringify(backup));
-            } else {
-                return false;
-            }
+                loadGame(slot);
+                // 异步确认后需补 UI 刷新（原同步流程由调用方 renderAll 承担）
+                renderAll();
+                if (typeof checkStuckState === 'function') checkStuckState();
+            }, { confirmText: '从备份恢复', danger: true });
+            return false;
         } else {
             alert(`槽位 ${slot} 的存档已损坏且无可用备份。请删除并新建。`);
             return false;
@@ -167,12 +169,13 @@ function loadGame(slot) {
     if (!saveData || !saveData.state || !saveData.state.resources) {
         const backup = tryRecoverFromBackup(slot);
         if (backup) {
-            if (confirm(`检测到槽位 ${slot} 的存档结构异常。是否从备份恢复？`)) {
-                saveData = backup;
+            showConfirmDialog('恢复存档', `检测到槽位 ${slot} 的存档结构异常。是否从备份恢复？`, () => {
                 localStorage.setItem(SAVE_KEY_PREFIX + slot, JSON.stringify(backup));
-            } else {
-                return false;
-            }
+                loadGame(slot);
+                renderAll();
+                if (typeof checkStuckState === 'function') checkStuckState();
+            }, { confirmText: '从备份恢复', danger: true });
+            return false;
         } else {
             alert(`槽位 ${slot} 的存档无效且无可用备份。请删除并新建。`);
             return false;
@@ -702,17 +705,18 @@ function handleSaveAction(slot, action, mode) {
             if (typeof checkStuckState === 'function') checkStuckState();
             break;
         case 'overwrite':
-            if (confirm(`确定要覆盖存档槽 ${slot} 吗？`)) {
+            // v0.2.8：原生 confirm → 游戏内确认弹窗（桌面壳兼容）
+            showConfirmDialog('覆盖存档', `确定要覆盖存档槽 ${slot} 吗？该槽位的旧进度将被替换。`, () => {
                 if (saveGame(slot)) {
                     closeSaveScreen();
                 }
-            }
+            }, { confirmText: '覆盖', danger: true });
             break;
         case 'delete':
-            if (confirm(`确定要删除存档槽 ${slot} 吗？`)) {
+            showConfirmDialog('删除存档', `确定要删除存档槽 ${slot} 吗？此操作不可恢复。`, () => {
                 deleteSaveSlot(slot);
                 renderSaveSlots(mode);
-            }
+            }, { confirmText: '删除', danger: true });
             break;
         case 'new': {
             const ngData = getNGPlusData();
@@ -892,6 +896,17 @@ function importSaveFromClipboard() {
         const slots = getAllSaveSlots();
         let targetSlot = slots.findIndex(s => s === null) + 1;
         
+        // 导入写入主体（确认后执行；槽位空缺时直接执行）
+        const doImport = () => {
+            localStorage.setItem(SAVE_KEY_PREFIX + targetSlot, JSON.stringify(saveData));
+            alert(`存档已导入到槽位 ${targetSlot}！`);
+            if (typeof AudioSystem !== 'undefined') AudioSystem.playGuardianEventTrigger();
+            const saveOverlayEl = document.getElementById('save-overlay');
+            if (saveOverlayEl && !saveOverlayEl.classList.contains('hidden')) {
+                renderSaveSlots('save');
+            }
+        };
+        
         if (targetSlot === 0) {
             const slotStr = prompt(`所有存档槽已满。输入槽位号 (1-${SAVE_SLOT_COUNT}) 覆盖：`);
             targetSlot = parseInt(slotStr);
@@ -899,18 +914,12 @@ function importSaveFromClipboard() {
                 alert('无效的槽位号。');
                 return;
             }
-            if (!confirm(`确定要覆盖存档槽 ${targetSlot} 吗？`)) return;
+            // v0.2.8：原生 confirm → 游戏内确认弹窗（桌面壳兼容）
+            showConfirmDialog('覆盖存档', `确定要覆盖存档槽 ${targetSlot} 吗？该槽位的旧进度将被替换。`, doImport, { confirmText: '覆盖', danger: true });
+            return;
         }
         
-        localStorage.setItem(SAVE_KEY_PREFIX + targetSlot, JSON.stringify(saveData));
-        alert(`存档已导入到槽位 ${targetSlot}！`);
-        
-        if (typeof AudioSystem !== 'undefined') AudioSystem.playGuardianEventTrigger();
-        
-        const saveOverlay = document.getElementById('save-overlay');
-        if (saveOverlay && !saveOverlay.classList.contains('hidden')) {
-            renderSaveSlots('save');
-        }
+        doImport();
     } catch (e) {
         alert('导入失败：存档文本已损坏。\n' + e.message);
     }
