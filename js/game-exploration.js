@@ -500,7 +500,10 @@ function executeExploration() {
         }
     }
 
-    // v0.2.8：不再等待周数推进轮询返回，勘探即时结算（不推进时间）
+    // v0.2.8：不再等待周数推进轮询返回，勘探即时结算（不推进时间）。
+    // 顺序：先关闭派遣面板，再结算结果（applyExplorationResult 会重新打开 overlay 展示结果）
+    const exploreOverlay = document.getElementById('explore-overlay');
+    if (exploreOverlay) exploreOverlay.classList.add('hidden');
     if (Math.random() < 0.2) {
         triggerMidwayEvent(expData);
     }
@@ -522,7 +525,6 @@ function executeExploration() {
 
     addLog(`${isBotOnly ? '派出工程机器人编队' : `派出勘探队前往 ${expData.name}`}。${isBotOnly ? '机器人' : `成员：${guardianNames || '无'}`}。勘探不消耗时间，该点休整 ${expData.duration} 周。`, 'system');
 
-    document.getElementById('explore-overlay').classList.add('hidden');
     renderAll();
 }
 
