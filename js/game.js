@@ -3001,7 +3001,8 @@ function checkAchievements(context) {
                 break;
             case 'all_guardians_mood': {
                 const tiers = { hostile: 0, cold: 1, neutral: 2, friendly: 3, intimate: 4 };
-                const targetTier = tiers[c.value] || 3;
+                const targetTier = tiers[c.value];
+                if (targetTier === undefined) throw new Error(`Unknown mood tier: ${c.value} in achievement ${ach.id}`);
                 const guardianIds = ['tika', 'finn', 'misha', 'lorn', 'ethel'];
                 const allMeet2 = guardianIds.every(gid => tiers[getMoodTier(gid)] >= targetTier);
                 if (allMeet2) earned = true;

@@ -963,22 +963,3 @@ function initSaveSystem() {
         });
     }
 }
-
-
-function startGameAfterLoad(slot) {
-    const titleScreen = document.getElementById('title-screen');
-    const gameContainer = document.getElementById('game-container');
-    
-    titleScreen.classList.add('hidden');
-    gameContainer.classList.remove('hidden');
-    
-    loadGame(slot);
-    
-    // Show tutorial for first-time players
-    const savedTutorial = localStorage.getItem('memory-sanctuary-tutorial');
-    if (!savedTutorial) {
-        setTimeout(() => {
-            if (typeof initTutorial === 'function') initTutorial();
-        }, 500);
-    }
-}

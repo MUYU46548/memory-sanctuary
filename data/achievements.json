@@ -200,7 +200,7 @@
       "hidden": false,
       "condition": {
         "type": "all_guardians_mood",
-        "value": 4
+        "value": "intimate"
       }
     },
     {
