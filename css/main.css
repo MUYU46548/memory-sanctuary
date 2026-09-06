@@ -7266,3 +7266,20 @@ button.archive-btn.recommended {
     border-color: var(--danger);
     color: #fff;
 }
+
+/* ============================================
+   C1 资源数字变化动画（v0.2.8，2026-09-06）
+   ============================================ */
+
+@keyframes res-flash-up-kf {
+    0%   { color: #7ddc8f; text-shadow: 0 0 10px rgba(125, 220, 143, 0.6); transform: translateY(2px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes res-flash-down-kf {
+    0%   { color: #e08a8a; text-shadow: 0 0 10px rgba(224, 138, 138, 0.6); transform: translateY(-2px); }
+    100% { transform: translateY(0); }
+}
+
+.res-flash-up   { animation: res-flash-up-kf 0.7s ease-out; }
+.res-flash-down { animation: res-flash-down-kf 0.7s ease-out; }

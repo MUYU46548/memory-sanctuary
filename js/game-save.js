@@ -615,6 +615,21 @@ function closeSaveScreen() {
 }
 
 
+/**
+ * 存档时间 → 友好相对时间（C3，2026-09-06）：
+ * 刚刚 / x 分钟前 / x 小时前 / 昨天 / M/D HH:mm
+ */
+function formatRelativeTime(ts) {
+    if (!ts) return '未知时间';
+    const diff = Date.now() - ts;
+    if (diff < 60 * 1000) return '刚刚';
+    if (diff < 3600 * 1000) return Math.floor(diff / 60000) + ' 分钟前';
+    if (diff < 24 * 3600 * 1000) return Math.floor(diff / 3600000) + ' 小时前';
+    if (diff < 48 * 3600 * 1000) return '昨天';
+    const d = new Date(ts);
+    return `${d.getMonth() + 1}/${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 function renderSaveSlots(mode) {
     const container = document.getElementById('save-slots');
     if (!container) return;
@@ -629,8 +644,7 @@ function renderSaveSlots(mode) {
         card.className = 'save-slot-card';
 
         if (info) {
-            const date = new Date(info.savedAt);
-            const dateStr = `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+            const dateStr = formatRelativeTime(info.savedAt);
 
             card.innerHTML = `
                 <div class="save-slot-header">

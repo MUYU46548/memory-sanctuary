@@ -24,6 +24,33 @@ function initUI() {
         if (e.key === 'Escape') closeModal();
     });
 
+    // 键盘快捷键（C4，2026-09-06）：空格=跳过回合，1/2/3/4=切标签页
+    document.addEventListener('keydown', (e) => {
+        // 输入框/可编辑区域聚焦时不触发
+        const tag = (e.target && e.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable)) return;
+        // VN 播放中不触发（VN 用空格推进对话、ESC 跳过）
+        const vnOverlay = document.getElementById('vn-overlay');
+        if (vnOverlay && !vnOverlay.classList.contains('hidden')) return;
+        // 确认弹窗打开时不触发
+        const confirmOverlay = document.getElementById('confirm-overlay');
+        if (confirmOverlay && !confirmOverlay.classList.contains('hidden')) return;
+
+        // 空格 = 跳过回合
+        if (e.code === 'Space') {
+            e.preventDefault();
+            const skipBtn = document.getElementById('skip-btn');
+            if (skipBtn && !skipBtn.disabled) skipBtn.click();
+            return;
+        }
+        // 数字键 = 切换标签页
+        const tabMap = { '1': 'archive', '2': 'guardian', '3': 'vault', '4': 'tech' };
+        if (tabMap[e.key]) {
+            e.preventDefault();
+            if (typeof switchActionTab === 'function') switchActionTab(tabMap[e.key]);
+        }
+    });
+
     // 批量归档模式按钮
     const batchBtn = document.getElementById('batch-archive-btn');
     if (batchBtn) {
@@ -754,11 +781,11 @@ function renderResources() {
         });
     });
 
-    if (energyEl) energyEl.textContent = Math.floor(resources.energy);
-    if (mediaEl) mediaEl.textContent = Math.floor(resources.media);
-    if (envEl) envEl.textContent = Math.floor(resources.environment);
-    if (foodEl) foodEl.textContent = Math.floor(resources.food);
-    if (botsEl) botsEl.textContent = Math.floor(resources.engineeringBots || 0);
+    if (energyEl) { flashResourceValue(energyEl, Math.floor(resources.energy)); energyEl.textContent = Math.floor(resources.energy); }
+    if (mediaEl) { flashResourceValue(mediaEl, Math.floor(resources.media)); mediaEl.textContent = Math.floor(resources.media); }
+    if (envEl) { flashResourceValue(envEl, Math.floor(resources.environment)); envEl.textContent = Math.floor(resources.environment); }
+    if (foodEl) { flashResourceValue(foodEl, Math.floor(resources.food)); foodEl.textContent = Math.floor(resources.food); }
+    if (botsEl) { flashResourceValue(botsEl, Math.floor(resources.engineeringBots || 0)); botsEl.textContent = Math.floor(resources.engineeringBots || 0); }
     
     updateResourceColor('res-energy', resources.energy, 100);
     updateResourceColor('res-media', resources.media, 60);
@@ -865,6 +892,21 @@ function updateResourceColor(elementId, value, max) {
     if (percent >= 60) el.classList.add('high');
     else if (percent >= 30) el.classList.add('medium');
     else el.classList.add('low');
+}
+
+/**
+ * 资源数字变化动画（C1，2026-09-06）：
+ * 数值增减时在 .res-value 元素上短暂变色/位移，一眼看清当周收支。
+ * 颜色 class 作用于父级 .resource，此处 class 加在子级值元素，互不冲突。
+ */
+function flashResourceValue(el, next) {
+    if (!el) return;
+    const prev = parseFloat(el.dataset.prev !== undefined ? el.dataset.prev : el.textContent) || 0;
+    el.dataset.prev = next;
+    if (prev === next) return;
+    el.classList.remove('res-flash-up', 'res-flash-down');
+    void el.offsetWidth; // 强制重排，让动画可重复触发
+    el.classList.add(next > prev ? 'res-flash-up' : 'res-flash-down');
 }
 
 function getResourceName(resource) {

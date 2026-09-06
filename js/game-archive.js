@@ -310,6 +310,8 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     
     // 音效：归档成功风铃
     if (typeof AudioSystem !== 'undefined') AudioSystem.playArchiveChime();
+    // C6：圣所主厅灯光脉冲（保存成功的视觉回应）
+    if (typeof triggerSanctuaryFlash === 'function') triggerSanctuaryFlash();
     
     // 守护者反应（速记无反应）
     if (ritualType !== 'quick') {

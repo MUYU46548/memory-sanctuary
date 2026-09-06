@@ -22,6 +22,20 @@ let floatingSymbols = [];
 let sceneTransition = 0;
 let currentSceneId = 1;
 
+// 归档成功灯光脉冲（C6，2026-09-06）：triggerSanctuaryFlash() 置 1，animate 中指数衰减
+let sanctuaryFlash = 0;
+
+/**
+ * 归档成功触发圣所灯光脉冲（柔和暖光闪过 + 记忆微光爆发）
+ * 由 game-archive.js 在归档成功路径调用；幂等，动画循环内自衰减。
+ */
+function triggerSanctuaryFlash() {
+    if (REDUCED_MOTION) return; // 尊重系统减少动效偏好
+    sanctuaryFlash = 0.9;
+    // 伴随少量记忆微光上涌，增强"保存成功"的实感
+    for (let i = 0; i < 6; i++) addParticle();
+}
+
 // 章节过渡效果状态
 let chapterTransitionEffect = {
     active: false,
@@ -243,6 +257,9 @@ function animate() {
     // 动态添加漂浮符号
     if (time % 55 === 0) addFloatingSymbol();
 
+    // 归档灯光脉冲衰减
+    if (sanctuaryFlash > 0) sanctuaryFlash *= 0.90;
+
     drawSanctuary();
     animationId = requestAnimationFrame(animate);
 }
@@ -324,6 +341,33 @@ function drawSanctuary() {
     drawVaultPortholes(ctx, config);
     drawMemoryMotes(ctx, config);
     drawDecayOverlay(ctx, config, scene, accent);
+    drawArchiveFlash(ctx, config);
+}
+
+/**
+ * 归档成功灯光脉冲（C6，2026-09-06）：
+ * sanctuaryFlash ∈ (0,1] 时叠加柔和暖光：全屏微光 + 共鸣芯径向光晕。
+ * 与共鸣芯（pal.amber）同色调，视觉上像是圣所对"保存"的一次回应。
+ */
+function drawArchiveFlash(ctx, config) {
+    if (sanctuaryFlash <= 0) return;
+    const pal = CANVAS_PALETTE;
+    const w = config.width, h = config.height;
+    const a = sanctuaryFlash;
+
+    // 全屏暖光微闪
+    ctx.fillStyle = pal.rgb(pal.amber, a * 0.08);
+    ctx.fillRect(0, 0, w, h);
+
+    // 共鸣芯径向光晕（歌者之座上方）
+    const dais = config.dais;
+    const gx = dais.cx, gy = dais.baseY - 30;
+    const grad = ctx.createRadialGradient(gx, gy, 5, gx, gy, 140);
+    grad.addColorStop(0, pal.rgb(pal.amberGlow, a * 0.30));
+    grad.addColorStop(0.5, pal.rgb(pal.amber, a * 0.12));
+    grad.addColorStop(1, pal.rgb(pal.amber, 0));
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
 }
 
 function drawRoom(ctx, config) {
@@ -898,6 +942,19 @@ function drawDecayOverlay(ctx, config, scene, accent) {
         ctx.fillStyle = pal.rgb(pal.warning, weekPulse);
         ctx.fillRect(0, 0, w, h);
         if (MemorySanctuary.state.week >= 40) alerts.push('终期临近');
+    }
+
+    // 应急腐败度暗角（C6，2026-09-06）：应急协议抬高腐败度 → 顶部缓缓压下的暗影
+    const corruption = MemorySanctuary.state.emergencyCorruption || 0;
+    if (corruption >= 50) {
+        const corrIntensity = Math.min(0.35, (corruption - 49) * 0.012);
+        const breathe2 = corrIntensity * (0.75 + 0.25 * Math.sin(time * 0.03));
+        const v = ctx.createLinearGradient(0, 0, 0, h);
+        v.addColorStop(0, pal.rgb(pal.amberDim, breathe2));
+        v.addColorStop(0.45, 'transparent');
+        ctx.fillStyle = v;
+        ctx.fillRect(0, 0, w, h);
+        if (corruption >= 75) alerts.push('腐败侵蚀');
     }
 
     // 章节过渡 surge（琥珀色）
