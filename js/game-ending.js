@@ -151,13 +151,13 @@ function checkHiddenEndings() {
         }
     }
 
-    // 5. 兜底：基于完成度的普通结局
+    // 5. 兜底：基于完成度的普通结局（v0.2.8 阈值对齐 endings.json：40/30/5）
     // ⚠ ID 必须与 endings.json 图鉴条目一致（历史上 fallback 曾用 fragment_keeper/whisper_keeper 等旧 ID，
     //   与图鉴的 finale_* 对不上，导致通关后结局图鉴全部显示锁定）
     const pct = total > 0 ? completed.length / total : 0;
-    if (pct >= 0.6) return { id: 'guardian_of_remnants', title: '文明守护者', description: '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的洛斯耶马。', priority: 50 };
-    if (pct >= 0.4) return { id: 'finale_guardian_of_fragments', title: '碎片收集者', description: `你保存了洛斯耶马的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。`, priority: 50 };
-    if (pct >= 0.1) return { id: 'finale_whisper_keeper', title: '微光守护者', description: `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到洛斯耶马的零星片段，但至少——他们知道这里曾经存在过一个文明。`, priority: 30 };
+    if (pct >= 0.4) return { id: 'guardian_of_remnants', title: '文明守护者', description: '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的洛斯耶马。', priority: 50 };
+    if (pct >= 0.3) return { id: 'finale_guardian_of_fragments', title: '碎片收集者', description: `你保存了洛斯耶马的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。`, priority: 50 };
+    if (pct >= 0.05) return { id: 'finale_whisper_keeper', title: '微光守护者', description: `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到洛斯耶马的零星片段，但至少——他们知道这里曾经存在过一个文明。`, priority: 30 };
     if (state.week >= 16) return { id: 'finale_silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道洛斯耶马曾存在过。也许……遗忘也是一种选择。', priority: 10 };
 
     return null;
@@ -203,8 +203,9 @@ function backfillUnlockedEndings() {
 
     const pct = ngData.bestRun.count / total;
     let galleryId;
-    if (pct >= 0.6) galleryId = 'guardian_of_remnants';
-    else if (pct >= 0.4) galleryId = 'finale_guardian_of_fragments';
+    // v0.2.8：阈值对齐新结局档位（40/30/5）
+    if (pct >= 0.4) galleryId = 'guardian_of_remnants';
+    else if (pct >= 0.3) galleryId = 'finale_guardian_of_fragments';
     else if (pct >= 0.05) galleryId = 'finale_whisper_keeper';
     else galleryId = 'finale_silent_sanctuary';
 

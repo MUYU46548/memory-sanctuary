@@ -20,9 +20,9 @@
 | 70 | `finale_fire_of_life` 生命礼赞 | vault_combination | vault 4+7+11 各 ≥70%（9+14+9=32 条） | ✓ | vault 4 上限 91.7%、vault 7 94.7% |
 | 70 | `finale_eternal_question` 永恒追问 | vault_combination | vault 4+5+12 各 ≥70%（9+8+12=29 条） | ✓ | — |
 | 70 | `finale_chronicle_of_doom` 末日档案 | vault_combination | vault 2+3+8 各 ≥70%（10+13+8=31 条） | ✓ | — |
-| 70 | `finale_voice_of_home` 人间烟火 | vault_combination | vault 9+10+11 各 ≥70%（7+21+9=37 条） | ⚠ **需扩容项目** | vault 10 无扩容上限 65.5%；`proj_vault_expand`(+20%→108) 后 21 条 cost 97 ≤ 108 可达 |
-| 55 | `guardian_of_remnants` 文明守护者 | completion | 完成度 60%-99%（105-173 条） | ✗ **时间墙** | 48 周 × 1.34 条/周（skilled 实测）≈ 64 条；乐观上界 ~83 条（AI 助理环境预算限 ~19 次） |
-| 50 | `finale_guardian_of_fragments` 碎片收集者 | percentage | 完成度 30%-59%（53-103 条） | ✓ | skilled 实测 64.2 条（36.7%）落在此区间 |
+| 70 | `finale_voice_of_home` 人间烟火 | vault_combination | vault 9+10+11 各 ≥70%（7+21+9=37 条） | ✓ **v0.2.8 定案：vault 10 容量 90→120** | 21 条最小 cost 97 ≤ 120，无需扩容项目 |
+| 55 | `guardian_of_remnants` 文明守护者 | completion | 完成度 40%-99%（70-173 条） | ✓ **v0.2.8 定案：阈值 60%→40%** | 模拟 skilled 22.8% 局可达；上界 ~83 条（47%，AI 助理环境预算限 ~19 次） |
+| 50 | `finale_guardian_of_fragments` 碎片收集者 | percentage | 完成度 30%-39%（53-68 条） | ✓ | v0.2.8 上限 59%→39%（让位给文明守护者 40% 档）；skilled 实测 39.3% 落在此区间 |
 | 30 | `finale_whisper_keeper` 微光守护者 | percentage | 完成度 5%-29%（9-50 条） | ✓ | 低完成度保底 |
 | 10 | `finale_silent_sanctuary` 寂静圣所 | zero_completion | 0 条 + 第 10 周后 | ✓ | 与 whisper 数学互斥 |
 | 5 | `forgotten` 遗忘 | special | 0 成就 + 第 48 周 + 未主动封印 | ✓ | 极端条件 |
@@ -66,11 +66,9 @@ skilled bot 100% 收敛 whisper_keeper 的**真正原因分解**（三层）：
 - 设计意图中"文明守护者（60%+）"和"永恒记忆（100%）"在当前时间/容量结构下**数学上不可达**；
 - 模拟器判定阈值与游戏不一致（0.4 vs 0.3）导致结局档次被报低。
 
-**T-B2 候选方案（需人表态）**：
+**T-B2 定案（2026-09-06 人工拍板：方案 1 + 方案 2(40%) + 方案 4 执行，方案 3 否决）**：
 
-- **方案 1（纯测量修正，不动数值）**：模拟器 `determineEnding` 对齐游戏区间（0.6 / 0.3-0.59 / 0.05-0.29），并增加组合/守护者结局建模或"盲区标注"。重新跑模拟后 skilled 应报 fragment_keeper（36.7%）。
-- **方案 2（调完成度阈值）**：`guardian_of_remnants` 60% → 45%（45% 与 perfect_seal 全 vault 45% 呼应）；`complete_memory` 保持 100% 但标注"理论不可达，需 NG+ 继承辅助"。风险：45% 仍略高于现实上界 47%，边缘可达。
-- **方案 3（松时间/成本）**：MAX_WEEK 48 → 56/60，或 AI 助理环境成本 -5 → -3（环境预算 95→~31 次），或速记窗口 6 周 → 8 周。风险：全局平衡漂移，需重跑全部策略验证。
-- **方案 4（数据修正 vault 10）**：vault 10 容量 90 → 120（或拆减条目），消除人间烟火/全收集的容量墙。风险：老存档不迁移（计划已声明可接受）。
-
-> 建议：方案 1 无条件执行（测量正确性）；方案 2/3/4 属设计决策，请人工拍板是否调整、调整幅度。
+- **方案 1（纯测量修正，不动数值）✅ 已执行**：模拟器 `determineEnding` 对齐游戏区间（0.4 / 0.3 / 0.05），并增加"盲区标注"行。重跑模拟：skilled 39.3% 正确报 fragment_keeper（30-39%），random 27.4% 报 whisper_keeper。
+- **方案 2（调完成度阈值）✅ 已执行（阈值 40% 而非 45%）**：`guardian_of_remnants` 60% → 40%（小游戏不上难度）；`finale_guardian_of_fragments` 上限 59% → 39%（避免区间重叠），描述/unlockMessage 同步；`complete_memory` 保持 100%（NG+ 长期目标，理论单周目不可达）。重跑模拟：skilled 22.8% 的局达到 40%+ 解锁「文明守护者」，真实可达。
+- **方案 3（松时间/成本）❌ 否决**：MAX_WEEK/AI 助理成本/速记窗口均会全局漂移，且用户明确时间不可再生、小游戏不上难度。
+- **方案 4（数据修正 vault 10）✅ 已执行**：vault 10 容量 90 → 120。人间烟火（21 条最小 cost 97）无需扩容项目直接可达；perfect_seal（14 条 cost 60）更宽裕；全收集（29 条 153）仍不可达——保持 NG+ 长期目标定位。`proj_vault_expand`（全 12 室 +20%）不受影响。

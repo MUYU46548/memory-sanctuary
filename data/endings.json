@@ -201,9 +201,9 @@
       "description": "你保存了洛斯耶马的部分碎片。\n\n虽然后世看到的只是冰山一角，但每一片都是真实的。你的选择决定了后世「看到」怎样的洛斯耶马文明。\n\n「你的选择决定了后世看到怎样的文明。」",
       "type": "percentage_completion",
       "condition": {
-        "description": "文明完整度达到 30% - 59%",
+        "description": "文明完整度达到 30% - 39%",
         "minPercent": 0.3,
-        "maxPercent": 0.59
+        "maxPercent": 0.39
       }
     },
     {
@@ -225,11 +225,11 @@
       "description": "你保存了大部分文明碎片。\n\n后世将看到一个虽不完整但足够真实的洛斯耶马——它的歌声、它的挣扎、它的智慧、它的爱。\n\n你没能留住一切，但你留住的每一样都足够厚重。",
       "type": "completion",
       "condition": {
-        "description": "文明完整度达到 60% - 99%",
-        "minPercent": 0.6,
+        "description": "文明完整度达到 40% - 99%",
+        "minPercent": 0.4,
         "maxPercent": 0.99
       },
-      "unlockMessage": "文明完整度 60% 以上"
+      "unlockMessage": "文明完整度 40% 以上"
     },
     {
       "id": "conflict_choice",
