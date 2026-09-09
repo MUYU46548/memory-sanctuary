@@ -22,13 +22,21 @@ function esc(str, newlineToBr) {
 
 
 /**
- * 通用确认弹窗（v0.2.8：替代原生 window.confirm）
- * 桌面壳（Neutralino webview）对原生 confirm 支持不佳，点击会"无反应"；
+ * 通用确认/提示弹窗（v0.2.8：替代原生 window.confirm/alert/prompt）
+ * 桌面壳（Neutralino webview）对原生对话框支持不佳，点击会"无反应"；
  * 统一改用游戏内弹窗，视觉与交互一致，支持 ESC/遮罩点击取消。
+ *
+ * 三种用法：
+ *   showConfirmDialog(title, message, onConfirm, opts)   —— 确认
+ *   showConfirmDialog(title, message, null, { hideCancel: true })  —— 提示（alert）
+ *   showConfirmDialog(title, message, onConfirm, { input: {...} }) —— 输入（prompt）
+ *
  * @param {string} title 标题
  * @param {string} message 正文（\n 自动换行）
- * @param {Function} onConfirm 确认回调
- * @param {Object} [opts] { confirmText, cancelText, danger, onCancel }
+ * @param {Function} onConfirm 确认回调，接收输入值（无输入时为 undefined）
+ * @param {Object} [opts]
+ *        { confirmText, cancelText, danger, onCancel, hideCancel,
+ *          input: { value, placeholder, readonly, multiline, label } }
  */
 function showConfirmDialog(title, message, onConfirm, opts) {
     opts = opts || {};
@@ -43,6 +51,11 @@ function showConfirmDialog(title, message, onConfirm, opts) {
     const msgEl = document.getElementById('confirm-message');
     const okBtn = document.getElementById('confirm-ok');
     const cancelBtn = document.getElementById('confirm-cancel');
+    const inputWrap = document.getElementById('confirm-input-wrap');
+    const inputEl = document.getElementById('confirm-input');
+    const textareaEl = document.getElementById('confirm-textarea');
+
+    const inputCfg = opts.input || null;
 
     titleEl.textContent = title;
     msgEl.innerHTML = esc(message, true);
@@ -51,14 +64,37 @@ function showConfirmDialog(title, message, onConfirm, opts) {
     cancelBtn.style.display = opts.hideCancel ? 'none' : '';
     okBtn.classList.toggle('danger', !!opts.danger);
 
+    // 输入控件（prompt 替代）：单行 input 或只读多行 textarea（导出长文本用）
+    let activeInput = null;
+    if (inputWrap && inputEl && textareaEl) {
+        if (!inputCfg) {
+            inputWrap.classList.add('hidden');
+            inputEl.classList.add('hidden');
+            textareaEl.classList.add('hidden');
+        } else {
+            inputWrap.classList.remove('hidden');
+            const useTextarea = !!inputCfg.multiline;
+            inputEl.classList.toggle('hidden', useTextarea);
+            textareaEl.classList.toggle('hidden', !useTextarea);
+            activeInput = useTextarea ? textareaEl : inputEl;
+            activeInput.value = inputCfg.value != null ? String(inputCfg.value) : '';
+            activeInput.placeholder = inputCfg.placeholder || '';
+            activeInput.readOnly = !!inputCfg.readonly;
+        }
+    }
+
     // 解绑旧监听（避免重复绑定累积）
     if (okBtn._onConfirm) okBtn.removeEventListener('click', okBtn._onConfirm);
     if (cancelBtn._onCancel) cancelBtn.removeEventListener('click', cancelBtn._onCancel);
     if (overlay._onKey) document.removeEventListener('keydown', overlay._onKey);
+    if (activeInput && activeInput._onEnter) {
+        activeInput.removeEventListener('keydown', activeInput._onEnter);
+    }
 
     const doConfirm = () => {
+        const value = activeInput ? activeInput.value : undefined;
         hideConfirmDialog();
-        if (onConfirm) onConfirm();
+        if (onConfirm) onConfirm(value);
     };
     const doCancel = () => {
         hideConfirmDialog();
@@ -74,8 +110,48 @@ function showConfirmDialog(title, message, onConfirm, opts) {
     document.addEventListener('keydown', onKey);
     overlay.onclick = (e) => { if (e.target === overlay) doCancel(); };
 
+    // 单行输入回车即确认（多行 textarea 保留换行）
+    if (activeInput && !inputCfg.multiline) {
+        const onEnter = (e) => { if (e.key === 'Enter') { e.preventDefault(); doConfirm(); } };
+        activeInput.addEventListener('keydown', onEnter);
+        activeInput._onEnter = onEnter;
+    }
+
     overlay.classList.remove('hidden');
-    okBtn.focus();
+    if (activeInput) {
+        activeInput.focus();
+        if (!inputCfg.readonly) activeInput.select();
+    } else {
+        okBtn.focus();
+    }
+}
+
+/**
+ * 提示弹窗（替代原生 alert）：只有确定按钮，无取消。
+ */
+function showAlertDialog(title, message, opts) {
+    showConfirmDialog(title, message, null, Object.assign({ hideCancel: true, confirmText: '知道了' }, opts || {}));
+}
+
+/**
+ * 输入弹窗（替代原生 prompt）：返回 Promise，取消时 resolve(null)。
+ * @param {Object} opts { value, placeholder, readonly, multiline, confirmText, cancelText }
+ */
+function showPromptDialog(title, message, opts) {
+    opts = opts || {};
+    return new Promise((resolve) => {
+        showConfirmDialog(title, message, (value) => resolve(value), {
+            confirmText: opts.confirmText,
+            cancelText: opts.cancelText,
+            onCancel: () => resolve(null),
+            input: {
+                value: opts.value,
+                placeholder: opts.placeholder,
+                readonly: opts.readonly,
+                multiline: opts.multiline
+            }
+        });
+    });
 }
 
 function hideConfirmDialog() {
@@ -92,7 +168,7 @@ function hideConfirmDialog() {
 // ============================================================
 // 全局常量
 // ============================================================
-const GAME_VERSION = '0.2.8';
+const GAME_VERSION = '0.2.9';
 
 // ============================================================
 // 退出自动存档：关闭/刷新页面时把当前进度写入当前存档槽
@@ -141,7 +217,8 @@ window.MemorySanctuary = {
         events: [],
         explorations: [],
         tech: [],
-        techMeta: {}
+        techMeta: {},
+        chapters: {}
     },
     currentVaultId: 1,
     activeEvent: null
@@ -168,8 +245,8 @@ function showMobileWarning() {
         bootScreen.innerHTML = `
             <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:2rem;text-align:center;">
                 <div style="font-size:3rem;margin-bottom:1rem;">📱</div>
-                <div style="font-size:1.2rem;color:#c9a87c;margin-bottom:1rem;">暂不支持移动端</div>
-                <div style="font-size:0.9rem;color:#888;max-width:300px;line-height:1.6;">
+                <div style="font-size:1.2rem;color:var(--amber-bg);margin-bottom:1rem;">暂不支持移动端</div>
+                <div style="font-size:0.9rem;color:var(--text-dim);max-width:300px;line-height:1.6;">
                     记忆圣所是一款为桌面浏览器设计的游戏。<br>
                     请在 PC 或笔记本上启动本游戏以获得最佳体验。
                 </div>
@@ -375,6 +452,16 @@ async function loadGameData() {
     } catch (e) {
         if (DEBUG) console.warn('[数据] guardian_events.json 加载失败');
         MemorySanctuary.data.guardianEvents = [];
+    }
+
+    try {
+        const chaptersRes = await fetch('data/chapters.json');
+        const chaptersJson = await chaptersRes.json();
+        MemorySanctuary.data.chapters = chaptersJson.chapters || {};
+        if (DEBUG) console.log(`[数据] ${Object.keys(MemorySanctuary.data.chapters).length} 个章节标题`);
+    } catch (e) {
+        if (DEBUG) console.warn('[数据] chapters.json 加载失败，使用内置章节标题');
+        MemorySanctuary.data.chapters = {};
     }
 
     try {
@@ -710,7 +797,7 @@ function openDLCPanel() {
                 if (typeof showTransientNotice === 'function') {
                     showTransientNotice('🚧 该模式暂未实装，请等待后续版本更新。');
                 } else {
-                    alert('该模式暂未实装，请等待后续版本更新。');
+                    showAlertDialog('暂未实装', '该模式暂未实装，请等待后续版本更新。');
                 }
             });
         } else if (unlocked && !isActive) {
@@ -1053,7 +1140,9 @@ function initSettings() {
             animationSpeedValue.textContent = savedAnimSpeed + '%';
         }
         // P1-16 修复：启动时应用动画速度（否则滑块动了才生效，重启后丢失）
-        document.documentElement.style.setProperty('--animation-speed', (savedAnimSpeed / 100).toFixed(2));
+        // v0.2.9 修复：此前只写变量、CSS 无消费者，滑块实际无效果；
+        // 现由 CSS calc() + canvas 帧步进共同消费。
+        applyAnimationSpeed(savedAnimSpeed);
         animationSpeedSlider.addEventListener('input', () => {
             const val = parseInt(animationSpeedSlider.value, 10);
             if (animationSpeedValue) {
@@ -1062,7 +1151,7 @@ function initSettings() {
             const s = getSettings();
             s.animationSpeed = val;
             localStorage.setItem('memory-sanctuary-settings', JSON.stringify(s));
-            document.documentElement.style.setProperty('--animation-speed', (val / 100).toFixed(2));
+            applyAnimationSpeed(val);
             setFill();
         });
     }
@@ -1108,6 +1197,28 @@ function openSettingsPanel() {
     if (overlay) overlay.classList.remove('hidden');
     // 面板可能在上次打开后被外部改动（如全局静音联动），每次打开都对齐实际音频状态
     if (typeof window.__syncAudioSettingsUI === 'function') window.__syncAudioSettingsUI();
+}
+
+/**
+ * 应用动画速度（v0.2.9 修复：此前滑块写 --animation-speed 但 CSS 无消费者，拖到 0% 也无变化）。
+ * 现在由两处共同消费：
+ *   1) CSS：150 处 animation/transition 时长已改为 calc(<时长> * var(--animation-speed))
+ *   2) canvas.js：帧步进乘以同一系数（粒子、微光、脉冲等绘制动画）
+ * 速度 0% 时额外挂 html[data-animation-off]，停掉 infinite 动画（否则 0s 时长的无限动画会每帧重放）。
+ * @param {number} percent 0-200
+ */
+function applyAnimationSpeed(percent) {
+    const pct = Math.max(0, Math.min(200, Number(percent) || 0));
+    const root = document.documentElement;
+    root.style.setProperty('--animation-speed', (pct / 100).toFixed(2));
+    if (pct === 0) {
+        root.setAttribute('data-animation-off', 'true');
+    } else {
+        root.removeAttribute('data-animation-off');
+    }
+    if (typeof setCanvasAnimationSpeed === 'function') {
+        setCanvasAnimationSpeed(pct / 100);
+    }
 }
 
 function closeSettingsPanel() {

@@ -1,6 +1,6 @@
 # 记忆圣所 (Memory Sanctuary)
 
-![Version](https://img.shields.io/badge/version-v0.2.8-blue)
+![Version](https://img.shields.io/badge/version-v0.2.9-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tech](https://img.shields.io/badge/tech-HTML5%20%2B%20CSS3%20%2B%20Vanilla%20JS-orange)
 
@@ -324,6 +324,21 @@ memory-sanctuary/
 ---
 
 ## 版本历史
+
+### v0.2.9 (2026-09-09)
+
+> P0/P1 修复包：桌面壳兼容收尾、假设置接线、硬编码色清理、叙事体验补口。
+
+- ✅ **桌面壳兼容收尾**：存档导出/导入、槽位选择、调试面板等 15 处原生 `alert/prompt` 全部替换为游戏内弹窗（此前桌面壳下导出/导入点了没反应，与 v0.2.8 修的封印按钮同根因）；新增输入框/只读文本框弹窗组件
+- ✅ **「动画速度」真正生效**：此前滑块只写 `--animation-speed` 变量、CSS 无任何消费者，拖到 0% 也无变化；现由 150 处动画/过渡时长（`calc(<时长> * var(--animation-speed))`）与圣所 Canvas 帧步进共同消费，0% 完全关闭动画（含停掉无限循环动画）
+- ✅ **硬编码色清理**：v0.2.8 新增 UI 的 6 处硬编码色（资源数字动画、存储室容量警告、项目进度条、危险按钮、移动端提示）改为主题变量，亮色主题正常适配
+- ✅ **文明图谱修正**：`ctx.font` 写死的 `Noto Serif SC` 改为跟随游戏正文字体；中心字残留的旧文明名单字「萨」修正
+- ✅ **ESC 全覆盖**：存档/勘探/设置/图谱/项目/成就/回顾/应急等面板均可 ESC 关闭（此前只有归档弹窗响应），且一次 ESC 只关一层
+- ✅ **归档前正文预览**：点击条目标题即可查看正文与消耗（含隐藏叙事提示但不泄露内容），不再只凭标题+一行描述盲选
+- ✅ **守护者心情语义修正**：敌视档由红心 ❤️ 改为心碎 💔（红心传达的是「喜爱」而非「敌对」）
+- ✅ **资源上限单一来源**：150/150/100/80 由 6 处重复定义收敛为 `RESOURCE_CAPS` 常量
+- ✅ **章节标题数据驱动**：`CHAPTER_DATA` 迁至 `data/chapters.json`，保留内置兜底
+- ✅ **CSS 编码修复**：`css/main.css` 混入的 GBK 注释字节已修正为合法 UTF-8
 
 ### v0.2.8 (2026-09-06)
 

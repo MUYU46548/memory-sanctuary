@@ -641,7 +641,7 @@ function confirmArchive(archiveId) {
         instantBtn.style.background = 'var(--success)';
         instantBtn.style.border = 'none';
         instantBtn.style.borderRadius = '4px';
-        instantBtn.style.color = '#fff';
+        instantBtn.style.color = 'var(--white)';
         instantBtn.style.fontFamily = 'var(--font-cn)';
         instantBtn.style.fontSize = '0.85rem';
         instantBtn.style.cursor = 'pointer';
@@ -757,7 +757,7 @@ function confirmQuickArchive(archiveId) {
     confirmBtn.style.background = 'var(--success)';
     confirmBtn.style.border = 'none';
     confirmBtn.style.borderRadius = '4px';
-    confirmBtn.style.color = '#fff';
+    confirmBtn.style.color = 'var(--white)';
     confirmBtn.style.fontFamily = 'var(--font-cn)';
     confirmBtn.style.fontSize = '0.9rem';
     confirmBtn.style.cursor = 'pointer';

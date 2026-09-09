@@ -21,23 +21,23 @@ function openEmergencyProtocol() {
     const corruption = state.emergencyCorruption || 0;
     if (corruptionBar) {
         corruptionBar.style.width = corruption + '%';
-        // 根据腐败度改变颜色
+        // 根据腐败度改变颜色（改用主题变量，亮色主题自动适配）
         if (corruption < 30) {
-            corruptionBar.style.background = '#c9a87c';
+            corruptionBar.style.background = 'var(--amber-bg)';
         } else if (corruption < 60) {
-            corruptionBar.style.background = '#d4a017';
+            corruptionBar.style.background = 'var(--warning)';
         } else if (corruption < 80) {
-            corruptionBar.style.background = '#e67e22';
+            corruptionBar.style.background = 'var(--warning-hard)';
         } else {
-            corruptionBar.style.background = '#e74c3c';
+            corruptionBar.style.background = 'var(--danger-hard)';
         }
     }
     if (corruptionText) {
         corruptionText.textContent = `${corruption} / 100`;
         if (corruption >= 60) {
-            corruptionText.style.color = '#e74c3c';
+            corruptionText.style.color = 'var(--danger-hard)';
         } else if (corruption >= 30) {
-            corruptionText.style.color = '#d4a017';
+            corruptionText.style.color = 'var(--warning)';
         } else {
             corruptionText.style.color = 'var(--text-dim)';
         }

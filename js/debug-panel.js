@@ -89,7 +89,7 @@ function simpleHash(str) {
     return Math.abs(hash).toString(16).padStart(8, '0');
 }
 
-function toggleDebugPanel() {
+async function toggleDebugPanel() {
     const overlay = document.getElementById('debug-overlay');
     if (!overlay) return;
     
@@ -104,13 +104,15 @@ function toggleDebugPanel() {
     }
     
     // 生产模式：需要密码
-    const input = window.prompt(`🔐 调试面板已锁定\n请输入调试密码：\n(${DEBUG_PASSWORD_HINT})`);
+    const input = await showPromptDialog('🔐 调试面板已锁定', `请输入调试密码：\n(${DEBUG_PASSWORD_HINT})`, {
+        confirmText: '解锁'
+    });
     
     if (input === null) return; // 用户取消
     
     const inputHash = simpleHash(input);
     if (inputHash !== DEBUG_PASSWORD_HASH) {
-        alert('❌ 密码错误！');
+        showAlertDialog('解锁失败', '❌ 密码错误！', { danger: true });
         return;
     }
     
@@ -237,7 +239,7 @@ function initDebugButtons() {
             const input = document.getElementById('debug-week-input');
             const week = parseInt(input.value);
             if (isNaN(week) || week < 1 || week > 48) {
-                alert('请输入1-48之间的周数');
+                showAlertDialog('周数无效', '请输入1-48之间的周数', { danger: true });
                 return;
             }
             jumpToWeek(week);
@@ -308,10 +310,10 @@ function initDebugButtons() {
     const resetBtn = document.getElementById('debug-reset-achievements');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-            if (confirm('确定要重置所有成就吗？')) {
+            showConfirmDialog('重置成就', '确定要重置所有成就吗？', () => {
                 localStorage.removeItem('memory-sanctuary-achievements');
                 addLog('🛠️ [调试] 所有成就已重置', 'system');
-            }
+            }, { confirmText: '重置', danger: true });
         });
     }
     
@@ -342,10 +344,10 @@ function initDebugButtons() {
                     if (typeof renderAll === 'function') renderAll();
                     addLog('🛠️ [调试] 状态已导入', 'system');
                 } else {
-                    alert('无效的状态JSON：缺少resources或week字段');
+                    showAlertDialog('导入失败', '无效的状态JSON：缺少resources或week字段', { danger: true });
                 }
             } catch (e) {
-                alert('JSON解析错误: ' + e.message);
+                showAlertDialog('导入失败', 'JSON解析错误: ' + e.message, { danger: true });
             }
         });
     }
@@ -354,7 +356,7 @@ function initDebugButtons() {
     const clearBtn = document.getElementById('debug-clear-state');
     if (clearBtn) {
         clearBtn.addEventListener('click', () => {
-            if (confirm('确定要清除所有存档吗？此操作不可恢复。')) {
+            showConfirmDialog('清除所有存档', '确定要清除所有存档吗？此操作不可恢复。', () => {
                 for (let i = 1; i <= 3; i++) {
                     localStorage.removeItem(`memory-sanctuary-save-slot-${i}`);
                     localStorage.removeItem(`memory-sanctuary-backup-slot-${i}`);
@@ -364,7 +366,7 @@ function initDebugButtons() {
                 localStorage.removeItem('memory-sanctuary-achievements');
                 localStorage.removeItem('memory-sanctuary-settings');
                 addLog('🛠️ [调试] 所有存档已清除', 'system');
-            }
+            }, { confirmText: '清除', danger: true });
         });
     }
 }
@@ -377,7 +379,7 @@ function jumpToWeek(targetWeek) {
     
     if (targetWeek < currentWeek) {
         // Restart from beginning - not supported, would need full reinit
-        alert('不能向后跳转周数。请重新开始新游戏。');
+        showAlertDialog('无法回退', '不能向后跳转周数。请重新开始新游戏。', { danger: true });
         return;
     }
     

@@ -17,11 +17,35 @@ function initUI() {
         });
     }
     
+    // ESC 统一关闭（v0.2.9）：
+    // 此前只有 modal-overlay 响应 ESC，存档/勘探/设置/图谱/项目/成就/回顾/应急等
+    // 面板都只能点 ✕。现在合并为单一处理器，一次 ESC 只关一层，按 z-index 从高到低：
+    // 确认弹窗 / VN / 教程有自己的 ESC 语义，交由它们处理，此处跳过。
     document.addEventListener('keydown', (e) => {
-        // 封印流程锁定时不允许 ESC 关闭
-        const overlay = document.getElementById('modal-overlay');
-        if (overlay && overlay.dataset.locked) return;
-        if (e.key === 'Escape') closeModal();
+        if (e.key !== 'Escape') return;
+        const tag = (e.target && e.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+
+        // 确认弹窗打开时由其自身处理器接管（避免同一次 ESC 连带关掉下层弹窗）
+        const confirmOverlay = document.getElementById('confirm-overlay');
+        if (confirmOverlay && !confirmOverlay.classList.contains('hidden')) return;
+        // VN 播放中由 VN 自己处理 ESC
+        const vnOverlay = document.getElementById('vn-overlay');
+        if (vnOverlay && !vnOverlay.classList.contains('hidden')) return;
+        // 教程引导中不响应
+        const tutorialOverlay = document.getElementById('tutorial-overlay');
+        if (tutorialOverlay && !tutorialOverlay.classList.contains('hidden')) return;
+
+        // 归档完成弹窗（封印流程锁定时不响应）
+        const modalOverlay = document.getElementById('modal-overlay');
+        if (modalOverlay && !modalOverlay.classList.contains('hidden')) {
+            if (modalOverlay.dataset.locked) return;
+            closeModal();
+            e.preventDefault();
+            return;
+        }
+
+        if (handleEscapeClose()) e.preventDefault();
     });
 
     // 键盘快捷键（C4，2026-09-06）：空格=跳过回合，1/2/3/4=切标签页
@@ -107,6 +131,36 @@ function switchActionTab(tabName) {
 }
 
 /**
+ * ESC 统一关闭（v0.2.9）：按 z-index 从高到低关闭当前最上面一层面板。
+ * 返回 true 表示已处理（已关闭某个面板），false 表示没有可关的面板。
+ * 注：VN / 确认弹窗 / 教程有自己的 ESC 处理（或有意不响应），不在此处接管。
+ */
+function handleEscapeClose() {
+    const layers = [
+        { id: 'debug-overlay', close: () => (typeof closeDebugPanel === 'function' && closeDebugPanel()) },
+        // ending-overlay 有意不响应 ESC（结局画面需玩家主动选择“返回标题”）
+        { id: 'atlas-overlay', close: () => { const el = document.getElementById('atlas-overlay'); if (el) el.classList.add('hidden'); } },
+        { id: 'explore-overlay', close: () => { const el = document.getElementById('explore-overlay'); if (el) el.classList.add('hidden'); } },
+        { id: 'project-overlay', close: () => (typeof closeProjectPanel === 'function' && closeProjectPanel()) },
+        { id: 'settings-overlay', close: () => (typeof closeSettingsPanel === 'function' && closeSettingsPanel()) },
+        { id: 'save-overlay', close: () => (typeof closeSaveScreen === 'function' && closeSaveScreen()) },
+        { id: 'emergency-overlay', close: () => { const el = document.getElementById('emergency-overlay'); if (el) el.classList.add('hidden'); } },
+        { id: 'achievements-panel', close: () => (typeof closeAchievementsPanel === 'function' && closeAchievementsPanel()) },
+        { id: 'codex-panel', close: () => (typeof closeCodexPanel === 'function' && closeCodexPanel()) },
+        { id: 'dlc-panel', close: () => (typeof closeDLCPanel === 'function' && closeDLCPanel()) }
+    ];
+    for (const layer of layers) {
+        const el = document.getElementById(layer.id);
+        if (!el || el.classList.contains('hidden')) continue;
+        // 封印流程锁定中的弹窗不响应 ESC
+        if (el.dataset && el.dataset.locked) return false;
+        layer.close();
+        return true;
+    }
+    return false;
+}
+
+/**
  * 批量归档退出确认弹窗
  */
 function showBatchExitConfirm() {
@@ -168,7 +222,7 @@ function showBatchExitConfirm() {
     confirmBtn.style.background = 'var(--danger, #d44)';
     confirmBtn.style.border = '1px solid var(--danger, #d44)';
     confirmBtn.style.borderRadius = '4px';
-    confirmBtn.style.color = '#fff';
+    confirmBtn.style.color = 'var(--white, #fff)';
     confirmBtn.style.cursor = 'pointer';
     confirmBtn.onclick = () => {
         closeModal();
@@ -1208,6 +1262,18 @@ function renderArchiveEntries() {
                 ${costHtml}
                 ${buttonHtml}
             `;
+
+            // P1-6：归档前可先读正文。叙事驱动游戏里只凭标题+一行描述盲选是体验缺口，
+            // 点标题（或右侧“预览”）弹出正文预览；按钮点击不触发预览。
+            const previewTarget = item.querySelector('.entry-title');
+            if (previewTarget) {
+                previewTarget.classList.add('entry-title-clickable');
+                previewTarget.title = '点击预览条目正文';
+                previewTarget.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showEntryPreview(entry);
+                });
+            }
             
             listDiv.appendChild(item);
         });
@@ -1586,10 +1652,8 @@ function updateProjectButton() {
     }
 }
 
-function closeProjectPanel() {
-    const overlay = document.getElementById('project-overlay');
-    if (overlay) overlay.classList.add('hidden');
-}
+// closeProjectPanel 定义在 js/game-projects.js（与 openProjectPanel 同文件），
+// 此处不再重复定义（v0.2.9：消除同名重复函数，避免后者静默覆盖前者的隐患）。
 
 function renderProjectList() {
     const container = document.getElementById('project-list');
@@ -2127,6 +2191,47 @@ function renderCodexEntries() {
     }
 }
 
+/**
+ * 归档前正文预览（P1-6，v0.2.9）
+ * 列表卡片只显示标题 + 一行描述，叙事驱动游戏里玩家只能盲选；
+ * 点标题弹出正文（含隐藏叙事的提示但不泄露内容）与守护者反应。
+ */
+function showEntryPreview(entry) {
+    const overlay = document.getElementById('modal-overlay');
+    const title = document.getElementById('modal-title');
+    const content = document.getElementById('modal-content');
+    const closeBtn = document.getElementById('modal-close');
+    if (!overlay || !title || !content) return;
+
+    title.textContent = '条目预览：' + entry.title;
+
+    let html = '';
+    if (entry.content) {
+        html += `<div class="archive-detail-content">${esc(entry.content, true)}</div>`;
+    } else {
+        html += `<div class="archive-detail-content">（此条目无正文）</div>`;
+    }
+
+    if (entry.hiddenContent) {
+        html += `<div class="entry-preview-hint">✨ 此条目含隐藏叙事：使用「深度归档」或研究「深研学派」后归档可解锁。</div>`;
+    }
+
+    const costParts = [];
+    if (entry.energyCost) costParts.push(`◈ ${entry.energyCost} 能源`);
+    if (entry.dataCost) costParts.push(`◇ ${entry.dataCost} 介质`);
+    if (costParts.length) {
+        html += `<div class="entry-preview-cost">归档消耗：${costParts.join(' · ')}</div>`;
+    }
+
+    content.innerHTML = html;
+    overlay.classList.remove('hidden');
+
+    if (closeBtn) {
+        closeBtn.textContent = '关闭';
+        closeBtn.onclick = () => overlay.classList.add('hidden');
+    }
+}
+
 function showArchiveDetail(entry) {
     const overlay = document.getElementById('modal-overlay');
     const title = document.getElementById('modal-title');
@@ -2450,10 +2555,8 @@ function buildResourceTooltip(resourceKey) {
     }
 
     // 储量信息（附储量条 + 食物补给箱可视化，让"存量"一眼可读）
-    const maxCap = resourceKey === 'food' ? 80
-        : resourceKey === 'energy' ? 150
-        : resourceKey === 'media' ? 150
-        : 100;
+    // P1-8：上限统一取自 game.js 的 RESOURCE_CAPS
+    const maxCap = getResourceCap(resourceKey);
     const current = state.resources[resourceKey] || 0;
     const capPct = Math.max(0, Math.min(100, (current / maxCap) * 100));
     const barClass = capPct < 20 ? 'crit' : (capPct < 45 ? 'low' : 'ok');
@@ -2601,8 +2704,9 @@ function hideTooltip() {
     }
 }
 
-// 章节标题数据
-const CHAPTER_DATA = {
+// 章节标题数据（P1-9 数据驱动，v0.2.9）：内容迁至 data/chapters.json，
+// 此处仅保留内置兜底（数据文件加载失败时仍能显示章节横幅）。
+const CHAPTER_DATA_FALLBACK = {
     1: { number: '一', title: '奠基', subtitle: '灾难第9个月 · 圣所初建' },
     2: { number: '二', title: '调试', subtitle: '灾难第10个月 · 系统调试' },
     3: { number: '三', title: '运行', subtitle: '灾难第11个月 · 全面运行' },
@@ -2617,8 +2721,14 @@ const CHAPTER_DATA = {
     12: { number: '十二', title: '终章', subtitle: '灾难第20个月 · 最终封存' }
 };
 
+function getChapterData(chapterNum) {
+    const fromData = MemorySanctuary.data && MemorySanctuary.data.chapters;
+    const entry = fromData && fromData[String(chapterNum)];
+    return entry || CHAPTER_DATA_FALLBACK[chapterNum] || null;
+}
+
 function showChapterTitle(chapterNum) {
-    const data = CHAPTER_DATA[chapterNum];
+    const data = getChapterData(chapterNum);
     if (!data) return;
     
     // 章节提示条：使用独立固定定位覆盖层，避免压住顶栏/封印按钮

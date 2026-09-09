@@ -1,0 +1,17 @@
+{
+  "_comment": "章节标题数据（P1-9 数据驱动，v0.2.9）：此前硬编码在 js/ui.js 的 CHAPTER_DATA 常量中。number=中文数字，title=章节名，subtitle=时间副标题。",
+  "chapters": {
+    "1": { "number": "一", "title": "奠基", "subtitle": "灾难第9个月 · 圣所初建" },
+    "2": { "number": "二", "title": "调试", "subtitle": "灾难第10个月 · 系统调试" },
+    "3": { "number": "三", "title": "运行", "subtitle": "灾难第11个月 · 全面运行" },
+    "4": { "number": "四", "title": "裂痕", "subtitle": "灾难第12个月 · 首次危机" },
+    "5": { "number": "五", "title": "衰退", "subtitle": "灾难第13个月 · 地表恶化" },
+    "6": { "number": "六", "title": "灰绿", "subtitle": "灾难第14个月 · 生态崩溃" },
+    "7": { "number": "七", "title": "沉默", "subtitle": "灾难第15个月 · 海洋死寂" },
+    "8": { "number": "八", "title": "尘暴", "subtitle": "灾难第16个月 · 土壤粉末化" },
+    "9": { "number": "九", "title": "病变", "subtitle": "灾难第17个月 · 羽毛病变" },
+    "10": { "number": "十", "title": "暴动", "subtitle": "灾难第18个月 · 配给暴动" },
+    "11": { "number": "十一", "title": "瓦解", "subtitle": "灾难第19个月 · 共享公约瓦解" },
+    "12": { "number": "十二", "title": "终章", "subtitle": "灾难第20个月 · 最终封存" }
+  }
+}

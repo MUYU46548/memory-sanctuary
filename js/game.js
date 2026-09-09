@@ -10,6 +10,19 @@
 // 资源管理
 // ==========================================
 
+/**
+ * 资源上限（P1-8 收敛，v0.2.9）：
+ * 此前 150/150/100/80 散落在 game.js / game-events.js / game-save.js / ui.js
+ * 共 6 处（含裸数字），改一处漏三处。现统一为单一来源。
+ * 注：engineeringBots 上限另见 ENGINEERING_BOTS_CONFIG（机器人数量上限）。
+ */
+const RESOURCE_CAPS = Object.freeze({ energy: 150, media: 150, environment: 100, food: 80 });
+
+/** 取某项资源的存量上限（未知资源回退 100） */
+function getResourceCap(resource) {
+    return RESOURCE_CAPS[resource] !== undefined ? RESOURCE_CAPS[resource] : 100;
+}
+
 function consumeResources(energy, media, food) {
     const state = MemorySanctuary.state;
     
@@ -50,9 +63,8 @@ function adjustResource(resource, amount) {
     const state = MemorySanctuary.state;
     if (!state) return;
     
-    // 统一资源上限口径：environment=100，其余 150/80
-    const RESOURCE_CAPS = { energy: 150, media: 150, environment: 100, food: 80 };
-    const max = RESOURCE_CAPS[resource] ?? 100;
+    // 统一资源上限口径：见顶部 RESOURCE_CAPS
+    const max = getResourceCap(resource);
     state.resources[resource] = Math.max(0, Math.min(max, state.resources[resource] + amount));
     
     // 资源变化后立即检查衰竭状态（勘探/事件奖励不推进时间）
@@ -282,7 +294,7 @@ function processOngoingEffects() {
         
         // 应用效果
         if (effect.resource && effect.amount) {
-            const cap = effect.resource === 'media' ? 150 : (effect.resource === 'food' ? 80 : (effect.resource === 'energy' ? 150 : 100));
+            const cap = getResourceCap(effect.resource);
             state.resources[effect.resource] = Math.min(cap, state.resources[effect.resource] + effect.amount);
             state.resourceChanges[effect.resource] = (state.resourceChanges[effect.resource] || 0) + effect.amount;
         }
@@ -339,12 +351,12 @@ function recalculateResourceChanges() {
             const e = proj.effect;
             // 注意：实际收益会被资源上限截断，悬停提示必须反映「当前储量下的实际可增益」
             if (e.type === 'resourceBoost' && e.resource && e.amount) {
-                const cap = e.resource === 'food' ? 80 : (e.resource === 'environment' ? 100 : 150);
+                const cap = getResourceCap(e.resource);
                 const cur = state.resources[e.resource] || 0;
                 state.resourceChanges[e.resource] += Math.max(0, Math.min(cap, cur + e.amount) - cur);
             } else if (e.type === 'foodBoost' && e.amount) {
                 const cur = state.resources.food || 0;
-                state.resourceChanges.food += Math.max(0, Math.min(80, cur + e.amount) - cur);
+                state.resourceChanges.food += Math.max(0, Math.min(getResourceCap('food'), cur + e.amount) - cur);
             }
         });
     }
@@ -870,7 +882,7 @@ function applySeasonalEffects() {
     
     if (season.foodMod !== 0) {
         const change = season.foodMod;
-        state.resources.food = Math.max(0, Math.min(80, state.resources.food + change));
+        state.resources.food = Math.max(0, Math.min(getResourceCap('food'), state.resources.food + change));
         state.resourceChanges.food = (state.resourceChanges.food || 0) + change;
         
         // 季节变化时记录日志
@@ -884,7 +896,7 @@ function applySeasonalEffects() {
 function checkFoodAbundancePenalty() {
     const state = MemorySanctuary.state;
     const food = state.resources.food;
-    const cap = 80;
+    const cap = getResourceCap('food');
     const ratio = food / cap;
     const weights = getFoodMoodWeight();
     
@@ -1669,13 +1681,21 @@ function getMoodTier(guardianId) {
     return 'intimate';
 }
 
+/**
+ * 守护者心情指示符（P1-7，v0.2.9）
+ * 此前 mood<=-3（敌视）显示 ❤️ 红心——红心传达的是「喜爱」而非「敌对」，语义颠倒；
+ * 现改为：敌对/冷淡用破碎/失色的心，中立用黄色，友好/亲密用暖色到绿色递进。
+ * 与 getMoodTier() 的档位一一对应，避免两处阈值脱节。
+ */
 function getMoodIndicator(guardianId) {
-    const mood = getMoodLevel(guardianId);
-    if (mood <= -3) return '❤️';
-    if (mood < 0) return '🤍';
-    if (mood <= 2) return '💛';
-    if (mood <= 4) return '🧡';
-    return '💚';
+    const tier = getMoodTier(guardianId);
+    switch (tier) {
+        case 'hostile':  return '💔';   // 疏离：心碎
+        case 'cold':     return '🤍';   // 冷淡：灰心
+        case 'neutral':  return '💛';   // 平和：黄心
+        case 'friendly': return '🧡';   // 友好：橙心
+        default:         return '💚';   // 亲密：绿心
+    }
 }
 
 /**

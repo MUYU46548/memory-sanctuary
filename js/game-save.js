@@ -160,7 +160,7 @@ function loadGame(slot) {
             }, { confirmText: '从备份恢复', danger: true });
             return false;
         } else {
-            alert(`槽位 ${slot} 的存档已损坏且无可用备份。请删除并新建。`);
+            showAlertDialog('存档损坏', `槽位 ${slot} 的存档已损坏且无可用备份。请删除并新建。`, { danger: true });
             return false;
         }
     }
@@ -177,7 +177,7 @@ function loadGame(slot) {
             }, { confirmText: '从备份恢复', danger: true });
             return false;
         } else {
-            alert(`槽位 ${slot} 的存档无效且无可用备份。请删除并新建。`);
+            showAlertDialog('存档无效', `槽位 ${slot} 的存档无效且无可用备份。请删除并新建。`, { danger: true });
             return false;
         }
     }
@@ -427,12 +427,11 @@ function applyNGPlusBonuses() {
     const ngData = getNGPlusData();
     if (!ngData.bonuses || ngData.bonuses.length === 0) return;
 
-    // 各资源真实上限（与 game.js 资源 cap 保持一致）
-    const RESOURCE_CAPS = { energy: 150, media: 150, environment: 100, food: 80 };
+    // 各资源真实上限（P1-8：改用 game.js 的单一常量 RESOURCE_CAPS）
 
     ngData.bonuses.forEach(bonus => {
         if (bonus.type === 'resource') {
-            const cap = RESOURCE_CAPS[bonus.resource] || 100;
+            const cap = getResourceCap(bonus.resource);
             MemorySanctuary.state.resources[bonus.resource] = Math.min(
                 cap,
                 MemorySanctuary.state.resources[bonus.resource] + bonus.value
@@ -750,28 +749,45 @@ function handleSaveAction(slot, action, mode) {
 function exportSaveToClipboard(slot) {
     const raw = localStorage.getItem(SAVE_KEY_PREFIX + slot);
     if (!raw) {
-        alert('该存档槽为空！');
+        showAlertDialog('导出存档', '该存档槽为空！', { danger: true });
         return;
     }
-    
+
     try {
         const saveData = JSON.parse(raw);
         const jsonStr = JSON.stringify(saveData);
         const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
-        
+
+        // 导出文本统一用只读文本框展示（可全选复制）；剪贴板写入成功仅作额外便利，
+        // 不再依赖原生 prompt（桌面壳不支持会“点了没反应”）。
+        const showExport = (clipboardOk) => {
+            showConfirmDialog(
+                `导出存档 ${slot}`,
+                clipboardOk
+                    ? '已同时复制到剪贴板。下方为完整导出文本，可全选复制发给他人。'
+                    : '下方为完整导出文本，请全选复制后发送给他人。',
+                null,
+                {
+                    hideCancel: true,
+                    confirmText: '完成',
+                    input: { value: encoded, readonly: true, multiline: true }
+                }
+            );
+        };
+
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(encoded).then(() => {
-                alert(`存档 ${slot} 已导出到剪贴板！\n将此文本发送给他人即可分享。`);
+                showExport(true);
             }).catch(() => {
-                prompt(`存档 ${slot} 导出文本（全选复制）：`, encoded);
+                showExport(false);
             });
         } else {
-            prompt(`存档 ${slot} 导出文本（全选复制）：`, encoded);
+            showExport(false);
         }
-        
+
         if (typeof AudioSystem !== 'undefined') AudioSystem.playButtonClick();
     } catch (e) {
-        alert('导出失败：' + e.message);
+        showAlertDialog('导出失败', '导出失败：' + e.message, { danger: true });
     }
 }
 
@@ -888,55 +904,66 @@ function sanitizeImportedSave(raw) {
     };
 }
 
-function importSaveFromClipboard() {
-    const input = prompt('粘贴导入文本：');
+async function importSaveFromClipboard() {
+    const input = await showPromptDialog(
+        '导入存档',
+        '粘贴存档导入文本：',
+        { placeholder: '在此粘贴存档文本…', confirmText: '导入' }
+    );
     if (!input || !input.trim()) return;
-    
+
+    let parsed = null;
     try {
         const jsonStr = decodeURIComponent(escape(atob(input.trim())));
-        const parsed = JSON.parse(jsonStr);
-        
-        if (!parsed || !parsed.state || !parsed.version) {
-            alert('无效的存档文本！');
-            return;
-        }
-        
-        const saveData = sanitizeImportedSave(parsed);
-        if (!saveData) {
-            alert('无效的存档文本！');
-            return;
-        }
-        
-        const slots = getAllSaveSlots();
-        let targetSlot = slots.findIndex(s => s === null) + 1;
-        
-        // 导入写入主体（确认后执行；槽位空缺时直接执行）
-        const doImport = () => {
-            localStorage.setItem(SAVE_KEY_PREFIX + targetSlot, JSON.stringify(saveData));
-            alert(`存档已导入到槽位 ${targetSlot}！`);
-            if (typeof AudioSystem !== 'undefined') AudioSystem.playGuardianEventTrigger();
-            const saveOverlayEl = document.getElementById('save-overlay');
-            if (saveOverlayEl && !saveOverlayEl.classList.contains('hidden')) {
-                renderSaveSlots('save');
-            }
-        };
-        
-        if (targetSlot === 0) {
-            const slotStr = prompt(`所有存档槽已满。输入槽位号 (1-${SAVE_SLOT_COUNT}) 覆盖：`);
-            targetSlot = parseInt(slotStr);
-            if (isNaN(targetSlot) || targetSlot < 1 || targetSlot > SAVE_SLOT_COUNT) {
-                alert('无效的槽位号。');
-                return;
-            }
-            // v0.2.8：原生 confirm → 游戏内确认弹窗（桌面壳兼容）
-            showConfirmDialog('覆盖存档', `确定要覆盖存档槽 ${targetSlot} 吗？该槽位的旧进度将被替换。`, doImport, { confirmText: '覆盖', danger: true });
-            return;
-        }
-        
-        doImport();
+        parsed = JSON.parse(jsonStr);
     } catch (e) {
-        alert('导入失败：存档文本已损坏。\n' + e.message);
+        showAlertDialog('导入失败', '导入失败：存档文本已损坏。\n' + e.message, { danger: true });
+        return;
     }
+
+    if (!parsed || !parsed.state || !parsed.version) {
+        showAlertDialog('导入失败', '无效的存档文本！', { danger: true });
+        return;
+    }
+
+    const saveData = sanitizeImportedSave(parsed);
+    if (!saveData) {
+        showAlertDialog('导入失败', '无效的存档文本！', { danger: true });
+        return;
+    }
+
+    const slots = getAllSaveSlots();
+    let targetSlot = slots.findIndex(s => s === null) + 1;
+
+    // 导入写入主体（确认后执行；槽位空缺时直接执行）
+    const doImport = () => {
+        localStorage.setItem(SAVE_KEY_PREFIX + targetSlot, JSON.stringify(saveData));
+        showAlertDialog('导入完成', `存档已导入到槽位 ${targetSlot}！`);
+        if (typeof AudioSystem !== 'undefined') AudioSystem.playGuardianEventTrigger();
+        const saveOverlayEl = document.getElementById('save-overlay');
+        if (saveOverlayEl && !saveOverlayEl.classList.contains('hidden')) {
+            renderSaveSlots('save');
+        }
+    };
+
+    if (targetSlot === 0) {
+        const slotStr = await showPromptDialog(
+            '选择覆盖槽位',
+            `所有存档槽已满。输入槽位号 (1-${SAVE_SLOT_COUNT}) 覆盖：`,
+            { placeholder: `1-${SAVE_SLOT_COUNT}`, confirmText: '下一步' }
+        );
+        if (slotStr === null) return;
+        targetSlot = parseInt(slotStr, 10);
+        if (isNaN(targetSlot) || targetSlot < 1 || targetSlot > SAVE_SLOT_COUNT) {
+            showAlertDialog('槽位无效', '无效的槽位号。', { danger: true });
+            return;
+        }
+        // v0.2.8：原生 confirm → 游戏内确认弹窗（桌面壳兼容）
+        showConfirmDialog('覆盖存档', `确定要覆盖存档槽 ${targetSlot} 吗？该槽位的旧进度将被替换。`, doImport, { confirmText: '覆盖', danger: true });
+        return;
+    }
+
+    doImport();
 }
 
 
@@ -950,7 +977,7 @@ function initExportImport() {
             if (currentSlot >= 1) {
                 exportSaveToClipboard(currentSlot);
             } else {
-                alert('没有活跃的存档。请先保存或读取一个存档。');
+                showAlertDialog('导出存档', '没有活跃的存档。请先保存或读取一个存档。', { danger: true });
             }
         });
     }

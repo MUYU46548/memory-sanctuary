@@ -368,25 +368,24 @@ function resolveEvent(choiceIndex) {
     
     const choice = event.choices[choiceIndex];
     
-    // 统一资源上限口径
-    const RESOURCE_CAPS = { energy: 150, media: 150, environment: 100, food: 80 };
+    // 统一资源上限口径（P1-8：改用 game.js 的单一常量 RESOURCE_CAPS）
     
     // 应用效果
     if (choice.effect.energy) {
         MemorySanctuary.state.resources.energy = Math.max(0, 
-            Math.min(RESOURCE_CAPS.energy, MemorySanctuary.state.resources.energy + choice.effect.energy));
+            Math.min(getResourceCap('energy'), MemorySanctuary.state.resources.energy + choice.effect.energy));
     }
     if (choice.effect.media) {
         MemorySanctuary.state.resources.media = Math.max(0,
-            Math.min(RESOURCE_CAPS.media, MemorySanctuary.state.resources.media + choice.effect.media));
+            Math.min(getResourceCap('media'), MemorySanctuary.state.resources.media + choice.effect.media));
     }
     if (choice.effect.environment) {
         MemorySanctuary.state.resources.environment = Math.max(0,
-            Math.min(RESOURCE_CAPS.environment, MemorySanctuary.state.resources.environment + choice.effect.environment));
+            Math.min(getResourceCap('environment'), MemorySanctuary.state.resources.environment + choice.effect.environment));
     }
     if (choice.effect.food) {
         MemorySanctuary.state.resources.food = Math.max(0,
-            Math.min(RESOURCE_CAPS.food, MemorySanctuary.state.resources.food + choice.effect.food));
+            Math.min(getResourceCap('food'), MemorySanctuary.state.resources.food + choice.effect.food));
     }
     
     // 守护者个人事件效果

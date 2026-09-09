@@ -1093,6 +1093,10 @@ function renderAtlas() {
     const dimColor = style.getPropertyValue('--text-dim').trim() || '#5a5040';
     const dangerColor = style.getPropertyValue('--danger').trim() || '#8a3a2a';
     const successColor = style.getPropertyValue('--success').trim() || '#3a8a5a';
+    // 字体跟随游戏正文字体（霞鹜文楷加载后由 font-loader 写入 --font-cn），
+    // 不再写死 Noto Serif SC（与游戏本体字体不一致）
+    const fontCn = style.getPropertyValue('--font-cn').trim() || 'serif';
+    const fontEn = style.getPropertyValue('--font-en').trim() || 'monospace';
     
     // Calculate vault completion
     const vaults = MemorySanctuary.data.vaults;
@@ -1109,7 +1113,7 @@ function renderAtlas() {
     
     // Draw title
     ctx.fillStyle = accentColor;
-    ctx.font = 'bold 18px "Noto Serif SC", serif';
+    ctx.font = `bold 18px ${fontCn}`;
     ctx.textAlign = 'center';
     ctx.fillText('洛斯耶马文明图谱', width / 2, 30);
     
@@ -1118,7 +1122,7 @@ function renderAtlas() {
     const totalCount = MemorySanctuary.data.archives.length;
     const totalPercent = Math.round((totalDone / totalCount) * 100);
     ctx.fillStyle = textColor;
-    ctx.font = '12px "Noto Sans SC", sans-serif';
+    ctx.font = `12px ${fontCn}`;
     ctx.fillText(`文明完整度: ${totalPercent}% (${totalDone}/${totalCount})`, width / 2, 50);
     
     // Draw vault nodes in a circle
@@ -1158,14 +1162,14 @@ function renderAtlas() {
         
         // Vault name
         ctx.fillStyle = textColor;
-        ctx.font = '10px "Noto Sans SC", sans-serif';
+        ctx.font = `10px ${fontCn}`;
         ctx.textAlign = 'center';
         const shortName = vault.name.length > 6 ? vault.name.substring(0, 6) + '…' : vault.name;
         ctx.fillText(shortName, x, y + 36);
         
         // Completion count
         ctx.fillStyle = dimColor;
-        ctx.font = '9px "Courier New", monospace';
+        ctx.font = `9px ${fontEn}`;
         ctx.fillText(`${stats.done}/${stats.total}`, x, y + 46);
     });
     
@@ -1206,9 +1210,10 @@ function renderAtlas() {
     ctx.stroke();
     
     ctx.fillStyle = accentColor;
-    ctx.font = '20px "Noto Serif SC", serif';
+    ctx.font = `20px ${fontCn}`;
     ctx.textAlign = 'center';
-    ctx.fillText('萨', centerX, centerY + 7);
+    // 中心字：取当前文明名首字（此前硬编码「萨」，是旧文明名“萨拉达斯”的残留）
+    ctx.fillText('洛', centerX, centerY + 7);
 }
 
 

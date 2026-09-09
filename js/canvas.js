@@ -16,6 +16,17 @@ let sanctuaryCtx = null;
 let animationId = null;
 let time = 0;
 
+// 动画速度系数（v0.2.9：由设置面板「动画速度」经 main.js applyAnimationSpeed() 写入）。
+// time 是绘制动画的唯一时间轴（粒子漂移/微光闪烁/脉冲均以它计时），
+// 因此按系数累加即可同步调速；0 表示关闭动画（仍保留静态渲染）。
+let canvasAnimSpeed = 1;
+let canvasAnimSpeedAcc = 0;
+
+function setCanvasAnimationSpeed(scale) {
+    const s = Number(scale);
+    canvasAnimSpeed = isFinite(s) && s >= 0 ? s : 1;
+}
+
 // 场景粒子系统
 let particles = [];
 let floatingSymbols = [];
@@ -229,7 +240,11 @@ function resizeCanvas() {
 }
 
 function animate() {
-    time += 1;
+    // 按动画速度推进时间轴（速度 0 = 冻结绘制动画，但仍继续渲染静态画面）
+    canvasAnimSpeedAcc += canvasAnimSpeed;
+    const step = Math.floor(canvasAnimSpeedAcc);
+    canvasAnimSpeedAcc -= step;
+    time += step;
 
     // 场景切换过渡
     const targetScene = MemorySanctuary.currentVaultId || 1;
@@ -252,10 +267,10 @@ function animate() {
     }
 
     // 动态添加记忆微光
-    if (time % 10 === 0) addParticle();
+    if (step > 0 && time % 10 === 0) addParticle();
 
     // 动态添加漂浮符号
-    if (time % 55 === 0) addFloatingSymbol();
+    if (step > 0 && time % 55 === 0) addFloatingSymbol();
 
     // 归档灯光脉冲衰减
     if (sanctuaryFlash > 0) sanctuaryFlash *= 0.90;

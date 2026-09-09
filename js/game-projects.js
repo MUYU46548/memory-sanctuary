@@ -115,7 +115,7 @@ function applyProjectEffect(project, isCompletion) {
     switch (effect.type) {
         case 'resourceBoost':
             if (!isCompletion && effect.amount) {
-                const cap = effect.resource === 'media' ? 150 : (effect.resource === 'food' ? 80 : (effect.resource === 'environment' ? 100 : 150));
+                const cap = getResourceCap(effect.resource);
                 const before = state.resources[effect.resource];
                 state.resources[effect.resource] = Math.min(
                     cap,
