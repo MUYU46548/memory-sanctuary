@@ -971,7 +971,10 @@ const ENGINEERING_BOTS_CONFIG = {
     maxExploreRiskCut: 0.25,    // 风险减免上限 -25%（原 15%）
     fatigueGuardPerBot: 0.5,    // 每台减免 50% 疲劳周数（机器人接替高风险外勤）
     buildCost: { energy: 24, media: 16 },  // 建造成本（原 30/20，降低入坑门槛、改善边际回本）
-    buildDuration: 3  // 建造耗时 3 周
+    buildDuration: 3,  // 建造耗时 3 周
+    // 紧急稳定（环境跌破阈值时自动加固，见 applyBotEmergencyStabilization）
+    stabilizeEnvThreshold: 20,  // 环境稳定度低于此值触发加固
+    stabilizeRecoverCap: 24     // 单次加固后的环境上限
 };
 
 // 机器人定期产出间隔（周）：每满 N 周且机器人在线，解锁下一条被动日志（勘探重设计 2026-09-03）
@@ -1094,7 +1097,7 @@ function processBotPassiveOutput() {
 function applyBotEmergencyStabilization() {
     const state = MemorySanctuary.state;
     if (!state || state.gameOver) return;
-    if (state.resources.environment >= 20) {
+    if (state.resources.environment >= ENGINEERING_BOTS_CONFIG.stabilizeEnvThreshold) {
         state.botStabilizeLogged = false;
         return;
     }
@@ -1110,7 +1113,10 @@ function applyBotEmergencyStabilization() {
     state.resourceChanges.energy = (state.resourceChanges.energy || 0) - cost;
 
     const before = state.resources.environment;
-    state.resources.environment = Math.min(24, state.resources.environment + 2 + Math.floor(botCount / 2));
+    state.resources.environment = Math.min(
+        ENGINEERING_BOTS_CONFIG.stabilizeRecoverCap,
+        state.resources.environment + 2 + Math.floor(botCount / 2)
+    );
     const gained = state.resources.environment - before;
     if (gained > 0) {
         state.resourceChanges.environment = (state.resourceChanges.environment || 0) + gained;
@@ -1118,7 +1124,7 @@ function applyBotEmergencyStabilization() {
 
     if (!state.botStabilizeLogged) {
         state.botStabilizeLogged = true;
-        addLog(`🤖 环境稳定度跌破 20%，工程机器人启动紧急稳定程序，消耗 ${cost} 能源加固环境（+${gained}）。`, 'warning');
+        addLog(`🤖 环境稳定度跌破 ${ENGINEERING_BOTS_CONFIG.stabilizeEnvThreshold}%，工程机器人启动紧急稳定程序，消耗 ${cost} 能源加固环境（+${gained}）。`, 'warning');
     }
 }
 

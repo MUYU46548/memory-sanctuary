@@ -43,13 +43,34 @@ const VN = (() => {
     // ─────────────────────────────────────
     // Guardian Visual Identity (抽象几何风格)
     // ─────────────────────────────────────
+    // 立绘配色走 CSS 变量（暗/亮主题各一套，见 css/main.css --guardian-*）。
+    // ⚠️ 必须每次渲染实时读取：若在 init 阶段缓存一次，切换主题不会生效（历史技术债的根因）。
     const GUARDIAN_VISUALS = {
-        tika:   { shape: 'circle',   color: '#d4a04a', glow: '#e8b85c', label: '缇卡' },
-        finn:   { shape: 'square',   color: '#4a6a9a', glow: '#6a8aba', label: '芬恩' },
-        misha:  { shape: 'triangle', color: '#3a8a5a', glow: '#5aba7a', label: '米莎' },
-        lorn:   { shape: 'diamond',  color: '#c47a3a', glow: '#e89a5c', label: '洛恩' },
-        ethel:  { shape: 'star',     color: '#8a5a9a', glow: '#aa7aba', label: '埃塞尔' },
-        narrator: { shape: 'narrator', color: '#5a5040', glow: '#8a8070', label: '旁白' }
+        tika:   { shape: 'circle',   colorVar: '--guardian-tika',   glowVar: '--guardian-tika-glow',   color: '#d4a04a', glow: '#e8b85c', label: '缇卡' },
+        finn:   { shape: 'square',   colorVar: '--guardian-finn',   glowVar: '--guardian-finn-glow',   color: '#4a6a9a', glow: '#6a8aba', label: '芬恩' },
+        misha:  { shape: 'triangle', colorVar: '--guardian-misha',  glowVar: '--guardian-misha-glow',  color: '#3a8a5a', glow: '#5aba7a', label: '米莎' },
+        lorn:   { shape: 'diamond',  colorVar: '--guardian-lorn',   glowVar: '--guardian-lorn-glow',   color: '#c47a3a', glow: '#e89a5c', label: '洛恩' },
+        ethel:  { shape: 'star',     colorVar: '--guardian-ethel',  glowVar: '--guardian-ethel-glow',  color: '#8a5a9a', glow: '#aa7aba', label: '埃塞尔' },
+        narrator: { shape: 'narrator', colorVar: '--guardian-narrator', glowVar: '--guardian-narrator-glow', color: '#5a5040', glow: '#8a8070', label: '旁白' }
+    };
+
+    // 读取当前主题下的变量值（getComputedStyle 实时求值，故主题切换后自动生效）
+    const readThemeColor = (varName, fallback) => {
+        if (!varName) return fallback;
+        const el = document.documentElement || document.body;
+        const v = getComputedStyle(el).getPropertyValue(varName).trim();
+        return v || fallback;
+    };
+
+    // 把视觉定义解析成当前主题下的具体颜色（每次渲染调用；hex 仅作变量缺失时的兜底）
+    const resolveVisual = (visual) => {
+        if (!visual) return visual;
+        return {
+            shape: visual.shape,
+            label: visual.label,
+            color: readThemeColor(visual.colorVar, visual.color),
+            glow: readThemeColor(visual.glowVar, visual.glow)
+        };
     };
 
     // ─────────────────────────────────────
@@ -267,7 +288,7 @@ const VN = (() => {
     }
 
     function renderSpeaker(speakerId) {
-        const visual = GUARDIAN_VISUALS[speakerId] || GUARDIAN_VISUALS.narrator;
+        const visual = resolveVisual(GUARDIAN_VISUALS[speakerId] || GUARDIAN_VISUALS.narrator);
         els.speakerName.textContent = visual.label;
         els.speakerName.style.setProperty('--speaker-color', visual.color);
     }
@@ -279,7 +300,7 @@ const VN = (() => {
         const speakers = [...new Set(currentScene.dialogue.map(d => d.speaker))];
 
         speakers.forEach(speakerId => {
-            const visual = GUARDIAN_VISUALS[speakerId];
+            const visual = resolveVisual(GUARDIAN_VISUALS[speakerId]);
             if (!visual) return;
 
             const portrait = document.createElement('div');

@@ -504,6 +504,8 @@ function renderGuardianMood() {
     const nameEl = document.getElementById('guardian-name');
     const fatigueEl = document.getElementById('guardian-fatigue');
     
+    // 无存档时（标题界面阶段被误调）直接返回，避免 state 为空导致 TypeError 被外层吞掉
+    if (!MemorySanctuary.state) return;
     if (!moodEl || !nameEl) return;
     
     // 从当前守护者姓名获取ID
@@ -858,8 +860,8 @@ function renderResources() {
         tooltip.innerHTML = buildResourceTooltip(tooltip.dataset.resourceKey);
     }
     
-    // 圣所衰竭视觉指示
-    const det = state.deterioration;
+    // 圣所衰竭视觉指示（state 可能为 null——例如标题界面阶段被误调；此时按“无衰减”渲染，勿直接解引用）
+    const det = (state && state.deterioration) || {};
     const resEnergy = document.getElementById('res-energy');
     const resMedia = document.getElementById('res-media');
     const resEnv = document.getElementById('res-environment');
@@ -907,7 +909,7 @@ function renderResources() {
     // 衰减惩罚预警（紧急归档后下周衰减+20%）
     const resPanel = document.getElementById('resource-panel');
     if (resPanel) {
-        if (state.nextWeekDecayPenalty > 0) {
+        if (state && state.nextWeekDecayPenalty > 0) {
             resPanel.classList.add('decay-penalty');
         } else {
             resPanel.classList.remove('decay-penalty');
@@ -916,7 +918,7 @@ function renderResources() {
     
     // 工程机器人停机警告：整个 chip 呼吸闪烁（不做突兀的红色数字高亮）
     const botsChip = document.getElementById('res-bots');
-    if (state.botBlackoutLogged) {
+    if (state && state.botBlackoutLogged) {
         if (botsChip) botsChip.classList.add('bot-blackout');
     } else {
         if (botsChip) botsChip.classList.remove('bot-blackout');
@@ -1007,6 +1009,7 @@ function flashVault(vaultId) {
 function renderVaultStatus() {
     const container = document.getElementById('vault-list');
     if (!container) return;
+    if (!MemorySanctuary.state) return;  // 无存档时不渲染（vaultUsage 依赖 state）
     
     container.innerHTML = '';
     
@@ -1063,6 +1066,7 @@ function renderVaultStatus() {
 function renderArchiveEntries() {
     const container = document.getElementById('entry-list');
     if (!container) return;
+    if (!MemorySanctuary.state) return;  // 无存档时不渲染（entrySort/筛选依赖 state）
     
     container.innerHTML = '';
     
@@ -1360,6 +1364,7 @@ function renderEngineeringBotsPanel() {
     if (!container) return;
     
     const state = MemorySanctuary.state;
+    if (!state) { container.innerHTML = ''; return; }  // 无存档时不渲染（与 renderTechPanel 同一口径）
     const botCount = state.resources.engineeringBots || 0;
     const perBot = (typeof ENGINEERING_BOTS_CONFIG !== 'undefined') ? ENGINEERING_BOTS_CONFIG.maintenanceCostPerBot : 1;
     const maintenanceCost = botCount * perBot;
@@ -1598,6 +1603,7 @@ function renderGuardianStoryProgress() {
     if (!container) return;
     
     const state = MemorySanctuary.state;
+    if (!state) { container.innerHTML = ''; return; }  // 无存档时不渲染
     const stories = MemorySanctuary.data.guardianStories || [];
     const guardians = MemorySanctuary.data.guardians;
     
@@ -2511,20 +2517,36 @@ function buildMoralePopover() {
     `;
 }
 
+// 工程机器人说明：数值一律从 ENGINEERING_BOTS_CONFIG / BOT_PASSIVE_INTERVAL 现算，
+// 改配置后悬浮提示自动跟随（历史坑：此处曾写死 12%/0.3/+8%/-5%，改配置文案不跟）
+function getBotsDescription() {
+    const cfg = (typeof ENGINEERING_BOTS_CONFIG !== 'undefined') ? ENGINEERING_BOTS_CONFIG : null;
+    if (!cfg) return RESOURCE_DESCRIPTIONS.engineeringBots;
+    const pct = (v) => `${Math.round(v * 100)}%`;
+    const interval = (typeof BOT_PASSIVE_INTERVAL !== 'undefined') ? BOT_PASSIVE_INTERVAL : 4;
+    return `自动维护圣所：每台减少 ${pct(cfg.decayReductionPerBot)} 资源衰减（上限 ${pct(cfg.maxDecayReduction)}），`
+        + `并按同比例抑制腐败侵蚀；每台每周消耗 ${cfg.maintenanceCostPerBot} 能源，能源不足时停机。`
+        + `勘探协同：每台 +${pct(cfg.exploreYieldPerBot)} 资源收益、-${pct(cfg.exploreRiskCutPerBot)} 风险`
+        + `（上限 +${pct(cfg.maxExploreYield)}/-${pct(cfg.maxExploreRiskCut)}）；`
+        + `每 ${interval} 周定期产出工程日志条目；环境稳定度 <${cfg.stabilizeEnvThreshold}% 时自动消耗能源稳定环境（至 ${cfg.stabilizeRecoverCap}）。`
+        + `拥有机器人期间，存储室出现其专属日志条目。`;
+}
+
 // 各资源的一句话说明（与游戏内帮助「五种资源」口径一致）
 const RESOURCE_DESCRIPTIONS = {
     energy: '维持圣所运转与归档的核心资源。归零后归档能耗加倍。',
     media: '归档必需品。归零后无法录入新条目（应急协议的介质豁免除外）。',
     environment: '保护设备与条目保存条件。环境稳定度越低，守护者士气压力越大；归零后条目过期速度翻倍，且触发常驻「环境失控」警告。环境 <20% 时机器人在线会自动消耗能源紧急稳定。',
     food: '维持守护者士气。耗尽后归档能耗 +20%，并可能触发饥荒。',
-    engineeringBots: '自动维护圣所：每台减少 12% 资源衰减（上限 50%），并按同比例抑制腐败侵蚀；每台每周消耗 0.3 能源，能源不足时停机。勘探协同：每台 +8% 资源收益、-5% 风险（上限 +40%/-25%）；每 4 周定期产出工程日志条目；环境稳定度 <20% 时自动消耗能源稳定环境。拥有机器人期间，存储室出现其专属日志条目。'
+    // 兜底文案：正常路径走 getBotsDescription() 动态拼装；此条仅在配置常量缺失时使用
+    engineeringBots: '自动维护圣所：每台减少资源衰减并按同比例抑制腐败侵蚀；每台每周消耗能源，能源不足时停机。勘探协同可提升收益、压低风险；定期产出工程日志条目。拥有机器人期间，存储室出现其专属日志条目。'
 };
 
 function buildResourceTooltip(resourceKey) {
     const state = MemorySanctuary.state;
     if (!state || !state.resourceChanges) return '';
 
-    const desc = RESOURCE_DESCRIPTIONS[resourceKey];
+    const desc = (resourceKey === 'engineeringBots') ? getBotsDescription() : RESOURCE_DESCRIPTIONS[resourceKey];
     let html = `<div class="rt-title">${getResourceName(resourceKey)}</div>`;
     if (desc) html += `<div class="rt-desc">${desc}</div>`;
 
