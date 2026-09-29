@@ -120,7 +120,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 ## 音乐
 
-游戏中的背景音乐由 AI 技术生成（Python + mido 脚本 + Cakewalk Sonar），轨道设计、MIDI 生成由 Hermes 助手自动完成。
+游戏中的背景音乐由本地 AI 音乐项目「松涛真韵」生成，为原创生成内容，未使用任何第三方版权曲库素材。
 
 音频文件为原创生成内容，可自由使用。
 

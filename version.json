@@ -1,6 +1,6 @@
 {
   "version": "0.2.9",
   "releaseDate": "2026-09-09",
-  "downloadUrl": "https://github.com/MUYU46548/memory-sanctuary/releases/tag/v0.2.9",
+  "downloadUrl": "https://github.com/MUYU46548/memory-sanctuary/releases/latest",
   "notes": "v0.2.9（P0/P1 修复包）：① 桌面壳兼容收尾——存档导入/导出、槽位选择、调试面板等 15 处原生 alert/prompt 全部替换为游戏内弹窗（此前导出/导入点了没反应）；② 「动画速度」设置真正生效——此前只写 CSS 变量、无任何消费者，现由 150 处动画/过渡时长 与圣所 Canvas 帧步进共同消费，0% 可完全关闭动画；③ v0.2.8 新增 UI 的 6 处硬编码色改为主题变量，亮色主题正常适配；④ 文明图谱改用游戏正文字体，修正中心残留的旧文明名单字；⑤ ESC 可关闭存档/勘探/设置/图谱/项目/成就/回顾/应急等全部面板（此前只有归档弹窗响应）；⑥ 归档前可点击条目标题预览正文（不再只凭标题盲选）；⑦ 守护者心情指示符语义修正（敌视由红心❤️改为心碎💔）；⑧ 资源上限收敛为单一常量，消除 6 处重复定义；⑨ 章节标题数据迁移至 data/chapters.json。"
 }

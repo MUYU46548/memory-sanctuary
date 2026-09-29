@@ -31,7 +31,7 @@
 
 ## 游戏特色
 
-- **叙事驱动**：21 个结局场景，碎片化考古拼凑真相
+- **叙事驱动**：23 个结局、31 组结局演出场景，碎片化考古拼凑真相
 - **资源博弈**：能源、介质、环境、食物四大资源相互制约
 - **守护者系统**：5 位守护者，独特技能与性格，好感度影响全局（含背景档案与回忆片段）
 - **地表勘探**：派遣守护者探索废墟，获取资源与叙事碎片
@@ -149,10 +149,10 @@ http://localhost:8099
 - `vaults.json` — 12 间存储室（容量、主题）
 - `guardians.json` — 守护者档案（技能、好感度对话、背景档案、回忆片段）
 - `events.json` — 随机/章节/排程事件（79 个，标题、描述、选择、效果）
-- `projects.json` — 建设项目（13 个，成本、效果、持续时间）
-- `achievements.json` — 成就定义（50 个，类型、阈值、图标）
-- `explorations.json` — 勘探地点（18 个，难度、消耗、结果概率）
-- `endings.json` / `ending_scenes.json` — 结局定义与演出场景（21 个）
+- `projects.json` — 建设项目（15 个，成本、效果、持续时间）
+- `achievements.json` — 成就定义（54 个，类型、阈值、图标）
+- `explorations.json` — 勘探地点（34 个，难度、消耗、结果概率）
+- `endings.json` / `ending_scenes.json` — 结局定义（23 个）与演出场景（31 组 / 124 条）
 - `scenes.json` — 章节过渡剧情场景
 - `guardian_events.json` — 守护者个人事件
 
@@ -276,12 +276,12 @@ memory-sanctuary/
 │   ├── guardians.json      # 守护者数据（含背景档案/回忆）
 │   ├── events.json         # 事件数据（79）
 │   ├── guardian_events.json# 守护者个人事件
-│   ├── projects.json       # 建设项目数据（13）
-│   ├── achievements.json   # 成就数据（50）
-│   ├── endings.json        # 结局定义（21）
+│   ├── projects.json       # 建设项目数据（15）
+│   ├── achievements.json   # 成就数据（54）
+│   ├── endings.json        # 结局定义（23）
 │   ├── ending_scenes.json  # 结局演出场景
 │   ├── scenes.json         # 章节过渡场景
-│   └── explorations.json   # 勘探地点数据（18）
+│   └── explorations.json   # 勘探地点数据（34）
 ├── fonts/                  # 霞鹜文楷字体（OFL 1.1）
 ├── assets/bgm/             # 原创背景音乐
 └── scripts/                # 发布打包脚本与 headless 验证脚本
@@ -305,7 +305,7 @@ memory-sanctuary/
 
 ### 音频
 
-游戏 BGM 由 AI 生成（Python + mido 脚本 + Cakewalk Sonar），轨道设计、MIDI 生成由 Hermes 助手自动完成。
+游戏 BGM 由本地 AI 音乐项目「松涛真韵」生成，为原创生成内容，未使用任何第三方版权曲库素材。
 
 音频文件为原创生成内容，可自由使用。
 

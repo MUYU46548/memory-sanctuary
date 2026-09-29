@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 记忆圣所 · Neutralino 桌面打包一键脚本
 # 用法：从仓库根目录执行  bash desktop-build/build.sh
-# 前置：neu CLI 已在 PATH（C:\Users\47219\AppData\Local\hermes\node）
+# 前置：neu CLI 在 PATH，或位于 Hermes 自带的 node 目录（$HOME/AppData/Local/hermes/node）
 # 说明：复制游戏文件到 desktop-build/resources/，再 neu build 生成 dist/
 set -e
 
@@ -12,9 +12,14 @@ BIN_DIR="$ROOT/node_modules/.bin"
 echo "==> 游戏根: $ROOT"
 echo "==> 构建目录: $BUILD"
 
-# neu 在 PATH 否则尝试 hermes node 路径
+# neu 在 PATH，否则尝试 Hermes 自带 node 目录（跨机器：用 $HOME，勿写死用户名）
 if ! command -v neu >/dev/null 2>&1; then
-  export PATH="$PATH:/c/Users/47219/AppData/Local/hermes/node"
+  for d in "$HOME/AppData/Local/hermes/node" "$HOME/AppData/Local/hermes/node/bin"; do
+    if [ -x "$d/neu" ] || [ -x "$d/neu.cmd" ]; then export PATH="$PATH:$d"; break; fi
+  done
+fi
+if ! command -v neu >/dev/null 2>&1; then
+  echo "!! 未找到 neu CLI：请安装 @neutralinojs/neu 或将其目录加入 PATH"; exit 1
 fi
 
 # 1. 清空旧 resources（避免嵌套目录 bug：先删再 cp）

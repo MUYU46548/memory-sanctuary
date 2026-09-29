@@ -3,7 +3,6 @@ scripts/hermes-verify-*.js
 scripts/*
 # 发版打包脚本例外（稳定流程，入库防丢）
 !scripts/pack_release.py
-C:\Users\47219\AppData\Local\Temp\hermes-verify-*.js
 
 # Hermes 桌面附件缓存
 .hermes/desktop-attachments/
@@ -44,6 +43,15 @@ js/balance-sim*.js
 # 发布打包产物
 *.zip
 release/
+
+# archify 架构审计产物（一次性，不入仓库）
+memory-sanctuary-architecture.*
+
+# 内部开发文档（已出库，防重新入库）
+P2修复任务清单.md
+结局条件关系矩阵_T-B1.md
+决策日志分析_T-C3.md
+整改开发计划_v0.2.8.md
 
 # Python 缓存（headless 验证脚本）
 __pycache__/
