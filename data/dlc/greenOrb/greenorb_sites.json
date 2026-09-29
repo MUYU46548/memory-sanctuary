@@ -1,6 +1,284 @@
 {
-  "_comment": "绿色缤球号 DLC 数据文件 - 待填充",
-  "sites": [],
-  "artifacts": [],
-  "reports": []
+  "_comment": "绿色缤球号 DLC · 遗址。千年后考古船抵达废墟星球的勘探点。数据先行版本：引擎尚未实装。",
+  "_schema": {
+    "wrapper": "sites",
+    "fields": {
+      "id": "唯一 ID，前缀 orb_site_",
+      "name": "遗址名（不带引号）",
+      "region": "分区名：着陆区 / 圣所外环 / 圣所内环 / 深层回廊 / 核心井",
+      "depth": "层深 1-5，影响往返耗时",
+      "scanCost": "扫描能量消耗（对应 state.modules.greenOrb.scanEnergy）",
+      "computeCost": "算力消耗（对应 state.modules.greenOrb.compute）",
+      "licenseRequired": "所需考察许可等级（state.modules.greenOrb.license，起始 1）",
+      "difficulty": "1-5，影响勘测检定难度",
+      "duration": "往返耗时（日）",
+      "maxAttempts": "可重复勘测次数上限",
+      "artifacts": "该遗址可能出土的遗物 id（必须在 greenorb_artifacts.json 中存在）",
+      "hazards": "风险提示文案（面向玩家）",
+      "description": "遗址描述",
+      "outcomes": "结算表，每项 { type, probability, ... }；概率之和必须为 1.0",
+      "outcomeTypes": {
+        "resource": "回收资源：{ resource: scanEnergy|compute, amount }",
+        "artifact": "出土遗物：{ artifactId }",
+        "narrative": "仅叙事与线索：{ message, revealsClue? }",
+        "hazard": "风险结算：{ damage: { scanEnergy|compute|license }, message }"
+      }
+    },
+    "engineContract": [
+      "每个遗址的 outcomes[].probability 之和必须等于 1.0（主游戏勘探曾出现概率和不为 1 导致尾项永不触发）",
+      "artifactId 必须同时出现在本遗址的 artifacts 数组与 greenorb_artifacts.json 中",
+      "最深遗址 orb_site_012 需要 license 4，是全模式的收束点，不参与随机资源结算"
+    ]
+  },
+  "sites": [
+    {
+      "id": "orb_site_001",
+      "name": "玻璃化平原着陆点",
+      "region": "着陆区",
+      "depth": 1,
+      "scanCost": 8,
+      "computeCost": 2,
+      "licenseRequired": 1,
+      "difficulty": 1,
+      "duration": 1,
+      "maxAttempts": 3,
+      "artifacts": ["orb_art_001", "orb_art_002"],
+      "hazards": ["地表玻璃碎片会割伤探测车的履带", "日照反射强烈，光学设备需间歇工作"],
+      "description": "绿色缤球号的第一个着陆点。地表被高温熔融后重新凝固，像一整片没有波纹的黑玻璃。船载地质仪报告：这里曾经有过大气，也曾经有过雨。",
+      "outcomes": [
+        { "type": "resource", "resource": "scanEnergy", "amount": 12, "probability": 0.3, "message": "探测车的太阳能帆板在反射光中充入了额外的扫描能量。" },
+        { "type": "artifact", "artifactId": "orb_art_001", "probability": 0.3, "message": "采样钻取出第一管玻璃化沙：它保留了那一夜的温度梯度。" },
+        { "type": "narrative", "probability": 0.25, "message": "风停在玻璃面上，没有把任何东西吹动。这是这颗行星最像“安静”的样子。", "revealsClue": "orb_art_002" },
+        { "type": "hazard", "damage": { "scanEnergy": 6 }, "probability": 0.15, "message": "履带被玻璃棱割断一根，修复消耗了扫描能量。" }
+      ]
+    },
+    {
+      "id": "orb_site_002",
+      "name": "穹顶塌陷口",
+      "region": "圣所外环",
+      "depth": 1,
+      "scanCost": 12,
+      "computeCost": 4,
+      "licenseRequired": 1,
+      "difficulty": 2,
+      "duration": 1,
+      "maxAttempts": 2,
+      "artifacts": ["orb_art_003", "orb_art_004"],
+      "hazards": ["塌陷口边缘不稳定", "内部粉尘浓度高，机械臂关节易卡滞"],
+      "description": "一处直径 340 米的塌陷漏斗，边缘整齐得不像自然形成。声呐探测显示：漏斗下面是空腔，空腔里有金属结构。这是这颗行星第一次让人觉得“有人来过”。",
+      "outcomes": [
+        { "type": "artifact", "artifactId": "orb_art_003", "probability": 0.35, "message": "机械臂在塌陷层里夹出一片结构标签，上面有可辨识的工艺编号。" },
+        { "type": "resource", "resource": "compute", "amount": 8, "probability": 0.25, "message": "标签的编号规则被解出，节省了后续识别算力。" },
+        { "type": "narrative", "probability": 0.25, "message": "粉尘在探照灯里缓慢下沉。这里有空气的痕迹，但已经没有任何气体。", "revealsClue": "orb_art_004" },
+        { "type": "hazard", "damage": { "compute": 5 }, "probability": 0.15, "message": "机械臂卡滞，解算脱困方案消耗了算力。" }
+      ]
+    },
+    {
+      "id": "orb_site_003",
+      "name": "中央主厅废墟",
+      "region": "圣所内环",
+      "depth": 2,
+      "scanCost": 18,
+      "computeCost": 8,
+      "licenseRequired": 1,
+      "difficulty": 3,
+      "duration": 2,
+      "maxAttempts": 2,
+      "artifacts": ["orb_art_005", "orb_art_006"],
+      "hazards": ["顶板残留应力释放", "地面覆盖着无法辨识的细密尘层"],
+      "description": "穹顶之下最大的空间，宽 180 米。地面中央有一个六边形的凹槽，凹槽里嵌着一块被打磨过的透明晶体。四周的墙面全部空白——不是没有刻过，而是被刻意磨去。",
+      "outcomes": [
+        { "type": "artifact", "artifactId": "orb_art_005", "probability": 0.35, "message": "水晶基座被完整取下。它的内部有一层极细的应力纹路，像冻结的水面。" },
+        { "type": "narrative", "probability": 0.3, "message": "地面尘层上有一片区域比别处薄：像是有很多人从同一个方向走进来过，又都没有出去。", "revealsClue": "orb_art_006" },
+        { "type": "resource", "resource": "compute", "amount": 10, "probability": 0.2, "message": "空白墙面的磨痕被反演，恢复出一小段原刻痕的走向。" },
+        { "type": "hazard", "damage": { "scanEnergy": 8 }, "probability": 0.15, "message": "顶板碎块坠落，一台扫描器被砸毁。" }
+      ]
+    },
+    {
+      "id": "orb_site_004",
+      "name": "深廊测绘残段",
+      "region": "深层回廊",
+      "depth": 2,
+      "scanCost": 20,
+      "computeCost": 10,
+      "licenseRequired": 2,
+      "difficulty": 3,
+      "duration": 2,
+      "maxAttempts": 3,
+      "artifacts": ["orb_art_007", "orb_art_008"],
+      "hazards": ["回廊全长 4.2 公里，中途无法补给", "部分路段完全无光"],
+      "description": "一条已经探明长度的走廊，墙面上每隔四十米就有一组间隔均匀的刻痕。刻痕不是文字，是测绘标记：有人在这里反复走过，并且沿途留下路线。",
+      "outcomes": [
+        { "type": "artifact", "artifactId": "orb_art_007", "probability": 0.35, "message": "一组完整的测绘标记被拓印下来：刻痕的间距精确到厘米。" },
+        { "type": "resource", "resource": "scanEnergy", "amount": 14, "probability": 0.25, "message": "沿刻痕前进避开了两处塌方，节省了扫描能量。" },
+        { "type": "narrative", "probability": 0.25, "message": "第 87 个岔路口被刻了一个符号，意义不明，但整个走廊里只有这一处。", "revealsClue": "orb_art_008" },
+        { "type": "hazard", "damage": { "scanEnergy": 10 }, "probability": 0.15, "message": "探测队在无光段迷路四小时，返回时能量已近耗尽。" }
+      ]
+    },
+    {
+      "id": "orb_site_005",
+      "name": "档案库·索引层",
+      "region": "圣所内环",
+      "depth": 2,
+      "scanCost": 22,
+      "computeCost": 12,
+      "licenseRequired": 2,
+      "difficulty": 3,
+      "duration": 2,
+      "maxAttempts": 2,
+      "artifacts": ["orb_art_009", "orb_art_010"],
+      "hazards": ["介质极度脆化，触碰即碎", "库内静电场残留，会干扰电子设备"],
+      "description": "一整层的索引卡槽位，共两千七百个。卡片几乎全部碳化了，只有最里面的一排还有形状。索引系统用分类编号组织——而编号体系本身，就是一种对文明的分类学。",
+      "outcomes": [
+        { "type": "artifact", "artifactId": "orb_art_009", "probability": 0.35, "message": "取出一片仍有字迹的索引卡残片：边角上的编号可以对应到分类体系。" },
+        { "type": "resource", "resource": "compute", "amount": 12, "probability": 0.25, "message": "索引体系被部分重建，后续勘测的解算效率提高。" },
+        { "type": "narrative", "probability": 0.25, "message": "查询终端的存储里只剩最后一次检索记录，关键词只有三个。", "revealsClue": "orb_art_010" },
+        { "type": "hazard", "damage": { "compute": 8 }, "probability": 0.15, "message": "静电放电击穿了一块解算模块。" }
+      ]
+    },
+    {
+      "id": "orb_site_006",
+      "name": "水培温室遗迹",
+      "region": "圣所内环",
+      "depth": 3,
+      "scanCost": 24,
+      "computeCost": 10,
+      "licenseRequired": 2,
+      "difficulty": 4,
+      "duration": 3,
+      "maxAttempts": 2,
+      "artifacts": ["orb_art_011", "orb_art_012"],
+      "hazards": ["结构大面积坍塌", "残留营养液具腐蚀性"],
+      "description": "三层立体栽培架，管道还保持着原始的走向。这里曾是他们种东西的地方。土层已经完全粉末化，但在一处角落，探测器读到了不同寻常的有机碳信号。",
+      "outcomes": [
+        { "type": "artifact", "artifactId": "orb_art_011", "probability": 0.35, "message": "土壤标本被完整封存：粉末化的土里仍能读出微生物群的残影。" },
+        { "type": "narrative", "probability": 0.3, "message": "三层架子的最下一层被清得很干净，像是有人反复打理过——在最坏的日子里也没有放弃。", "revealsClue": "orb_art_012" },
+        { "type": "resource", "resource": "scanEnergy", "amount": 16, "probability": 0.2, "message": "腐蚀性营养液被回收再利用，补充了部分扫描能量。" },
+        { "type": "hazard", "damage": { "compute": 6 }, "probability": 0.15, "message": "样品封装舱被腐蚀穿孔，数据校验重做。" }
+      ]
+    },
+    {
+      "id": "orb_site_007",
+      "name": "儿童居住区",
+      "region": "圣所内环",
+      "depth": 3,
+      "scanCost": 26,
+      "computeCost": 8,
+      "licenseRequired": 2,
+      "difficulty": 4,
+      "duration": 3,
+      "maxAttempts": 2,
+      "artifacts": ["orb_art_013", "orb_art_014"],
+      "hazards": ["空间高度不足，设备无法展开", "遗物密度高，需人工精细操作"],
+      "description": "一间只有 22 平方米的房间，墙上有从低到高的铅笔刻痕，一共 41 道。房间门口摆着一双小鞋，鞋尖朝向门外。这个房间的每一项数据都在告诉你：这里住过一个正在长大的孩子。",
+      "outcomes": [
+        { "type": "artifact", "artifactId": "orb_art_013", "probability": 0.35, "message": "墙面刻痕被逐道扫描。第 41 道之后没有第 42 道。" },
+        { "type": "narrative", "probability": 0.3, "message": "鞋尖朝向门外。勘测队没有人愿意把它移动哪怕一厘米。", "revealsClue": "orb_art_014" },
+        { "type": "resource", "resource": "compute", "amount": 10, "probability": 0.2, "message": "刻痕的时序被反演，得到一份连续的长度变化曲线。" },
+        { "type": "hazard", "damage": { "license": 1 }, "probability": 0.15, "message": "在遗物高密度区域操作时违反规程，考察许可被降级。" }
+      ]
+    },
+    {
+      "id": "orb_site_008",
+      "name": "反应堆外壳与冷却井",
+      "region": "圣所内环",
+      "depth": 3,
+      "scanCost": 28,
+      "computeCost": 16,
+      "licenseRequired": 3,
+      "difficulty": 4,
+      "duration": 3,
+      "maxAttempts": 2,
+      "artifacts": ["orb_art_015", "orb_art_016"],
+      "hazards": ["残余中子活化，暴露时间受限", "井深 90 米，升降设备为自载"],
+      "description": "反应堆的外壳仍然完整，冷却井里凝着一层淡蓝色的结晶。操作台前的座椅是拉出来的——有人在这里坐着，直到最后一刻。控制面板上有一个按钮被按下去后就没有再弹起来。",
+      "outcomes": [
+        { "type": "artifact", "artifactId": "orb_art_015", "probability": 0.35, "message": "冷却井结晶被切片取样：它是冷却剂在持续高负荷下析出的产物。" },
+        { "type": "resource", "resource": "compute", "amount": 14, "probability": 0.25, "message": "残余热流被回收利用，算力得到补充。" },
+        { "type": "narrative", "probability": 0.25, "message": "操作台记录的最后一条指令是维持环境控制，执行时间没有上限。", "revealsClue": "orb_art_016" },
+        { "type": "hazard", "damage": { "scanEnergy": 12 }, "probability": 0.15, "message": "辐射告警触发，勘测被强制中止。" }
+      ]
+    },
+    {
+      "id": "orb_site_009",
+      "name": "天文台基座",
+      "region": "深层回廊",
+      "depth": 4,
+      "scanCost": 32,
+      "computeCost": 18,
+      "licenseRequired": 3,
+      "difficulty": 4,
+      "duration": 4,
+      "maxAttempts": 1,
+      "artifacts": ["orb_art_017"],
+      "hazards": ["上行竖井塌方", "基座下方为空腔，承重不明"],
+      "description": "望远镜本体已经不存在，只剩下基座。基座上有一圈校准刻线，刻线的方向不是朝着星空，而是朝着地面的一处坐标。有人在这里校准过很长时间，而他要对准的不是天上的东西。",
+      "outcomes": [
+        { "type": "artifact", "artifactId": "orb_art_017", "probability": 0.4, "message": "基座校准刻线被完整拓印：终点的坐标指向行星地表的一个发射阵地。" },
+        { "type": "narrative", "probability": 0.3, "message": "基座的朝向说明：这个天文台一生只用来看一样东西，那样东西从这里发射出去。", "revealsClue": "orb_art_001" },
+        { "type": "resource", "resource": "scanEnergy", "amount": 20, "probability": 0.2, "message": "基座镜面残留反射率极高，被回收作为扫描增益面。" },
+        { "type": "hazard", "damage": { "scanEnergy": 14 }, "probability": 0.1, "message": "上行竖井二次塌方，设备被埋，抢救耗时四天。" }
+      ]
+    },
+    {
+      "id": "orb_site_010",
+      "name": "封存者墓室",
+      "region": "深层回廊",
+      "depth": 4,
+      "scanCost": 34,
+      "computeCost": 20,
+      "licenseRequired": 3,
+      "difficulty": 5,
+      "duration": 4,
+      "maxAttempts": 1,
+      "artifacts": ["orb_art_018"],
+      "hazards": ["墓室空气含高浓度二氧化碳", "名册石碑极脆，一次失误即永久损毁"],
+      "description": "一间圆形的石室，中央立着一块石碑，碑上密密麻麻刻着名字。墓室里没有任何遗骸——这里不是埋葬人的地方，是埋葬名字的地方。石碑的背面还有空白。",
+      "outcomes": [
+        { "type": "artifact", "artifactId": "orb_art_018", "probability": 0.4, "message": "名册石碑被整体立体扫描存档：可辨识的姓名共 11,204 个。" },
+        { "type": "narrative", "probability": 0.35, "message": "石碑背面是空白的。刻名的人显然打算一直刻下去，直到自己也变成其中一个名字。", "revealsClue": "orb_art_020" },
+        { "type": "resource", "resource": "compute", "amount": 16, "probability": 0.15, "message": "名册的刻写顺序被解出，可反推封存的时间线。" },
+        { "type": "hazard", "damage": { "license": 1 }, "probability": 0.1, "message": "石碑表面在扫描中崩落一角，考察许可被暂停评估。" }
+      ]
+    },
+    {
+      "id": "orb_site_011",
+      "name": "工程机器人守夜点",
+      "region": "核心井",
+      "depth": 4,
+      "scanCost": 36,
+      "computeCost": 22,
+      "licenseRequired": 4,
+      "difficulty": 4,
+      "duration": 4,
+      "maxAttempts": 1,
+      "artifacts": ["orb_art_019"],
+      "hazards": ["核心井温度异常", "残存自动化系统可能误判为入侵"],
+      "description": "深廊尽头的最后一个位置，一台工程机器人的残骸保持着站姿：一条手臂撑在墙上，另一条手臂指向深廊的更深处。它的能源早已耗尽，但这个姿势维持了一千年。",
+      "outcomes": [
+        { "type": "artifact", "artifactId": "orb_art_019", "probability": 0.45, "message": "机械臂被完整拆卸回收：关节处的磨损纹路显示，它在这条走廊里走过上万次。" },
+        { "type": "resource", "resource": "compute", "amount": 20, "probability": 0.25, "message": "机器人的巡检记录在本地存储中被恢复，包含完整的路线图。" },
+        { "type": "narrative", "probability": 0.2, "message": "它的指向没有错：那条更深的走廊尽头，确实有一个东西在等。", "revealsClue": "orb_art_020" },
+        { "type": "hazard", "damage": { "scanEnergy": 16 }, "probability": 0.1, "message": "残存自动化系统触发一次防御程序，设备被迫紧急撤离。" }
+      ]
+    },
+    {
+      "id": "orb_site_012",
+      "name": "祈愿瓶回收舱",
+      "region": "核心井",
+      "depth": 5,
+      "scanCost": 0,
+      "computeCost": 0,
+      "licenseRequired": 4,
+      "difficulty": 1,
+      "duration": 1,
+      "maxAttempts": 1,
+      "artifacts": ["orb_art_020"],
+      "hazards": ["舱体结构完整但外壳温差极大", "开启程序不可逆"],
+      "description": "深廊走到最后，是一间没有任何装饰的方形舱室。舱室正中停着一个锥形的金属容器，外壳上有烧蚀痕迹——它从很高的地方落下来过，落得很准。容器侧面有一组编号，用阿拉伯数字与一种陌生文字并列书写。",
+      "outcomes": [
+        { "type": "artifact", "artifactId": "orb_art_020", "probability": 1.0, "message": "祈愿瓶外壳残段与载荷索引被完整回收。编号解出后，全船沉默了十一分钟。" }
+      ]
+    }
+  ]
 }

@@ -1,0 +1,307 @@
+{
+  "_comment": "升天之仪 DLC · 事件。七日窗口内的随机与定时事件。数据先行版本：引擎尚未实装。",
+  "_schema": {
+    "wrapper": "events",
+    "fields": {
+      "id": "唯一 ID，前缀 asc_evt_",
+      "title": "事件名（不带引号）",
+      "description": "事件正文，玩家看到的情境",
+      "trigger": "触发条件对象，见下",
+      "choices": "选项数组，每项 { text, effect, result, feedback }",
+      "effect": "数值影响：morale（执仪者意志）、offerings（已占舱位，可用于强制超载代价）、loseArchive（永久失去的碎片 id）、gainOfferingSlots（临时扩容）、unlockArchive（提前解锁某碎片）",
+      "feedback": "narrativeFlag（叙事标记，供后续事件读取）、message（结算提示）、futureEvent { day, eventId }（排期后续事件）",
+      "type": "random（按概率抽取）| scheduled（由其他事件或流程指定日触发）",
+      "tone": "positive | neutral | negative"
+    },
+    "engineContract": [
+      "trigger 的 type/dayMin/dayMax/probability 必须全部提供；缺任一项则该事件永远不会被选中（主游戏曾因缺 weekMin/weekMax 造成事件永久死亡）",
+      "type=scheduled 的事件必须有 trigger.day，且只由 futureEvent 指定触发，不参与随机抽取",
+      "choices[].text 为按钮文案；result 为选择后的结论文本；feedback.message 为附注提示",
+      "未被选择的选项不产生任何影响"
+    ]
+  },
+  "events": [
+    {
+      "id": "asc_evt_001",
+      "title": "校准偏差",
+      "description": "载荷计量仪在地面校准中出现 0.3 的标准偏差。技术员报告：如果偏差是真实存在的，祈愿瓶会比设计值少装一件碎片；如果是仪器故障，贸然减载则白白浪费舱位。",
+      "trigger": { "type": "random", "dayMin": 1, "dayMax": 3, "probability": 0.5 },
+      "choices": [
+        {
+          "text": "按保守值减载（少一件碎片）",
+          "effect": { "offerings": 1, "morale": -3 },
+          "result": "你把最后一件候选碎片留在了地面上。技术员说这是正确的选择，但没有人抬头看你。",
+          "feedback": { "narrativeFlag": "asc_underload", "message": "祈愿瓶的实际载荷将比预期轻 1 个单位。" }
+        },
+        {
+          "text": "按仪器读数装（承担超载风险）",
+          "effect": { "morale": 2 },
+          "result": "你签了字，要求按标称容量装载。技术员把签字单折了两折放进胸袋。",
+          "feedback": { "narrativeFlag": "asc_overload_risk", "message": "发射阶段将出现一次载荷超限的检定。" }
+        },
+        {
+          "text": "推迟一日，重做全套校准",
+          "effect": { "morale": -5, "loseArchive": "asc_arch_018" },
+          "result": "校准重做完毕，偏差是仪器故障。但那一天里，最后一个碎片的最佳封装时机过去了。",
+          "feedback": { "narrativeFlag": "asc_delay_1day", "message": "你永远失去了致后世的一封信。", "unlockArchive": "asc_arch_008" }
+        }
+      ],
+      "type": "random",
+      "tone": "neutral"
+    },
+    {
+      "id": "asc_evt_002",
+      "title": "最后一名孩子的请求",
+      "description": "随众里唯一一个未满十岁的孩子拦住你。他手里拿着一张画，画上有三个火柴人、一颗星星，和一轮黄色的圆。他说他希望这张画也能被送走，因为“星星那边的人可能没见过太阳”。",
+      "trigger": { "type": "random", "dayMin": 1, "dayMax": 4, "probability": 0.45 },
+      "choices": [
+        {
+          "text": "为这张画腾出一个舱位",
+          "effect": { "morale": 6, "offerings": 1 },
+          "result": "你把画用两层防潮箔裹好，放进了第十二舱。技术员没有提出异议，只是记录了一行：非归档物，尺寸 210×297 毫米。",
+          "feedback": { "narrativeFlag": "asc_child_drawing", "message": "画被装走了。孩子问：他们会不会觉得太阳画得太圆了。" }
+        },
+        {
+          "text": "告诉他舱位不够，但把画贴在发射架上",
+          "effect": { "morale": -2 },
+          "result": "孩子点了点头，自己把画贴在了支架最低的地方。那里在点火后 0.4 秒就会被烧掉。",
+          "feedback": { "narrativeFlag": "asc_child_drawing_burned", "message": "他贴得很认真，四角都按平了。" }
+        }
+      ],
+      "type": "random",
+      "tone": "neutral"
+    },
+    {
+      "id": "asc_evt_003",
+      "title": "随众的请愿",
+      "description": "三百余名随众在仪式厅外静坐。他们不喊口号，只是排队递交请愿书：希望优先装走与自己家乡有关的碎片，而不是那些“所有人都有的东西”。请愿书一共 312 份，装在一个藤筐里。",
+      "trigger": { "type": "random", "dayMin": 2, "dayMax": 5, "probability": 0.5 },
+      "choices": [
+        {
+          "text": "逐份回应请愿，仪式推迟半日",
+          "effect": { "morale": 7, "offerings": 1 },
+          "result": "你花了一个上午逐条答复。没有人被说服，但所有人都留下来继续干活。藤筐空了。",
+          "feedback": { "narrativeFlag": "asc_petition_heard", "message": "随众的情绪稳定了，但半日的推迟让一件碎片错过了封装窗口。" }
+        },
+        {
+          "text": "按仪式规程继续，不予答复",
+          "effect": { "morale": -8 },
+          "result": "你在规程上签了字。静坐在第三个小时自行散去，藤筐被留在了原地。",
+          "feedback": { "narrativeFlag": "asc_petition_ignored", "message": "藤筐后来被技术员收进了库房。他没有翻看。" }
+        }
+      ],
+      "type": "random",
+      "tone": "negative"
+    },
+    {
+      "id": "asc_evt_004",
+      "title": "发射窗口提前",
+      "description": "观测台报告：上层大气的剥离速度超出模型预测，可用发射窗口将从第 7 日提前至第 5 日末。你有两天的时间被拿走了。",
+      "trigger": { "type": "random", "dayMin": 3, "dayMax": 4, "probability": 0.4 },
+      "choices": [
+        {
+          "text": "接受新窗口，压缩封装流程",
+          "effect": { "morale": -6, "loseArchive": "asc_arch_011" },
+          "result": "流程被压缩到极限。穹顶壁画的全录扫描只完成了 82%，剩下的部分随穹顶在第四日坍塌。",
+          "feedback": { "narrativeFlag": "asc_window_early", "message": "你失去了穹顶壁画全录。", "futureEvent": { "day": 5, "eventId": "asc_evt_011" } }
+        },
+        {
+          "text": "保留全部流程，缩短静默仪式",
+          "effect": { "morale": -2 },
+          "result": "静默仪式从半日缩到四十分钟。没有人抱怨，但四十分钟里没有一个人说话。",
+          "feedback": { "narrativeFlag": "asc_silence_cut", "message": "仪式保留完整，技术流程未受影响。" }
+        }
+      ],
+      "type": "random",
+      "tone": "negative"
+    },
+    {
+      "id": "asc_evt_005",
+      "title": "邻邦的最后广播",
+      "description": "短波收到一段循环广播，来自八百公里外的第九圣所。对方语气平静，反复声明：他们的祈愿瓶将在两日内发射，方位与本瓶相差 0.7 度，请务必校准，避免航迹交叠。",
+      "trigger": { "type": "random", "dayMin": 3, "dayMax": 6, "probability": 0.4 },
+      "choices": [
+        {
+          "text": "回复他们，交换载荷清单",
+          "effect": { "morale": 4 },
+          "result": "双方交换了清单。他们装了种子与医案，你们装了语言与音乐。广播最后一句是：这样也好，不会重复。",
+          "feedback": { "narrativeFlag": "asc_neighbor_contact", "message": "两个瓶子将永远不会相遇，但两边都知道了对方装了什么。" }
+        },
+        {
+          "text": "只校准航迹，不作回复",
+          "effect": { "morale": -2 },
+          "result": "你完成了校准。广播在两天后停止，第九圣所的方位上再也没有信号。",
+          "feedback": { "narrativeFlag": "asc_neighbor_silent", "message": "第九圣所的发射时刻记录在了观测日志里。没有其他内容。" }
+        }
+      ],
+      "type": "random",
+      "tone": "neutral"
+    },
+    {
+      "id": "asc_evt_006",
+      "title": "数据腐坏",
+      "description": "一件尚未封装的碎片开始出现不可逆的介质分解。技术员给出两个选项：立刻封装（占用超出计划的舱位），或者放弃它，把介质拆解回收。",
+      "trigger": { "type": "random", "dayMin": 4, "dayMax": 6, "probability": 0.45 },
+      "choices": [
+        {
+          "text": "立刻封装，超载也在所不惜",
+          "effect": { "offerings": 2, "morale": 3 },
+          "result": "封装在深夜完成。舱门的密封圈因为这次超载需要更换，但没有时间更换了。",
+          "feedback": { "narrativeFlag": "asc_emergency_seal", "message": "发射阶段将出现一次密封检定。" }
+        },
+        {
+          "text": "放弃它，回收介质",
+          "effect": { "morale": -7, "loseArchive": "asc_arch_006" },
+          "result": "介质被拆解成原料，回收率 61%。剩下的部分是清洗不掉的。",
+          "feedback": { "narrativeFlag": "asc_gave_up_fragment", "message": "你永远失去了大饥荒年代口述史。" }
+        }
+      ],
+      "type": "random",
+      "tone": "negative"
+    },
+    {
+      "id": "asc_evt_007",
+      "title": "叛逃者",
+      "description": "三名技术员带着一件已封装好的碎片登上逃生艇，试图离开。他们被拦在地面闸门前。带走的碎片是禁忌词汇表——理由很直接：他们不想让外面的人知道我们曾经不敢说话。",
+      "trigger": { "type": "random", "dayMin": 4, "dayMax": 6, "probability": 0.35 },
+      "choices": [
+        {
+          "text": "取回碎片，释放三人",
+          "effect": { "morale": -4 },
+          "result": "碎片取回，三人被放走。逃生艇的航向是地下城，那里剩下的日子不长。",
+          "feedback": { "narrativeFlag": "asc_defector_released", "message": "碎片回到舱位。仪式的记录里没有出现这次事件。" }
+        },
+        {
+          "text": "取回碎片，按律法扣押三人",
+          "effect": { "morale": -9 },
+          "result": "三人被扣在仪式厅旁的工具间里。第一天他们还敲门，第三天就不敲了。",
+          "feedback": { "narrativeFlag": "asc_defector_held", "message": "仪式全程没有人再提这件事。工具间的门一直没有打开。" }
+        },
+        {
+          "text": "让他们带走碎片",
+          "effect": { "morale": 2, "loseArchive": "asc_arch_005" },
+          "result": "闸门开了。逃生艇在四小时后失联。你失去了那件碎片，也失去了对这件事的掌控。",
+          "feedback": { "narrativeFlag": "asc_defector_let_go", "message": "你永远失去了禁忌词汇表。" }
+        }
+      ],
+      "type": "random",
+      "tone": "negative"
+    },
+    {
+      "id": "asc_evt_008",
+      "title": "执仪者的怀疑",
+      "description": "深夜，你独自复核发射参数。你忽然意识到一件无法验证的事：即使瓶子抵达，也没有任何机制能保证它被打开。它可能永远只是一块在轨道上飞行的金属。",
+      "trigger": { "type": "random", "dayMin": 5, "dayMax": 7, "probability": 0.35 },
+      "choices": [
+        {
+          "text": "在仪式记录里写下这个疑虑",
+          "effect": { "morale": 5 },
+          "result": "你写下：本仪式不保证被接收。随众第二天读到这句话，没有人要求删掉它。",
+          "feedback": { "narrativeFlag": "asc_doubt_recorded", "message": "记录完整地留存了下来。这是唯一一份坦白了不确定性的仪式记录。" }
+        },
+        {
+          "text": "删掉疑虑，只写流程",
+          "effect": { "morale": -3 },
+          "result": "记录干净得像一份说明书。技术员看了一眼，什么都没说。",
+          "feedback": { "narrativeFlag": "asc_doubt_hidden", "message": "仪式记录成为纯粹的流程文档。" }
+        }
+      ],
+      "type": "random",
+      "tone": "neutral"
+    },
+    {
+      "id": "asc_evt_009",
+      "title": "最后一首歌",
+      "description": "封装即将进入尾声，合唱团请求在封舱前再唱一次《翼神升天颂》。技术员提醒：合唱需要时间，而舱门每推迟一小时，密封胶就多一分硬化风险。",
+      "trigger": { "type": "random", "dayMin": 5, "dayMax": 7, "probability": 0.45 },
+      "choices": [
+        {
+          "text": "让他们唱完",
+          "effect": { "morale": 9, "offerings": 1 },
+          "result": "他们唱完了全部四段。唱到第三段时，正在做密封准备的技术员也停下了手。",
+          "feedback": { "narrativeFlag": "asc_last_song", "message": "舱门推迟一小时关闭，密封检定难度上升。", "unlockArchive": "asc_arch_003" }
+        },
+        {
+          "text": "只唱第一段",
+          "effect": { "morale": 2 },
+          "result": "第一段结束时，指挥把手停在半空，等了七秒，然后放下。没有人唱第二段。",
+          "feedback": { "narrativeFlag": "asc_short_song", "message": "流程按计划完成。" }
+        }
+      ],
+      "type": "random",
+      "tone": "positive"
+    },
+    {
+      "id": "asc_evt_010",
+      "title": "穹顶坍塌",
+      "description": "凌晨，仪式厅东侧穹顶发生局部坍塌。压毁了两件待封装碎片，也压死了正在做扫描工作的四名技术员。",
+      "trigger": { "type": "random", "dayMin": 6, "dayMax": 7, "probability": 0.3 },
+      "choices": [
+        {
+          "text": "停止封装，先行收敛遗体",
+          "effect": { "morale": -4, "loseArchive": "asc_arch_012" },
+          "result": "收敛用了六个小时。崩塌的粉尘让植物图鉴的介质全部受潮，无法读取。",
+          "feedback": { "narrativeFlag": "asc_collapse_mourned", "message": "你永远失去了植物图鉴与种子库坐标。" }
+        },
+        {
+          "text": "继续封装，把遗体留在原地",
+          "effect": { "morale": -11 },
+          "result": "封装按时完成。四具遗体在仪式结束后的第三天才被抬出来。",
+          "feedback": { "narrativeFlag": "asc_collapse_ignored", "message": "仪式记录里，这一天只写了三个字：进度正常。" }
+        }
+      ],
+      "type": "random",
+      "tone": "negative"
+    },
+    {
+      "id": "asc_evt_011",
+      "title": "密封倒计时",
+      "description": "祈愿瓶必须在六小时内完成最终密封。舱位表上还有空余，但清单上剩下的都是“送了会疼”的东西。技术员把笔递给你：现在签，或者永远不签。",
+      "trigger": { "type": "random", "dayMin": 5, "dayMax": 7, "probability": 0.5 },
+      "choices": [
+        {
+          "text": "把剩下的舱位全部填满",
+          "effect": { "offerings": 3, "morale": -6 },
+          "result": "你把最重的那几件都装了进去。密封完成时，舱壁温度比预计高了 14 度。",
+          "feedback": { "narrativeFlag": "asc_full_load", "message": "载荷达到容量上限，发射阶段风险上升。" }
+        },
+        {
+          "text": "留空一部分舱位",
+          "effect": { "morale": 3 },
+          "result": "你在舱位表的空白处写了一行注记：此舱留空，以记未能带走之物。",
+          "feedback": { "narrativeFlag": "asc_left_blank", "message": "空舱位会作为仪式记录的一部分被送出。" }
+        }
+      ],
+      "type": "random",
+      "tone": "neutral"
+    },
+    {
+      "id": "asc_evt_012",
+      "title": "发射前夜",
+      "description": "仪式厅里只剩下你和祈愿瓶。所有人都在外面等着。这一夜不需要做任何决定，只需要待在这里。",
+      "trigger": { "type": "scheduled", "day": 7, "probability": 1.0 },
+      "choices": [
+        {
+          "text": "把手放在舱壁上，直到天亮",
+          "effect": { "morale": 6 },
+          "result": "金属是凉的。天亮时你的手印留在了舱壁上，一层薄薄的汗渍。它会被一起送走。",
+          "feedback": { "narrativeFlag": "asc_last_night_touch", "message": "执仪者意志恢复。" }
+        },
+        {
+          "text": "最后核对一遍清单",
+          "effect": { "morale": 2 },
+          "result": "你把清单核对了四遍。第四遍时你发现自己只是在重复看同一个名字。",
+          "feedback": { "narrativeFlag": "asc_last_night_check", "message": "清单无误。" }
+        },
+        {
+          "text": "去库房，看一眼被留下的那些",
+          "effect": { "morale": -3 },
+          "result": "被留下的碎片按编号排在架上，安静、完整、不会去任何地方。你在那里站了很久。",
+          "feedback": { "narrativeFlag": "asc_last_night_visited", "message": "你记住了它们的编号。" }
+        }
+      ],
+      "type": "scheduled",
+      "tone": "neutral"
+    }
+  ]
+}

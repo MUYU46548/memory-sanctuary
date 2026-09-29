@@ -1,0 +1,108 @@
+{
+  "_comment": "升天之仪 DLC · 结局。数据先行版本：引擎尚未实装。",
+  "_schema": {
+    "wrapper": "endings",
+    "fields": {
+      "id": "唯一 ID，前缀 asc_end_",
+      "priority": "判定优先级，数值大者先判定（互斥结局必须能靠优先级排出唯一结果）",
+      "title": "结局名（不带引号；可含一个 emoji 前缀，与主游戏结局一致）",
+      "description": "结局正文，支持 \\n，引文用 “”",
+      "type": "结局类型：offering_completion | flag | failure | cross_module",
+      "condition": "结构化解锁条件，见 conditionFields",
+      "unlockMessage": "达成时的一次性提示文案"
+    },
+    "conditionFields": {
+      "minOfferings": "已占舱位下限（含）",
+      "maxOfferings": "已占舱位上限（含）",
+      "requireFlag": "必须存在的叙事标记（来自事件 feedback.narrativeFlag）",
+      "minMorale": "执仪者意志下限",
+      "maxMorale": "执仪者意志上限",
+      "checkFailed": "为 true 时要求发射阶段检定失败（密封或载荷超限）",
+      "description": "面向玩家的条件描述文案（必填）"
+    },
+    "engineContract": [
+      "按 priority 降序逐条判定，第一条满足条件的即为本局结局",
+      "asc_end_echo_returned 为跨模块结局：还需绿色缤球号模式存在状态 modules.greenOrb.recoveredFragments 包含 orb_art_020",
+      "未命中任何条件时回退到 asc_end_measured"
+    ]
+  },
+  "endings": [
+    {
+      "id": "asc_end_echo_returned",
+      "priority": 99,
+      "title": "🛰 回音抵达",
+      "description": "祈愿瓶在第 1,024 年进入一颗行星的引力范围。\n\n没有人打开它。打开它的是一台考古船的机械臂——那艘船叫绿色缤球号，船员们原本只是在核对一份古老的深空信号记录。\n\n他们读到了第一炉火、童谣、一位母亲的日记，以及一封写给他们的信。信的最后一句是：\n“我们不请求你们记住我们。我们只希望你们在某个下雨的夜里，忽然想起天上可能有过一个瓶子。”\n\n那一天，他们的舱外传感器报告：目标行星大气降水，持续 6 小时。",
+      "type": "cross_module",
+      "condition": {
+        "description": "仪式全程未丢弃任何真相类碎片，且绿色缤球号已回收祈愿瓶回收舱的遗物",
+        "minOfferings": 10,
+        "requireFlag": "asc_last_night_touch",
+        "crossModule": { "module": "greenOrb", "recoveredIncludes": "orb_art_020" }
+      },
+      "unlockMessage": "跨模块结局达成：升天之仪的瓶子，被绿色缤球号接住了。"
+    },
+    {
+      "id": "asc_end_full_seal",
+      "priority": 96,
+      "title": "🪶 满载的瓶",
+      "description": "祈愿瓶在第七日 4 时 12 分升空，满载。\n\n清单上有 12 件东西：语言、乐谱、童谣、律法、星图、壁画、母亲的日记，以及那些本该被埋掉的记录——光雨的成因、封印战争的真相。你一件都没舍得丢。\n\n代价是密封圈超期使用，舱壁温度超标 14 度。技术员在发射日志里写了一句：本次任务的成功率约为六成。\n\n你在他旁边写了一行：六成也比零成好。\n\n瓶子飞了很远，远到没人能再改变它。",
+      "type": "offering_completion",
+      "condition": {
+        "description": "封装最少 12 个舱位的碎片（接近容量上限）",
+        "minOfferings": 12
+      },
+      "unlockMessage": "满载发射：你没有放弃任何一件候选碎片。"
+    },
+    {
+      "id": "asc_end_keeper_aboard",
+      "priority": 94,
+      "title": "🕯 执仪者同行",
+      "description": "在最后的舱位表上，你填上了自己的名字。\n\n技术员拒绝执行。你用了执仪者的最终权限，在编号 13 的舱位栏里写下：执仪者，本人，自愿。\n\n“你们要我决定什么值得留下，”你说，“那我也应该在里面。”\n\n发射时你还在仪式厅。你没有上去——你需要按最后一次按钮。瓶子带着你的名字离开地面，而你在原地，看到了它变成一颗移动的星。\n\n此后无人知晓你的结局。只有瓶子知道，它装了一个决定者的名字。",
+      "type": "flag",
+      "condition": {
+        "description": "在密封倒计时中选择把剩余舱位填满，且记录了自己的疑虑",
+        "requireFlag": "asc_full_load",
+        "minOfferings": 11
+      },
+      "unlockMessage": "执仪者把自己也写进了清单。"
+    },
+    {
+      "id": "asc_end_signal_lost",
+      "priority": 88,
+      "title": "📡 信号失联",
+      "description": "祈愿瓶升空成功，遥测数据在 41 小时后中断。\n\n观测台最后收到的是一段极短的载波，随后是彻底的静默。可能是天线烧毁，可能是上层大气的剥离远比模型严重，也可能是瓶子在通过那道发光的云层时被削去了外壳。\n\n没有人能告诉你它去了哪里。\n\n观测员把最后一段载波存了下来。它的频率很干净，干净到有人愿意相信那是一次回应。",
+      "type": "failure",
+      "condition": {
+        "description": "发射阶段检定失败（密封超期或载荷超限），或执仪者意志低于 40",
+        "checkFailed": true,
+        "maxMorale": 40
+      },
+      "unlockMessage": "瓶子离开了，但没有人再听到它。"
+    },
+    {
+      "id": "asc_end_empty_vessel",
+      "priority": 92,
+      "title": "🌑 空瓶",
+      "description": "祈愿瓶按计划升空。载荷清单是空的。\n\n不是没有东西可装。是你用了整整七天，逐件看过，逐件放下。你告诉自己：任何一件都不足以代表整个文明，既然选不出来，就让这个过程本身保持诚实。\n\n技术员在舱门上贴了一行字：此瓶不含内容物。\n\n它将以每秒 11 公里的速度飞向一片没有任何接收者的黑暗。这是洛斯耶马最安静的一次发言。",
+      "type": "failure",
+      "condition": {
+        "description": "封装不足 3 个舱位",
+        "maxOfferings": 2
+      },
+      "unlockMessage": "空瓶发射：你什么都没送走。"
+    },
+    {
+      "id": "asc_end_measured",
+      "priority": 80,
+      "title": "🪨 有选择的瓶",
+      "description": "祈愿瓶在第 7 日升空。它不轻，也不重。\n\n你留下了语言与歌谣，放弃了那些会让人疼的记录；或者反过来，把真相装走了，却把安慰留在了地面上。无论哪一种，你都做过选择——而选择是有重量的。\n\n很多年以后，如果有人打开它，他们不会知道少了什么。\n\n只有你记得，在第七日的凌晨，你在两份清单之间来回走了三次。",
+      "type": "offering_completion",
+      "condition": {
+        "description": "封装 3 至 11 个舱位的碎片（兜底结局）",
+        "minOfferings": 3,
+        "maxOfferings": 11
+      },
+      "unlockMessage": "升天之仪完成：你做出了选择，也承担了它。"
+    }
+  ]
+}
