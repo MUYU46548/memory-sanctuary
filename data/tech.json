@@ -40,7 +40,7 @@
       "unlockWeek": 5,
       "cost": { "energy": 18, "media": 10 },
       "effect": { "type": "exploreIntel" },
-      "effectText": "勘探「情报」将指认藏有隐藏叙事的未归档条目",
+      "effectText": "勘探“情报”将指认藏有隐藏叙事的未归档条目",
       "doctrine": "exp_doctrine"
     },
     {

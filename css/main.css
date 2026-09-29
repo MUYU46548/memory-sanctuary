@@ -3950,6 +3950,50 @@ button.archive-btn.recommended {
     padding: 12px 0;
 }
 
+/* ── 小窗适配（自 Neutralino 最小窗口 1200×750 起）───────────────────────
+   问题：面板固定 85vh + 大内边距时，第 3 个存档槽落在滚动折线以下（需滚动才见按钮），
+        且底部「存储可用」提示条紧贴列表，观感像提示条压住了内容。
+   对策：矮窗口下抬高面板上限并收紧留白，让三槽全部可见；给提示条留出上间距。 */
+#save-slots {
+    min-height: 0;   /* flex 子项 + overflow 必须显式置 0，否则内容撑破面板 */
+}
+
+#save-info {
+    margin-top: 10px;
+}
+
+@media (max-height: 880px) {
+    #save-panel {
+        padding: 20px 24px;
+        max-height: 94vh;
+    }
+
+    #save-panel-header {
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+    }
+
+    #save-slots {
+        gap: 8px;
+    }
+
+    .save-slot-card {
+        padding: 10px 14px;
+    }
+
+    .save-slot-header {
+        margin-bottom: 4px;
+    }
+
+    .save-slot-info {
+        margin-bottom: 8px;
+    }
+
+    .save-slot-empty {
+        padding: 6px 0;
+    }
+}
+
 .save-slot-actions {
     display: flex;
     gap: 8px;

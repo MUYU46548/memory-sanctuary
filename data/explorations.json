@@ -1322,7 +1322,7 @@
         {
           "type": "narrative",
           "probability": 0.3,
-          "message": "反应堆的控制室墙上，刻着一行建造者的字：「愿后来者不必再走入黑暗。」",
+          "message": "反应堆的控制室墙上，刻着一行建造者的字：“愿后来者不必再走入黑暗。”",
           "revealsClue": "arch_bot_log_02"
         },
         {
@@ -1582,7 +1582,7 @@
         {
           "type": "narrative",
           "probability": 0.2,
-          "message": "控制核心的日志芯片上刻着一行字：「此炉由三代铁匠共同维护。」",
+          "message": "控制核心的日志芯片上刻着一行字：“此炉由三代铁匠共同维护。”",
           "revealsClue": "arch_bf_forge_01"
         },
         {
