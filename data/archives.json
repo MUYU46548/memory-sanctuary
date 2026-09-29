@@ -20,7 +20,7 @@
       "expiresAfter": 24,
       "discoveryMethod": "surface_exploration",
       "conflictsWith": "arch_005",
-      "hiddenContent": "在祷文的最后一页，有一行几乎看不见的小字：「我们曾试图用歌声阻止末日。歌声没有阻止末日，但歌声让我们在末日面前没有低头。」"
+      "hiddenContent": "在祷文的最后一页，有一行几乎看不见的小字：“我们曾试图用歌声阻止末日。歌声没能阻止末日，但我们在末日面前没有低头。”"
     },
     {
       "id": "arch_002",
@@ -29,8 +29,8 @@
       "type": "document",
       "dataCost": 4,
       "energyCost": 4,
-      "description": "对萨拉达斯语核心词汇起源的梳理。",
-      "content": "「光」(nar) 与「死」(nar-eth) 共享同一词根。",
+      "description": "对萨拉达斯语高频词汇起源的梳理。",
+      "content": "“光”(nar) 与“死”(nar-eth) 共享同一词根。",
       "guardianReactions": {
         "tika": "我会把它唱给星星听。",
         "finn": "这是真相的一部分。"
@@ -49,9 +49,9 @@
       "dataCost": 4,
       "energyCost": 3,
       "description": "母亲教给孩子们的歌谣。",
-      "content": "「星星是天空的沙子/时间是流动的光/当你闭上眼睛/风会带你回家」",
+      "content": "“星星是天空的沙子/时间是流动的光/当你闭上眼睛/风会带你回家”",
       "guardianReactions": {
-        "tika": "这段记忆……我能感受到其中的情感。"
+        "tika": "这段记忆……我能看见她的背影。"
       },
       "relatedArchives": [
         "arch_046",
@@ -70,8 +70,8 @@
       "description": "语言学家维恩编写的完整语法手册。",
       "content": "时态有三种：过去（已死的光），现在（正在消逝的光），未来（尚未诞生的光）。",
       "guardianReactions": {
-        "tika": "这段记忆……我能感受到其中的情感。",
-        "misha": "这是生命的记录。"
+        "tika": "这段记忆……我能听见那段旋律。",
+        "misha": "我明白，这是生命的记录。"
       },
       "relatedArchives": [
         "arch_006"
@@ -79,7 +79,7 @@
       "expiresAfter": 18,
       "discoveryMethod": "surface_exploration",
       "conflictsWith": "arch_006",
-      "hiddenContent": "语法书的夹层中藏着一张泛黄的照片：一群孩子围坐在一位老人身边，老人正在教他们一种已经没有人会说的语言。"
+      "hiddenContent": "语法书的夹层中藏着一张泛黄的照片：一群孩子围坐在一位老人身边，老人正在教他们一种濒临失传的语言。"
     },
     {
       "id": "arch_005",
@@ -89,9 +89,9 @@
       "dataCost": 3,
       "energyCost": 3,
       "description": "被禁止使用的词汇清单。",
-      "content": "「希望」(hopel) — 在末日预言公布后被列为禁忌。",
+      "content": "“希望”(hopel)在末日预言公布后被列为禁忌。",
       "guardianReactions": {
-        "tika": "这是我们的根。"
+        "tika": "难以想象，但确实如此。"
       },
       "relatedArchives": [],
       "expiresAfter": 18,
@@ -105,11 +105,11 @@
       "type": "document",
       "dataCost": 5,
       "energyCost": 5,
-      "description": "试图将萨拉达斯语翻译为「星语」的手稿。",
-      "content": "星语中没有「再见」这个词。最接近的表达是「光会再次经过」。",
+      "description": "试图将萨拉达斯语翻译为星语的手稿。",
+      "content": "星语中没有“再见”这个词。最接近的表达是“光会再次经过”。",
       "guardianReactions": {
-        "tika": "这是我们的根。",
-        "ethel": "这是信仰的见证。"
+        "tika": "这是我们的根，永远都是。",
+        "ethel": "别担心，这是信仰的见证。"
       },
       "relatedArchives": [
         "arch_001"
@@ -125,9 +125,10 @@
       "type": "document",
       "dataCost": 6,
       "energyCost": 5,
-      "description": "第一座城邦「穹顶之下」的建立记录。",
-      "content": "我们挖开大地，在岩石中建造家园。不是因为勇敢，而是因为天空已经不再安全。",
+      "description": "第一座城邦“希鲁牧顶”的建立记录。",
+      "content": "我们挖开大地，在岩石中建造家园。不是因为勇敢，只因天空已经不再安全。",
       "guardianReactions": {
+        "ethel": "已经很遥远了，对吧？",
         "tika": "让我把它记在心底。"
       },
       "relatedArchives": [
@@ -136,7 +137,7 @@
       "expiresAfter": 24,
       "discoveryMethod": "surface_exploration",
       "conflictsWith": "arch_012",
-      "hiddenContent": "城邦建立记的最后一页被撕掉了。残留的纸片上只写着：「他们不知道，建立城邦的那一天，也是诅咒开始的那一天。」"
+      "hiddenContent": "城邦建立记的最后一页被撕掉了。残留的纸片上只写着：“他们不知道，建立城邦的那一天，也是诅咒开始的那一天。”"
     },
     {
       "id": "arch_008",
@@ -146,9 +147,9 @@
       "dataCost": 8,
       "energyCost": 7,
       "description": "持续三十年的生态崩溃导致的大饥荒。",
-      "content": "那一年，我们学会了吃石头——不是真的吃，而是从石头中提取仅存的矿物质。",
+      "content": "那一年，我们学会了吃石头，因为别无他法。",
       "guardianReactions": {
-        "tika": "这段记忆……我能感受到其中的情感。"
+        "tika": "这段记忆……我能感受到其中的苦楚。"
       },
       "relatedArchives": [
         "arch_009",
@@ -165,9 +166,10 @@
       "dataCost": 8,
       "energyCost": 8,
       "description": "关于是否封存文明遗产的激烈争论。",
-      "content": "「让后人知道我们存在过！」与「让后人不必承受我们的痛苦！」——两种信念，一场战争。",
+      "content": "“让后人知道我们存在过！”与“让后人不必承受我们的痛苦！”",
       "guardianReactions": {
-        "tika": "我会把它唱给星星听。"
+        "finn": "两种信念，一场战争。",
+        "tika": "歌唱吧，让歌声传遍大地。"
       },
       "relatedArchives": [
         "arch_010"
@@ -182,11 +184,11 @@
       "type": "document",
       "dataCost": 10,
       "energyCost": 8,
-      "description": "天文台宣布太阳将在五十年内熄灭的那一天。",
-      "content": "沉默。然后是哭声。然后是歌声。萨拉达斯人用歌声回应了死刑判决。",
+      "description": "天文台宣布家园将在五十年内崩溃的那一天。",
+      "content": "萨拉达斯人用歌声回应了死刑判决。",
       "guardianReactions": {
         "tika": "先祖的智慧，不应被遗忘。",
-        "misha": "生态的平衡就藏在这些记忆里。"
+        "misha": "我们的家园会变成沙海，但我们今天仍活着。"
       },
       "relatedArchives": [
         "arch_009",
@@ -203,9 +205,9 @@
       "dataCost": 7,
       "energyCost": 6,
       "description": "城邦末代统治者留下的最后命令。",
-      "content": "「我不是在命令你们，我是在请求你们。请求你们记住我们。」",
+      "content": "“我不是在命令你们，我是在请求你们。请记住我们。”",
       "guardianReactions": {
-        "tika": "这段记忆……我能感受到其中的情感。",
+        "tika": "都会过去的，对吧？",
         "finn": "我会把它编入编年史。"
       },
       "relatedArchives": [
@@ -221,10 +223,11 @@
       "type": "document",
       "dataCost": 11,
       "energyCost": 10,
-      "description": "圣所封存那一天的完整记录。",
-      "content": "我们锁上了最后一道门。不是因为恐惧，是因为爱。",
+      "description": "某圣所封存那一天的完整记录。",
+      "content": "我们锁上了最后一道门。爱会伴随我们。",
       "guardianReactions": {
-        "tika": "先祖的智慧，不应被遗忘。"
+        "tika": "向他们致敬。",
+        "finn": "这是他们的牺牲。"
       },
       "relatedArchives": [],
       "expiresAfter": 14,
@@ -238,10 +241,11 @@
       "type": "document",
       "dataCost": 5,
       "energyCost": 5,
-      "description": "第一次观测到「光雨」现象的科学记录。",
-      "content": "天空开始下坠。不是雨，是光。光穿过大气层，像针一样刺入地面。",
+      "description": "第一次观测到“光雨”现象的科学记录。",
+      "content": "天空开始下坠，光穿过大气层，像针一样刺入地面。",
       "guardianReactions": {
-        "misha": "自然教会了我们很多。"
+        "misha": "这就是自然。",
+        "tika": "我会为这件事写一首好歌。"
       },
       "relatedArchives": [
         "arch_014",
@@ -249,7 +253,7 @@
       ],
       "expiresAfter": 24,
       "discoveryMethod": "surface_exploration",
-      "hiddenContent": "目击报告的背面写着：「光雨不是自然现象。是人为的。但我们已经来不及找出是谁了。」"
+      "hiddenContent": "目击报告的背面写着：“光雨不是自然现象，但我们已经来不及找出罪人是谁了。”"
     },
     {
       "id": "arch_014",
@@ -259,7 +263,7 @@
       "dataCost": 8,
       "energyCost": 7,
       "description": "大陆板块断裂的详细记录。",
-      "content": "大地张开了嘴。裂缝中涌出的不是岩浆，是光。",
+      "content": "大地张开嘴，裂缝中涌出光。我们无处可逃。",
       "guardianReactions": {
         "misha": "这是我们的生存之道。",
         "ethel": "灵魂需要归宿。"
@@ -278,10 +282,10 @@
       "dataCost": 7,
       "energyCost": 6,
       "description": "空气成分逐渐稀薄的监测数据。",
-      "content": "今天呼吸需要用力了。明天会更用力。后天……也许没有后天了。",
+      "content": "今天呼吸需要用力了。明天要更用力。后天……也许没有后天了。",
       "guardianReactions": {
-        "misha": "这是我们的生存之道。",
-        "lorn": "知识就是力量。"
+        "misha": "以前不是这样子的。",
+        "lorn": "反常的大气突变，但值得记录。"
       },
       "relatedArchives": [
         "arch_016"
@@ -297,9 +301,9 @@
       "dataCost": 6,
       "energyCost": 5,
       "description": "未能进入圣所的地表居民的最后通讯。",
-      "content": "「我们进不去了。门已经封了。请告诉我们，我们的名字会被记住吗？」",
+      "content": "“我们进不去了，门已经封了。谁也不会来救我们的。”",
       "guardianReactions": {
-        "misha": "这是生命的记录。"
+        "misha": "生命就是这样逝去。"
       },
       "relatedArchives": [
         "arch_017",
@@ -318,7 +322,8 @@
       "description": "圣所完全封闭后，外部传感器的最后读数。",
       "content": "零。零。零。零。零。零。零。零。零。零。",
       "guardianReactions": {
-        "misha": "自然教会了我们很多。"
+        "misha": "我不想再听了。",
+        "lorn": "别怕，会结束的。"
       },
       "relatedArchives": [
         "arch_018"
@@ -334,9 +339,10 @@
       "dataCost": 9,
       "energyCost": 8,
       "description": "从第一次光雨到最终封存的完整时间线。",
-      "content": "第一天，天空裂开。第一百天，大地裂开。第一千天，我们的心裂开。",
+      "content": "第一天，天空裂开。第一百天，大地裂开。第一千天，我们的羽毛裂开。",
       "guardianReactions": {
-        "misha": "生态的平衡就藏在这些记忆里。"
+        "misha": "行星的生态正在崩溃。",
+        "edel": "这是我们必须面对的现实。"
       },
       "relatedArchives": [
         "arch_013"
@@ -352,9 +358,9 @@
       "dataCost": 8,
       "energyCost": 7,
       "description": "圣所穹顶上的壁画完整拓印。",
-      "content": "壁画上，无数只手伸向星空。每只手中都握着一样东西——种子、工具、书本、婴儿。",
+      "content": "壁画上，无数只手伸向星空。每只手中都握着一样东西——种子、工具、书本、翎羽。",
       "guardianReactions": {
-        "ethel": "这是信仰的见证。"
+        "ethel": "星空聆听我们的呼唤。"
       },
       "relatedArchives": [
         "arch_020"
@@ -370,10 +376,10 @@
       "dataCost": 10,
       "energyCost": 8,
       "description": "封存前夜，全城演奏的最后一支乐曲。",
-      "content": "没有歌词。只有声音。笛声代表风，鼓声代表心跳，弦声代表光。",
+      "content": "没有歌词。只有声音。笛声代表风，鼓声代表梦，弦声代表光。",
       "guardianReactions": {
         "ethel": "祈祷会传达到星空。",
-        "misha": "这是生命的记录。"
+        "misha": "这是生命的力量。"
       },
       "relatedArchives": [
         "arch_021",
@@ -391,9 +397,9 @@
       "dataCost": 4,
       "energyCost": 4,
       "description": "一位舞者的私人日记，记录舞蹈与情感。",
-      "content": "「当我旋转时，我感觉自己变成了风。风不会消失，它只是去了别的地方。」",
+      "content": "“当我旋转时，我感觉自己变成了风。风不会消失，它只是去了别的地方。”",
       "guardianReactions": {
-        "ethel": "仪式让我们完整。"
+        "ethel": "舞蹈是灵魂的语言。"
       },
       "relatedArchives": [
         "arch_026"
@@ -408,10 +414,11 @@
       "type": "document",
       "dataCost": 5,
       "energyCost": 5,
-      "description": "关于如何把「时间」雕成实体的思考。",
+      "description": "关于如何把“时间”雕成实体的思考。",
       "content": "我雕了一个人，双手捧着一块正在碎裂的石头。那就是时间。",
       "guardianReactions": {
-        "ethel": "仪式让我们完整。"
+        "ethel": "精妙的作品。",
+        "finn": "我们的答案终会到来。"
       },
       "relatedArchives": [
         "arch_023"
@@ -427,9 +434,9 @@
       "dataCost": 4,
       "energyCost": 3,
       "description": "颜料制作工艺的完整记录。",
-      "content": "蓝色来自天空的最后一滴眼泪。红色来自大地的血液。金色来自……我们不说。",
+      "content": "蓝色来自天空的最后一滴眼泪。红色来自大地的血液。金色来自……",
       "guardianReactions": {
-        "ethel": "灵魂需要归宿。"
+        "ethel": "这是我们文明的色彩。"
       },
       "relatedArchives": [
         "arch_019"
@@ -445,9 +452,10 @@
       "dataCost": 8,
       "energyCost": 8,
       "description": "萨拉达斯哲学的核心经典。",
-      "content": "「存在是光的回声。死亡是回声的消散。但消散不是终结——回声从未真正消失。」",
+      "content": "“存在是光的回声，死亡是回声的消散。但消散不是终结，回声从未真正消失。”",
       "guardianReactions": {
-        "tika": "我会把它唱给星星听。"
+        "tika": "关于光的哲学，值得深思。",
+        "finn": "这是我们文明的智慧结晶。"
       },
       "relatedArchives": [
         "arch_025"
@@ -455,7 +463,7 @@
       "expiresAfter": 24,
       "discoveryMethod": "surface_exploration",
       "conflictsWith": "arch_028",
-      "hiddenContent": "永恒之书的最后一章是空白的。只有一行字：「神没有回答。但我们在等待中找到了彼此。」"
+      "hiddenContent": "永恒之书的最后一章只有一行字：“神没有回答。但我们在等待中找到了彼此。”"
     },
     {
       "id": "arch_025",
@@ -464,11 +472,11 @@
       "type": "document",
       "dataCost": 6,
       "energyCost": 5,
-      "description": "关于萨拉达斯人对死后世界的想象。",
-      "content": "他们相信死后会变成一颗星星。所以每当有人去世，他们就说：「天上又多了一颗星。」",
+      "description": "关于萨拉达斯对死后世界的想象。",
+      "content": "萨拉达斯相信死后会变成一颗星星。所以每当有人去世，萨拉达斯们就说：“天上又多了一颗星。”",
       "guardianReactions": {
-        "tika": "我会把它唱给星星听。",
-        "ethel": "仪式让我们完整。"
+        "tika": "我从小就听过这个。",
+        "ethel": "星星是否离我们过于遥远？"
       },
       "relatedArchives": [
         "arch_027",
@@ -487,8 +495,8 @@
       "description": "所有宗教仪式的详细步骤。",
       "content": "仪式有三步：沉默（倾听），歌唱（回应），熄灭（放手）。",
       "guardianReactions": {
-        "tika": "这是我们的根。",
-        "lorn": "技术是我们的遗产。"
+        "tika": "我真的做到最好了吗？",
+        "finn": "从来都是这样的。"
       },
       "relatedArchives": [
         "arch_027"
@@ -504,9 +512,9 @@
       "dataCost": 8,
       "energyCost": 7,
       "description": "封存前夜，全体守护者共同念诵的祷文。",
-      "content": "「我们不知道谁会读到这些文字。但我们会假设他们存在。」",
+      "content": "“我们不知道谁会读到这些文字，但我们会假设他们存在。”",
       "guardianReactions": {
-        "tika": "我会把它唱给星星听。"
+        "tika": "我还可以再坚持下去。"
       },
       "relatedArchives": [
         "arch_012",
@@ -523,9 +531,9 @@
       "dataCost": 6,
       "energyCost": 5,
       "description": "一位哲学家在末日前的最后思考。",
-      "content": "「如果没有人记住我们，我们真的存在过吗？」——他把这个问题刻在了圣所的大门上。",
+      "content": "“如果没有人记住我们，我们真的存在过吗？”他把这个问题刻在了圣所的大门上。",
       "guardianReactions": {
-        "tika": "先祖的智慧，不应被遗忘。"
+        "tika": "我现在还来得及回答这个问题吗？"
       },
       "relatedArchives": [
         "arch_027"
@@ -542,10 +550,10 @@
       "dataCost": 9,
       "energyCost": 8,
       "description": "数百年的天文观测数据汇总。",
-      "content": "第1024号记录：太阳亮度下降0.003%。第16384号记录：我们决定封存。",
+      "content": "第1024号记录：恒星亮度下降0.003%。第16384号记录：我们决定封存。",
       "guardianReactions": {
-        "finn": "历史会记住这一刻。",
-        "lorn": "工程的力量就在这里。"
+        "finn": "事实需要被保存。",
+        "lorn": "理性的判断。"
       },
       "relatedArchives": [
         "arch_063"
@@ -553,7 +561,7 @@
       "expiresAfter": 24,
       "discoveryMethod": "surface_exploration",
       "conflictsWith": "arch_062",
-      "hiddenContent": "天文观测记录的最后一条：「今天，我们确认了一件事。我们的恒星正在死去。不是自然死亡。是被什么东西吃掉的。」"
+      "hiddenContent": "天文观测记录的最后一条：“今天，我们确认了一件事：我们的恒星正在死去。”"
     },
     {
       "id": "arch_030",
@@ -563,9 +571,10 @@
       "dataCost": 8,
       "energyCost": 7,
       "description": "萨拉达斯数学体系的基础证明。",
-      "content": "他们发明了一种新的几何学——「光几何」，专门研究光在弯曲空间中的路径。",
+      "content": "他们专门研究光在弯曲空间中的路径。",
       "guardianReactions": {
-        "finn": "事实需要被保存。"
+        "finn": "有趣。",
+        "lorn": "光几何是我们的入门课程。"
       },
       "relatedArchives": [
         "arch_031"
@@ -581,10 +590,11 @@
       "dataCost": 10,
       "energyCost": 9,
       "description": "圣所核心能源系统的完整图纸。",
-      "content": "设计图上写着：「本系统的设计寿命为十万年。希望到时候有人知道怎么关掉它。」",
+      "content": "设计图上写着：“本系统的设计寿命为十万年。希望到时候有人知道怎么关掉它。”",
       "guardianReactions": {
-        "finn": "事实需要被保存。",
-        "misha": "这是生命的记录。"
+        "finn": "这无疑是萨拉达斯的壮举。",
+        "lorn": "我无法完全理解它，但是它确实存在。",
+        "misha": "我们的庇护所。"
       },
       "relatedArchives": [
         "arch_032",
@@ -601,9 +611,9 @@
       "dataCost": 6,
       "energyCost": 5,
       "description": "关于圣所建筑材料的特性研究。",
-      "content": "这种石头会吸收光，然后在黑暗中慢慢释放。所以圣所永远不会真正黑暗。",
+      "content": "这种石头会吸收光，在黑暗中慢慢释放。所以圣所永远不会真正黑暗。",
       "guardianReactions": {
-        "finn": "这是真相的一部分。"
+        "finn": "我记得这种石头已经很少见了。"
       },
       "relatedArchives": [
         "arch_033"
@@ -618,10 +628,10 @@
       "type": "document",
       "dataCost": 8,
       "energyCost": 8,
-      "description": "末日前的最后一次科学实验记录。",
-      "content": "实验目的：证明光可以被储存。实验结果：可以，但储存的光会在一万年后慢慢消散。",
+      "description": "末日前的某次科学实验记录。",
+      "content": "实验目的：证明光可以被储存。实验结果：可以实现，但储存的光会在一万年后慢慢消散。",
       "guardianReactions": {
-        "finn": "这是真相的一部分。"
+        "finn": "已记录。"
       },
       "relatedArchives": [
         "arch_029",
@@ -638,9 +648,9 @@
       "dataCost": 7,
       "energyCost": 6,
       "description": "记录星球上所有已知动物的百科全书。",
-      "content": "「光蝶」：翅膀由凝固的光构成。在末日之前，它们成群结队地飞过天空。",
+      "content": "光蝶：翅膀由凝固的光构成。在末日之前，它们成群结队地飞过天空。",
       "guardianReactions": {
-        "misha": "这是我们的生存之道。"
+        "misha": "没有人知道它们从何而来，更没人知道它们去往何方。"
       },
       "relatedArchives": [
         "arch_035",
@@ -657,9 +667,9 @@
       "dataCost": 6,
       "energyCost": 5,
       "description": "所有已知植物的绘画记录。",
-      "content": "「石花」：只在完全黑暗中开放，靠吸收石头中的矿物质存活。花期为一百年。",
+      "content": "石花：只在完全黑暗中开放，靠吸收石头中的矿物质存活。花期为一百年。",
       "guardianReactions": {
-        "misha": "这是生命的记录。"
+        "misha": "它们是倔强的生命。"
       },
       "relatedArchives": [
         "arch_038"
@@ -675,9 +685,9 @@
       "dataCost": 8,
       "energyCost": 7,
       "description": "数千年的气候变化数据。",
-      "content": "第一千年的平均气温：适宜。第四千年的平均气温：我们不再测量了。",
+      "content": "折线似乎在不受控地上爬，越靠近现在气温越高。",
       "guardianReactions": {
-        "misha": "这是生命的记录。"
+        "misha": "大地早就开始退化了。"
       },
       "relatedArchives": [
         "arch_037"
@@ -692,10 +702,10 @@
       "type": "document",
       "dataCost": 5,
       "energyCost": 5,
-      "description": "萨拉达斯星球生态系统的完整分析。",
-      "content": "我们以为自己是生态链的顶端。其实我们只是其中一环——而这一环正在断裂。",
+      "description": "星球生态系统的完整分析。",
+      "content": "我们以为自己在生态链的顶端。其实我们只是其中一环，而这一环正在断裂。",
       "guardianReactions": {
-        "misha": "自然教会了我们很多。"
+        "misha": "这是自然的教训。"
       },
       "relatedArchives": [
         "arch_034"
@@ -711,10 +721,10 @@
       "dataCost": 8,
       "energyCost": 8,
       "description": "封存前收集的所有植物种子清单。",
-      "content": "十万颗种子。每一颗都是一个未来。我们把这些未来放在了最深的存储室里。",
+      "content": "十万颗种子，每一颗都是一个未来，我们把这些未来放在了最深的存储室里。",
       "guardianReactions": {
-        "misha": "自然教会了我们很多。",
-        "finn": "事实需要被保存。"
+        "misha": "会有人记得它们吗？",
+        "finn": "米莎，我们只需要诚实地记录一切。"
       },
       "relatedArchives": [
         "arch_036",
@@ -730,11 +740,11 @@
       "type": "document",
       "dataCost": 8,
       "energyCost": 7,
-      "description": "萨拉达斯城邦的完整法律条文。",
+      "description": "某萨拉达斯城邦的完整法律条文。",
       "content": "第一条：每个人都有权仰望星空。第二条：每个人都有权记住过去。",
       "guardianReactions": {
-        "finn": "这是真相的一部分。",
-        "ethel": "这是我们的精神遗产。"
+        "finn": "星空，多么灿烂。",
+        "ethel": "我们不能忘记这一切。"
       },
       "relatedArchives": [
         "arch_040"
@@ -742,7 +752,7 @@
       "expiresAfter": 24,
       "discoveryMethod": "surface_exploration",
       "conflictsWith": "arch_043",
-      "hiddenContent": "城邦法典的扉页内侧，有人用墨水写了一行小字：「法律不能拯救我们。但法律证明我们曾经试图拯救自己。」"
+      "hiddenContent": "城邦法典的扉页内侧，有人用墨水写了一行小字：“法律不能拯救我们，但法律证明我们曾经试图拯救自己。”"
     },
     {
       "id": "arch_040",
@@ -754,7 +764,7 @@
       "description": "城邦议会最后一次会议的完整记录。",
       "content": "议题：是否封存文明。最终决议：封存。",
       "guardianReactions": {
-        "finn": "事实需要被保存。"
+        "finn": "没有人知道答案。"
       },
       "relatedArchives": [
         "arch_041",
@@ -771,9 +781,9 @@
       "dataCost": 4,
       "energyCost": 4,
       "description": "各种契约的标准格式。",
-      "content": "「我在此将我的一切——我的记忆、我的名字、我的光——交给圣所保管。」",
+      "content": "“我在此将我的一切交给圣所保管，我的记忆、我的名字、我的光。”",
       "guardianReactions": {
-        "finn": "这是真相的一部分。"
+        "finn": "愿光芒浸润着我们。"
       },
       "relatedArchives": [
         "arch_042"
@@ -788,10 +798,11 @@
       "type": "document",
       "dataCost": 6,
       "energyCost": 5,
-      "description": "末日前的最后一次审判。",
+      "description": "末日前的一次审判。",
       "content": "被告：希望。罪名：让人忘记当下。判决：无罪。",
       "guardianReactions": {
-        "finn": "历史会记住这一刻。"
+        "tika": "这让我想起了古老的歌剧",
+        "finn": "希望是无罪的。"
       },
       "relatedArchives": [
         "arch_043"
@@ -806,10 +817,10 @@
       "type": "document",
       "dataCost": 7,
       "energyCost": 6,
-      "description": "萨拉达斯人的基本权利清单。",
+      "description": "萨拉达斯的基本权利清单。",
       "content": "我们有权利记住。我们有权利被记住。我们有权利选择记住什么。",
       "guardianReactions": {
-        "finn": "历史会记住这一刻。"
+        "finn": "这是我们的心声。"
       },
       "relatedArchives": [
         "arch_039",
@@ -827,9 +838,9 @@
       "dataCost": 4,
       "energyCost": 3,
       "description": "一位普通母亲在末日前的私人日记。",
-      "content": "「今天孩子问我，为什么天空是红色的。我告诉她，那是夕阳。但夕阳已经三十年没有变化了。」",
+      "content": "“今天孩子问我，为什么天空是红色的。我告诉她，那是夕阳。但夕阳已经三十年没有变化了。”",
       "guardianReactions": {
-        "ethel": "这是我们的精神遗产。"
+        "ethel": "我不想再看了。"
       },
       "relatedArchives": [
         "arch_045",
@@ -837,7 +848,7 @@
       ],
       "expiresAfter": 24,
       "discoveryMethod": "surface_exploration",
-      "hiddenContent": "母亲的日记最后一页：「孩子问我，人死后会去哪里。我说，去别人的记忆里。只要有人记得，就没有真正消失。」"
+      "hiddenContent": "母亲的日记最后一页：“孩子问我，萨拉达斯死后会去哪里。我说，去别人的记忆里。只要有人记得，就不会真正消失。”"
     },
     {
       "id": "arch_045",
@@ -846,11 +857,11 @@
       "type": "document",
       "dataCost": 3,
       "energyCost": 3,
-      "description": "萨拉达斯人的传统菜肴做法。",
-      "content": "「光粥」：将发光的水藻煮沸，加入石花粉末。味道：像星星。",
+      "description": "萨拉达斯的传统菜肴做法。",
+      "content": "光粥：将发光的水藻煮沸，加入石花粉末。味道：像星星。",
       "guardianReactions": {
-        "ethel": "仪式让我们完整。",
-        "lorn": "工程的力量就在这里。"
+        "ethel": "让人怀念。",
+        "lorn": "我们是不是应该试试？"
       },
       "relatedArchives": [
         "arch_048"
@@ -866,10 +877,10 @@
       "dataCost": 2,
       "energyCost": 2,
       "description": "孩子们玩过的各种玩具的记录。",
-      "content": "「星星罐」：一个密封的玻璃罐，里面装着发光的水藻。摇一摇，就会像星星一样闪烁。",
+      "content": "星星罐：一个密封的玻璃罐，里面装着发光的水藻。摇一摇，就会像星星一样闪烁。",
       "guardianReactions": {
-        "ethel": "祈祷会传达到星空。",
-        "misha": "这是我们的生存之道。"
+        "ethel": "孩子们的笑声是最美的旋律。",
+        "misha": "我希望他们能一直笑下去。"
       },
       "relatedArchives": [
         "arch_047"
@@ -885,9 +896,9 @@
       "dataCost": 5,
       "energyCost": 5,
       "description": "写给无法进入圣所的亲人的信。",
-      "content": "「亲爱的，我们进不去了。但请记住，我们在门这边。门永远不会真正关上。」",
+      "content": "“亲爱的，我们进不去了。但请记住，门永远不会真正关上。”",
       "guardianReactions": {
-        "ethel": "这是信仰的见证。"
+        "ethel": "为了我们的信仰。"
       },
       "relatedArchives": [
         "arch_044"
@@ -903,9 +914,9 @@
       "dataCost": 4,
       "energyCost": 4,
       "description": "记录普通人日常生活的绘画。",
-      "content": "画中，一家人围坐在一起，分享一碗光粥。那是末日前的最后一个夜晚。",
+      "content": "画中，一家人围坐在一起，分享一碗光粥。",
       "guardianReactions": {
-        "ethel": "灵魂需要归宿。"
+        "ethel": "感觉就像一场梦。"
       },
       "relatedArchives": [
         "arch_003",
@@ -922,9 +933,9 @@
       "dataCost": 10,
       "energyCost": 8,
       "description": "记忆圣所的完整建筑设计图纸。",
-      "content": "设计者注：「本建筑的设计寿命为十万年。墙壁厚度：十米。」",
+      "content": "设计者注：“本建筑的设计寿命为十万年。墙壁厚度十米。”",
       "guardianReactions": {
-        "lorn": "这是理性的证明。"
+        "lorn": "这是我见过最完美的作品。"
       },
       "relatedArchives": [
         "arch_050",
@@ -941,9 +952,9 @@
       "dataCost": 8,
       "energyCost": 8,
       "description": "萨拉达斯地下城市的规划图。",
-      "content": "城市分为三层：上层居住，中层生产，下层……封存。",
+      "content": "城市分为三层：上层居住，中层生产，下层封存。",
       "guardianReactions": {
-        "lorn": "知识就是力量。"
+        "lorn": "也许当时我们有别的选择。"
       },
       "relatedArchives": [
         "arch_051"
@@ -961,7 +972,7 @@
       "description": "圣所穹顶的力学结构分析。",
       "content": "穹顶由1220块石头组成，每一块都经过精确计算。没有用任何粘合剂。",
       "guardianReactions": {
-        "lorn": "工程的力量就在这里。"
+        "lorn": "这就是工程的力量。"
       },
       "relatedArchives": [
         "arch_052"
@@ -977,9 +988,9 @@
       "dataCost": 6,
       "energyCost": 5,
       "description": "地下水循环系统的设计与维护。",
-      "content": "水从穹顶渗入，经过层层过滤，汇聚到中央水池。这个系统已经运行了三千年。",
+      "content": "循环用水经过层层过滤，汇聚到中央水池。这个系统是圣所的命脉。",
       "guardianReactions": {
-        "lorn": "工程的力量就在这里。"
+        "lorn": "希望我们还有时间。"
       },
       "relatedArchives": [
         "arch_053"
@@ -994,10 +1005,10 @@
       "type": "document",
       "dataCost": 5,
       "energyCost": 5,
-      "description": "圣所首席建筑师在末日前的最后文字。",
-      "content": "「我把我的作品留在了这里。它不是最伟大的建筑，但它是我们最后的建筑。」",
+      "description": "圣所首席建筑师的最后文字。",
+      "content": "“我把我的作品留在了这里。它不是最伟大的建筑，但它是我们最后的建筑。”",
       "guardianReactions": {
-        "lorn": "知识就是力量。"
+        "lorn": "后世的人会记住我们。"
       },
       "relatedArchives": [
         "arch_049",
@@ -1014,9 +1025,9 @@
       "dataCost": 6,
       "energyCost": 5,
       "description": "所有已知药用植物的特性与用法。",
-      "content": "「光苔」：生长在圣所墙壁上，可以治愈失眠。副作用：会做关于星星的梦。",
+      "content": "光苔：生长在墙壁上，可以治愈失眠。副作用：会做关于星星的梦。",
       "guardianReactions": {
-        "misha": "这是我们的生存之道。"
+        "misha": "这些植物有着神奇的力量。"
       },
       "relatedArchives": [
         "arch_055",
@@ -1032,11 +1043,11 @@
       "type": "document",
       "dataCost": 8,
       "energyCost": 7,
-      "description": "萨拉达斯人身体结构的详细研究。",
-      "content": "他们有三颗心脏：一颗用于血液循环，一颗用于光循环，一颗用于……我们还在研究。",
+      "description": "萨拉达斯身体结构的详细研究。",
+      "content": "我们原本会飞，但我们的羽翼已经退化了。我们原本会发光，但我们的光芒已经消散了。",
       "guardianReactions": {
-        "misha": "自然教会了我们很多。",
-        "lorn": "这是理性的证明。"
+        "misha": "萨拉达斯曾和其他鸟类一同飞翔。",
+        "lorn": "我不确定这样是否更好。"
       },
       "relatedArchives": [
         "arch_056"
@@ -1051,11 +1062,11 @@
       "type": "document",
       "dataCost": 7,
       "energyCost": 6,
-      "description": "关于萨拉达斯人繁殖的研究。",
-      "content": "一个孩子需要三颗「种子」才能诞生：父亲的光，母亲的光，和大地的光。",
+      "description": "一份古老的研究记录。",
+      "content": "一个孩子需要三颗“种子”才能诞生：父亲的光，母亲的光，和大地的光。",
       "guardianReactions": {
-        "misha": "这是生命的记录。",
-        "tika": "这段记忆……我能感受到其中的情感。"
+        "misha": "我会记下它。",
+        "tika": "生命的延续是我们的责任。"
       },
       "relatedArchives": [
         "arch_057"
@@ -1071,9 +1082,10 @@
       "dataCost": 5,
       "energyCost": 5,
       "description": "各种疾病的症状与治疗方法。",
-      "content": "「光蚀病」：因长期暴露在光雨中而导致的记忆丧失。治疗方法：无。",
+      "content": "光蚀病：因长期暴露在光雨中而导致的记忆丧失。治疗方法：无。",
       "guardianReactions": {
-        "misha": "大地会记住一切。"
+        "misha": "这是最近才出现的怪病。",
+        "lorn": "我们需要更多的研究，但是来不及了。"
       },
       "relatedArchives": [
         "arch_058"
@@ -1091,7 +1103,7 @@
       "description": "封存前的最后一次健康检查。",
       "content": "所有守护者的身体状况：良好。心理状况：我们正在尽力。",
       "guardianReactions": {
-        "misha": "这是我们的生存之道。"
+        "misha": "为了生存。"
       },
       "relatedArchives": [
         "arch_054",
@@ -1108,9 +1120,9 @@
       "dataCost": 10,
       "energyCost": 8,
       "description": "萨拉达斯天文台绘制的最终星图。",
-      "content": "星图上有一行小字：「这是我们的天空。如果你们看到不同的星空，说明你们已经到达了那里。」",
+      "content": "“这是我们的天空。如果你们看到不同的星空，说明你们已经到达了那里。”",
       "guardianReactions": {
-        "lorn": "工程的力量就在这里。"
+        "lorn": "如果我们离开这个星球，会活下来吗？"
       },
       "relatedArchives": [
         "arch_062",
@@ -1126,11 +1138,11 @@
       "type": "document",
       "dataCost": 5,
       "energyCost": 5,
-      "description": "萨拉达斯人的时间计算方式。",
-      "content": "他们用光的一明一暗作为基本单位，称为「闪」。一百闪为一「日」。",
+      "description": "萨拉达斯的时间计算方式。",
+      "content": "以光的明暗作为基本单位，称为“闪”。一百闪为一“日”。",
       "guardianReactions": {
-        "lorn": "知识就是力量。",
-        "ethel": "这是信仰的见证。"
+        "lorn": "曾有人研究过基本时间粒度，但没有得出结论。",
+        "ethel": "光伴随着我们的一生。"
       },
       "relatedArchives": [
         "arch_061"
@@ -1145,10 +1157,10 @@
       "type": "document",
       "dataCost": 8,
       "energyCost": 8,
-      "description": "对太阳轨道衰变的计算。",
-      "content": "计算结果：太阳将在47.3年后完全熄灭。误差范围：±2年。",
+      "description": "对恒星质量变化的计算。",
+      "content": "计算结果：恒星将在47.3年后完全熄灭。误差范围：±2年。",
       "guardianReactions": {
-        "lorn": "知识就是力量。"
+        "lorn": "现在那甚至已经不重要了。"
       },
       "relatedArchives": [
         "arch_062"
@@ -1164,9 +1176,9 @@
       "dataCost": 6,
       "energyCost": 5,
       "description": "每个星座背后的神话故事。",
-      "content": "「歌者座」：传说中的一位歌者，她的歌声能让星星闪烁。",
+      "content": "歌者座：传说中的一位歌者，她的歌声能让星星闪烁。",
       "guardianReactions": {
-        "lorn": "工程的力量就在这里。"
+        "lorn": "那曾是我们的希望。"
       },
       "relatedArchives": [
         "arch_063"
@@ -1183,7 +1195,7 @@
       "dataCost": 7,
       "energyCost": 6,
       "description": "天文台工作人员的最后记录。",
-      "content": "「今天是我们最后一次观测天空。明天，我们将把望远镜封存。」",
+      "content": "今天是我们最后一次观测天空。明天，我们将把望远镜封存。",
       "guardianReactions": {
         "lorn": "我们可以重建。"
       },
@@ -1196,15 +1208,15 @@
     },
     {
       "id": "arch_emergency_001",
-      "title": "「最后的广播」",
+      "title": "未知来源的广播",
       "vault": 1,
       "type": "audio",
       "dataCost": 10,
       "energyCost": 10,
-      "description": "第8周时从地表接收到的最后一段广播信号。",
-      "content": "……如果有人听到……这里是第七区……我们撑不住了……请记住我们……",
+      "description": "从地表接收到的一段广播信号。",
+      "content": "这里是第七区……我们撑不住了……请记住我们……",
       "guardianReactions": {
-        "tika": "……我听过这个声音。她是最后一个广播员。",
+        "tika": "我听过这个声音。她是我的朋友。",
         "finn": "这是第七区覆灭前的最后记录。"
       },
       "relatedArchives": [
@@ -1217,16 +1229,16 @@
     },
     {
       "id": "arch_emergency_002",
-      "title": "「地热能状况报告」",
+      "title": "地热能状况报告",
       "vault": 2,
       "type": "document",
       "dataCost": 9,
       "energyCost": 8,
       "description": "一份关于圣所地热能源的紧急评估报告。",
-      "content": "地热井压力持续下降。按当前速率，圣所最多再运行 20 周。建议立即降低能源消耗或寻找替代能源。",
+      "content": "地热井压力持续下降。按当前速率，圣所最多再运行20周。建议立即降低能源消耗或寻找替代能源。",
       "guardianReactions": {
-        "lorn": "这份报告……我一直在回避这个事实。",
-        "misha": "我们应该更节约能源。"
+        "lorn": "我一直在回避这个事实。",
+        "misha": "我们应该节约能源。"
       },
       "relatedArchives": [
         "arch_emergency_001"
@@ -1238,16 +1250,17 @@
     },
     {
       "id": "arch_emergency_003",
-      "title": "「地表辐射读数」",
+      "title": "地表辐射读数",
       "vault": 3,
       "type": "data",
       "dataCost": 11,
       "energyCost": 12,
       "description": "米莎的地表辐射监测数据，显示辐射水平正在缓慢上升。",
-      "content": "辐射水平：+12%（与上周对比）。按此趋势，地表将在 15 周内完全不可生存。建议加快归档速度。",
+      "content": "辐射水平：+12%（与上周对比）。按此趋势，地表将在15周内完全不可生存。建议加快归档速度。",
       "guardianReactions": {
-        "misha": "……我每天都在记录。数字不会说谎。",
-        "ethel": "这是神对我们的考验吗？"
+        "misha": "我每天都在记录，数字不会说谎。",
+        "ethel": "这是神对我们的考验吗？",
+        "lorn": "也许我们能找到解决办法。"
       },
       "relatedArchives": [
         "arch_emergency_002"
@@ -1259,7 +1272,7 @@
     },
     {
       "id": "arch_emergency_004",
-      "title": "「加密记录：第一圣所」",
+      "title": "加密记录：第一圣所",
       "vault": 1,
       "type": "document",
       "dataCost": 13,
@@ -1267,8 +1280,8 @@
       "description": "来自另一个圣所的加密记录，通过卫星天线接收。",
       "content": "致所有仍在运行的圣所：我们是第一圣所。我们的任务即将完成。愿你们的归档被后世发现。愿文明延续。",
       "guardianReactions": {
-        "finn": "……他们做到了。他们真的做到了。",
-        "tika": "我们不是孤独的。"
+        "finn": "他们做到了。他们真的做到了。",
+        "tika": "我们不孤独。"
       },
       "relatedArchives": [
         "arch_emergency_005"
@@ -1280,15 +1293,15 @@
     },
     {
       "id": "arch_emergency_005",
-      "title": "「加密记录：第九圣所」",
+      "title": "加密记录：第九圣所",
       "vault": 2,
       "type": "document",
       "dataCost": 13,
       "energyCost": 13,
-      "description": "来自第九圣所的加密记录，内容令人心碎。",
-      "content": "……我们是最后一个了。其他圣所都已沉默。但我们不后悔。我们保存了文明的火种。如果有人找到这个——请记住我们。",
+      "description": "来自第九圣所的加密记录，内容经过AI修复。",
+      "content": "我们应该是最后一个了，其他圣所都已沉默。但我们不后悔，我们保存了文明的火种。",
       "guardianReactions": {
-        "ethel": "……他们到最后一刻都没有放弃。",
+        "ethel": "他们到最后一刻都没有放弃。",
         "lorn": "这就是我们的命运吗？"
       },
       "relatedArchives": [
@@ -1309,7 +1322,7 @@
       "description": "缇卡在圣所封印前夜唱出的歌声，被编码进晶体。",
       "content": "没有歌词。只有旋律。旋律中有风、有光、有星辰、有一个文明最后的温柔。",
       "guardianReactions": {
-        "tika": "……这是我为后世唱的。"
+        "tika": "晚安。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1326,10 +1339,10 @@
       "type": "document",
       "dataCost": 1,
       "energyCost": 1,
-      "description": "芬恩在末日中写下的编年史，记录了守护者与玩家的故事。",
-      "content": "「我已经把你写进了编年史。不是作为守护者，而是作为我的挚友。」",
+      "description": "芬恩在末日中写下的编年史，记录了守护者们的故事。",
+      "content": "我已经把你写进了编年史，我的挚友。",
       "guardianReactions": {
-        "finn": "这是真相的一部分。"
+        "finn": "感谢你的陪伴。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1347,9 +1360,9 @@
       "dataCost": 1,
       "energyCost": 1,
       "description": "米莎封存在圣所核心的那颗种子。",
-      "content": "十万颗种子中的一颗。米莎说，如果有一天世界重新变绿，它会第一个告诉你。",
+      "content": "“十万颗种子中的一颗，如果有一天世界重新变绿，它会带着我们活下去。”",
       "guardianReactions": {
-        "misha": "这是生命的记录。"
+        "misha": "会有那一天吗？"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1367,9 +1380,9 @@
       "dataCost": 1,
       "energyCost": 1,
       "description": "洛恩改造的能源系统设计图，让圣所维持千年运转。",
-      "content": "设计图上写着：「本系统的设计寿命为十万年。希望到时候有人知道怎么关掉它。」",
+      "content": "设计图上写着：本系统的设计旨在不间断运转生命维持系统，直至文明重生。",
       "guardianReactions": {
-        "lorn": "工程的力量就在这里。"
+        "lorn": "这是我们最大的成就。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1387,7 +1400,7 @@
       "dataCost": 1,
       "energyCost": 1,
       "description": "埃塞尔不再向神祈祷，而是向未来祈祷。",
-      "content": "「我已经不向神祈祷了。我向你祈祷。」",
+      "content": "光等着我们。",
       "guardianReactions": {
         "ethel": "愿星辰善待它。"
       },
@@ -1407,9 +1420,9 @@
       "dataCost": 5,
       "energyCost": 4,
       "description": "缇卡从未告诉任何人的秘密——她曾经有一个女儿。",
-      "content": "「我的女儿叫光。她在光雨中消失了。我唱歌，是因为我想让她知道，妈妈还在唱。」",
+      "content": "“我的女儿在光雨中消失了。”",
       "guardianReactions": {
-        "tika": "……谢谢你愿意听。"
+        "tika": "谢谢你愿意听。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1428,9 +1441,9 @@
       "dataCost": 5,
       "energyCost": 4,
       "description": "芬恩从未告诉任何人的秘密——他曾经销毁了一份历史记录。",
-      "content": "「我销毁了一份记录。因为它会伤害活着的人。我违背了编年史官的信条……但我不后悔。」",
+      "content": "“它会伤害活着的人。我违背了编年史官的信条，但我不后悔。”",
       "guardianReactions": {
-        "finn": "历史会评价。但我做了我的选择。"
+        "finn": "历史会评价，但我做了我的选择。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1449,9 +1462,9 @@
       "dataCost": 5,
       "energyCost": 4,
       "description": "米莎从未告诉任何人的秘密——她其实不想当守护者。",
-      "content": "「我想当的是园丁。我想种花。但末日来了，花也死了。所以我来这里，保存花的记忆。」",
+      "content": "“我想当的是园丁，我想种花。但末日来了，花也死了。所以我来这里，保存花的记忆。”",
       "guardianReactions": {
-        "misha": "……如果有一天世界重新变绿，我想第一个告诉你。"
+        "misha": "如果我们活下去了，我想带你建一座花房。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1470,9 +1483,9 @@
       "dataCost": 5,
       "energyCost": 4,
       "description": "洛恩从未告诉任何人的秘密——他其实害怕机器。",
-      "content": "「我修了一辈子机器。但有时候……我觉得机器在看我。我觉得它们有意志。」",
+      "content": "“我修了一辈子机器，但有时候我觉得机器在和我说话。”",
       "guardianReactions": {
-        "lorn": "……系统正常。别碰任何东西。"
+        "lorn": "系统正常。别碰任何东西。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1491,9 +1504,9 @@
       "dataCost": 5,
       "energyCost": 4,
       "description": "埃塞尔从未告诉任何人的秘密——她其实不信神。",
-      "content": "「我祈祷了一辈子。但有一天，我突然发现……我只是在对自己说话。」",
+      "content": "“我祈祷了一辈子。但有一天，我突然发现……我只是在对自己说话。”",
       "guardianReactions": {
-        "ethel": "……愿星辰原谅你。因为我不会。"
+        "ethel": "愿星辰原谅你。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1512,9 +1525,9 @@
       "dataCost": 6,
       "energyCost": 5,
       "description": "圣所建造者的日记，记录了建造过程中的挣扎。",
-      "content": "「我们不知道圣所能否撑过十万年。但我们知道，如果不建，就真的什么都没了。」",
+      "content": "“我们不知道圣所能否撑过十万年。但我们知道，如果不建，就真的什么都没了。”",
       "guardianReactions": {
-        "lorn": "工程的力量就在这里。"
+        "lorn": "这是我们文明最后的丰碑。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1532,10 +1545,10 @@
       "type": "document",
       "dataCost": 6,
       "energyCost": 5,
-      "description": "第一位守护者的日记，记录了圣所刚刚封存时的孤独。",
-      "content": "「门封了。外面的一切都消失了。我一个人在圣所里，听着自己的心跳。」",
+      "description": "第一位守护者的日记，他的肉身在完成仪式后被彻底封存于圣所深处。",
+      "content": "“盖子很重，我要进去了。我一个人在圣所里。”",
       "guardianReactions": {
-        "finn": "历史会记住这一刻。"
+        "finn": "我不认识他，但我会记住他。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1554,9 +1567,9 @@
       "dataCost": 8,
       "energyCost": 7,
       "description": "一份被隐藏的报告，揭示了光雨的真正起源。",
-      "content": "「光雨不是自然现象。是我们自己造成的。我们试图储存光……但光不想被储存。」",
+      "content": "“光雨不是自然现象，绝对不是。我们试图储存光，但光不想被储存。”",
       "guardianReactions": {
-        "misha": "……我每天都在记录。数字不会说谎。"
+        "misha": "这太令人震惊了……我们一直以为光雨是自然的。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1575,9 +1588,9 @@
       "dataCost": 8,
       "energyCost": 7,
       "description": "一份被掩盖的预言，预言了末日的真正原因。",
-      "content": "「预言说：当文明开始储存光，光就会变成雨。我们以为我们在拯救文明……其实我们在加速它的终结。」",
+      "content": "“当文明开始储存光，光就会变成雨。我们以为我们在拯救文明……其实我们在加速它的终结。”",
       "guardianReactions": {
-        "ethel": "……我已经不知道该向谁祈祷了。"
+        "ethel": "我已经不知道该向谁祈祷了。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1595,10 +1608,10 @@
       "type": "document",
       "dataCost": 9,
       "energyCost": 8,
-      "description": "一份来自未来的记录，描述了圣所封印后的世界。",
-      "content": "「圣所沉入地底。一万年后，地表重新变绿。但没有人记得萨拉达斯了。」",
+      "description": "一份疑似来自未来的记录，描述了圣所封印后的世界。",
+      "content": "“圣所沉入地底。一万年后，地表重新变绿。但没有人记得萨拉达斯了。”",
       "guardianReactions": {
-        "tika": "……声音是文明的灵魂。只要还有人在歌唱，文明就不会真正消失。"
+        "tika": "声音是文明的灵魂。只要还有人在歌唱，文明就不会真正消失。"
       },
       "relatedArchives": [],
       "ngPlusExclusive": true,
@@ -1617,9 +1630,9 @@
       "dataCost": 5,
       "energyCost": 5,
       "description": "冷却系统首次故障，洛恩紧急维修记录。",
-      "content": "冷却泵在凌晨三点发出刺耳的金属摩擦声。洛恩冲进机房时，温度已经上升了12度。他用冻僵的手指操作控制屏，一边骂一边修理。28小时后，系统恢复正常。这是第一次，但不是最后一次。",
+      "content": "冷却泵在凌晨三点发出刺耳的金属摩擦声。洛恩冲进机房时，温度已经上升了12度。他用颤抖的手指操作控制屏，一边骂一边修理。2小时后，系统恢复正常。",
       "guardianReactions": {
-        "loron": "机器老了。我们也是。"
+        "lorn": "机器的情况比我预估的更糟，我不知道还能撑多久。"
       },
       "availableAfter": 13,
       "expiresAfter": 24,
@@ -1636,10 +1649,12 @@
       "dataCost": 4,
       "energyCost": 4,
       "description": "穹顶承重计算，发现微小裂痕。",
-      "content": "穹顶应力测试报告：主承重梁在D区出现0.3mm裂纹，属正常范围。但建议在未来6个月内进行加固。——然而我们没有6个月了。",
+      "content": "穹顶应力测试报告：主承重梁在D区出现0.3mm裂纹，属正常范围。但建议在未来6个月内进行加固。",
       "guardianReactions": {
-        "lorn": "这个裂纹…我会留意。",
-        "finn": "这是历史的痕迹。"
+        "lorn": "这个裂纹我会留意。",
+        "finn": "这是历史的痕迹。",
+        "misha": "我们需要更多的资源来修复。",
+        "edel": "然而我们撑不到那时候了。"
       },
       "availableAfter": 13,
       "expiresAfter": 24,
@@ -1656,7 +1671,7 @@
       "dataCost": 4,
       "energyCost": 3,
       "description": "发电机效率下降5%，原因不明。",
-      "content": "本周能源产出比上周减少了5%。洛恩检查了所有参数，没有找到原因。'地热井在收缩，'他最后说，'地球的血液也在凝固。'",
+      "content": "本周能源产出比上周减少了5%。洛恩检查了所有参数，没有找到原因。“地热井在收缩，大地的血液也在凝固。”",
       "guardianReactions": {
         "lorn": "我不确定原因。这让我不安。"
       },
@@ -1675,10 +1690,10 @@
       "dataCost": 4,
       "energyCost": 3,
       "description": "温度波动记录，湿度异常。",
-      "content": "主厅温度波动±2.4°C，湿度上升至78%。系统在努力维持。我们也一样。",
+      "content": "主厅温度波动±2.4°C，湿度上升至78%。系统在努力维持，我们也一样。",
       "guardianReactions": {
-        "misha": "生态的平衡就藏在这些记忆里。",
-        "lorn": "我来调整。"
+        "misha": "生存的意志就在你我心中。",
+        "lorn": "别怕，我来调整。"
       },
       "availableAfter": 14,
       "expiresAfter": 24,
@@ -1695,7 +1710,7 @@
       "dataCost": 4,
       "energyCost": 4,
       "description": "首次全面体检，发现早期营养不良。",
-      "content": "芬恩体重下降3.2kg。米莎有轻微贫血。洛恩的左膝旧伤复发。埃塞尔的视力在下降。缇卡…缇卡的声音还是那么稳。'我没事，'她说，'唱歌让我忘记饥饿。'",
+      "content": "芬恩体重下降3.2kg。米莎有轻微贫血。洛恩的左膝旧伤复发。埃塞尔的视力在下降。缇卡的声音还是那么稳。“我没事，唱歌让我忘记饥饿。”",
       "guardianReactions": {
         "tika": "我的声音还在，我就没事。",
         "misha": "我们需要更好的食物配给。"
@@ -1717,7 +1732,7 @@
       "description": "辐射水平上升，地表停留时间需缩短。",
       "content": "辐射读数：47雷姆/周。是三个月前的3倍。单次地表停留时间必须从8小时缩短至4小时。洛恩在防护服上又加了一层铅衬。",
       "guardianReactions": {
-        "misha": "地表在加速死亡。"
+        "misha": "地表在加速凋亡。"
       },
       "availableAfter": 17,
       "expiresAfter": 28,
@@ -1734,7 +1749,7 @@
       "dataCost": 6,
       "energyCost": 5,
       "description": "森林消亡前的最后声音记录。",
-      "content": "[风声][稀疏的鸟鸣][树干断裂]…然后是沉默。米莎站在枯死的橡树下，录音笔转了最后17秒。'这是挽歌，'她说。",
+      "content": "风声，稀疏的鸟鸣，树干断裂。米莎站在枯死的橡树下。",
       "guardianReactions": {
         "misha": "我把耳朵贴在树干上，什么都听不到了。"
       },
@@ -1754,10 +1769,10 @@
       "dataCost": 4,
       "energyCost": 4,
       "description": "米莎对生态崩溃的详细观察。",
-      "content": "第19周观测：东部森林全部死亡。菌丝网络在土壤下蔓延，像是大地在长出白发。我摘下手套触摸地面——是热的。星球在发烧。",
+      "content": "第19周观测：圣所东部森林全部死亡。菌丝网络在土壤下蔓延，像是大地在长出白发。我摘下手套触摸地面，很热。星球在发烧。",
       "guardianReactions": {
         "misha": "这是我亲眼看到的。",
-        "tika": "我记得森林的歌声。"
+        "tika": "幸好我记得森林的歌声。"
       },
       "availableAfter": 18,
       "expiresAfter": 28,
@@ -1774,9 +1789,9 @@
       "dataCost": 5,
       "energyCost": 5,
       "description": "海水成分分析，含氧量下降。",
-      "content": "海水溶解氧：2.1mg/L。低于任何已知海洋生物的最低需求。厌氧菌正在接管。大海正在窒息。",
+      "content": "海水溶解氧：2.1mg/L。低于任何已知海洋生物的最低需求。厌氧菌正在接管窒息的大海。",
       "guardianReactions": {
-        "misha": "海洋已经死了。我们只是在参加它的葬礼。"
+        "misha": "海洋已经成为炼狱。"
       },
       "availableAfter": 18,
       "expiresAfter": 28,
@@ -1793,9 +1808,9 @@
       "dataCost": 4,
       "energyCost": 4,
       "description": "光雨侵蚀频率增加30%。",
-      "content": "本月光雨事件：47次。上个月：36次。频率增加30%。洛恩加固了屋顶的屏蔽层。但所有人都知道，这只是在拖延时间。",
+      "content": "本月光雨事件：47次。上个月：36次。频率增加30%。洛恩派机器人加固了屋顶的屏蔽层。但所有人都知道，这只是在拖延时间。",
       "guardianReactions": {
-        "lorn": "我能修好屋顶。但如果雨一直下…",
+        "lorn": "我能修好屋顶。但如果雨一直下……",
         "ethel": "这是神的警告吗？"
       },
       "availableAfter": 19,
@@ -1813,9 +1828,9 @@
       "dataCost": 6,
       "energyCost": 4,
       "description": "海洋变灰绿的视觉记录与分析。",
-      "content": "米莎从海岸带回了水样。显微镜下，蓝藻已经灭绝，取而代之的是一种从未见过的灰色浮游生物。它们以死亡为生。海面上覆盖着一层灰绿色的膜，像是大地的尸衣。",
+      "content": "米莎从海岸带回了水样。显微镜下，没有任何常见生物，取而代之的是一种从未见过的灰色浮游生物，它们以死亡为生。海面上覆盖着一层灰绿色的膜，像是大地的尸衣。",
       "guardianReactions": {
-        "misha": "我给它起了个名字：'最后的盛宴'。它们在吃同类的尸体。"
+        "misha": "最后的盛宴，它们在吃同类的尸体。"
       },
       "availableAfter": 21,
       "expiresAfter": 32,
@@ -1833,9 +1848,9 @@
       "dataCost": 5,
       "energyCost": 4,
       "description": "最后一批海洋物种的档案。",
-      "content": "第22周确认灭绝：萨拉达斯蓝鲸、珊瑚鳟鱼、深海萤光虾、潮汐蟹、银线海葵…共4,217种海洋生物。米莎用了一整夜为每一种写了一句话。",
+      "content": "第22周确认灭绝：萨拉达斯蓝鲸、珊瑚鳟鱼、深海萤光虾、潮汐蟹、银线海葵……共4,217种海洋生物。",
       "guardianReactions": {
-        "misha": "我写不完。每一个名字背后都是一整个进化史。"
+        "misha": "我写不完它们的故事。每一个名字背后都是一整个进化史。"
       },
       "availableAfter": 21,
       "expiresAfter": 32,
@@ -1851,10 +1866,10 @@
       "type": "document",
       "dataCost": 4,
       "energyCost": 3,
-      "description": "海水盐度异常，影响圣所水循环。",
+      "description": "海水盐度异常，恐影响圣所水循环。",
       "content": "海水盐度从35‰上升至42‰。我们的海水淡化系统开始报警。洛恩不得不将水消耗削减20%。洗澡变成了每周一次的奢侈。",
       "guardianReactions": {
-        "lorn": "我能修好机器。但修不好海洋。"
+        "lorn": "我能修好机器，但修不好海洋。"
       },
       "availableAfter": 22,
       "expiresAfter": 32,
@@ -1870,8 +1885,8 @@
       "type": "document",
       "dataCost": 4,
       "energyCost": 3,
-      "description": "海岸线后退，圣所入口暴露风险。",
-      "content": "海岸线后退12米。圣所的排气口已经暴露在空气中。洛恩用混凝土加固了入口。但如果继续侵蚀，我们可能需要在第30周之前封住所有外部通道。",
+      "description": "海岸线后退，圣所入口存在暴露风险。",
+      "content": "海岸线后退12米。圣所的排气口已经暴露在空气中。洛恩用混凝土加固了入口。但如果海水继续侵蚀，我们可能需要封住所有外部通道。",
       "guardianReactions": {
         "lorn": "封住通道意味着放弃地表。我们真的准备好了吗？"
       },
@@ -1890,10 +1905,10 @@
       "dataCost": 4,
       "energyCost": 3,
       "description": "米莎对海洋消亡的个人记录。",
-      "content": "我今天没有上去。我只是坐在主厅里，听着循环水泵的声音。它们听起来像是心跳。也许有一天，当电池耗尽，圣所的心跳也会停止。我想留一段录音给后来的人：这片海曾经很蓝。",
+      "content": "我今天没有上去。我只是坐在主厅里，听着循环水泵的声音。也许有一天，当电池耗尽，圣所的氧气供应也会停止。",
       "guardianReactions": {
-        "misha": "我把这句话录了下来。",
-        "tika": "我会把你的录音唱成歌。"
+        "misha": "我不想再听到海洋的声音了。",
+        "tika": "今晚不会有歌声。"
       },
       "availableAfter": 23,
       "expiresAfter": 34,
@@ -1910,10 +1925,10 @@
       "dataCost": 5,
       "energyCost": 4,
       "description": "地表土壤开始粉末化，无法种植。",
-      "content": "米莎带回了最后的土壤样本。它已经不是土了——是粉末。有机质含量低于0.1%。没有任何东西能在这种东西里生长。萨拉达斯的地表已经彻底死亡。",
+      "content": "米莎带回了最后的土壤样本。它几乎已经不是土了，有机质含量低于0.1%。没有任何东西能在这种东西里生长。萨拉达斯的农业已经全面崩溃。",
       "guardianReactions": {
-        "misha": "土壤死了。植物死了。我们是最后的绿色。",
-        "finn": "我会把它编入编年史。"
+        "misha": "没有植物，没有粮食。",
+        "finn": "我会把它编入编年史，历史上的事并不是为了让人开心才发生的。"
       },
       "availableAfter": 25,
       "expiresAfter": 36,
@@ -1930,7 +1945,7 @@
       "dataCost": 5,
       "energyCost": 4,
       "description": "首次尘暴袭击圣所通风系统。",
-      "content": "[风声急剧增大][金属撞击][警报声]尘暴持续了18个小时。洛恩的过滤器被堵了三次。主厅里弥漫着灰尘的味道。",
+      "content": "尘暴持续了18个小时，洛恩的过滤器被堵了三次，主厅里弥漫着灰尘的味道。",
       "guardianReactions": {
         "lorn": "过滤器挡不住这种规模的尘暴。我需要重新设计。"
       },
@@ -1968,10 +1983,10 @@
       "type": "document",
       "dataCost": 4,
       "energyCost": 3,
-      "description": "地表水源全部枯竭。",
-      "content": "最后的地下水位已经低于任何取水点的深度。地表水正式枯竭。洛恩启动了应急水循环回收系统。每一滴水都要回收三次才能饮用。",
+      "description": "周围的地表水源全部枯竭。",
+      "content": "最后的地下水位已经低于任何取水点的深度。地表水正式枯竭。洛恩启动了应急水循环回收系统。每一滴水都要净化三次才能饮用。",
       "guardianReactions": {
-        "lorn": "水是文明的血液。我们自己的血液也在枯竭。"
+        "lorn": "水是文明的血液，我们自己的血液也在枯竭。"
       },
       "availableAfter": 26,
       "expiresAfter": 36,
@@ -1988,9 +2003,9 @@
       "dataCost": 5,
       "energyCost": 4,
       "description": "洛恩设计粉尘过滤系统。",
-      "content": "洛恩用废弃的HEPA滤网、活性炭和紫外线灯拼凑了一套三级过滤系统。'简陋，'他说，'但能把粉尘挡在外面。'他的眼睛布满血丝，但双手很稳。",
+      "content": "洛恩用废弃的HEPA滤网、活性炭和紫外线灯拼凑了一套三级过滤系统。“简陋，但能把粉尘挡在外面。”",
       "guardianReactions": {
-        "lorn": "简陋的东西在末日里最可靠。",
+        "lorn": "这种东西在末日里最可靠。",
         "tika": "你救了我们所有人。"
       },
       "availableAfter": 27,
@@ -2009,10 +2024,10 @@
       "dataCost": 6,
       "energyCost": 4,
       "description": "守护者开始出现羽毛病变症状。",
-      "content": "芬恩的尾羽开始出现白色斑点。米莎说这是辐射病的前兆。洛恩查了资料——没有资料。这是全新的症状。芬恩只是说：'至少我的羽毛比我的脸色好看。'",
+      "content": "芬恩的尾羽开始出现白色斑点。米莎说这是辐射病的前兆。洛恩查了资料，但一无所获。这是全新的症状，历史上从未发生过。",
       "guardianReactions": {
         "finn": "我没事。继续归档。",
-        "misha": "这不是普通的辐射病。这是…"
+        "misha": "这不是普通的辐射病。这是……我们文明的终结。"
       },
       "availableAfter": 29,
       "expiresAfter": 40,
@@ -2029,7 +2044,7 @@
       "dataCost": 4,
       "energyCost": 3,
       "description": "芬恩的个人病史与病变记录。",
-      "content": "芬恩，45岁。前历史编年学者。第30周确诊羽毛病变。症状：尾羽白化、体温波动、轻度失忆。他还在写编年史。'只要还能写，我就还是历史学家。'",
+      "content": "芬恩，45岁。前历史编年学者。现确诊羽毛病变。症状：尾羽白化、体温波动、轻度失忆。他还在写编年史。",
       "guardianReactions": {
         "finn": "记录历史的人，也会成为历史的一部分。"
       },
@@ -3211,9 +3226,9 @@
       "dataCost": 7,
       "energyCost": 6,
       "description": "轨道发射场的设计室，一张未完成的星舰图纸。",
-      "content": "发射场的设计室，一张巨大的星舰图纸摊在桌上，图钉还没拔。\n图纸角落有工程师的批注：\n「载人舱设计为 12 人。如果可以，我想把所有人都带上。」\n批注下方画了一个小小的太阳。",
+      "content": "发射场的设计室，一张巨大的星舰图纸摊在桌上，图钉还没拔。\n图纸角落有工程师的批注：\n「载人舱设计为 12 人。如果可以，我想把所有人都带上。」\n批注下方画了一个小小的光轮。",
       "guardianReactions": {
-        "lorn": "载人舱 12 人。他算得很仔细，然后画了一个太阳。"
+        "lorn": "载人舱 12 人。他算得很仔细，然后画了一个光轮。"
       },
       "relatedArchives": [
         "arch_sf_shipyard_11b"
@@ -3407,7 +3422,7 @@
       "dataCost": 5,
       "energyCost": 4,
       "description": "尘暴村庄中央的水井早已干涸，井壁上画着一幅画。",
-      "content": "村庄中央的水井早已干涸，井绳垂在井沿外。\n井壁上有人用炭笔画了一幅画：太阳、房子、手拉手的一家人。\n画的下方写着：「如果我们都不在了，水井记得我们排过队。」",
+      "content": "村庄中央的水井早已干涸，井绳垂在井沿外。\n井壁上有人用炭笔画了一幅画：光轮、房子、手拉手的一家人。\n画的下方写着：「如果我们都不在了，水井记得我们排过队。」",
       "relatedArchives": [],
       "availableAfter": 26,
       "expiresAfter": 42,

@@ -1532,7 +1532,7 @@
           "resource": "energy",
           "amount": 12,
           "probability": 0.3,
-          "message": "回收了塔架上的太阳能板与储能单元。"
+          "message": "回收了塔架上的光能板与储能单元。"
         },
         {
           "type": "narrative",

@@ -14,7 +14,7 @@
     {
       "id": "complete_memory",
       "name": "永恒记忆",
-      "description": "达成全收集结局——保存洛斯耶马文明的每一片碎片。",
+      "description": "保存洛斯耶马文明的每一片碎片。",
       "icon": "🌟",
       "category": "ending",
       "hidden": false,
@@ -26,7 +26,7 @@
     {
       "id": "song_of_doom",
       "name": "终焉之歌",
-      "description": "达成「终焉之歌」结局——保存灾难与艺术的交织。",
+      "description": "在灾难中保存艺术，这是洛斯耶马文明最后的歌声。",
       "icon": "🎵",
       "category": "ending",
       "hidden": false,
@@ -38,7 +38,7 @@
     {
       "id": "roots_of_civilization",
       "name": "文明之根",
-      "description": "达成「文明之根」结局——保存语言、历史与法律。",
+      "description": "保存语言、历史与法律。",
       "icon": "📜",
       "category": "ending",
       "hidden": false,
@@ -50,7 +50,7 @@
     {
       "id": "children_of_stardust",
       "name": "星尘之子",
-      "description": "达成「星尘之子」结局——保存科学、天文与生态。",
+      "description": "保存科学、天文与生态。",
       "icon": "⭐",
       "category": "ending",
       "hidden": false,
@@ -62,7 +62,7 @@
     {
       "id": "fire_of_life",
       "name": "生命礼赞",
-      "description": "达成「生命礼赞」结局——保存生态、医学与艺术。",
+      "description": "保存生态、医学与艺术。",
       "icon": "🌿",
       "category": "ending",
       "hidden": false,
@@ -74,7 +74,7 @@
     {
       "id": "eternal_question",
       "name": "永恒追问",
-      "description": "达成「永恒追问」结局——保存哲学、天文与艺术。",
+      "description": "保存哲学、天文与艺术。",
       "icon": "🌌",
       "category": "ending",
       "hidden": false,
@@ -86,7 +86,7 @@
     {
       "id": "chronicle_of_doom",
       "name": "末日档案",
-      "description": "达成「末日档案」结局——保存灾难、历史与法律。",
+      "description": "保存灾难、历史与法律。",
       "icon": "🔥",
       "category": "ending",
       "hidden": false,
@@ -98,7 +98,7 @@
     {
       "id": "voice_of_home",
       "name": "人间烟火",
-      "description": "达成「人间烟火」结局——保存日常生活、建筑与医学。",
+      "description": "保存日常生活、建筑与医学。",
       "icon": "🏠",
       "category": "ending",
       "hidden": false,
@@ -110,7 +110,7 @@
     {
       "id": "silent_sanctuary",
       "name": "寂静圣所",
-      "description": "达成「寂静圣所」结局——选择沉默。",
+      "description": "你选择沉默。",
       "icon": "🖤",
       "category": "ending",
       "hidden": false,
@@ -182,7 +182,7 @@
     {
       "id": "all_guardians_friendly",
       "name": "团队之心",
-      "description": "让所有守护者达到友好或以上。",
+      "description": "让所有守护者的好感度达到友好或以上。",
       "icon": "💛",
       "category": "guardian",
       "hidden": false,
@@ -194,7 +194,7 @@
     {
       "id": "all_guardians_intimate",
       "name": "灵魂共鸣",
-      "description": "让4位守护者达到亲密关系",
+      "description": "让4位守护者达到亲密关系。",
       "icon": "❤️",
       "category": "guardian",
       "hidden": false,
@@ -314,7 +314,7 @@
     {
       "id": "all_vaults_50",
       "name": "均衡守护者",
-      "description": "所有存储室完成度达到30%",
+      "description": "所有存储室完成度达到30%。",
       "icon": "⚖️",
       "category": "vault",
       "hidden": false,
@@ -442,7 +442,7 @@
       "id": "reincarnator",
       "category": "playthrough",
       "name": "轮回者",
-      "description": "完成3个周目",
+      "description": "完成3个周目，金像注视着你。",
       "icon": "🔄",
       "condition": {
         "type": "playthroughs",
@@ -453,7 +453,7 @@
       "id": "eternal_keeper",
       "category": "playthrough",
       "name": "永恒守护者",
-      "description": "完成5个周目",
+      "description": "完成5个周目，金像为你祈福。",
       "icon": "♾️",
       "condition": {
         "type": "playthroughs",
@@ -464,7 +464,7 @@
       "id": "beyond_time",
       "category": "playthrough",
       "name": "超越时间",
-      "description": "在第5周目打破循环",
+      "description": "在第5周目打破循环，金像见证你的决心。",
       "icon": "✨",
       "condition": {
         "type": "ending",
@@ -475,7 +475,7 @@
       "id": "chapter_complete_12",
       "category": "milestone",
       "name": "终章见证者",
-      "description": "经历全部12个章节过渡",
+      "description": "经历全部12个章节过渡。",
       "icon": "📖",
       "condition": {
         "type": "chapter",
@@ -486,7 +486,7 @@
       "id": "memory_keeper",
       "category": "collection",
       "name": "记忆收集者",
-      "description": "解锁全部16条通过剧情自动解锁的NG+专属条目",
+      "description": "解锁全部16条通过剧情自动解锁的NG+专属条目。",
       "icon": "🧠",
       "condition": {
         "type": "unlock_ng_entries",
@@ -497,7 +497,7 @@
       "id": "ai_assist_first",
       "category": "milestone",
       "name": "机魂共呜",
-      "description": "第一次请求档案AI助理辅助归档",
+      "description": "第一次请求档案AI助理辅助归档。",
       "icon": "🤖",
       "condition": {
         "type": "custom",
@@ -508,7 +508,7 @@
       "id": "ai_assist_10",
       "category": "milestone",
       "name": "人机协作",
-      "description": "档案AI助理累计辅助归档10条",
+      "description": "档案AI助理累计辅助归档10条。",
       "icon": "🛰️",
       "condition": {
         "type": "custom",
@@ -519,7 +519,7 @@
       "id": "guardian_aid_first",
       "category": "guardian",
       "name": "临时援手",
-      "description": "以食物作为报酬，邀请守护者临时协助归档",
+      "description": "以食物作为报酬，邀请守护者临时协助归档。",
       "icon": "🍖",
       "condition": {
         "type": "custom",
@@ -530,7 +530,7 @@
       "id": "explore_10",
       "category": "collection",
       "name": "步履不停",
-      "description": "单周目完成10次地表勘探",
+      "description": "单周目完成10次地表勘探。",
       "icon": "🥾",
       "condition": {
         "type": "custom",
@@ -540,8 +540,8 @@
     {
       "id": "all_explorations",
       "category": "collection",
-      "name": "地表全图",
-      "description": "完成全部地表勘探点",
+      "name": "地表拾遗",
+      "description": "完成全部地表勘探点。",
       "icon": "🗺️",
       "condition": {
         "type": "custom",
@@ -552,7 +552,7 @@
       "id": "emergency_gambit",
       "category": "challenge",
       "name": "孤注一掷",
-      "description": "激活紧急勘探协议，用腐败换机会",
+      "description": "激活紧急勘探协议，这是为了宝贵的机会。",
       "icon": "🔭",
       "condition": {
         "type": "custom",
@@ -563,7 +563,7 @@
       "id": "survived_famine",
       "category": "challenge",
       "name": "劫后余生",
-      "description": "食物归零后，圣所成功恢复生机",
+      "description": "食物归零后，圣所成功恢复生机。",
       "icon": "🌾",
       "condition": {
         "type": "custom",
@@ -573,7 +573,7 @@
     {
       "id": "all_archives_union",
       "name": "万卷归藏",
-      "description": "跨周目累计归档过全部记忆碎片",
+      "description": "跨周目累计归档过全部记忆碎片。",
       "icon": "📚",
       "category": "collection",
       "hidden": false,
@@ -585,7 +585,7 @@
     {
       "id": "conflict_resolver",
       "name": "抉择者",
-      "description": "第一次经历叙事冲突（归档一条目导致另一条消失）。",
+      "description": "第一次经历条目冲突（归档某一条目导致另一条消失）。",
       "icon": "⚖️",
       "category": "challenge",
       "hidden": false,
@@ -597,7 +597,7 @@
     {
       "id": "deep_archivist",
       "name": "深度挖掘",
-      "description": "完成 5 次深度归档。",
+      "description": "完成5次深度归档。",
       "icon": "🔍",
       "category": "collection",
       "hidden": false,
@@ -609,7 +609,7 @@
     {
       "id": "bot_master",
       "name": "机械守夜人",
-      "description": "同时拥有 5 台工程机器人。",
+      "description": "同时拥有5台工程机器人。",
       "icon": "🤖",
       "category": "challenge",
       "hidden": false,
@@ -621,7 +621,7 @@
     {
       "id": "theme_master",
       "name": "归档专家",
-      "description": "在全部 12 间存储室中各归档至少 1 条记忆碎片。",
+      "description": "在全部12间存储室中各归档至少1条记忆碎片。",
       "icon": "📚",
       "category": "collection",
       "hidden": false,
