@@ -1,6 +1,6 @@
 # 记忆圣所 (Memory Sanctuary)
 
-![Version](https://img.shields.io/badge/version-v0.2.9-blue)
+![Version](https://img.shields.io/badge/version-v0.2.10-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tech](https://img.shields.io/badge/tech-HTML5%20%2B%20CSS3%20%2B%20Vanilla%20JS-orange)
 
@@ -282,8 +282,9 @@ memory-sanctuary/
 │   ├── ending_scenes.json  # 结局演出场景
 │   ├── scenes.json         # 章节过渡场景
 │   └── explorations.json   # 勘探地点数据（34）
-├── fonts/                  # 霞鹜文楷字体（OFL 1.1）
-├── assets/bgm/             # 原创背景音乐
+├── fonts/                  # 霞鹜文楷字体（OFL 1.1）+ OFL.txt 许可文本
+├── assets/bgm/             # 原创背景音乐（旧版 6 首）
+├── assets/bgm-dlc/         # DLC 背景音乐（松涛真韵 6 首，高品质版）
 └── scripts/                # 发布打包脚本与 headless 验证脚本
 ```
 
@@ -301,11 +302,14 @@ memory-sanctuary/
 
 游戏使用 [霞鹜文楷](https://github.com/lxgw/LxgwWenKai) 字体，该字体采用 [SIL Open Font License 1.1](https://scripts.sil.org/OFL) 授权。
 
-字体文件通过 Cache API 缓存，不会重复下载。
+字体文件通过 Cache API 缓存，不会重复下载。官方 OFL 许可文本已随附在 `fonts/OFL.txt` 中（含 LXGW 附加许可段和上游 Klee 版权声明）。
 
 ### 音频
 
 游戏 BGM 由本地 AI 音乐项目「松涛真韵」生成，为原创生成内容，未使用任何第三方版权曲库素材。
+
+- `assets/bgm/` 包含 6 首主线场景 BGM（标题/游戏/后期/终局/普通结局/真结局），由「松涛真韵」生成。
+- `assets/bgm-dlc/` 包含 6 首 DLC 场景 BGM（高品质 192kbps 版），同样由「松涛真韵」生成，为 DLC 内容预先埋入——玩家安装包内即含，接线时无需重新发版。
 
 音频文件为原创生成内容，可自由使用。
 
@@ -324,6 +328,15 @@ memory-sanctuary/
 ---
 
 ## 版本历史
+
+### v0.2.10 (2026-10-07)
+
+> BGM 回归 + 音频资产分层 + OFL 合规补齐。
+
+- ✅ **主线 BGM 恢复**：`assets/bgm/` 恢复为旧版 6 首（与 v0.2.8 时期一致的音轨体验），替代 v0.2.9 期间引入的 AI 生成版本
+- ✅ **DLC 音频资产预埋**：新增 `assets/bgm-dlc/` 松涛真韵 6 首（192kbps 高品质版），玩家安装包内即含，接线时无需重新发版
+- ✅ **OFL 合规补齐**：`fonts/OFL.txt` 随附霞鹜文楷官方许可文本（含 LXGW 附加许可段 + 上游 Klee 版权声明）
+- ✅ **版本号全链路同步**：`js/main.js` GAME_VERSION、桌面壳配置、version.json、index.html 缓存参数、README 徽章
 
 ### v0.2.9 (2026-09-09)
 
