@@ -322,7 +322,7 @@
       },
       {
         "speaker": "narrator",
-        "text": "封印程序启动。圣所缓缓沉入黑暗。但记忆永存。"
+        "text": "封印程序启动。圣所缓缓沉入黑暗，但记忆永存。"
       }
     ],
     "transition": "event:chapter_transition_12"
