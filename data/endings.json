@@ -7,7 +7,7 @@
       "description": "你保存了洛斯耶马文明的每一片碎片。\n\n后世将看到一个完整的文明，它的语言、历史、灾难、艺术、信仰、科学、生态、法律、生活、建筑、医学与星空。\n\n这是你对时间最彻底的反抗。\n\n“我们曾存在，我们曾仰望，我们曾渴望触碰你们。”",
       "type": "vault_completion",
       "condition": {
-        "description": "集齐全部 12 间存储室的条目，且文明完整度达到 60% 以上",
+        "description": "集齐全部12间存储室的条目，且文明完整度达到60%以上",
         "allVaults": true,
         "minVaultCompletion": 0.6
       },
@@ -25,7 +25,7 @@
         "moodTier": "intimate"
       },
       "unlockEntry": "arch_ng_tika_lullaby",
-      "unlockMessage": "缇卡的好感度已满。解锁专属结局与条目“缇卡的摇篮曲”。"
+      "unlockMessage": "缇卡的好感度已满。解锁专属结局、条目“缇卡的摇篮曲”。"
     },
     {
       "id": "guardian_finn_finale",
@@ -39,7 +39,7 @@
         "moodTier": "intimate"
       },
       "unlockEntry": "arch_ng_finn_chronicle",
-      "unlockMessage": "芬恩的好感度已满。解锁专属结局与条目“芬恩的编年史”。"
+      "unlockMessage": "芬恩的好感度已满。解锁专属结局、条目“芬恩的编年史”。"
     },
     {
       "id": "guardian_misha_finale",
@@ -53,7 +53,7 @@
         "moodTier": "intimate"
       },
       "unlockEntry": "arch_ng_seed_vault",
-      "unlockMessage": "米莎的好感度已满。解锁专属结局与条目“种子库”。"
+      "unlockMessage": "米莎的好感度已满。解锁专属结局、条目“种子库”。"
     },
     {
       "id": "guardian_lorn_finale",
@@ -67,7 +67,7 @@
         "moodTier": "intimate"
       },
       "unlockEntry": "arch_ng_lorn_engine",
-      "unlockMessage": "洛恩的好感度已满。解锁专属结局与条目“洛恩的引擎”。"
+      "unlockMessage": "洛恩的好感度已满。解锁专属结局、条目“洛恩的引擎”。"
     },
     {
       "id": "guardian_ethel_finale",
@@ -81,7 +81,7 @@
         "moodTier": "intimate"
       },
       "unlockEntry": "arch_ng_ethel_prayer",
-      "unlockMessage": "埃塞尔的好感度已满。解锁专属结局与条目“埃塞尔的祷文”。"
+      "unlockMessage": "埃塞尔的好感度已满。解锁专属结局、条目“埃塞尔的祷文”。"
     },
     {
       "id": "finale_song_of_doom",
@@ -95,7 +95,7 @@
           4
         ],
         "minCompletion": 0.8,
-        "description": "灾难纪实(3) + 艺术与音乐(4) 完成度≥80%"
+        "description": "灾难纪实(3)+艺术与音乐(4)完成度≥80%"
       }
     },
     {
@@ -111,7 +111,7 @@
           8
         ],
         "minCompletion": 0.7,
-        "description": "语言与语法(1) + 历史编年(2) + 法律与治理(8) 完成度≥70%"
+        "description": "语言与语法(1)+历史编年(2)+法律与治理(8)完成度≥70%"
       }
     },
     {
@@ -127,7 +127,7 @@
           12
         ],
         "minCompletion": 0.7,
-        "description": "科学与技术(6) + 生态与自然(7) + 星象与天文(12) 完成度≥70%"
+        "description": "科学与技术(6)+生态与自然(7)+星象与天文(12)完成度≥70%"
       }
     },
     {
@@ -143,7 +143,7 @@
           11
         ],
         "minCompletion": 0.7,
-        "description": "艺术与音乐(4) + 生态与自然(7) + 医学与生命(11) 完成度≥70%"
+        "description": "艺术与音乐(4)+生态与自然(7)+医学与生命(11)完成度≥70%"
       }
     },
     {
@@ -159,7 +159,7 @@
           12
         ],
         "minCompletion": 0.7,
-        "description": "艺术与音乐(4) + 哲学与宗教(5) + 星象与天文(12) 完成度≥70%"
+        "description": "艺术与音乐(4)+哲学与宗教(5)+星象与天文(12)完成度≥70%"
       }
     },
     {
@@ -175,7 +175,7 @@
           8
         ],
         "minCompletion": 0.7,
-        "description": "历史编年(2) + 灾难纪实(3) + 法律与治理(8) 完成度≥70%"
+        "description": "历史编年(2)+灾难纪实(3)+法律与治理(8)完成度≥70%"
       }
     },
     {
@@ -191,7 +191,7 @@
           11
         ],
         "minCompletion": 0.7,
-        "description": "日常生活(9) + 建筑与工程(10) + 医学与生命(11) 完成度≥70%"
+        "description": "日常生活(9)+建筑与工程(10)+医学与生命(11)完成度≥70%"
       }
     },
     {
@@ -201,7 +201,7 @@
       "description": "你保存了洛斯耶马的部分碎片。\n\n虽然后世看到的只是冰山一角，但每一片都是真实的。你的选择决定了后世“看到”怎样的洛斯耶马文明。\n\n“你的选择决定了后世看到怎样的文明。”",
       "type": "percentage_completion",
       "condition": {
-        "description": "文明完整度达到 30% - 39%",
+        "description": "文明完整度达到30%-39%",
         "minPercent": 0.3,
         "maxPercent": 0.39
       }
@@ -213,7 +213,7 @@
       "description": "你保存了少量记忆碎片。\n\n虽然后世只能看到洛斯耶马的零星片段，但至少他们知道这里曾经存在过一个文明。\n\n“至少他们知道这里曾经存在过一个文明。”",
       "type": "percentage_completion",
       "condition": {
-        "description": "文明完整度达到 5% - 29%",
+        "description": "文明完整度达到5%-29%",
         "minPercent": 0.05,
         "maxPercent": 0.29
       }
@@ -225,11 +225,11 @@
       "description": "你保存了大部分文明碎片。\n\n后世将看到一个虽不完整但足够真实的洛斯耶马——它的歌声、它的挣扎、它的智慧、它的爱。\n\n你没能留住一切，但你留住的每一样都足够厚重。",
       "type": "completion",
       "condition": {
-        "description": "文明完整度达到 40% - 99%",
+        "description": "文明完整度达到40%-99%",
         "minPercent": 0.4,
         "maxPercent": 0.99
       },
-      "unlockMessage": "文明完整度 40% 以上"
+      "unlockMessage": "文明完整度40%以上"
     },
     {
       "id": "conflict_choice",
@@ -250,7 +250,7 @@
       "description": "你选择了沉默。\n\n圣所中空空如也，后世将永远不知道洛斯耶马曾存在过。没有语言、没有历史、没有歌声、没有星空。\n\n也许遗忘也是一种慈悲，让文明不必承受被遗忘的痛苦。\n\n也许未来有一天，会有另一个文明发现这座空荡荡的圣所，然后问：“这里曾经住着谁？”\n\n但没有人会回答。",
       "type": "zero_completion",
       "condition": {
-        "description": "第 10 周后以 0% 完整度封印圣所",
+        "description": "第10周后以0%完整度封印圣所",
         "weekMin": 10
       }
     },
@@ -258,10 +258,10 @@
       "id": "true_ending",
       "priority": 200,
       "title": "✨ 超越时间",
-      "description": "你打破了循环。\n\n圣所的光芒消散后，你站在一片绿草地上。阳光温暖而真实，微风带来泥土和花朵的气息。远处，一座新的城市正在建造。\n\n守护者们站在你身边，眼中满是泪水。缇卡轻声说：'这是新的开始。'\n\n你微笑着，牵起她的手。循环被打破，而记忆将成为新世界的种子。\n\n“我们曾存在，我们曾仰望，我们曾渴望触碰你们。现在，我们终于触碰到了未来。”",
+      "description": "你打破了循环。\n\n圣所的光芒消散后，你站在一片绿草地上。阳光温暖而真实，微风带来泥土和花朵的气息。远处，一座新的城市正在建造。\n\n守护者们站在你身边，眼中满是泪水。缇卡轻声说：“这是新的开始。”\n\n你微笑着，牵起她的手。循环被打破，而记忆将成为新世界的种子。\n\n“我们曾存在，我们曾仰望，我们曾渴望触碰你们。现在，我们终于触碰到了未来。”",
       "type": "special",
       "condition": {
-        "description": "在第 5 周目达成打破循环的条件",
+        "description": "在第5周目达成打破循环的条件",
         "playthroughMin": 5,
         "special": "true_ending"
       },
@@ -274,11 +274,11 @@
       "description": "你不仅保存了文明的碎片，更守护了守护者的心。\n\n五位守护者手牵手走入永恒，他们的故事与文明一起被永远铭记。\n\n这是最完美的终章——不是悲剧，不是遗憾。我们曾用生命守护的文明，将在未来继续生长。\n\n“我们曾相爱，我们曾存在，我们曾一起仰望星辰。”",
       "type": "special",
       "condition": {
-        "description": "至少 4 位守护者好感度满，且文明完整度达到 45% 以上",
+        "description": "至少4位守护者好感度满，且文明完整度达到45%以上",
         "minGuardiansIntimate": 4,
         "minVaultCompletion": 0.45
       },
-      "unlockMessage": "完美封印！所有守护者好感度满 + 45%以上收集完成！"
+      "unlockMessage": "完美封印！所有守护者好感度满+45%以上收集完成！"
     },
     {
       "id": "sacrifice",
@@ -287,7 +287,7 @@
       "description": "在最终封印之前，一位守护者选择了牺牲。\n\n他们将自身的生命力注入圣所核心，让圣所再多存续一千年。\n\n其余四位守护者含泪封印了圣所，也封印了他们的朋友。\n\n“不要哭，我只是先一步去往星辰。在那里，我会继续为你们歌唱。”",
       "type": "special",
       "condition": {
-        "description": "第 40 周后有守护者选择牺牲",
+        "description": "第40周后有守护者选择牺牲",
         "anyGuardianSacrifice": true,
         "weekMin": 40
       },
@@ -300,7 +300,7 @@
       "description": "圣所被封印了。\n\n但千年之后，没有人发现这里。\n\n文明的歌声消失在时间的长河中，守护者的名字被永远遗忘。\n\n也许，这就是大多数圣所的命运。也许，这就是大多数文明的结局。\n\n“我们存在过，但无人知晓。”",
       "type": "special",
       "condition": {
-        "description": "全程未解锁任何成就，坚持到第 48 周且不主动封印",
+        "description": "全程未解锁任何成就，坚持到第48周且不主动封印",
         "noAchievementsUnlocked": true,
         "weekMin": 48,
         "notSealed": true

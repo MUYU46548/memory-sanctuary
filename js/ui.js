@@ -1604,15 +1604,15 @@ function renderGuardianStoryProgress() {
     
     const state = MemorySanctuary.state;
     if (!state) { container.innerHTML = ''; return; }  // 无存档时不渲染
-    const stories = MemorySanctuary.data.guardianStories || [];
+    const stories = MemorySanctuary.data.guardianEvents || [];  // 2026-11-03：故事线已并入 guardian_events.json
     const guardians = MemorySanctuary.data.guardians;
     
     container.innerHTML = '';
     
     guardians.forEach(g => {
-        const guardianStories = stories.filter(s => s.guardianId === g.id);
-        const completed = guardianStories.filter(s => state.activeEventIds.includes(s.id)).length;
-        const total = guardianStories.length;
+        const ownStories = stories.filter(s => s.guardianId === g.id);
+        const completed = ownStories.filter(s => state.activeEventIds.includes(s.id)).length;
+        const total = ownStories.length;
         
         if (total === 0) return;
         

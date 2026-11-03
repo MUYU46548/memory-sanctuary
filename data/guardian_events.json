@@ -10,7 +10,7 @@
         "weekMin": 8,
         "probability": 0.15
       },
-      "description": "缇卡在归档一段关于古老歌谣的条目后，突然唱起了旋律。那是她母亲教她的歌——关于一个失落的季节。",
+      "description": "缇卡在归档一段关于古老歌谣的条目后，突然唱起了旋律。那是她母亲教她的歌，关于一个失落的季节。",
       "choices": [
         {
           "text": "静静地听她唱完",
@@ -18,7 +18,7 @@
             "tikaMood": 3,
             "revealArchive": "arch_v2_039"
           },
-          "result": "缇卡的眼中闪烁着泪光。'谢谢你……这是我第一次在别人面前唱这首歌。'",
+          "result": "缇卡的眼中闪烁着泪光：“谢谢你……这是我第一次在别人面前唱这首歌。”",
           "sound": "vn_dialogue"
         },
         {
@@ -27,16 +27,129 @@
             "tikaMood": 2,
             "energy": -5
           },
-          "result": "缇卡微笑着点头。'好，跟我唱。'你笨拙地跟着哼唱，她笑得眼角都弯了。",
+          "result": "缇卡微笑着点头：“好，跟我唱。”你笨拙地跟着哼唱，她一直陪着你。",
           "sound": "vn_dialogue"
         },
         {
-          "text": "这太浪费能源了",
+          "text": "这太浪费时间了",
           "effect": {
             "tikaMood": -3
           },
-          "result": "缇卡沉默了。她低下头，不再说话。",
+          "result": "缇卡低下头，不再说话。",
           "sound": "vn_dialogue"
+        }
+      ]
+    },
+    {
+      "id": "tika_story_2",
+      "guardianId": "tika",
+      "title": "最后的演出",
+      "trigger": {
+        "type": "week",
+        "week": 18,
+        "probability": 0.3
+      },
+      "description": "缇卡站在主厅中央，闭上眼睛。'我想再唱一次。不是为了记录，只是为了……唱。'",
+      "choices": [
+        {
+          "text": "为她伴奏（消耗 5 能源）",
+          "effect": {
+            "tikaMood": 4,
+            "energy": -5
+          },
+          "result": "你的掌声是她听过最好的伴奏。她深深鞠了一躬，像个真正的歌者。"
+        },
+        {
+          "text": "安静地聆听",
+          "effect": {
+            "tikaMood": 2
+          },
+          "result": "歌声在穹顶下回荡。没有观众，没有掌声，但这一刻比任何演出都珍贵。"
+        }
+      ]
+    },
+    {
+      "id": "tika_story_3",
+      "guardianId": "tika",
+      "title": "给后世的信",
+      "trigger": {
+        "type": "week",
+        "week": 35,
+        "probability": 0.4
+      },
+      "description": "缇卡拿着一封手写信。'这是给找到圣所的人的。你觉得……他们会听懂我们的歌吗？'",
+      "choices": [
+        {
+          "text": "告诉他们会的",
+          "effect": {
+            "tikaMood": 3
+          },
+          "result": "缇卡微笑着把信折好，放进存储室。'谢谢你。这让我觉得……一切都值得。'"
+        },
+        {
+          "text": "沉默地握住她的手",
+          "effect": {
+            "tikaMood": 2
+          },
+          "result": "缇卡没有说话，但她的手微微收紧了。"
+        }
+      ]
+    },
+    {
+      "id": "tika_story_4",
+      "guardianId": "tika",
+      "title": "录音室的回声",
+      "trigger": {
+        "type": "mood_check",
+        "moodTier": "friendly",
+        "weekMin": 26,
+        "probability": 0.25
+      },
+      "description": "缇卡在整理旧录音时，听到了自己早期的歌声。'那时候的我……唱得真差啊。但真敢唱。'",
+      "choices": [
+        {
+          "text": "陪她重录一遍",
+          "effect": {
+            "tikaMood": 3,
+            "media": -5
+          },
+          "result": "新录音里，缇卡的歌声沉稳了许多。'奇怪，我反而更喜欢旧的那版。'"
+        },
+        {
+          "text": "建议保留原声",
+          "effect": {
+            "tikaMood": 2
+          },
+          "result": "缇卡愣了一下，随即笑了。'你说得对。笨拙也是我的一部分。'"
+        }
+      ]
+    },
+    {
+      "id": "tika_story_5",
+      "guardianId": "tika",
+      "title": "安可",
+      "trigger": {
+        "type": "week",
+        "probability": 0.5,
+        "weekMin": 45,
+        "weekMax": 47
+      },
+      "description": "圣所的光已经调到了最暗。缇卡站上歌者之座：'最后一首。这次……你想听什么，我就唱什么。'",
+      "choices": [
+        {
+          "text": "为她点亮整个主厅",
+          "effect": {
+            "tikaMood": 4,
+            "energy": -12
+          },
+          "result": "灯光如昼。缇卡唱了那首最长的叙事诗。'这是我最奢侈的一场演出。谢谢。'"
+        },
+        {
+          "text": "和她一起哼唱",
+          "effect": {
+            "tikaMood": 3
+          },
+          "result": "两个走调的声音在黑暗里交织。缇卡笑出了泪：'这是我们俩的版本。'"
         }
       ]
     },
@@ -49,7 +162,7 @@
         "week": 12,
         "probability": 0.3
       },
-      "description": "芬恩在整理旧文档时，发现了一页未完成的编年史——那是关于他自己的故事，只写了一半。",
+      "description": "芬恩在整理旧文档时，发现了一页未完成的编年史。那是关于他自己的故事，只写了一半。",
       "choices": [
         {
           "text": "帮他写完这一页",
@@ -57,7 +170,7 @@
             "finnMood": 3,
             "energy": -10
           },
-          "result": "芬恩认真地说：'你怎么知道我心里想的什么？'他接过笔，和你一起写完了那一页。",
+          "result": "芬恩认真地说：“你怎么知道我心里想的什么？”他接过笔，和你一起写完了那一页。",
           "sound": "vn_dialogue"
         },
         {
@@ -66,8 +179,123 @@
             "finnMood": -2,
             "environment": -5
           },
-          "result": "芬恩叹了口气：'我知道。但我一直在逃避。'",
+          "result": "芬恩叹了口气：“我知道，但我一直在逃避。”",
           "sound": "vn_dialogue"
+        }
+      ]
+    },
+    {
+      "id": "finn_story_2",
+      "guardianId": "finn",
+      "title": "编年史官的困惑",
+      "trigger": {
+        "type": "mood_check",
+        "moodTier": "friendly",
+        "weekMin": 15,
+        "probability": 0.25
+      },
+      "description": "芬恩停下笔，看着你。'我在写你的故事。但我不确定……该怎么写结局。'",
+      "choices": [
+        {
+          "text": "让结局自己书写",
+          "effect": {
+            "finnMood": 3
+          },
+          "result": "芬恩点点头，继续书写。'你说得对。最好的编年史不需要结局。'"
+        },
+        {
+          "text": "写一个希望的结局",
+          "effect": {
+            "finnMood": 2,
+            "energy": -5
+          },
+          "result": "芬恩的笔在纸上飞舞。'希望……是的，我们应该留下希望。'"
+        }
+      ]
+    },
+    {
+      "id": "finn_story_3",
+      "guardianId": "finn",
+      "title": "历史的重量",
+      "trigger": {
+        "type": "week",
+        "week": 40,
+        "probability": 0.35
+      },
+      "description": "芬恩看着满存储室的文档。'我们保存了这么多……但谁来读呢？'",
+      "choices": [
+        {
+          "text": "会有人来的",
+          "effect": {
+            "finnMood": 3
+          },
+          "result": "芬恩微笑着合上笔记本。'是的。我相信。'"
+        },
+        {
+          "text": "这不重要",
+          "effect": {
+            "finnMood": -1
+          },
+          "result": "芬恩沉默了。'也许吧。'"
+        }
+      ]
+    },
+    {
+      "id": "finn_story_4",
+      "guardianId": "finn",
+      "title": "被删除的段落",
+      "trigger": {
+        "type": "mood_check",
+        "moodTier": "friendly",
+        "weekMin": 24,
+        "probability": 0.25
+      },
+      "description": "芬恩在比对两个版本的编年史：'初版里有一段被人为删除了。删得很干净……但不是时间做的。'",
+      "choices": [
+        {
+          "text": "尽力修复还原",
+          "effect": {
+            "finnMood": 3,
+            "energy": -8
+          },
+          "result": "修复出的段落平淡无奇——只是普通的一周。芬恩却如释重负：'看来删除它的人，只是害怕被遗忘。'"
+        },
+        {
+          "text": "把两种版本都存档",
+          "effect": {
+            "finnMood": 2,
+            "media": -5
+          },
+          "result": "芬恩将两版并排存放。'让后世自己判断吧。这才是诚实的历史。'"
+        }
+      ]
+    },
+    {
+      "id": "finn_story_5",
+      "guardianId": "finn",
+      "title": "索引的最后一行",
+      "trigger": {
+        "type": "week",
+        "probability": 0.5,
+        "weekMin": 45,
+        "weekMax": 47
+      },
+      "description": "芬恩捧着总索引：'该写最后一行了。写给谁看呢——是写给来检索的人，还是偶然推门进来的人？'",
+      "choices": [
+        {
+          "text": "写给认真检索的人",
+          "effect": {
+            "finnMood": 4,
+            "media": -8
+          },
+          "result": "芬恩写下一份严谨的目录，附了三条检索路径。'这样他们能找到想找的一切。'"
+        },
+        {
+          "text": "写给偶然到访的人",
+          "effect": {
+            "finnMood": 3
+          },
+          "result": "芬恩只写了一句话：'欢迎。慢慢看，不着急。'他合上索引，笑了。"
         }
       ]
     },
@@ -80,39 +308,154 @@
         "explorationId": "exp_forest_02",
         "probability": 0.4
       },
-      "description": "米莎从地表带回一颗枯萎的种子。'它在错误的时间发芽了……但我想试试。'",
+      "description": "米莎从地表带回一颗粉色的种子。“它已经发芽了……我想试试。”",
       "choices": [
         {
-          "text": "消耗10能源为她培育",
+          "text": "消耗10单位能源为她培育",
           "effect": {
             "mishaMood": 3,
             "energy": -10,
             "revealArchive": "arch_ng_seed_vault"
           },
-          "result": "米莎的眼睛亮了：'你真的愿意？'几周后，幼苗开出了花——那是你从未见过的颜色。",
+          "result": "“你真的愿意？”你仿佛看见了它在未来开出的花。",
           "sound": "vn_dialogue"
         },
         {
-          "text": "圣所资源有限",
+          "text": "告诉她圣所资源有限",
           "effect": {
             "mishaMood": -2,
             "environment": -3
           },
-          "result": "米莎轻轻点头：'我理解。'她把种子小心地收进口袋。",
+          "result": "米莎轻轻点头：“我理解。”她把种子小心地收进标本袋。",
           "sound": "vn_dialogue"
         }
       ]
     },
     {
+      "id": "misha_story_2",
+      "guardianId": "misha",
+      "title": "森林的记忆",
+      "trigger": {
+        "type": "mood_check",
+        "moodTier": "friendly",
+        "weekMin": 10,
+        "probability": 0.2
+      },
+      "description": "米莎看着存储室中的植物图鉴。'这些植物……现在只剩下图片了。'",
+      "choices": [
+        {
+          "text": "图片也是生命的一部分",
+          "effect": {
+            "mishaMood": 3
+          },
+          "result": "米莎抚摸着图鉴。'你说得对。只要有人记得，它们就没有真正消失。'"
+        },
+        {
+          "text": "沉默地陪她站着",
+          "effect": {
+            "mishaMood": 1
+          },
+          "result": "米莎深吸一口气，然后微笑着合上图鉴。"
+        }
+      ]
+    },
+    {
+      "id": "misha_story_3",
+      "guardianId": "misha",
+      "title": "最后的种子",
+      "trigger": {
+        "type": "week",
+        "week": 38,
+        "probability": 0.3
+      },
+      "description": "米莎将一颗种子封存在圣所核心。'这是最后的了。如果有一天……它能在一个新的世界发芽。'",
+      "choices": [
+        {
+          "text": "它会发芽的",
+          "effect": {
+            "mishaMood": 3
+          },
+          "result": "米莎微笑着闭上眼睛。'谢谢你。这让我觉得……一切都值得。'"
+        },
+        {
+          "text": "我们会的",
+          "effect": {
+            "mishaMood": 2
+          },
+          "result": "米莎点点头，将种子小心地放入核心。"
+        }
+      ]
+    },
+    {
+      "id": "misha_story_4",
+      "guardianId": "misha",
+      "title": "共生",
+      "trigger": {
+        "type": "mood_check",
+        "moodTier": "friendly",
+        "weekMin": 28,
+        "probability": 0.25
+      },
+      "description": "那株从枯萎之森带回的幼苗，根系已经缠上了圣所的水管。'它在和圣所……交换东西。'",
+      "choices": [
+        {
+          "text": "为它扩建苗圃",
+          "effect": {
+            "mishaMood": 3,
+            "energy": -12
+          },
+          "result": "苗圃连上了循环水。米莎记录下每一片新叶：'圣所在痊愈。我们也是。'"
+        },
+        {
+          "text": "只记录，不干预",
+          "effect": {
+            "mishaMood": 2,
+            "media": -4
+          },
+          "result": "'观察者的克制。'米莎点头，'这本身就是一种尊重。'"
+        }
+      ]
+    },
+    {
+      "id": "misha_story_5",
+      "guardianId": "misha",
+      "title": "种子银行的扉页",
+      "trigger": {
+        "type": "week",
+        "probability": 0.5,
+        "weekMin": 45,
+        "weekMax": 47
+      },
+      "description": "米莎把最后一批种子分成两箱：'一箱存最容易活下来的。一箱存最不像话的——比如那颗不可能发芽的。空间只够带走一箱的记录。'",
+      "choices": [
+        {
+          "text": "记录多样性那一箱",
+          "effect": {
+            "mishaMood": 4,
+            "media": -8
+          },
+          "result": "米莎郑重地写下每一颗种子的名字。'活下去不是唯一的目的。成为它们自己才是。'"
+        },
+        {
+          "text": "记录存活率那一箱",
+          "effect": {
+            "mishaMood": 3,
+            "food": -6
+          },
+          "result": "'务实的选择。'米莎笑了，'末日教会我的第一课，就是务实。'"
+        }
+      ]
+    },
+    {
       "id": "lorn_engine_confession",
-      "title": "引擎室的独白",
+      "title": "引擎室的叹息",
       "guardianId": "lorn",
       "trigger": {
         "type": "week",
         "week": 20,
         "probability": 0.25
       },
-      "description": "深夜，洛恩独自在引擎室。你发现他对着核心喃喃自语：'你还能撑多久？我们还能撑多久？'",
+      "description": "深夜，洛恩独自在引擎室。你发现他对着核心喃喃自语：“你还能撑多久？我们还能撑多久？”",
       "choices": [
         {
           "text": "和他一起守夜",
@@ -120,7 +463,7 @@
             "lornMood": 3,
             "food": -10
           },
-          "result": "洛恩递给你一杯热饮：'谢谢。'你们沉默地坐着，听着引擎的低吟。",
+          "result": "洛恩递给你一杯热饮：“谢谢。”你们并排坐着，听着引擎的低吟。",
           "sound": "vn_dialogue"
         },
         {
@@ -128,8 +471,122 @@
           "effect": {
             "lornMood": -1
           },
-          "result": "洛恩笑了，但笑容有些苦涩：'希望如此。'",
+          "result": "洛恩的笑容有些苦涩：“希望如此。”",
           "sound": "vn_dialogue"
+        }
+      ]
+    },
+    {
+      "id": "lorn_story_2",
+      "guardianId": "lorn",
+      "title": "工程师的骄傲",
+      "trigger": {
+        "type": "mood_check",
+        "moodTier": "friendly",
+        "weekMin": 14,
+        "probability": 0.2
+      },
+      "description": "洛恩展示了他最新的改造。'这个系统还能再撑十年。我保证。'",
+      "choices": [
+        {
+          "text": "相信他的承诺",
+          "effect": {
+            "lornMood": 3
+          },
+          "result": "洛恩挺起胸膛。'我不会让你失望的。'"
+        },
+        {
+          "text": "问他还需要什么",
+          "effect": {
+            "lornMood": 2,
+            "media": -5
+          },
+          "result": "洛恩想了想。'一些介质……我可以做得更好。'"
+        }
+      ]
+    },
+    {
+      "id": "lorn_story_3",
+      "guardianId": "lorn",
+      "title": "最后的维护",
+      "trigger": {
+        "type": "week",
+        "week": 42,
+        "probability": 0.35
+      },
+      "description": "洛恩最后一次检查所有系统。'它们会持续运转。即使我们不在了。'",
+      "choices": [
+        {
+          "text": "谢谢你做的一切",
+          "effect": {
+            "lornMood": 4
+          },
+          "result": "洛恩微笑着拍拍核心。'这是我的使命。'"
+        },
+        {
+          "text": "我们会一起走到最后",
+          "effect": {
+            "lornMood": 3
+          },
+          "result": "洛恩点点头。'是的。一起。'"
+        }
+      ]
+    },
+    {
+      "id": "lorn_story_4",
+      "guardianId": "lorn",
+      "title": "私藏的零件",
+      "trigger": {
+        "type": "mood_check",
+        "moodTier": "friendly",
+        "weekMin": 22,
+        "probability": 0.25
+      },
+      "description": "洛恩的工具柜最底层藏着一箱备用零件。'违规的。我从淘汰品里挑出来的。别上报——至少现在别。'",
+      "choices": [
+        {
+          "text": "补进维护库存",
+          "effect": {
+            "lornMood": 3,
+            "media": -6
+          },
+          "result": "洛恩把零件逐个登记上架。'这下光明正大了。谢谢你，管理者。'"
+        },
+        {
+          "text": "让它留在原处",
+          "effect": {
+            "lornMood": 2
+          },
+          "result": "'明智。'洛恩关上柜门，'有些安全感，就是把关键的零件放在够得着的地方。'"
+        }
+      ]
+    },
+    {
+      "id": "lorn_story_5",
+      "guardianId": "lorn",
+      "title": "最后一次巡检",
+      "trigger": {
+        "type": "week",
+        "probability": 0.5,
+        "weekMin": 46,
+        "weekMax": 48
+      },
+      "description": "洛恩提起工具包：'最后一次全面巡检。通常我一个人走……这次，你要一起来吗？'",
+      "choices": [
+        {
+          "text": "全程同行",
+          "effect": {
+            "lornMood": 4,
+            "food": -8
+          },
+          "result": "四个小时，每一层。洛恩把每台机器的名字都讲给你听。'它们以后听不到人声了。让它们记住你的脚步。'"
+        },
+        {
+          "text": "在控制室等他",
+          "effect": {
+            "lornMood": 3
+          },
+          "result": "巡检结束，洛恩带回一身灰尘和一份全绿的检测单。'一切正常。会一直正常的。'"
         }
       ]
     },
@@ -142,7 +599,7 @@
         "week": 25,
         "probability": 0.2
       },
-      "description": "埃塞尔在祈祷室点燃了最后一支蜡烛。'愿这光……能照亮某个人的归途。'",
+      "description": "埃塞尔在祈祷室点燃了最后一支蜡烛：“愿这光能照亮某人的归途。”",
       "choices": [
         {
           "text": "为她唱一首歌",
@@ -150,7 +607,7 @@
             "ethelMood": 3,
             "revealArchive": "arch_v2_024"
           },
-          "result": "埃塞尔合掌微笑：'你的歌声里有光。'",
+          "result": "埃塞尔合掌微笑：“你的歌声里有光，我很喜欢。”",
           "sound": "vn_dialogue"
         },
         {
@@ -159,8 +616,121 @@
             "ethelMood": 2,
             "environment": 5
           },
-          "result": "埃塞尔轻声说：'谢谢你的陪伴。'",
+          "result": "埃塞尔轻声说：“谢谢你的陪伴。”",
           "sound": "vn_dialogue"
+        }
+      ]
+    },
+    {
+      "id": "ethel_story_2",
+      "guardianId": "ethel",
+      "title": "信仰的危机",
+      "trigger": {
+        "type": "mood_check",
+        "moodTier": "friendly",
+        "weekMin": 16,
+        "probability": 0.2
+      },
+      "description": "埃塞尔看着存储室中的哲学文献。'我一直在想……我们的信仰，真的能拯救我们吗？'",
+      "choices": [
+        {
+          "text": "信仰不是用来拯救的",
+          "effect": {
+            "ethelMood": 3
+          },
+          "result": "埃塞尔若有所思。'那它是用来做什么的？'"
+        },
+        {
+          "text": "它能给我们希望",
+          "effect": {
+            "ethelMood": 2
+          },
+          "result": "埃塞尔微笑着点头。'是的。希望本身就是意义。'"
+        }
+      ]
+    },
+    {
+      "id": "ethel_story_3",
+      "guardianId": "ethel",
+      "title": "最后的祝福",
+      "trigger": {
+        "type": "week",
+        "week": 44,
+        "probability": 0.3
+      },
+      "description": "埃塞尔将祷文编码进圣所的墙壁。'愿后世……能感受到我们的祝福。'",
+      "choices": [
+        {
+          "text": "他们会的",
+          "effect": {
+            "ethelMood": 3
+          },
+          "result": "埃塞尔合掌微笑：'谢谢你。这让我觉得……一切都值得。'"
+        },
+        {
+          "text": "我们会的",
+          "effect": {
+            "ethelMood": 2
+          },
+          "result": "埃塞尔点点头。'是的。我们会的。'"
+        }
+      ]
+    },
+    {
+      "id": "ethel_story_4",
+      "guardianId": "ethel",
+      "title": "无名者的名单",
+      "trigger": {
+        "type": "mood_check",
+        "moodTier": "friendly",
+        "weekMin": 30,
+        "probability": 0.25
+      },
+      "description": "埃塞尔在抄写一份名单——大崩坏中无人认领的死者。'教堂的名录里有职分，没有名字。我想给他们名字。'",
+      "choices": [
+        {
+          "text": "陪她一同抄写",
+          "effect": {
+            "ethelMood": 3,
+            "media": -5
+          },
+          "result": "你们抄了一整夜。埃塞尔轻声念着每一个名字，像在举行一场只有两个人的弥撒。"
+        },
+        {
+          "text": "提议为无名者立传",
+          "effect": {
+            "ethelMood": 2
+          },
+          "result": "'传记需要生平。'埃塞尔摇头，又点头，'但也许……我们记得这个名字本身，就足够了。'"
+        }
+      ]
+    },
+    {
+      "id": "ethel_story_5",
+      "guardianId": "ethel",
+      "title": "告解",
+      "trigger": {
+        "type": "week",
+        "probability": 0.5,
+        "weekMin": 44,
+        "weekMax": 46
+      },
+      "description": "埃塞尔脱下祭司的旧袍，叠好。'最后的话，我不想以上帝的仆人的身份说。我想以埃塞尔的身份说。可以吗？'",
+      "choices": [
+        {
+          "text": "以埃塞尔之名记录",
+          "effect": {
+            "ethelMood": 4
+          },
+          "result": "她说得很慢，很平静：'我恐惧了一辈子黑暗。但在这里，我学会了在黑暗里点灯。'"
+        },
+        {
+          "text": "两种身份都留下",
+          "effect": {
+            "ethelMood": 3,
+            "media": -6
+          },
+          "result": "埃塞尔先以祭司的口吻祈祷，再以自己的口吻说话。'真奇怪。两种都是我。'"
         }
       ]
     }

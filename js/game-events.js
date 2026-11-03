@@ -198,52 +198,20 @@ function updateMoraleStreak() {
 
 
 function checkGuardianPersonalEvent() {
-    const state = MemorySanctuary.state;
-    const events = MemorySanctuary.data.guardianEvents || [];
-    
-    for (const event of events) {
-        if (state.activeEventIds.includes(event.id)) continue;
-        
-        const trigger = event.trigger;
-        if (!trigger) continue;
-        
-        // 检查触发条件
-        if (trigger.type === 'mood_check') {
-            const guardianMood = state.guardianMoods[event.guardianId] || 0;
-            const tier = getMoodTier(event.guardianId);
-            if (tier !== trigger.moodTier) continue;
-            if (state.week < trigger.weekMin) continue;
-            if (Math.random() > (trigger.probability || 0.15)) continue;
-            return event;
-        }
-        
-        if (trigger.type === 'week') {
-            if (state.week !== trigger.week) continue;
-            if (Math.random() > (trigger.probability || 0.3)) continue;
-            return event;
-        }
-        
-        if (trigger.type === 'exploration_complete') {
-            if (state.week < 10) continue;
-            if (Math.random() > (trigger.probability || 0.25)) continue;
-            return event;
-        }
-    }
-    
-    // 检查守护者故事线
-    const storyEvent = checkGuardianStoryEvent();
-    if (storyEvent) return storyEvent;
-    
-    return null;
+    // 2026-11-03：守护者个人事件与故事线已合并为单一数据源（data/guardian_events.json），
+    // 统一走 checkGuardianStoryEvent 的触发逻辑（支持 weekMin~weekMax 区间与 explorationId 校验）。
+    return checkGuardianStoryEvent();
 }
 
 /**
- * 检查守护者故事线事件
- * 碎片化暗示叙事，每个守护者有 5 个连续故事
+ * 检查守护者故事线事件（唯一触发实现）
+ * 数据源：data/guardian_events.json —— 每位守护者 5 条
+ * 触发类型：mood_check（好感档位 + 周数下限）/ week（单周或 weekMin~weekMax 区间）/ exploration_complete
  */
 function checkGuardianStoryEvent() {
     const state = MemorySanctuary.state;
-    const stories = MemorySanctuary.data.guardianStories || [];
+    if (!state) return null;
+    const stories = MemorySanctuary.data.guardianEvents || [];
     
     for (const story of stories) {
         if (state.activeEventIds.includes(story.id)) continue;

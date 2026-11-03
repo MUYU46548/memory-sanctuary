@@ -448,7 +448,7 @@ async function loadGameData() {
     try {
         const guardianEventsRes = await fetch('data/guardian_events.json');
         MemorySanctuary.data.guardianEvents = (await guardianEventsRes.json()).guardian_events || [];
-        if (DEBUG) console.log(`[数据] ${MemorySanctuary.data.guardianEvents.length} 个守护者事件`);
+        if (DEBUG) console.log(`[数据] ${MemorySanctuary.data.guardianEvents.length} 个守护者故事/事件`);
     } catch (e) {
         if (DEBUG) console.warn('[数据] guardian_events.json 加载失败');
         MemorySanctuary.data.guardianEvents = [];
@@ -464,14 +464,6 @@ async function loadGameData() {
         MemorySanctuary.data.chapters = {};
     }
 
-    try {
-        const guardianStoriesRes = await fetch('data/guardian_stories.json');
-        MemorySanctuary.data.guardianStories = (await guardianStoriesRes.json()).guardian_stories || [];
-        if (DEBUG) console.log(`[数据] ${MemorySanctuary.data.guardianStories.length} 个守护者故事`);
-    } catch (e) {
-        if (DEBUG) console.warn('[数据] guardian_stories.json 加载失败');
-        MemorySanctuary.data.guardianStories = [];
-    }
     
     if (DEBUG) console.log(`[数据] ${MemorySanctuary.data.archives.length}条目, ${MemorySanctuary.data.vaults.length}存储室, ${MemorySanctuary.data.guardians.length}守护者, ${MemorySanctuary.data.events.length}随机事件, ${MemorySanctuary.data.scheduledEvents.length}调度事件, ${MemorySanctuary.data.explorations.length}勘探点, ${MemorySanctuary.data.projects.length}项目`);
 }
