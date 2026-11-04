@@ -1,0 +1,29 @@
+# 行尾统一为 LF
+# ---------------------------------------------------------------------------
+# 本机 core.autocrlf=true，且仓库原先没有 .gitattributes，导致同一个文件在
+# 「git 检出/还原 → CRLF」与「编辑器/工具保存 → LF」之间来回翻：内容一字未变，
+# 但字节数、mtime、编辑器行尾显示都会变，git 却因为归一化而始终显示"干净"。
+# 2026-11-04 因写回测试触发这个坑（data/guardian_events.json 被翻成 CRLF 又复原）。
+# 显式声明后：仓库内文本文件一律 LF，检出/还原不再改写行尾。
+* text=auto eol=lf
+
+# 二进制资产：禁止文本归一化（字体/音频/图片/压缩包/桌面壳可执行文件）
+*.ttf   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+*.mp3   binary
+*.ogg   binary
+*.wav   binary
+*.flac  binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.zip   binary
+*.7z    binary
+*.exe   binary
+*.dll   binary
+*.neu   binary
