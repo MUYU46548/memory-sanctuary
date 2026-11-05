@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="记忆圣所 —— 末日叙事驱动的资源管理游戏。在文明崩塌后的圣所中归档记忆碎片、维系五位守护者，决定后世将看到怎样的洛斯耶马文明。">
+    <meta name="description" content="记忆圣所是一款末日叙事驱动的资源管理游戏。在文明崩塌后的圣所中归档记忆碎片、维系五位守护者，决定后世将看到怎样的洛斯耶马文明。">
     <title>记忆圣所 | Memory Sanctuary</title>
     <style>
         /* 启动壳 — 内联，不依赖外部 CSS */
@@ -31,7 +31,7 @@
     <div id="boot-screen" role="status" aria-label="加载中">
         <div class="boot-title">记忆圣所</div>
         <div class="boot-progress"><div class="boot-progress-bar" id="boot-progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div></div>
-        <div class="boot-status" id="boot-status">正在初始化...</div>
+        <div class="boot-status" id="boot-status">正在唤醒记忆……</div>
     </div>
     <!-- 标题画面 -->
     <div id="title-screen">
@@ -57,7 +57,7 @@
                     <button class="title-btn" id="title-theme-toggle" title="切换亮/暗色模式">◐ 主题</button>
                 </div>
                 <button class="title-btn title-btn-full title-btn-dlc" id="title-dlc">
-                    <span class="dlc-btn-label">🌌 选择模式</span>
+                    <span class="dlc-btn-label">🌌 游戏模式</span>
                     <span class="dlc-btn-current" id="dlc-current-label">圣所模式</span>
                 </button>
                 <div id="title-version"></div>
@@ -71,7 +71,7 @@
         <div id="dlc-panel-content">
             <h2 id="dlc-panel-title">选择模式</h2>
             <p id="dlc-panel-subtitle">终来之刻，何物当存？</p>
-            <div id="dlc-panel-notice">🚧 DLC 模式暂未实装（框架已就绪），请等待后续版本更新。当前仅开放「圣所」主模式。</div>
+            <div id="dlc-panel-notice">🚧 当前版本DLC暂未实装，请等待后续版本更新。当前仅开放游戏本体“圣所模式”。</div>
             <div id="dlc-list">
                 <!-- 由 JS 动态填充 -->
             </div>
@@ -186,7 +186,7 @@
                                     <div class="guardian-fatigue hidden" id="guardian-fatigue"></div>
                                 </div>
                                 <div class="guardian-role" id="guardian-role">首席歌者</div>
-                                <div class="guardian-dialogue" id="guardian-dialogue">……我准备好了。让我们开始吧。</div>
+                                <div class="guardian-dialogue" id="guardian-dialogue">我准备好了。让我们开始吧。</div>
                                 <!-- 交谈分支选项（P1-4：点击「交谈」后出现，不同选择影响好感与对话走向） -->
                                 <div id="guardian-chat-choices" class="guardian-chat-choices hidden"></div>
                             </div>
@@ -196,11 +196,11 @@
                         <!-- 守护者故事进度 -->
                         <div class="guardian-story-progress" id="guardian-story-progress"></div>
                         <!-- 守护者互动菜单 -->
-                        <div id="guardian-boost-hint" class="guardian-boost-hint hidden">🎁 补给品可分发：消耗 8 食物，全员士气 +2（每周一次）。点击头像打开菜单。</div>
+                        <div id="guardian-boost-hint" class="guardian-boost-hint hidden">🎁 补给品可分发：消耗8食物，全员士气+2（每周限一次）。点击头像打开菜单。</div>
                         <div id="guardian-menu" class="hidden">
                             <button class="guardian-menu-item" id="guardian-talk">💬 交谈</button>
                             <button class="guardian-menu-item" id="guardian-recommend">📌 推荐归档</button>
-                            <button class="guardian-menu-item" id="guardian-boost" title="消耗 8 食物为所有守护者提供额外补给，每周限一次">🎁 分发补给品</button>
+                            <button class="guardian-menu-item" id="guardian-boost" title="消耗8食物为所有守护者提供额外补给，每周限一次">🎁 分发补给品</button>
                             <button class="guardian-menu-item" id="guardian-detail">📖 详情</button>
                         </div>
                         <!-- 守护者详情展开区 -->
@@ -262,7 +262,7 @@
             </div>
             <div id="log-content">
                 <p class="log-entry system">系统启动。圣所主厅已激活。</p>
-                <p class="log-entry guardian">缇卡：「……我准备好了。让我们开始吧。」</p>
+                <p class="log-entry guardian">缇卡：“我准备好了。让我们开始吧。”</p>
             </div>
         </div>
 
@@ -443,14 +443,14 @@
                         <input type="checkbox" id="setting-skip-confirm">
                         <span>跳过归档确认</span>
                     </label>
-                    <div class="settings-desc">开启后点击「录入归档」将直接执行，不再弹出确认窗口。</div>
+                    <div class="settings-desc">开启后点击“录入归档”将直接执行，不再弹出确认窗口。</div>
                 </div>
                 <div class="settings-item">
                     <label class="settings-label">
                         <input type="checkbox" id="setting-quick-note-confirm" checked>
                         <span>速记需要二次确认</span>
                     </label>
-                    <div class="settings-desc">开启后点击「⚡速记」会先弹出代价说明窗口；关闭则直接执行。</div>
+                    <div class="settings-desc">开启后点击“⚡速记”会先弹出代价说明窗口；关闭则直接执行。</div>
                 </div>
                 <div class="settings-item">
                     <label class="settings-label">
@@ -475,7 +475,7 @@
                         <span class="settings-volume-value" id="sfx-volume-value">100%</span>
                         <button class="settings-mute-btn" id="setting-sfx-mute" title="音效静音">🔊</button>
                     </div>
-                    <div class="settings-desc">调整音效音量。点击 🔊 可单独静音/取消音效。</div>
+                    <div class="settings-desc">调整音效音量。点击🔊可单独静音/取消音效。</div>
                 </div>
                 <div class="settings-item">
                     <label class="settings-label">
@@ -486,7 +486,7 @@
                         <span class="settings-volume-value" id="bgm-volume-value">80%</span>
                         <button class="settings-mute-btn" id="setting-bgm-mute" title="BGM 静音">🎵</button>
                     </div>
-                    <div class="settings-desc">调整背景音乐音量。点击 🎵 可单独静音/取消 BGM。</div>
+                    <div class="settings-desc">调整背景音乐音量。点击🎵可单独静音/取消 BGM。</div>
                 </div>
                 <div class="settings-item">
                     <label class="settings-label">
@@ -512,7 +512,7 @@
                         <input type="range" id="setting-animation-speed" min="0" max="200" value="100" class="settings-slider">
                         <span class="settings-volume-value" id="animation-speed-value">100%</span>
                     </div>
-                    <div class="settings-desc">调整动画过渡速度。0% 为关闭动画，200% 为双倍速。</div>
+                    <div class="settings-desc">调整动画过渡速度。0%为关闭动画，200%为双倍速。</div>
                 </div>
                 <div class="settings-item">
                     <label class="settings-label">
@@ -676,19 +676,19 @@
                 <div id="debug-tab-resources" class="debug-tab-content active">
                     <h4>资源修改</h4>
                     <div class="debug-control">
-                        <label>能源: <span id="debug-energy-val">150</span></label>
+                        <label>能源：<span id="debug-energy-val">150</span></label>
                         <input type="range" id="debug-energy" min="0" max="150" value="150">
                     </div>
                     <div class="debug-control">
-                        <label>介质: <span id="debug-media-val">100</span></label>
+                        <label>介质：<span id="debug-media-val">100</span></label>
                         <input type="range" id="debug-media" min="0" max="150" value="100">
                     </div>
                     <div class="debug-control">
-                        <label>环境: <span id="debug-environment-val">95</span></label>
+                        <label>环境：<span id="debug-environment-val">95</span></label>
                         <input type="range" id="debug-environment" min="0" max="100" value="95">
                     </div>
                     <div class="debug-control">
-                        <label>食物: <span id="debug-food-val">50</span></label>
+                        <label>食物：<span id="debug-food-val">50</span></label>
                         <input type="range" id="debug-food" min="0" max="80" value="50">
                     </div>
                     <button id="debug-apply-resources" class="debug-btn">应用修改</button>
@@ -697,12 +697,12 @@
                 <div id="debug-tab-time" class="debug-tab-content">
                     <h4>时间跳转</h4>
                     <div class="debug-control">
-                        <label>跳转到周数:</label>
+                        <label>跳转到周数：</label>
                         <input type="number" id="debug-week-input" min="1" max="48" value="1">
                     </div>
                     <button id="debug-jump-week" class="debug-btn">跳转</button>
                     <div class="debug-control">
-                        <label>快速跳转:</label>
+                        <label>快速跳转：</label>
                         <div class="debug-btn-row">
                             <button class="debug-btn debug-jump-btn" data-week="1">第1周</button>
                             <button class="debug-btn debug-jump-btn" data-week="10">第10周</button>
@@ -717,12 +717,12 @@
                 <div id="debug-tab-events" class="debug-tab-content">
                     <h4>事件触发</h4>
                     <div class="debug-control">
-                        <label>选择事件:</label>
+                        <label>选择事件：</label>
                         <select id="debug-event-select"></select>
                     </div>
                     <button id="debug-trigger-event" class="debug-btn">触发事件</button>
                     <div class="debug-control">
-                        <label>随机事件:</label>
+                        <label>随机事件：</label>
                         <button id="debug-random-event" class="debug-btn">强制随机事件</button>
                     </div>
                 </div>
@@ -730,7 +730,7 @@
                 <div id="debug-tab-achievements" class="debug-tab-content">
                     <h4>成就操作</h4>
                     <div class="debug-control">
-                        <label>选择成就:</label>
+                        <label>选择成就：</label>
                         <select id="debug-achievement-select"></select>
                     </div>
                     <button id="debug-unlock-achievement" class="debug-btn">解锁成就</button>
@@ -759,7 +759,7 @@
         <div id="vn-portraits"></div>
         <div id="vn-dialogue-box">
             <button id="vn-skip-btn" class="disabled" title="首次观看，无法跳过">跳过剧情</button>
-            <div id="vn-close-hint">按 ESC 可跳过</div>
+            <div id="vn-close-hint">按ESC可跳过</div>
             <div id="vn-speaker-name">旁白</div>
             <div id="vn-dialogue-text"></div>
             <div id="vn-click-hint" class="hidden">▼ 点击继续</div>
@@ -801,7 +801,7 @@
         <div id="ending-page">
             <div id="ending-header">
                 <h2 id="ending-title">圣所封印</h2>
-                <div id="ending-subtitle">「终来之刻，何物当存？」</div>
+                <div id="ending-subtitle">“终来之刻，何物当存？”</div>
             </div>
             <div id="ending-content">
                 <div id="ending-portrait"></div>

@@ -657,7 +657,7 @@ function renderGuardianDetail() {
     } else {
         const nextThreshold = tier === 'hostile' ? 0 : (tier === 'cold' ? 3 : (tier === 'neutral' ? 5 : 7));
         const need = nextThreshold - moodLevel;
-        progressHtml = `<div class="guardian-detail-value">距「${tierNames[tier === 'hostile' ? 'cold' : tier === 'cold' ? 'neutral' : tier === 'neutral' ? 'friendly' : 'intimate']}」还需 ${need} 点</div>`;
+        progressHtml = `<div class="guardian-detail-value">距“${tierNames[tier === 'hostile' ? 'cold' : tier === 'cold' ? 'neutral' : tier === 'neutral' ? 'friendly' : 'intimate']}”还需 ${need} 点</div>`;
     }
 
     // 历史最高好感度（跨周目）：让标签有深度，玩家能感知羁绊沉淀
@@ -1023,7 +1023,7 @@ function renderVaultStatus() {
         item.dataset.vaultId = vault.id;
         item.style.borderLeftColor = vault.accentColor;
         item.style.cursor = 'pointer';
-        item.title = `点击查看「${vault.name}」的待归档条目`;
+        item.title = `点击查看“${vault.name}”的待归档条目`;
         
         // P0-3/P2-7 修复：按充盈度分档视觉效果（25%/50%/75%/100%）+ 容量将满预警
         let fillClass = 'vault-fill-low';
@@ -1214,12 +1214,12 @@ function renderArchiveEntries() {
             const hasInsight = !!(techArchiveUi && techArchiveUi.conflictInsight);
             const conflictWarning = conflict
                 ? `<span class="conflict-warning${hasInsight ? ' insight' : ''}" title="${hasInsight
-                    ? `叙事互斥：「${conflict.title}」与本条目互斥，归档此条目后它将永久消失。请先想好要保留哪一条`
-                    : '检测到叙事互斥（研究「互斥洞察」科技可看到具体条目）。归档此条目后，互斥的另一方将永久消失。'}">⚖互斥${hasInsight ? `：「${esc(conflict.title)}」` : ''}</span>`
+                    ? `互斥条目：“${conflict.title}”与本条目互斥，归档此条目后它将永久消失。请先想好要保留哪一条`
+                    : '检测到互斥条目（研究“互斥洞察”科技可看到具体条目）。归档此条目后，互斥的另一方将永久消失。'}">⚖互斥${hasInsight ? `：“${esc(conflict.title)}”` : ''}</span>`
                 : '';
             
             // 隐藏内容标记
-            const hiddenMarker = entry.hiddenContent ? '<span title="包含隐藏叙事">✨</span>' : '';
+            const hiddenMarker = entry.hiddenContent ? '<span title="包含隐藏内容">✨</span>' : '';
             
             const costHtml = `
                 <div class="entry-cost">
@@ -1248,7 +1248,7 @@ function renderArchiveEntries() {
                 if (quickUsedThisWeek) {
                     quickBtnHtml = `<button class="archive-btn quick-archive-btn" disabled title="本回合已使用过速记（每回合限 1 次），下回合恢复">⚡已速记</button>`;
                 } else {
-                    quickBtnHtml = `<button class="archive-btn quick-archive-btn" data-archive-id="${entry.id}" title="速记：省 30% 资源、不推进时间，但牺牲隐藏叙事与守护者注记，每回合限 1 次">⚡速记</button>`;
+                    quickBtnHtml = `<button class="archive-btn quick-archive-btn" data-archive-id="${entry.id}" title="速记：省 30% 资源、不推进时间，但牺牲隐藏内容与守护者注记，每回合限 1 次">⚡速记</button>`;
                 }
             }
             
@@ -1382,7 +1382,7 @@ function renderEngineeringBotsPanel() {
         } else if (botCount >= cfg.maxBots) {
             buildBtnHtml = `<button class="bots-build-btn" disabled>已达上限（${cfg.maxBots} 台）</button>`;
         } else if (!projectDone) {
-            buildBtnHtml = `<button class="bots-build-btn" disabled title="完成「建造工程机器人」项目后解锁批量建造">🔒 完成「建造工程机器人」项目后解锁</button>`;
+            buildBtnHtml = `<button class="bots-build-btn" disabled title="完成“建造工程机器人”项目后解锁批量建造">🔒 完成“建造工程机器人”项目后解锁</button>`;
         } else {
             const affordable = state.resources.energy >= cfg.buildCost.energy && state.resources.media >= cfg.buildCost.media;
             buildBtnHtml = `<button class="bots-build-btn" id="bots-build-btn" ${affordable ? '' : 'disabled'} title="每台 ◈${cfg.buildCost.energy} ◇${cfg.buildCost.media}，${cfg.buildDuration} 周建成">${affordable ? `🔨 建造机器人（◈${cfg.buildCost.energy} ◇${cfg.buildCost.media} · ${cfg.buildDuration}周）` : '资源不足'}</button>`;
@@ -1411,7 +1411,7 @@ function renderEngineeringBotsPanel() {
         </div>
         ${isBlackout ? '<div class="bots-warning">⚠️ 能源不足，机器人停机中</div>' : ''}
         ${buildBtnHtml}
-        <button class="bots-log-btn hidden" id="bots-log-btn" title="查看工程机器人的运行日志（位于「建筑与工程」存储室）">📋 机器人日志</button>
+        <button class="bots-log-btn hidden" id="bots-log-btn" title="查看工程机器人的运行日志（位于“建筑与工程”存储室）">📋 机器人日志</button>
     `;
 
     const buildBtn = document.getElementById('bots-build-btn');
@@ -1437,7 +1437,7 @@ function renderEngineeringBotsPanel() {
                     MemorySanctuary.recommendedArchiveId = logId;
                     if (typeof renderAll === 'function') renderAll();
                     if (typeof showTransientNotice === 'function') {
-                        showTransientNotice(`📋 已为你打开「建筑与工程」存储室，工程机器人日志在其中。`);
+                        showTransientNotice(`📋 已为你打开“建筑与工程”存储室，工程机器人日志在其中。`);
                     }
                 });
             }
@@ -1448,7 +1448,7 @@ function renderEngineeringBotsPanel() {
 
     container.title = botCount > 0
         ? `当前 ${botCount} 台机器人运行中：衰减减免 ${Math.round(reduction * 100)}%、腐败侵蚀抑制 ${Math.round(reduction * 100)}%（每周维护 ◈${maintenanceCost} 能源，能源不足时停机）；每 4 周定期产出工程日志；环境稳定度 <20% 时自动消耗能源稳定环境。拥有机器人期间，存储室会出现它们的专属日志条目。`
-        : '尚未部署工程机器人。完成「建造工程机器人」项目获得首台后，可在此继续建造。';
+        : '尚未部署工程机器人。完成“建造工程机器人”项目获得首台后，可在此继续建造。';
 }
 
 // ==========================================
@@ -1483,7 +1483,7 @@ function renderTechPanel() {
         const picks = Object.entries(state.techDoctrines || {})
             .map(([key, id]) => {
                 const t = (typeof getTechById === 'function') ? getTechById(id) : null;
-                return t ? `${doctrineNames[key] || key}·「${t.name}」` : null;
+                return t ? `${doctrineNames[key] || key}·“${t.name}”` : null;
             })
             .filter(Boolean);
         summaryEl.innerHTML = picks.length > 0
@@ -1546,7 +1546,7 @@ function renderTechPanel() {
                 <div class="tech-node-desc">${esc(tech.description || '')}</div>
                 <div class="tech-node-meta">
                     <span class="tech-effect" title="${esc(tech.effectText || '')}">◈效果：${esc(tech.effectText || '')}</span>
-                    <span class="tech-cost">成本 ◈${cost.energy || 0} ◇${cost.media || 0}</span>
+                    <span class="tech-cost">成本 ${formatTechCost(cost)}</span>
                     ${tech.unlockWeek ? `<span class="tech-week">第 ${tech.unlockWeek} 周解锁</span>` : ''}
                     ${tech.upgrade ? `<span class="tech-upgrade-hint" title="${esc(tech.upgrade.text || '')}">↑ 可升级：${esc(tech.upgrade.text || '')}</span>` : ''}
                     ${prereqNames.length > 0 ? `<span class="tech-prereq">前置：${esc(prereqNames.join('、'))}</span>` : ''}
@@ -1574,7 +1574,7 @@ function renderTechPanel() {
                 } else if (upgradeCheck && upgradeCheck.ok) {
                     up.className = 'tech-upgrade-btn';
                     const upCost = tech.upgrade.cost || {};
-                    up.textContent = `↑ 升级（◈${upCost.energy || 0} ◇${upCost.media || 0}）`;
+                    up.textContent = `↑ 升级（${formatTechCost(upCost)}）`;
                     up.addEventListener('click', () => {
                         if (typeof upgradeTech === 'function') upgradeTech(tech.id);
                     });
@@ -1685,7 +1685,7 @@ function renderProjectList() {
         const item = document.createElement('div');
         item.className = `project-item ${isActive ? 'active' : ''} ${isRepeatableDone ? 'repeatable-done' : ''} ${isCompleted && !project.repeatable ? 'completed' : ''} ${canStart ? 'can-start' : ''} ${isLocked ? 'locked' : ''}`;
 
-        const costHtml = project.cost ? `<div class="project-cost">${project.cost.energy ? `<span>◈ ${project.cost.energy}</span>` : ''}${project.cost.media ? `<span>◇ ${project.cost.media}</span>` : ''}</div>` : '';
+        const costHtml = project.cost ? `<div class="project-cost">${project.cost.energy ? `<span>◈ ${project.cost.energy}</span>` : ''}${project.cost.media ? `<span>◇ ${project.cost.media}</span>` : ''}${project.cost.food ? `<span>🍖 ${project.cost.food}</span>` : ''}</div>` : '';
         const effectHtml = `<div class="project-effect">${getProjectEffectText(project)}</div>`;
 
         let buttonHtml = '';
@@ -2042,7 +2042,7 @@ function renderCodexEndings() {
         item.innerHTML = `
             <div class="codex-ending-icon">${icon}</div>
             <div class="codex-ending-title">${title}</div>
-            <div class="codex-ending-desc">${desc.substring(0, 120)}${desc.length > 120 ? '...' : ''}</div>
+            <div class="codex-ending-desc">${desc.substring(0, 120)}${desc.length > 120 ? '……' : ''}</div>
         `;
         
         container.appendChild(item);
@@ -2219,7 +2219,7 @@ function showEntryPreview(entry) {
     }
 
     if (entry.hiddenContent) {
-        html += `<div class="entry-preview-hint">✨ 此条目含隐藏叙事：使用「深度归档」或研究「深研学派」后归档可解锁。</div>`;
+        html += `<div class="entry-preview-hint">✨ 此条目含隐藏内容：使用“深度归档”或研究“深研学派”后归档可解锁。</div>`;
     }
 
     const costParts = [];
@@ -2257,7 +2257,7 @@ function showArchiveDetail(entry) {
         for (const [gid, reaction] of Object.entries(entry.guardianReactions)) {
             const guardian = getGuardianById(gid);
             if (guardian) {
-                html += `<div class="archive-reaction"><span class="archive-reaction-avatar">${guardian.avatar}</span> <span class="archive-reaction-name">${guardian.name}：</span>「${reaction}」</div>`;
+                html += `<div class="archive-reaction"><span class="archive-reaction-avatar">${guardian.avatar}</span> <span class="archive-reaction-name">${guardian.name}：</span>“${reaction}”</div>`;
             }
         }
         html += '</div>';
@@ -2503,7 +2503,7 @@ function buildMoralePopover() {
                         <span class="tp-g-tier">${indicator} ${tierNames[tier]}</span>
                         ${fatigue > 0 ? `<span class="tp-g-fatigue">💤 ${fatigue}周</span>` : ''}
                     </div>
-                    <div class="tp-g-line">「${esc(line, false)}」</div>
+                    <div class="tp-g-line">${quoteCJK(esc(line, false))}</div>
                 </div>
             </div>
         `);
@@ -2536,7 +2536,7 @@ function getBotsDescription() {
 const RESOURCE_DESCRIPTIONS = {
     energy: '维持圣所运转与归档的核心资源。归零后归档能耗加倍。',
     media: '归档必需品。归零后无法录入新条目（应急协议的介质豁免除外）。',
-    environment: '保护设备与条目保存条件。环境稳定度越低，守护者士气压力越大；归零后条目过期速度翻倍，且触发常驻「环境失控」警告。环境 <20% 时机器人在线会自动消耗能源紧急稳定。',
+    environment: '保护设备与条目保存条件。环境稳定度越低，守护者士气压力越大；归零后条目过期速度翻倍，且触发常驻“环境失控”警告。环境 <20% 时机器人在线会自动消耗能源紧急稳定。',
     food: '维持守护者士气。耗尽后归档能耗 +20%，并可能触发饥荒。',
     // 兜底文案：正常路径走 getBotsDescription() 动态拼装；此条仅在配置常量缺失时使用
     engineeringBots: '自动维护圣所：每台减少资源衰减并按同比例抑制腐败侵蚀；每台每周消耗能源，能源不足时停机。勘探协同可提升收益、压低风险；定期产出工程日志条目。拥有机器人期间，存储室出现其专属日志条目。'

@@ -40,7 +40,7 @@
       "priority": "high",
       "color": "#4a1a1a",
       "accentColor": "#9a4a4a",
-      "description": "末日降临的记录——光雨、地裂、大气消散。",
+      "description": "末日降临的记录：光雨、地裂、大气消散。",
       "themeTags": [
         "disaster",
         "record"
@@ -105,7 +105,7 @@
       "priority": "medium",
       "color": "#1a3a1a",
       "accentColor": "#4a9a4a",
-      "description": "萨拉达斯星球的动植物志与气候记录。",
+      "description": "萨拉达斯们的动植物志与气候记录。",
       "themeTags": [
         "ecology",
         "nature"
@@ -153,7 +153,7 @@
       "priority": "medium",
       "color": "#3a2a2a",
       "accentColor": "#9a7a7a",
-      "description": "从地下居所到穹顶圣所，萨拉达斯人的建造智慧。",
+      "description": "从地下巢穴到坚固圣所，萨拉达斯人的建造智慧。",
       "themeTags": [
         "architecture",
         "engineering"

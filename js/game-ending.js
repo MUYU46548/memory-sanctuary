@@ -81,7 +81,7 @@ function checkHiddenEndings() {
         return {
             id: 'true_ending',
             title: ending ? ending.title : '✨ 超越时间',
-            description: ending ? ending.description : '你打破了循环。',
+            description: ending ? ending.description : '你打破了循环，翼神注视着你。',
             priority: 200
         };
     }
@@ -100,7 +100,7 @@ function checkHiddenEndings() {
         return {
             id: 'complete_memory',
             title: ending ? ending.title : '🌟 永恒记忆',
-            description: ending ? ending.description : '你保存了洛斯耶马文明的每一片碎片。',
+            description: ending ? ending.description : '你竭力保存了洛斯耶马文明的碎片。',
             priority: 100,
             allGuardiansHappy: guardianEndings.length >= 3
         };
@@ -158,7 +158,7 @@ function checkHiddenEndings() {
     if (pct >= 0.4) return { id: 'guardian_of_remnants', title: '文明守护者', description: '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的洛斯耶马。', priority: 50 };
     if (pct >= 0.3) return { id: 'finale_guardian_of_fragments', title: '碎片收集者', description: `你保存了洛斯耶马的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。`, priority: 50 };
     if (pct >= 0.05) return { id: 'finale_whisper_keeper', title: '微光守护者', description: `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到洛斯耶马的零星片段，但至少——他们知道这里曾经存在过一个文明。`, priority: 30 };
-    if (state.week >= 16) return { id: 'finale_silent_sanctuary', title: '🖤 寂静圣所', description: '你选择了沉默。圣所中空空如也，后世将永远不知道洛斯耶马曾存在过。也许……遗忘也是一种选择。', priority: 10 };
+    if (state.week >= 16) return { id: 'finale_silent_sanctuary', title: '🖤 寂静圣所', description: '圣所中空空如也，后世将永远不知道洛斯耶马曾存在过。也许遗忘也是一种安眠。', priority: 10 };
 
     return null;
 }
@@ -261,13 +261,13 @@ function checkConflictEnding() {
     
     if (sacredRatio >= 0.7) {
         title = '🛡️ 守圣者';
-        description = `你坚定地守护着洛斯耶马的神圣记忆。${totalChoices} 次抉择中，${themes.sacred} 次选择了正统与信仰。后世将看到一个纯净、高贵的文明——它的歌声、它的律法、它的信仰，都如星辰般永恒。`;
+        description = `你坚定地守护着洛斯耶马的神圣记忆。${totalChoices} 次抉择中，${themes.sacred} 次选择了正统与信仰。后世将看到一个纯净、高贵的文明。它的歌声、它的律法、它的信仰，都如星辰般永恒。`;
     } else if (profaneRatio >= 0.7) {
         title = '🔥 破茧者';
-        description = `你勇敢地拥抱了洛斯耶马的另一面。${totalChoices} 次抉择中，${themes.profane} 次选择了异见与怀疑。后世将看到一个真实、复杂的文明——它的挣扎、它的质疑、它的蜕变，都如火焰般炽热。`;
+        description = `你勇敢地拥抱了洛斯耶马的另一面。${totalChoices} 次抉择中，${themes.profane} 次选择了异见与怀疑。后世将看到一个真实、复杂的文明。它的挣扎、它的质疑、它的蜕变，都如火焰般炽热。`;
     } else {
         title = '⚖️ 平衡者';
-        description = `你在洛斯耶马的记忆中寻找平衡。${totalChoices} 次抉择中，你既守护了神圣，也拥抱了异见。后世将看到一个完整、矛盾的文明——它既有歌声也有质疑，既有信仰也有思考。`;
+        description = `你在洛斯耶马的记忆中寻找平衡。${totalChoices} 次抉择中，你既守护了神圣，也拥抱了异见。后世将看到一个完整、矛盾的文明。它既有歌声也有质疑，既有信仰也有思考。`;
     }
     
     return {
@@ -321,8 +321,8 @@ function getEndingModalData(ending) {
         }
     }
 
-    modalContent += `\n你的选择决定了后世「看到」怎样的洛斯耶马文明。\n`;
-    modalContent += `「——终来之刻，何物当存？」`;
+    modalContent += `\n你的选择决定了后世将看到怎样的洛斯耶马文明。\n`;
+    modalContent += `“终来之刻，何物当存？”`;
 
     return modalContent;
 }
@@ -694,7 +694,7 @@ function cleanSnippet(text, maxLen) {
     const cut = flat.slice(0, maxLen);
     const lastPunc = Math.max(cut.lastIndexOf('。'), cut.lastIndexOf('，'), cut.lastIndexOf('、'), cut.lastIndexOf('：'));
     const end = lastPunc > maxLen * 0.5 ? lastPunc + 1 : maxLen;
-    return flat.slice(0, end) + '…';
+    return flat.slice(0, end) + '……';
 }
 
 /**
@@ -720,10 +720,10 @@ function generateDynamicEnding(ending) {
             echoes.forEach(arch => {
                 scene.dialogue.push({
                     speaker: 'narrator',
-                    text: `「${arch.title}」：${cleanSnippet(arch.content, 48)}`
+                    text: `“${arch.title}”：${cleanSnippet(arch.content, 48)}`
                 });
             });
-            scene.dialogue.push({ speaker: 'narrator', text: '「——终来之刻，何物当存？」' });
+            scene.dialogue.push({ speaker: 'narrator', text: '“——终来之刻，何物当存？”' });
         }
         VN.loadEndingScenes({ 'dynamic_ending': scene });
         VN.showEnding('dynamic_ending', () => {
@@ -746,7 +746,7 @@ function generateDynamicEnding(ending) {
     echoes.forEach(arch => {
         dynamicScene.dialogue.push({
             speaker: 'narrator',
-            text: `「${arch.title}」：${cleanSnippet(arch.content, 48)}`
+            text: `“${arch.title}”：${cleanSnippet(arch.content, 48)}`
         });
     });
 
@@ -759,7 +759,7 @@ function generateDynamicEnding(ending) {
 
     dynamicScene.dialogue.push({
         speaker: 'narrator',
-        text: '「——终来之刻，何物当存？」'
+        text: '“——终来之刻，何物当存？”'
     });
 
     // 动态加载并播放场景（结局场景必须进 endingScenes：VN.showEnding 只查这张表）
@@ -1164,7 +1164,7 @@ function renderAtlas() {
         ctx.fillStyle = textColor;
         ctx.font = `10px ${fontCn}`;
         ctx.textAlign = 'center';
-        const shortName = vault.name.length > 6 ? vault.name.substring(0, 6) + '…' : vault.name;
+        const shortName = vault.name.length > 6 ? vault.name.substring(0, 6) + '……' : vault.name;
         ctx.fillText(shortName, x, y + 36);
         
         // Completion count

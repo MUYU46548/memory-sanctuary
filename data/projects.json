@@ -3,18 +3,18 @@
     {
       "id": "proj_generator",
       "name": "修复备用发电机",
-      "description": "修复圣所的主能源系统。持续5周，每周稳定供电，是长期投资。",
+      "description": "修复圣所的主能源系统。持续5周，每周稳定供电，是圣所长期运行的保障。",
       "availableAfter": 1,
       "duration": 5,
       "repeatable": false,
       "cost": {
         "energy": 12,
-        "food": 7
+        "food": 8
       },
       "effect": {
         "type": "resourceBoost",
         "resource": "energy",
-        "amount": 5
+        "amount": 10
       }
     },
     {
@@ -29,13 +29,13 @@
       "effect": {
         "type": "decayReduction",
         "resource": "media",
-        "percent": 0.4
+        "percent": 0.3
       }
     },
     {
       "id": "proj_water_filter",
       "name": "修复水循环系统",
-      "description": "修复水净化系统，改善环境储备。",
+      "description": "修复水净化系统，改善圣所生存环境。",
       "availableAfter": 4,
       "duration": 4,
       "cost": {
@@ -44,18 +44,18 @@
       "effect": {
         "type": "decayReduction",
         "resource": "environment",
-        "percent": 0.4
+        "percent": 0.3
       }
     },
     {
       "id": "proj_satellite",
       "name": "重启卫星天线",
-      "description": "重新建立与外界的微弱联系，解锁应急档案。",
+      "description": "重新建立与外界的微弱联系，将解锁应急档案。",
       "availableAfter": 8,
       "duration": 2,
       "cost": {
-        "energy": 20,
-        "media": 10
+        "energy": 15,
+        "media": 12
       },
       "effect": {
         "type": "unlockArchives",
@@ -68,11 +68,11 @@
     {
       "id": "proj_medical_lab",
       "name": "建立医疗实验室",
-      "description": "在圣所内部建立简易医疗设施，解锁医学档案。",
+      "description": "在圣所内部建立简易医疗设施，将解锁医学档案。",
       "availableAfter": 10,
       "duration": 3,
       "cost": {
-        "energy": 25,
+        "energy": 22,
         "media": 15
       },
       "effect": {
@@ -85,17 +85,17 @@
     },
     {
       "id": "proj_farm",
-      "name": "建造水培农场",
+      "name": "水培农场",
       "description": "在圣所内种植食物，补充储备。",
       "availableAfter": 2,
       "duration": 5,
       "cost": {
-        "energy": 15,
-        "media": 10
+        "energy": 12,
+        "media": 5
       },
       "effect": {
         "type": "foodBoost",
-        "amount": 4
+        "amount": 5
       }
     },
     {
@@ -106,26 +106,30 @@
       "duration": 3,
       "repeatable": true,
       "cost": {
-        "energy": 8
+        "energy": 10
       },
       "effect": {
         "type": "foodBoost",
-        "amount": 3
+        "amount": 5
       }
     },
     {
       "id": "proj_rainwater",
       "name": "收集雨水",
-      "description": "利用圣所屋顶收集雨水并净化，补充环境与食物。",
+      "description": "利用圣所屋顶收集雨水并净化，改善环境，提高农场产量。",
       "availableAfter": 18,
       "duration": 4,
       "repeatable": true,
       "cost": {
-        "energy": 6
+        "energy": 12
+      },
+      "effect": {
+        "type": "environment",
+        "amount": 5
       },
       "effect": {
         "type": "foodBoost",
-        "amount": 2
+        "amount": 3
       }
     },
     {
@@ -136,11 +140,17 @@
       "duration": 3,
       "repeatable": true,
       "cost": {
-        "energy": 12
+        "energy": 15,
+        "food": 5
       },
       "effect": {
         "type": "resourceBoost",
         "resource": "food",
+        "amount": 5
+      },
+      "effect": {
+        "type": "resourceBoost",
+        "resource": "media",
         "amount": 5
       }
     },
@@ -151,23 +161,23 @@
       "availableAfter": 6,
       "duration": 4,
       "cost": {
-        "energy": 10,
-        "media": 5
+        "energy": 7,
+        "media": 3
       },
       "effect": {
         "type": "foodBoost",
-        "amount": 3
+        "amount": 5
       }
     },
     {
       "id": "proj_communication",
       "name": "修复通讯阵列",
-      "description": "重建与外界的微弱联系，解锁加密记录。",
+      "description": "重建与外界的微弱联系，将解锁加密记录。",
       "availableAfter": 36,
       "duration": 3,
       "cost": {
-        "energy": 25,
-        "media": 20
+        "energy": 20,
+        "media": 18
       },
       "effect": {
         "type": "unlockArchives",
@@ -184,7 +194,7 @@
       "availableAfter": 12,
       "duration": 4,
       "cost": {
-        "energy": 20,
+        "energy": 18,
         "media": 15
       },
       "effect": {
@@ -198,7 +208,7 @@
       "availableAfter": 40,
       "duration": 4,
       "cost": {
-        "energy": 30,
+        "energy": 25,
         "media": 20
       },
       "effect": {
@@ -213,12 +223,12 @@
     {
       "id": "proj_bot_factory",
       "name": "建造工程机器人",
-      "description": "建立机器人建造程序，并建造第一台工程机器人。此后可在守护者页面的机器人面板中继续建造（每台消耗资源，3 周/台）。",
+      "description": "建立机器人建造程序，并建造第一台工程机器人。此后可在守护者页面的机器人面板中继续建造（每台都需消耗资源，3周/台）。",
       "availableAfter": 6,
       "duration": 3,
       "cost": {
-        "energy": 24,
-        "media": 16
+        "energy": 22,
+        "media": 15
       },
       "effect": {
         "type": "buildBot"
@@ -227,13 +237,13 @@
     {
       "id": "proj_vault_expand",
       "name": "扩建存储室",
-      "description": "为全部 12 间存储室加装临时货架与介质架，容量提升 20%。归档空间紧张时的长期解药。",
+      "description": "为全部12间存储室加装临时货架与介质架，容量提升20%。",
       "availableAfter": 8,
       "duration": 3,
       "repeatable": false,
       "cost": {
-        "energy": 30,
-        "media": 20
+        "energy": 15,
+        "media": 25
       },
       "effect": {
         "type": "vaultExpand",

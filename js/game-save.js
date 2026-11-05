@@ -598,9 +598,9 @@ function renderStorageInfo() {
 
     let html = '';
     if (!env.ok) {
-        html = `<div class="save-storage-warning">⚠️ 浏览器存储不可用（${env.error}），存档将无法保存。建议：① 使用本地服务器打开（python -m http.server 8099）；② 退出浏览器隐私模式。也可用下方「📤 导出存档」手动备份。</div>`;
+        html = `<div class="save-storage-warning">⚠️ 浏览器存储不可用（${env.error}），存档将无法保存。建议：① 使用本地服务器打开（python -m http.server 8099）；② 退出浏览器隐私模式。也可用下方“📤 导出存档”手动备份。</div>`;
     } else if (isFileProtocol) {
-        html = `<div class="save-storage-hint">ℹ️ 当前以 file:// 方式打开：不同浏览器 / 不同入口打开时，存储可能互相隔离，导致存档看似「消失」。推荐使用本地服务器访问（项目根目录运行 python -m http.server 8099）。建议定期用「📤 导出存档」备份。</div>`;
+        html = `<div class="save-storage-hint">ℹ️ 当前以 file:// 方式打开：不同浏览器 / 不同入口打开时，存储可能互相隔离，导致存档看似“消失”。推荐使用本地服务器访问（项目根目录运行 python -m http.server 8099）。建议定期用“📤 导出存档”备份。</div>`;
     } else {
         html = `<div class="save-storage-ok">✓ 本地存储可用，存档保存在本机浏览器中，正常重启不会丢失。</div>`;
     }
@@ -908,7 +908,7 @@ async function importSaveFromClipboard() {
     const input = await showPromptDialog(
         '导入存档',
         '粘贴存档导入文本：',
-        { placeholder: '在此粘贴存档文本…', confirmText: '导入' }
+        { placeholder: '在此粘贴存档文本……', confirmText: '导入' }
     );
     if (!input || !input.trim()) return;
 

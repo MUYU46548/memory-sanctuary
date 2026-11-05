@@ -116,7 +116,7 @@ function destroyConflictEntry(conflictId) {
     if (!conflictEntry) return;
     
     conflictEntry.expired = true;
-    addLog(`⚠️ 由于叙事冲突，「${conflictEntry.title}」已永久消失。`, 'warning');
+    addLog(`⚠️ 由于条目冲突，“${conflictEntry.title}”已永久消失。`, 'warning');
     
     // 记录冲突事件
     if (!MemorySanctuary.state.conflictLog) {
@@ -145,7 +145,7 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     }
     
     if (isArchiveCompleted(archiveId)) {
-        addLog(`条目 \"${entry.title}\" 已被归档。`, 'system');
+        addLog(`条目 “${entry.title}” 已被归档。`, 'system');
         renderAll();
         return false;
     }
@@ -154,7 +154,7 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     if ((entry.fragmentFrom || entry.botPassive)) {
         const fragUnlocked = (state.unlockedFragments || []).includes(archiveId);
         if (!fragUnlocked) {
-            addLog(`「${entry.title}」尚未被发现——先通过地表勘探或机器人定期任务找到它。`, 'system');
+            addLog(`“${entry.title}”尚未被发现，请先通过地表勘探或机器人定期任务找到它。`, 'system');
             renderAll();
             return false;
         }
@@ -163,7 +163,7 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     // 速记（快速归档）每回合限 1 次：牺牲叙事深度，不可滥用
     if (ritualType === 'quick') {
         if (state.quickArchiveWeek === state.week) {
-            addLog('⚡ 速记本回合已使用（每回合限 1 次）。', 'system');
+            addLog('⚡ 本回合已使用速记（每回合限1次）。', 'system');
             return false;
         }
     }
@@ -196,7 +196,7 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     // 紧急归档协议：跳过介质检查
     if (isEmergencyArchive) {
         if (state.resources.energy < energyCost * 2 + extraEnergyCost) {
-            addLog(`能源不足，无法介质豁免 \"${entry.title}\"。`, 'system');
+            addLog(`能源不足，无法紧急归档 “${entry.title}”。`, 'system');
             state.emergencyArchiveActive = false;
             return false;
         }
@@ -206,12 +206,12 @@ function archiveEntry(archiveId, ritualType = 'standard') {
         if (ritualType === 'quick') {
             // 快速归档只需50%资源
             if (!hasResources(totalEnergy, totalMedia)) {
-                addLog(`资源不足，无法归档 \"${entry.title}\"。`, 'system');
+                addLog(`资源不足，无法归档 “${entry.title}”。`, 'system');
                 return false;
             }
         } else {
             if (!hasResources(totalEnergy, totalMedia)) {
-                addLog(`资源不足，无法归档 \"${entry.title}\"。`, 'system');
+                addLog(`资源不足，无法归档 “${entry.title}”。`, 'system');
                 return false;
             }
         }
@@ -226,7 +226,7 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     
     // 紧急归档协议：跳过容量检查（不消耗介质）
     if (!isEmergencyArchive && currentUsage + mediaCost > vault.capacity) {
-        addLog(`存储室 \"${vault.name}\" 容量不足。`, 'system');
+        addLog(`存储室 “${vault.name}” 容量不足。`, 'system');
         return false;
     }
     
@@ -271,7 +271,7 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     // 批量归档模式：不推进时间
     if (isBatchMode) {
         state.batchArchiveCount = (state.batchArchiveCount || 0) + 1;
-        addLog(`📦 批量归档 (${state.batchArchiveCount}/3)：\"${entry.title}\"`, 'success');
+        addLog(`📦 批量归档 (${state.batchArchiveCount}/3)：“${entry.title}”`, 'success');
         
         // 音效
         if (typeof AudioSystem !== 'undefined') AudioSystem.playArchiveChime();
@@ -280,7 +280,7 @@ function archiveEntry(archiveId, ritualType = 'standard') {
         if (state.batchArchiveCount < 3 && ritualType !== 'quick') {
             const guardianId = Object.keys(entry.guardianReactions || {})[0];
             if (guardianId && entry.guardianReactions[guardianId]) {
-                addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
+                addLog(`${getGuardianName(guardianId)}：“${entry.guardianReactions[guardianId]}”`, 'guardian');
             }
         }
         
@@ -300,12 +300,12 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     
     // 深度归档日志
     if (ritualType === 'deep') {
-        addLog(`✨ 深度归档：\"${entry.title}\"（额外消耗 10 能源解锁隐藏叙事）`, 'success');
+        addLog(`✨ 深度归档：“${entry.title}”（额外消耗10能源解锁隐藏内容）`, 'success');
         state.deepArchiveCount = (state.deepArchiveCount || 0) + 1;
     } else if (ritualType === 'quick') {
-        addLog(`⚡ 快速归档：\"${entry.title}\"（省 30% 资源）`, 'success');
+        addLog(`⚡ 快速归档：“${entry.title}”（省30%资源）`, 'success');
     } else {
-        addLog(`已完成归档：\"${entry.title}\"`, 'success');
+        addLog(`已完成归档：“${entry.title}”`, 'success');
     }
     
     // 音效：归档成功风铃
@@ -317,7 +317,7 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     if (ritualType !== 'quick') {
         const guardianId = Object.keys(entry.guardianReactions || {})[0];
         if (guardianId && entry.guardianReactions[guardianId]) {
-            addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
+            addLog(`${getGuardianName(guardianId)}：“${entry.guardianReactions[guardianId]}”`, 'guardian');
             showGuardianDialogue(guardianId, 'archive');
         }
     } else {
@@ -366,7 +366,7 @@ function enterBatchArchiveMode() {
     
     // 解锁条件：第24周后（v0.2.7 由 30 周前移，配合封印门槛 16 周形成更紧凑的中后期节奏）
     if (state.week < 24) {
-        addLog('⚠️ 紧急归档协议尚未解锁（第24周后解锁）。', 'system');
+        addLog('⚠️ 紧急归档尚未解锁（第24周后解锁）。', 'system');
         return;
     }
     
@@ -380,7 +380,7 @@ function enterBatchArchiveMode() {
     
     // 检查是否已经使用过（每局限1次）
     if (state.batchArchiveUsedThisRun) {
-        addLog('⚠️ 紧急归档协议已在本周目中使用过。', 'system');
+        addLog('⚠️ 紧急归档已在本局游戏中使用过。', 'system');
         return;
     }
     
@@ -401,7 +401,7 @@ function enterBatchArchiveMode() {
     state.nextWeekDecayPenalty = 0.2;
     
     addLog('🚨 紧急归档协议已激活！守护者加班加点，圣所环境急剧恶化。', 'warning');
-    addLog('⚠️ 代价：环境稳定度 -10，全体守护者心情 -2，下周衰减 +20%。', 'warning');
+    addLog('⚠️ 环境稳定度-10，全体守护者心情-2，下周衰减+20%。', 'warning');
     
     // 音效
     if (typeof AudioSystem !== 'undefined') AudioSystem.playEmergencyCorrupt();
@@ -422,7 +422,7 @@ function exitBatchArchiveMode() {
         addLog(`🚨 紧急归档结束：共归档 ${state.batchArchiveCount} 条。圣所已伤痕累累。`, 'warning');
         advanceTime(1);
     } else {
-        addLog('🚨 紧急归档已取消。守护者松了一口气。', 'system');
+        addLog('🚨 紧急归档已取消，守护者松了一口气。', 'system');
         // 退回已付出的代价
         state.resources.environment = Math.min(100, state.resources.environment + 10);
         state.batchArchiveUsedThisRun = false;
@@ -447,7 +447,7 @@ function finishBatchArchive() {
     const state = MemorySanctuary.state;
     if (!state) return;
     
-    addLog(`🚨 紧急归档完成：3 条已归档。圣所环境急剧恶化，守护者身心俱疲。`, 'warning');
+    addLog(`🚨 紧急归档完成：3条已归档。圣所环境急剧恶化，守护者身心俱疲。`, 'warning');
     
     // 音效
     if (typeof AudioSystem !== 'undefined') {
@@ -504,7 +504,7 @@ function confirmArchive(archiveId) {
     
     title.textContent = '确认归档';
     
-    let contentText = `确定要归档「${entry.title}」吗？\n\n`;
+    let contentText = `确定要归档“${entry.title}”吗？\n\n`;
     contentText += `消耗：◈ ${entry.energyCost} 能源，◇ ${entry.dataCost} 介质\n`;
     contentText += `存储室：${MemorySanctuary.data.vaults.find(v => v.id === entry.vault)?.name || ''}\n`;
     
@@ -512,7 +512,7 @@ function confirmArchive(archiveId) {
         const relatedNames = entry.relatedArchives
             .map(id => getArchiveById(id)?.title)
             .filter(Boolean)
-            .map(t => `「${t}」`)
+            .map(t => `“${t}”`)
             .join('、');
         if (relatedNames) {
             contentText += `\n🔗 归档此条目将揭示与 ${relatedNames} 的关联。`;
@@ -590,7 +590,7 @@ function confirmArchive(archiveId) {
     // v0.2.8：资源不足时禁用并说明原因——"可点击但点了没反应"就是 bug。
     const deepBtn = document.createElement('button');
     deepBtn.id = 'modal-deep-btn';
-    deepBtn.textContent = '✨ 深度归档（+10能源解锁隐藏叙事）';
+    deepBtn.textContent = '✨ 深度归档（+10能源解锁隐藏内容）';
     deepBtn.style.padding = '10px 20px';
     deepBtn.style.background = 'transparent';
     deepBtn.style.border = '1px solid var(--amber-primary)';
@@ -600,7 +600,7 @@ function confirmArchive(archiveId) {
     deepBtn.style.fontSize = '0.85rem';
     deepBtn.style.cursor = 'pointer';
     deepBtn.style.marginLeft = '8px';
-    deepBtn.title = '额外消耗 10 能源，解锁隐藏叙事与线索';
+    deepBtn.title = '额外消耗10能源，解锁隐藏内容与线索';
 
     // 深度归档资源预检：能源 ≥ 基础能耗+10 且介质足够
     const vaultForCost = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
@@ -688,8 +688,8 @@ function confirmQuickArchive(archiveId) {
 
     // 已用过速记：直接给阻断提示，不再弹确认
     if (state.quickArchiveWeek === state.week) {
-        addLog('⚡ 速记本回合已使用（每回合限 1 次）。', 'system');
-        if (typeof showTransientNotice === 'function') showTransientNotice('⚡ 速记每回合限用 1 次，本回合已使用过。');
+        addLog('⚡ 速记本回合已使用（每回合限1次）。', 'system');
+        if (typeof showTransientNotice === 'function') showTransientNotice('⚡ 速记每回合限用1次，本回合已使用过。');
         return;
     }
 
@@ -710,15 +710,15 @@ function confirmQuickArchive(archiveId) {
 
     title.textContent = '确认速记';
 
-    let contentText = `要以「⚡速记」归档「${entry.title}」吗？\n\n`;
+    let contentText = `要以【⚡速记】归档“${entry.title}”吗？\n\n`;
     contentText += `【速记收益】\n`;
     contentText += `· 资源消耗 -30%：◈ ${energyCost} 能源，◇ ${mediaCost} 介质\n`;
     contentText += `· 不推进时间（本回合仍可继续其他行动）\n\n`;
     contentText += `【速记代价】\n`;
-    contentText += `· 牺牲隐藏叙事与守护者注记（条目被标记为浅层录入）\n`;
-    contentText += `· 不触发叙事线索链\n`;
+    contentText += `· 牺牲隐藏内容与守护者注记（条目被标记为浅层录入）\n`;
+    contentText += `· 可能错过线索链\n`;
     contentText += `· 士气收益减半\n`;
-    contentText += `· 每回合限用 1 次`;
+    contentText += `· 每回合限用1次`;
 
     content.innerHTML = esc(contentText, true);
     overlay.classList.remove('hidden');
@@ -804,14 +804,14 @@ function useInstantArchive(archiveId) {
     
     // 检查能源（正常消耗）
     if (state.resources.energy < entry.energyCost) {
-        addLog(`能源不足，无法立即归档「${entry.title}」。`, 'system');
+        addLog(`能源不足，无法立即归档“${entry.title}”。`, 'system');
         return false;
     }
     
     // 检查容量
     const currentUsage = state.vaultUsage[vault.id] || 0;
     if (currentUsage + entry.dataCost > vault.capacity) {
-        addLog(`存储室「${vault.name}」容量不足。`, 'system');
+        addLog(`存储室“${vault.name}”容量不足。`, 'system');
         return false;
     }
     
@@ -824,7 +824,7 @@ function useInstantArchive(archiveId) {
     // P0-3 修复：立即归档同样触发存储室反馈
     if (typeof flashVault === 'function') flashVault(vault.id);
     
-    addLog(`⚡ 立即归档：「${entry.title}」（剩余机会：${state.instantArchiveChances}）`, 'success');
+    addLog(`⚡ 立即归档：“${entry.title}”（剩余机会：${state.instantArchiveChances}）`, 'success');
     
     // 音效
     if (typeof AudioSystem !== 'undefined') {
@@ -835,7 +835,7 @@ function useInstantArchive(archiveId) {
     // 守护者反应
     const guardianId = Object.keys(entry.guardianReactions || {})[0];
     if (guardianId && entry.guardianReactions[guardianId]) {
-        addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
+        addLog(`${getGuardianName(guardianId)}：“${entry.guardianReactions[guardianId]}”`, 'guardian');
     }
 
     // 归档后展示剧情文本（与正常归档一致，遵循「归档后展示内容」设置）
@@ -901,11 +901,11 @@ function aiAssistArchive(archiveId) {
     const entry = getArchiveById(archiveId);
     if (!state || !entry) return false;
     if (!state.aiAssistantActive) {
-        addLog('档案AI助理尚未上线。请先在「维护项目」中搭建。', 'system');
+        addLog('档案AI助理尚未上线。请先在“维护项目”中搭建。', 'system');
         return false;
     }
     if (state.aiAssistUsedThisWeek) {
-        addLog('AI 助理本周已完成一次辅助归档，下周再来吧。', 'system');
+        addLog('AI助理本周已完成一次辅助归档，现在正在整备。', 'system');
         return false;
     }
     if (isArchiveCompleted(archiveId)) {
@@ -913,11 +913,11 @@ function aiAssistArchive(archiveId) {
         return false;
     }
     if (state.deterioration && state.deterioration.media) {
-        addLog('存储介质耗尽，AI 助理也无法录入新条目。', 'system');
+        addLog('存储介质耗尽，AI助理无法录入新条目。', 'system');
         return false;
     }
     if ((state.resources.environment || 0) < AI_ASSIST_ENV_COST) {
-        addLog('环境稳定度不足，无法承受 AI 辅助归档带来的无序度。', 'system');
+        addLog('环境稳定度不足，无法承受AI辅助归档带来的无序度。', 'system');
         return false;
     }
 
@@ -926,7 +926,7 @@ function aiAssistArchive(archiveId) {
 
     const currentUsage = state.vaultUsage[vault.id] || 0;
     if (currentUsage + entry.dataCost > vault.capacity) {
-        addLog(`存储室「${vault.name}」容量不足。`, 'system');
+        addLog(`存储室“${vault.name}”容量不足。`, 'system');
         return false;
     }
 
@@ -934,7 +934,7 @@ function aiAssistArchive(archiveId) {
     const energyCost = Math.ceil((entry.energyCost || 0) / 2);
     const dataCost = Math.ceil((entry.dataCost || 0) / 2);
     if ((state.resources.energy || 0) < energyCost || (state.resources.media || 0) < dataCost) {
-        addLog(`资源不足，无法请求 AI 助理辅助归档「${entry.title}」。`, 'system');
+        addLog(`资源不足，无法请求AI助理辅助归档“${entry.title}”。`, 'system');
         return false;
     }
 
@@ -950,7 +950,7 @@ function aiAssistArchive(archiveId) {
     // P0-3 修复：AI 辅助归档同样触发存储室反馈
     if (typeof flashVault === 'function') flashVault(vault.id);
 
-    addLog(`🤖 AI 助理辅助归档：「${entry.title}」（费用减半 ◈${energyCost} ◇${dataCost}，环境稳定度 -${AI_ASSIST_ENV_COST}）`, 'success');
+    addLog(`🤖 AI助理辅助归档：“${entry.title}”（费用减半 ◈${energyCost} ◇${dataCost}，环境稳定度 -${AI_ASSIST_ENV_COST}）`, 'success');
 
     // 音效
     if (typeof AudioSystem !== 'undefined') {
@@ -964,7 +964,7 @@ function aiAssistArchive(archiveId) {
     // 守护者反应（与正常归档一致）
     const guardianId = Object.keys(entry.guardianReactions || {})[0];
     if (guardianId && entry.guardianReactions[guardianId]) {
-        addLog(`${getGuardianName(guardianId)}：「${entry.guardianReactions[guardianId]}」`, 'guardian');
+        addLog(`${getGuardianName(guardianId)}：“${entry.guardianReactions[guardianId]}”`, 'guardian');
     }
 
     // 归档后展示剧情文本（与正常归档一致，遵循「归档后展示内容」设置）
@@ -1008,14 +1008,14 @@ function showArchiveCompleteModal(entry, ritualType = 'standard') {
     title.textContent = `归档完成：${entry.title}`;
     
     let modalContent = `${entry.description}\n\n`;
-    modalContent += `「${entry.content.substring(0, 120)}...」\n\n`;
+    modalContent += `${quoteCJK(entry.content.substring(0, 120) + '……')}\n\n`;
 
     // 深度归档解锁隐藏叙事；科技树 revealHidden（深研学派）让标准归档同样展示
     // （v0.2.4 去重后仅归档域提供 revealHidden，勘探域守真勘探只做情报指认）
     const techArchive = (typeof getTechArchiveBonus === 'function') ? getTechArchiveBonus() : null;
     const revealHidden = ritualType === 'deep' || (techArchive && techArchive.revealHidden);
     if (revealHidden && entry.hiddenContent) {
-        modalContent += `━━ 隐藏叙事 ━━\n`;
+        modalContent += `━━ 隐藏内容 ━━\n`;
         modalContent += `${entry.hiddenContent}\n\n`;
     }
     
@@ -1024,7 +1024,7 @@ function showArchiveCompleteModal(entry, ritualType = 'standard') {
         if (reactions.length > 0) {
             modalContent += `守护者反应：\n`;
             reactions.forEach(([guardian, reaction]) => {
-                modalContent += `• ${getGuardianName(guardian)}：「${reaction}」\n`;
+                modalContent += `• ${getGuardianName(guardian)}：“${reaction}”\n`;
             });
         }
     }
@@ -1106,7 +1106,7 @@ function checkNarrativeChains(archiveId) {
     }
     
     if (unlocked.length > 0) {
-        const names = unlocked.map(e => `「${e.title}」`).join('、');
+        const names = unlocked.map(e => `“${e.title}”`).join('、');
         addLog(`🔗 线索揭示：归档此条目揭示了与 ${names} 的关联。`, 'guardian');
         if (typeof AudioSystem !== 'undefined') AudioSystem.playExploreReturnNarrative();
     }

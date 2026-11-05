@@ -177,10 +177,9 @@ function onTimeAdvanced(weeks) {
             });
         }
         
-        // 更新drone音量和终局心跳
+        // 更新 drone 音量
         if (typeof AudioSystem !== 'undefined' && MemorySanctuary.state) {
             AudioSystem.updateDroneByEnergy(MemorySanctuary.state.resources.energy);
-            AudioSystem.updateHeartbeat(MemorySanctuary.state.week);
             
             // 章节 BGM 自动切换：week >= 16 中期，week >= 36 后期
             const bgmWeek = MemorySanctuary.state.week;
@@ -244,7 +243,7 @@ function onTimeAdvanced(weeks) {
         // 最终封存准备引导：第 40 周一次性提示（引导玩家启动项目 / 留意终局会议）
         if (state.week >= 40 && !state.finalPrepHintShown) {
             state.finalPrepHintShown = true;
-            addLog('🗝️ 第 40 周：最终封印准备已就绪——前往「项目」面板启动「最终封印准备」项目，可解锁封印档案，为终局会议做准备。', 'system');
+            addLog('🗝️ 第 40 周：最终封印准备已就绪——前往“项目”面板启动“最终封印准备”项目，可解锁封印档案，为终局会议做准备。', 'system');
         }
     } catch (err) {
         if (DEBUG) console.error('[onTimeAdvanced] 子系统异常:', err);
@@ -806,7 +805,7 @@ function checkStarvation() {
         
         // 食物耗尽时：守护者每回合心情下降（性格加权）
         if (!state.starvationLogged) {
-            addLog('⚠️ 食物耗尽...守护者士气低沉。', 'warning');
+            addLog('⚠️ 食物耗尽……守护者士气低沉。', 'warning');
             state.starvationLogged = true;
         }
         
@@ -1085,7 +1084,7 @@ function processBotPassiveOutput() {
     pending.sort((a, b) => (a.availableAfter || 99) - (b.availableAfter || 99));
     const pick = pending[0];
     state.unlockedFragments.push(pick.id);
-    addLog(`🤖 工程机器人完成了一项定期任务：「${pick.title}」已归档入圣所——可在「建筑与工程」存储室查看。`, 'success');
+    addLog(`🤖 工程机器人完成了一项定期任务：“${pick.title}”已归档入圣所——可在“建筑与工程”存储室查看。`, 'success');
     if (typeof AudioSystem !== 'undefined' && AudioSystem.playArchiveChime) AudioSystem.playArchiveChime();
 }
 
@@ -1166,7 +1165,7 @@ function startPanelBotBuild() {
     if (!state) return false;
 
     if (!state.completedProjects || !state.completedProjects.includes('proj_bot_factory')) {
-        addLog('需要先完成「建造工程机器人」项目，才能批量建造机器人。', 'system');
+        addLog('需要先完成“建造工程机器人”项目，才能批量建造机器人。', 'system');
         return false;
     }
     if (getEngineeringBotCount() >= ENGINEERING_BOTS_CONFIG.maxBots) {
@@ -1209,6 +1208,8 @@ function processBotBuild() {
 
 function triggerGameOver(reason) {
     MemorySanctuary.state.gameOver = true;
+    // 记录失败原因（QA / 平衡模拟取数用；不影响玩家侧展示）
+    MemorySanctuary.state.gameOverReason = reason;
 
     // 时间至 → 直接封印圣所（走完整结局流程）
     if (reason === 'timeup') {
@@ -1224,7 +1225,7 @@ function triggerGameOver(reason) {
     if (!overlay || !title || !content) return;
 
     let titleText = '圣所已崩溃';
-    let contentText = '能源、介质与环境稳定度全部归零。\n\n圣所的系统一个接一个地停止了运转。最后的灯光熄灭，空气变得沉默。\n\n你未能保存洛斯耶马的遗产。后世将永远不知道这里曾存在过一个文明。\n\n「我们曾存在，但没有人记得。」';
+    let contentText = '能源、介质与环境稳定度全部归零。\n\n圣所的系统一个接一个地停止了运转。最后的灯光熄灭，空气变得沉默。\n\n你未能保存洛斯耶马的遗产。后世将永远不知道这里曾存在过一个文明。\n\n“我们曾存在，但没有人记得。”';
 
     const archivedCount = MemorySanctuary.state.completedArchives.length;
     const totalCount = MemorySanctuary.data.archives.length;
@@ -1244,7 +1245,7 @@ function triggerGameOver(reason) {
         
         if (reason === 'starvation') {
             titleText = '🍂 饥荒降临';
-            contentText = '连续三周的饥饿摧毁了圣所。\n\n守护者们一个接一个倒下，圣所的核心停止了运转。没有食物，没有希望。\n\n后世永远不会知道洛斯耶马曾存在过——因为没有人活下来讲述这个故事。\n\n「饥饿是最古老的死刑。」';
+            contentText = '连续三周的饥饿摧毁了圣所。\n\n守护者们一个接一个倒下，圣所的核心停止了运转。没有食物，没有希望。\n\n后世永远不会知道洛斯耶马曾存在过——因为没有人活下来讲述这个故事。\n\n“饥饿是最古老的死刑。”';
             // 直接使用饥荒结局场景
             endingSceneId = 'starvation';
             const starvationEnding = MemorySanctuary.data.endings.find(e => e.id === 'starvation');
@@ -1284,7 +1285,7 @@ function triggerGameOver(reason) {
                 AudioSystem.playBGM(isTrueEnding ? 'ending_true' : 'ending_normal');
             }
 
-            contentText += `\n点击「返回标题」重新开始。`;
+            contentText += `\n点击“返回标题”重新开始。`;
             title.textContent = titleText;
             content.innerHTML = esc(contentText, true);
             overlay.classList.remove('hidden');
@@ -1417,7 +1418,7 @@ function skipTurn(forceFromStuck = false) {
         if (expiringSoon.length > 0) {
             const victim = expiringSoon[Math.floor(Math.random() * expiringSoon.length)];
             victim.expired = true;
-            addLog(`⚠️ 由于跳过回合，「${victim.title}」未能及时归档，已永久消失！`, 'warning');
+            addLog(`⚠️ 由于跳过回合，“${victim.title}”未能及时归档，已永久消失！`, 'warning');
         }
     }
     
@@ -1435,7 +1436,7 @@ function skipTurn(forceFromStuck = false) {
             '愿这一刻的停顿不是遗憾。'
         ];
         const dialogue = skipDialogues[Math.floor(Math.random() * skipDialogues.length)];
-        addLog(`${randomGuardian.name}：「${dialogue}」`, 'guardian');
+        addLog(`${randomGuardian.name}：“${dialogue}”`, 'guardian');
     }
     
     renderAll();
@@ -1497,6 +1498,16 @@ function selectVault(vaultId) {
 
 function getGuardianById(id) {
     return MemorySanctuary.data.guardians.find(g => g.id === id) || null;
+}
+
+/**
+ * 引号包裹（统一“”）：数据层台词/正文自身可能已含双引号，此处不再重复加外层，
+ * 避免出现 “……“……” 的嵌套。用于运行期拼接的守护者台词与条目正文预览。
+ */
+function quoteCJK(text) {
+    const t = String(text == null ? '' : text);
+    if (!t) return '';
+    return /[“”]/.test(t) ? t : `“${t}”`;
 }
 
 function getGuardianName(id) {
@@ -1626,7 +1637,7 @@ function applyGuardianChatChoice(guardian, topic) {
     adjustGuardianMood(guardian.id, delta);
     const dialogueEl = document.getElementById('guardian-dialogue');
     if (dialogueEl) dialogueEl.textContent = topic.reply || '……';
-    addLog(`💬 与 ${guardian.name} 交谈：「${topic.label}」→ 好感 ${delta >= 0 ? '+' : ''}${delta}`, 'success');
+    addLog(`💬 与 ${guardian.name} 交谈：“${topic.label}”→ 好感 ${delta >= 0 ? '+' : ''}${delta}`, 'success');
     
     // 短暂禁用选项后收起，避免重复选择
     const container = document.getElementById('guardian-chat-choices');
@@ -1783,6 +1794,14 @@ function getMoodDialogue(guardianId) {
         }
     }
     
+    // 能源告急（≤10）：改播 lowEnergy 专池台词（该池此前全库无消费端，属长期死文案）
+    const lowEnergyLines = guardian.dialogues && guardian.dialogues.lowEnergy;
+    if ((MemorySanctuary.state.resources.energy || 0) <= 10
+        && Array.isArray(lowEnergyLines) && lowEnergyLines.length > 0
+        && Math.random() < 0.5) {
+        return lowEnergyLines;
+    }
+
     return guardian.moodDialogues[tier] || guardian.dialogues.idle || ['……'];
 }
 
@@ -1991,7 +2010,7 @@ function guardianBoostSupply() {
         '我们还有希望。',
         '在这黑暗里，还有人关心我们。谢谢。'
     ];
-    addLog(`${getGuardianName(guardianId)}：「${reactions[Math.floor(Math.random() * reactions.length)]}」`, 'guardian');
+    addLog(`${getGuardianName(guardianId)}：“${reactions[Math.floor(Math.random() * reactions.length)]}”`, 'guardian');
     
     if (typeof renderAll === 'function') renderAll();
     return true;
@@ -2036,7 +2055,7 @@ function guardianRecommendArchive() {
             'lorn': '经过我的多次检查，当前存储室已经没有待办项目。',
             'ethel': '存储室已满，我们的信仰与尊严都已妥善安放。'
         };
-        addLog(`${guardian.name}：「${fallbackDialogues[guardianId] || '当前存储室已无待归档条目。'}」`, 'guardian');
+        addLog(`${guardian.name}：“${fallbackDialogues[guardianId] || '当前存储室已无待归档条目。'}”`, 'guardian');
         showGuardianDialogue(guardianId, 'idle');
         if (typeof showTransientNotice === 'function') showTransientNotice(`📌 ${guardian.name}：当前存储室已无待归档条目。`);
         return;
@@ -2054,7 +2073,7 @@ function guardianRecommendArchive() {
             'lorn': '当前存储室无可用条目。建议先完成前置任务解锁更多内容。',
             'ethel': '存储室的秘密尚未完全显现。我们需要更多时间。'
         };
-        addLog(`${guardian.name}：「${lockedFallbackDialogues[guardianId] || '当前存储室的条目尚未解锁。'}」`, 'guardian');
+        addLog(`${guardian.name}：“${lockedFallbackDialogues[guardianId] || '当前存储室的条目尚未解锁。'}”`, 'guardian');
         showGuardianDialogue(guardianId, 'idle');
         if (typeof showTransientNotice === 'function') showTransientNotice(`📌 ${guardian.name}：条目尚未解锁，需要更多线索。`);
         return;
@@ -2091,29 +2110,29 @@ function guardianRecommendArchive() {
     let dialogueText;
     if (isAffordable) {
         const recommendDialogues = {
-            'tika': `我建议优先录入「${recommended.title}」——语言是文明的根基。`,
-            'finn': `从历史价值来看，「${recommended.title}」值得优先保存。`,
-            'misha': `「${recommended.title}」——这段记忆不应该被遗忘。`,
-            'lorn': `系统建议：优先录入「${recommended.title}」，资源效率最优。`,
-            'ethel': `「${recommended.title}」——它承载着我们的信仰与尊严。`
+            'tika': `我建议优先录入“${recommended.title}”——语言是文明的根基。`,
+            'finn': `从历史价值来看，“${recommended.title}”值得优先保存。`,
+            'misha': `“${recommended.title}”——这段记忆不应该被遗忘。`,
+            'lorn': `系统建议：优先录入“${recommended.title}”，资源效率最优。`,
+            'ethel': `“${recommended.title}”——它承载着我们的信仰与尊严。`
         };
-        dialogueText = recommendDialogues[guardianId] || `这个条目「${recommended.title}」值得保存。`;
+        dialogueText = recommendDialogues[guardianId] || `这个条目“${recommended.title}”值得保存。`;
     } else {
         // 资源不足的提示台词
         const unaffordableDialogues = {
-            'tika': `「${recommended.title}」很有价值，但当前资源不足。建议先补充能源或介质。`,
-            'finn': `「${recommended.title}」的历史价值很高，但我们需要更多资源才能录入。`,
-            'misha': `「${recommended.title}」……可惜现在资源不够。我们之后再回来。`,
-            'lorn': `「${recommended.title}」是当前最优选择，但资源不足。建议优先补充资源。`,
-            'ethel': `「${recommended.title}」值得保存，但我们需要更多资源。请谨慎分配。`
+            'tika': `“${recommended.title}”很有价值，但当前资源不足。建议先补充能源或介质。`,
+            'finn': `“${recommended.title}”的历史价值很高，但我们需要更多资源才能录入。`,
+            'misha': `“${recommended.title}”……可惜现在资源不够。我们之后再回来。`,
+            'lorn': `“${recommended.title}”是当前最优选择，但资源不足。建议优先补充资源。`,
+            'ethel': `“${recommended.title}”值得保存，但我们需要更多资源。请谨慎分配。`
         };
-        dialogueText = unaffordableDialogues[guardianId] || `「${recommended.title}」需要更多资源才能录入。`;
+        dialogueText = unaffordableDialogues[guardianId] || `“${recommended.title}”需要更多资源才能录入。`;
     }
     
-    addLog(`${guardian.name}：「${dialogueText}」`, 'guardian');
+    addLog(`${guardian.name}：“${dialogueText}”`, 'guardian');
 
     // 明确的即时反馈横幅：推荐动作必须让玩家"看见"（高亮+滚动发生在归档页）
-    if (typeof showTransientNotice === 'function') showTransientNotice(`📌 ${guardian.name} 建议优先录入「${recommended.title}」`);
+    if (typeof showTransientNotice === 'function') showTransientNotice(`📌 ${guardian.name} 建议优先录入“${recommended.title}”`);
 
     // 更新守护者面板对话
     const dialogueEl = document.getElementById('guardian-dialogue');
@@ -2185,7 +2204,7 @@ function checkGuardianInitiative() {
             guardianId: 'tika',
             title: '缇卡的请求',
             description: '缇卡希望录入一段她刚回忆起的古老歌谣——关于星辰起源的叙事诗。',
-            dialogue: '「我刚刚想起了小时候祖母唱的歌……让我把它记录下来吧。」',
+            dialogue: '“我刚刚想起了小时候祖母唱的歌……让我把它记录下来吧。”',
             reward: { media: 5 },
             archiveId: 'arch_001'
         },
@@ -2193,7 +2212,7 @@ function checkGuardianInitiative() {
             guardianId: 'finn',
             title: '芬恩的发现',
             description: '芬恩在旧档案中发现了一份被遗忘的附录，补充了《共享公约》的立法背景。',
-            dialogue: '「这份附录能帮助我们理解当时的立法者面临的困境……」',
+            dialogue: '“这份附录能帮助我们理解当时的立法者面临的困境……”',
             reward: { energy: 5 },
             archiveId: 'arch_004'
         },
@@ -2201,7 +2220,7 @@ function checkGuardianInitiative() {
             guardianId: 'misha',
             title: '米莎的勘探报告',
             description: '米莎从地表带回了一份完整的植物标本数据，记录了最后一片森林的消亡。',
-            dialogue: '「这是最后的证据……证明这里曾经有生命。」',
+            dialogue: '“这是最后的证据……证明这里曾经有生命。”',
             reward: { media: 8 },
             archiveId: 'arch_008'
         },
@@ -2209,7 +2228,7 @@ function checkGuardianInitiative() {
             guardianId: 'lorn',
             title: '洛恩的维护成果',
             description: '洛恩优化了发电机效率，本周能源产出增加。',
-            dialogue: '「机器老了，但还能撑一撑。」',
+            dialogue: '“机器老了，但还能撑一撑。”',
             reward: { energy: 8 },
             archiveId: null
         },
@@ -2217,7 +2236,7 @@ function checkGuardianInitiative() {
             guardianId: 'ethel',
             title: '埃塞尔的祈祷',
             description: '埃塞尔完成了本周的圣所净化仪式，环境稳定度略有恢复。',
-            dialogue: '「愿这片土地安息。」',
+            dialogue: '“愿这片土地安息。”',
             reward: { environment: 6 },
             archiveId: null
         }
@@ -2230,7 +2249,7 @@ function checkGuardianInitiative() {
                 guardianId: 'tika',
                 title: '缇卡的最后歌谣',
                 description: '缇卡想录制她这辈子最重要的歌——一首关于文明终结的挽歌。',
-                dialogue: '「这首歌……我写了很久。也许这是最后一首了。」',
+                dialogue: '“这首歌……我写了很久。也许这是最后一首了。”',
                 reward: { media: 12 },
                 archiveId: 'arch_001'
             },
@@ -2238,7 +2257,7 @@ function checkGuardianInitiative() {
                 guardianId: 'finn',
                 title: '芬恩的最终编年',
                 description: '芬恩决定整理一份完整的文明编年史，作为最后的记录。',
-                dialogue: '「如果只有一份文档能留存，应该是这个。」',
+                dialogue: '“如果只有一份文档能留存，应该是这个。”',
                 reward: { energy: 10 },
                 archiveId: 'arch_emergency_004'
             },
@@ -2246,7 +2265,7 @@ function checkGuardianInitiative() {
                 guardianId: 'misha',
                 title: '米莎的最后标本',
                 description: '米莎收集了最后一批地表标本，记录了生态完全崩溃前的状态。',
-                dialogue: '「森林没了，海洋灰了。但至少……我记得它们。」',
+                dialogue: '“森林没了，海洋灰了。但至少……我记得它们。”',
                 reward: { media: 15 },
                 archiveId: 'arch_008'
             }
@@ -2296,7 +2315,7 @@ function triggerGuardianInitiative(event) {
             MemorySanctuary.state.resources.environment = Math.min(100, MemorySanctuary.state.resources.environment + event.reward.environment);
         }
         
-        addLog(`${guardian.name}：「${event.dialogue}」`, 'guardian');
+        addLog(`${guardian.name}：${quoteCJK(event.dialogue)}`, 'guardian');
         addLog(`获得奖励：${formatReward(event.reward)}`, 'success');
         
         // 资源变化后立即检查衰竭状态
@@ -2372,13 +2391,13 @@ let logFilter = 'all'; // 当前日志筛选类型
 const TUTORIAL_STEPS = [
     {
         target: '#sanctuary-canvas',
-        text: '欢迎来到「记忆圣所」。\n\n这是圣所主厅。中央的歌者之座将声波传递至各个存储室，保存文明的碎片。',
+        text: '欢迎来到“记忆圣所”。\n\n这是圣所主厅。中央的歌者之座将声波传递至各个存储室，保存文明的碎片。',
         position: 'bottom'
     },
     {
         target: '#vault-tabs',
         tab: 'vault',
-        text: '圣所共有 12 间存储室，记录着洛斯耶马文明的不同侧面：\n\n语言、历史、灾难、艺术、哲学、科学、生态、法律、生活、建筑、医学与星象。\n\n已为你打开「存储室」页——点击标签切换存储室，查看各室的容量与已存条目。',
+        text: '圣所共有 12 间存储室，记录着洛斯耶马文明的不同侧面：\n\n语言、历史、灾难、艺术、哲学、科学、生态、法律、生活、建筑、医学与星象。\n\n已为你打开“存储室”页——点击标签切换存储室，查看各室的容量与已存条目。',
         position: 'bottom'
     },
     {
@@ -2395,7 +2414,7 @@ const TUTORIAL_STEPS = [
     {
         target: '#entry-list',
         tab: 'archive',
-        text: '这里是待归档条目列表。\n\n每条条目都有录入成本（能源+介质）和过期时间。资源充足时请点击「录入归档」保存它们。\n\n⚠️ 过期的条目将永远消失！',
+        text: '这里是待归档条目列表。\n\n每条条目都有录入成本（能源+介质）和过期时间。资源充足时请点击“录入归档”保存它们。\n\n⚠️ 过期的条目将永远消失！',
         position: 'left'
     },
     {
@@ -2406,7 +2425,7 @@ const TUTORIAL_STEPS = [
     {
         target: '#tech-panel',
         tab: 'tech',
-        text: '这是科技研究面板（第 5 周起逐步解锁）。\n\n勘探 / 归档 / 环境三域各有一对互斥学说：选定一条路线后，同组另一分支将永久锁死，请按周目策略抉择。\n\n科技不直接产出资源（那是项目的职责），而是优化勘探收益、归档成本、士气与补给。已解锁学说可继续「升级」强化效果。',
+        text: '这是科技研究面板（第 5 周起逐步解锁）。\n\n勘探 / 归档 / 环境三域各有一对互斥学说：选定一条路线后，同组另一分支将永久锁死，请按周目策略抉择。\n\n科技不直接产出资源（那是项目的职责），而是优化勘探收益、归档成本、士气与补给。已解锁学说可继续“升级”强化效果。',
         position: 'left'
     },
     {
@@ -2421,7 +2440,7 @@ const TUTORIAL_STEPS = [
     },
     {
         target: null,
-        text: '准备就绪。\n\n你的选择决定了后世「看到」怎样的洛斯耶马文明。\n\n每一段记忆都值得被认真对待。\n\n——终来之刻，何物当存？',
+        text: '准备就绪。\n\n你的选择决定了后世“看到”怎样的洛斯耶马文明。\n\n每一段记忆都值得被认真对待。\n\n——终来之刻，何物当存？',
         position: 'center'
     }
 ];
@@ -2750,7 +2769,7 @@ function showAboutModal() {
                 <button id="about-check-update-btn" class="about-update-btn">🔄 检查更新</button>
             </div>
             <div class="about-footer">
-                「我们曾存在，我们曾仰望，我们曾渴望触碰你们。」
+                “我们曾存在，我们曾仰望，我们曾渴望触碰你们。”
             </div>
         </div>
     `;
@@ -2796,7 +2815,7 @@ function showHelpModal() {
         },
         {
             title: '🎮 核心操作',
-            content: `• 待归档条目自动出现在右侧「归档」页，点击「录入归档」执行
+            content: `• 待归档条目自动出现在右侧“归档”页，点击“录入归档”执行
 • 归档消耗能源与存储介质，同时推进 1 周时间
 • 跳过回合可恢复资源，但会推进时间并可能降低守护者好感
 • 底部功能栏：勘探（获取外部资源）、项目（长期建设）、应急（危急手段）`,
@@ -2812,31 +2831,31 @@ function showHelpModal() {
         },
         {
             title: '✨ 归档仪式',
-            content: `• 标准归档：正常消耗，有守护者反应与隐藏叙事，推进 1 周
-• 深度归档：额外消耗 10 能源，解锁隐藏叙事
-• ⚡速记：省 30% 资源、不推进时间的轻量归档；但牺牲隐藏叙事与守护者注记、不触发线索链、士气收益减半，每回合限 1 次
+            content: `• 标准归档：正常消耗，有守护者反应与隐藏内容，推进 1 周
+• 深度归档：额外消耗 10 能源，解锁隐藏内容
+• ⚡速记：省 30% 资源、不推进时间的轻量归档；但牺牲隐藏内容与守护者注记、不触发线索链、士气收益减半，每回合限 1 次
 • 🤖 AI辅助：解锁档案AI助理后可用，费用减半、不推进时间，环境稳定度 -5`,
         },
         {
             title: '🏛️ 存储室主题契合度',
             content: `• ✓契合（绿色）：条目类型与存储室主题匹配（如建筑图纸→建筑与工程），归档消耗 -20%
-• 载体词（文本/影像/蓝图等通用载体）：中性消耗（1.0×），不显示契合徽章，也不标"主题不合"
+• 载体词（文本/影像/蓝图等通用载体）：中性消耗（1.0×），不显示契合徽章，也不标“主题不合”
 • 主题不合（橙色）：条目与存储室主题不符，归档消耗 +30%
 • 悬停标记可查看说明；同一批条目在不同主题的存储室消耗不同`,
         },
         {
-            title: '⚖ 叙事互斥',
-            content: `• 带 ⚖互斥 标记的条目之间存在叙事冲突：归档其中一条，另一条将永久消失
-• 研究「互斥洞察」科技后，⚖ 标记会直接显示互斥条目的名字
+            title: '⚖ 互斥条目',
+            content: `• 带 ⚖互斥 标记的条目之间存在内容冲突：归档其中一条，另一条将永久消失
+• 研究“互斥洞察”科技后，⚖ 标记会直接显示互斥条目的名字
 • 未解锁科技时，悬停 ⚖ 徽章只有通用提示——互斥是剧情抉择，请读完两条简介再决定保留哪一条`,
         },
         {
             title: '🔬 科技研究',
-            content: `• 第 5 周起可在「🔬 科技」标签页研究科技，消耗能源与介质
+            content: `• 第 5 周起可在“🔬 科技”标签页研究科技，消耗能源与介质
 • 三域各有互斥学说分支：勘探（高效↔守真）、归档（速录↔深研）、环境（守护↔节用）
 • 学说一选即锁：同组另一分支在本周目内永久不可研究
-• 已解锁科技可继续「升级」：投入资源强化效果（如速录学派 25% → 50% 成本减免）
-• 科技效果与维护项目零重叠：优化勘探收益/风险、归档成本、隐藏叙事、好感衰减、补给收益
+• 已解锁科技可继续“升级”：投入资源强化效果（如速录学派 25% → 50% 成本减免）
+• 科技效果与维护项目零重叠：优化勘探收益/风险、归档成本、隐藏内容、好感衰减、补给收益
 • 与工程机器人加成独立叠加（如勘探收益：机器人 +8%/台，科技再 +15%）`,
         },
         {
@@ -2845,7 +2864,7 @@ function showHelpModal() {
 • 多周目奖励：守护者记忆继承 + 圣所状态保留
 • 圣所项目：投入资源换取持续增益
 • 🔬 科技树：三域互斥学说，优化勘探/归档/环境（第 5 周起）
-• 地表勘探：派出守护者获取资源，并带回「地表碎片」——只能在勘探点发现的独家归档条目，且只在特定周数窗口内可归档，过期即永久消失
+• 地表勘探：派出守护者获取资源，并带回“地表碎片”——只能在勘探点发现的独家归档条目，且只在特定周数窗口内可归档，过期即永久消失
 • 机器人编队：机器人可独立勘探专属地点（无需守护者）、定期产出工程日志、环境危急时自动稳定；维护费低廉（0.3 能源/台·周）
 • 应急协议：危急时使用非常规手段`,
             defaultOpen: false

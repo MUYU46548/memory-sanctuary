@@ -53,7 +53,7 @@ function openExplorePanel() {
         // 首次打开面板级引导
         if (typeof showPanelHint === 'function') {
             showPanelHint('explore', document.querySelector('.explore-body'),
-                '💡 地表勘探：左侧选择地点，右侧挑选擅长对应技能的守护者派遣。勘探队带回资源，但会消耗食物并积累疲劳。');
+                '💡 地表勘探：左侧选择地点，右侧挑选擅长对应技能的守护者派遣。勘探结束可能带回资源，但无论是否成功都会消耗食物并积累疲劳。');
         }
 
         // 默认选中第一个可用地点（避免玩家需要滑到列表底部才发现派遣区）
@@ -244,7 +244,7 @@ function renderDispatchGuardians(expData) {
         const botDiv = document.createElement('div');
         botDiv.className = 'dispatch-bot-only';
         botDiv.innerHTML = `🔧 工程机器人编队将自动执行本次勘探：无需守护者、不消耗食物、不产生疲劳。` +
-            `<div class="dispatch-bot-cost">消耗：编队待机能源（维护费已按周扣除）· 不消耗回合，派遣后休整 ${expData.duration || 1} 周</div>`;
+            `<div class="dispatch-bot-cost">消耗：编队待机能源（维护费已按周扣除），不额外推进回合，派遣后休整 ${expData.duration || 1} 周</div>`;
         container.appendChild(botDiv);
         return;
     }
@@ -344,7 +344,7 @@ function renderOutcomeBars(expData) {
         if (g) {
             const specNote = document.createElement('div');
             specNote.className = 'outcome-bot-bonus special-bonus';
-            specNote.innerHTML = `✦ ${g.name} 熟悉此地：本次勘探将触发专属发现（额外资源 + 好感）`;
+            specNote.innerHTML = `✦ ${g.name} 熟悉此地：本次勘探将触发专属发现（额外资源+好感）`;
             container.appendChild(specNote);
         }
     }
@@ -442,7 +442,7 @@ function executeExploration() {
     if (state.emergencyExploreFoodFree) {
         foodCost = 0;
         state.emergencyExploreFoodFree = false;
-        addLog('🔭 紧急勘探的免食物额度已使用（腐败的代价换来的机会）。', 'system');
+        addLog('🔭 紧急勘探的免食物额度已使用。', 'system');
     }
     
     if (foodCost > 0 && !hasResources(0, 0, foodCost)) {
@@ -552,7 +552,7 @@ function unlockFragmentsForPoint(expData, effects) {
             ? getEffectiveExpiryWeeks(entry)
             : (entry.expiresAfter || 0);
         if (entry.expired || (entry.expiresAfter && MemorySanctuary.state.week > effectiveExpiry)) {
-            addLog(`💨 ${expData.name} 本可找到「${entry.title}」，但它的时代已经过去，只留下一捧细沙。`, 'system');
+            addLog(`💨 ${expData.name} 本可找到“${entry.title}”，但它的时代已经过去，只留下一捧细沙。`, 'system');
             return;
         }
 
@@ -560,8 +560,8 @@ function unlockFragmentsForPoint(expData, effects) {
         const notYet = entry.availableAfter && MemorySanctuary.state.week < entry.availableAfter;
         const hint = notYet ? `（第 ${entry.availableAfter} 周起可在存储室归档）` : '';
         const prefix = expData.botOnly ? '🤖 机器人回收' : '地表碎片';
-        addLog(`${prefix}：「${entry.title}」已发现${hint}——过期前前往对应存储室归档。`, 'success');
-        if (effects) effects.push({ name: `${prefix}「${entry.title}」`, positive: true });
+        addLog(`${prefix}：“${entry.title}”已发现${hint}——过期前前往对应存储室归档。`, 'success');
+        if (effects) effects.push({ name: `${prefix}“${entry.title}”`, positive: true });
     });
 }
 
@@ -621,7 +621,7 @@ function applyExplorationResult(outcome, expData) {
             gains.push(`好感+${reward.mood || 2}`);
             effects.push({ name: `✦ ${g.name}的专属发现（${gains.join('、')}）`, positive: true });
             specialNarrative = expData.guardianSpecialText ||
-                `${g.name} 凭着对这片土地的熟悉，找到了寻常勘探队会错过的东西——那是只属于他/她的记忆。`;
+                `${g.name} 凭着对这片土地的熟悉，找到了寻常勘探队会错过的东西。`;
             addLog(`✦ 专属事件：${g.name} 在 ${expData.name} 触发了特殊羁绊。`, 'event');
             if (typeof AudioSystem !== 'undefined' && AudioSystem.playExploreReturnNarrative) {
                 AudioSystem.playExploreReturnNarrative();
@@ -646,7 +646,7 @@ function applyExplorationResult(outcome, expData) {
                 if (specialKey) {
                     const g = MemorySanctuary.data.guardians.find(g => g.id === gid);
                     if (g && g.explorationDialogues && g.explorationDialogues[specialKey]) {
-                        quoteText = `${g.avatar} ${g.name}：「${g.explorationDialogues[specialKey]}」`;
+                        quoteText = `${g.avatar} ${g.name}：“${g.explorationDialogues[specialKey]}”`;
                         break;
                     }
                 }
@@ -767,7 +767,7 @@ function applyExplorationResult(outcome, expData) {
                 (!a.availableAfter || MemorySanctuary.state.week >= a.availableAfter) && !a.ngPlusExclusive);
             if (hiddenPending.length > 0) {
                 const pick = hiddenPending[Math.floor(Math.random() * hiddenPending.length)];
-                addLog(`✦ 守真学派的耳朵捕捉到了更多细节：未归档的「${pick.title}」似乎藏有未被记录的叙事。`, 'guardian');
+                addLog(`✦ 守真学派的耳朵捕捉到了更多细节：未归档的“${pick.title}”似乎藏有未被记录的内容。`, 'guardian');
             }
         }
     }
@@ -780,7 +780,7 @@ function applyExplorationResult(outcome, expData) {
                 const dialogueKey = expData.guardianSpecials[g.id];
                 if (g.explorationDialogues[dialogueKey]) {
                     setTimeout(() => {
-                        addLog(`${g.name}：「${g.explorationDialogues[dialogueKey]}」`, 'guardian');
+                        addLog(`${g.name}：“${g.explorationDialogues[dialogueKey]}”`, 'guardian');
                     }, 500);
                 }
             }
@@ -847,7 +847,7 @@ const MIDWAY_EVENTS = [
     {
         id: "midway_encounter",
         condition: () => true,
-        message: "勘探队遭遇了一支迷路的野生动物，不得不绕道而行。",
+        message: "勘探队遭遇了一支迷路的野生动物集群，不得不绕道而行。",
         effect: (state) => { state.resources.food = Math.max(0, state.resources.food - 3); },
         logType: "system"
     },
@@ -868,7 +868,7 @@ const MIDWAY_EVENTS = [
     {
         id: "midway_ancient",
         condition: (state) => state.week >= 30,
-        message: "勘探队在一处崩塌的墙壁上发现了古老的壁画。他们拓印了下来。",
+        message: "勘探队在一处崩塌的墙壁上发现了古老的壁画。他们拍摄了下来。",
         effect: (state) => { state.resources.media = Math.min(200, state.resources.media + 12); },
         logType: "system"
     },

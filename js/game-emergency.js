@@ -49,7 +49,7 @@ function openEmergencyProtocol() {
     // 首次打开面板级引导
     if (typeof showPanelHint === 'function') {
         showPanelHint('emergency', list,
-            '⚠️ 应急协议是最后手段：激活会提升圣所腐败度，腐败度越高资源衰减越快。仅在常规手段耗尽时使用。');
+            '⚠️ 应急协议是非常规手段，激活会提升圣所腐败度，腐败度越高资源衰减越快。');
     }
     
     EMERGENCY_PROTOCOLS.forEach(protocol => {
@@ -92,7 +92,7 @@ function openEmergencyProtocol() {
     if (corruption >= 80) {
         const warning = document.createElement('div');
         warning.className = 'emergency-warning';
-        warning.textContent = '⚠️ 圣所腐败度极高！每回合资源额外衰减 -2.5';
+        warning.textContent = '⚠️ 圣所腐败度极高！每回合资源额外衰减-2.5';
         list.appendChild(warning);
     } else if (corruption >= 50) {
         const warning = document.createElement('div');
@@ -152,7 +152,7 @@ function activateEmergencyProtocol(protocol) {
     state.emergencyCorruption = Math.min(100, (state.emergencyCorruption || 0) + protocol.corruption);
 
     // 日志
-    addLog(`⚡ 应急协议「${protocol.name}」激活。腐败度 +${protocol.corruption}。`, 'system');
+    addLog(`⚡ 应急协议“${protocol.name}”激活。腐败度 +${protocol.corruption}。`, 'system');
 
     // 音效（try/catch：音效异常绝不允许中断后续的关面板/渲染反馈链）
     if (typeof AudioSystem !== 'undefined') {
@@ -179,7 +179,7 @@ function activateEmergencyProtocol(protocol) {
         if (guardians.length > 0) {
             const guardian = guardians[Math.floor(Math.random() * guardians.length)];
             const reaction = EMERGENCY_GUARDIAN_REACTIONS[Math.floor(Math.random() * EMERGENCY_GUARDIAN_REACTIONS.length)];
-            addLog(`${guardian.name}：「${reaction}」`, 'guardian');
+            addLog(`${guardian.name}：“${reaction}”`, 'guardian');
         }
     }
 
@@ -197,7 +197,7 @@ function activateEmergencyProtocol(protocol) {
     // 紧急勘探：自动打开勘探面板，让玩家立刻使用免食物额度（提升存在感）
     if (protocol.id === 'emergency_explore' && typeof openExplorePanel === 'function') {
         state.emergencyExploreUsed = true;
-        addLog('🔭 紧急勘探已就绪：勘探冷却已清零，下一次派遣免食物。', 'system');
+        addLog('🔭 紧急勘探已就绪：勘探冷却已清零，下一次派遣免食物花费。', 'system');
         setTimeout(() => openExplorePanel(), 200);
     }
 }

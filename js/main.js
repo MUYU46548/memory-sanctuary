@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     try {
         // 阶段1：显示启动画面
-        updateBoot(5, '正在初始化...');
+        updateBoot(5, '正在初始化……');
         
         // 阶段2：并行加载字体和游戏数据
         const fontLoader = new FontLoader();
@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         
         const dataPromise = loadGameData().then(() => {
-            updateBoot(92, '正在加载数据...');
+            updateBoot(92, '正在加载数据……');
         }).catch((err) => {
             // 数据加载失败不阻塞启动（个别文件失败时游戏降级运行）
             if (DEBUG) console.error('[记忆圣所] 数据加载失败:', err);
@@ -298,7 +298,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         await Promise.all([fontPromise, dataPromise]);
         
         // 阶段3：初始化游戏系统
-        updateBoot(95, '正在启动圣所...');
+        updateBoot(95, '正在启动圣所……');
         
         initTheme();
         initSaveData();
@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadGameData() {
     // 带超时的 JSON 加载：Neutralino WebView2 等环境下 fetch 可能挂起（永不 settle），
-    // AbortController 强制中止后走 catch 降级，避免启动画面永久卡在「正在初始化」
+    // AbortController 强制中止后走 catch 降级，避免启动画面永久卡在“正在初始化”
     const fetchJson = async (path, timeoutMs = 8000) => {
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -588,7 +588,7 @@ function initTheme() {
 
     // 封印圣所按钮（顶部栏）
     // 注：不弹原生 confirm（Neutralino/webview 壳对 window.confirm 支持不佳，点击会"无反应"）；
-    // 封印流程自带「记忆回响」确认步骤，足够防止误操作。
+    // 封印流程自带“记忆回响”确认步骤，足够防止误操作。
     const sealBtn = document.getElementById('seal-topbar-btn');
     if (sealBtn) {
         sealBtn.addEventListener('click', () => {
@@ -678,7 +678,7 @@ function initTitleScreen() {
         });
     }
 
-    // 标题「帮助」直接复用游戏内分层帮助弹窗（单一内容源，避免两份帮助口径漂移）
+    // 标题“帮助”直接复用游戏内分层帮助弹窗（单一内容源，避免两份帮助口径漂移）
     if (titleHelp) {
         titleHelp.addEventListener('click', () => {
             if (typeof showHelpModal === 'function') showHelpModal();
@@ -755,7 +755,7 @@ function openDLCPanel() {
     // 填充 DLC 列表
     list.innerHTML = '';
 
-    // DLC 本期未实装（HANDOFF §6）：仅「圣所」主模式可玩
+    // DLC 本期未实装（HANDOFF §6）：仅“圣所”主模式可玩
     for (const [id, module] of Object.entries(DLC_MODULES)) {
         const notImplemented = id !== 'sanctuary';
         const unlocked = isModuleUnlocked(id);
@@ -974,7 +974,7 @@ function initSettings() {
     if (checkUpdateBtn) {
         checkUpdateBtn.addEventListener('click', () => {
             const statusEl = document.getElementById('check-update-status');
-            if (statusEl) statusEl.textContent = '检查中…';
+            if (statusEl) statusEl.textContent = '检查中……';
             if (typeof manualCheckUpdate === 'function') {
                 manualCheckUpdate((msg) => {
                     if (statusEl) statusEl.textContent = msg;

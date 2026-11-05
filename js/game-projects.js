@@ -82,7 +82,7 @@ function processActiveProjects() {
 
         // P1-5 修复：项目即将完成预警（剩余 2 周时提示，让玩家有准备时间）
         if (active.remainingWeeks === 2) {
-            addLog(`⏳ 项目「${project.name}」将在下周完成，请注意查收。`, 'system');
+            addLog(`⏳ 项目【${project.name}】将在下周完成，请注意查收。`, 'system');
         }
 
         // 先发放本周收益（修复 off-by-one：duration 内每一周都应有收益）
@@ -151,7 +151,7 @@ function applyProjectEffect(project, isCompletion) {
             // 完成时永久解锁 AI 助理辅助归档
             if (isCompletion) {
                 state.aiAssistantActive = true;
-                addLog('🤖 档案AI助理已上线：每回合可请求它辅助归档一条（费用减半，环境稳定度 -5）。', 'success');
+                addLog('🤖 档案AI助理已上线：每回合可请求它辅助归档一条项目（归档费用减半，环境稳定度-5）。', 'success');
             }
             break;
         case 'buildBot':

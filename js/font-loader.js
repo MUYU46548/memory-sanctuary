@@ -28,7 +28,7 @@ class FontLoader {
     async load(onProgress) {
         if (!onProgress) onProgress = () => {};
 
-        onProgress(5, '正在初始化...');
+        onProgress(5, '正在初始化……');
         await this._delay(30);
 
         // Neutralino 桌面环境：WebView2 的 Cache Storage 可能挂起（caches.open 永不 settle），
@@ -113,7 +113,7 @@ class FontLoader {
                 
                 this.loaded++;
                 const pct = 5 + (this.loaded / this.total) * 90;
-                onProgress(pct, `正在载入霞鹜文楷... (${this.loaded}/${this.total})`);
+                onProgress(pct, `正在载入霞鹜文楷……（${this.loaded}/${this.total}）`);
                 
                 if (DEBUG) console.log(`[FontLoader] ${font.family} (${font.weight}) 从缓存加载`);
             } catch (err) {
@@ -150,7 +150,7 @@ class FontLoader {
             
             this.loaded++;
             const pct = 5 + (this.loaded / this.total) * 90;
-            onProgress(pct, `正在载入霞鹜文楷... (${this.loaded}/${this.total})`);
+            onProgress(pct, `正在载入霞鹜文楷……（${this.loaded}/${this.total}）`);
             
             if (DEBUG) console.log(`[FontLoader] ${font.family} (${font.weight}) 下载完成`);
         } catch (err) {

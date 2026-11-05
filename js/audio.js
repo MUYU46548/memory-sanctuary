@@ -6,7 +6,7 @@
  * - 基础层：低频drone（始终存在，音量随能源降低而升高）
  * - 事件层：归档成功→清脆风铃；资源归零→低沉警示；条目过期→玻璃碎裂
  * - 场景层：切换存储室时播放特征音效
- * - 终局层：第36-48周逐渐加入心跳声，频率随week增加
+ * - 终局层：不安排心跳声 —— 会引发玩家生理不适，原「第36周后终局心跳」已移除（勿再加回）
  */
 
 // 调试模式开关：发布时设为 false，开发时设为 true
@@ -20,7 +20,6 @@ window.AudioSystem = (() => {
     let droneGain = null;
     let isInitialized = false;
     let isMuted = false;
-    let heartbeatInterval = null;
     let currentScene = null;
     let sfxVolume = 1.0; // 音效音量倍率 (0-1)
 
@@ -1197,65 +1196,6 @@ window.AudioSystem = (() => {
         osc.stop(now + sound.duration + 0.1);
     }
 
-    // 启动终局心跳
-    function startHeartbeat(week) {
-        if (!ctx || isMuted || heartbeatInterval) return;
-        
-        const interval = Math.max(500, 1200 - (week - 36) * 50);
-        
-        heartbeatInterval = setInterval(() => {
-            if (!ctx || isMuted) {
-                stopHeartbeat();
-                return;
-            }
-            playHeartbeat();
-        }, interval);
-    }
-
-    function playHeartbeat() {
-        if (!ctx) return;
-        
-        const now = ctx.currentTime;
-        
-        // 第一拍
-        const osc1 = ctx.createOscillator();
-        const gain1 = ctx.createGain();
-        osc1.frequency.value = 50;
-        gain1.gain.setValueAtTime(0.2, now);
-        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-        osc1.connect(gain1);
-        gain1.connect(masterGain);
-        osc1.start(now);
-        osc1.stop(now + 0.2);
-        
-        // 第二拍
-        const osc2 = ctx.createOscillator();
-        const gain2 = ctx.createGain();
-        osc2.frequency.value = 45;
-        gain2.gain.setValueAtTime(0.15, now + 0.2);
-        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
-        osc2.connect(gain2);
-        gain2.connect(masterGain);
-        osc2.start(now + 0.2);
-        osc2.stop(now + 0.4);
-    }
-
-    function stopHeartbeat() {
-        if (heartbeatInterval) {
-            clearInterval(heartbeatInterval);
-            heartbeatInterval = null;
-        }
-    }
-
-    // 更新终局心跳速度
-    function updateHeartbeat(week) {
-        if (week >= 36) {
-            startHeartbeat(week);
-        } else {
-            stopHeartbeat();
-        }
-    }
-
     // 恢复音频上下文（用户交互后）
     function resume() {
         if (ctx && ctx.state === 'suspended') {
@@ -1327,10 +1267,9 @@ window.AudioSystem = (() => {
         return globalMuted;
     }
     
-    // P1-14 修复：停止所有音频（BGM + 心跳 + drone）
+    // P1-14 修复：停止所有音频（BGM + drone）
     function stopAll() {
         stopBGM();
-        stopHeartbeat();
         if (droneGain && ctx) {
             droneGain.gain.setValueAtTime(0, ctx.currentTime);
         }
@@ -1367,7 +1306,6 @@ window.AudioSystem = (() => {
         playVNClose,
         playButtonClick,
         updateDroneByEnergy,
-        updateHeartbeat,
         resume,
         toggleMute,
         setVolume,

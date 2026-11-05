@@ -177,7 +177,7 @@ function endTutorial() {
         if (typeof showHelpModal === 'function') {
             setTimeout(() => {
                 showHelpModal();
-                addLog('点击底部「帮助」可随时查看操作指南。', 'system');
+                addLog('点击底部“帮助”可随时查看操作指南。', 'system');
             }, 300);
         }
     }

@@ -64,6 +64,28 @@ function isDoctrineLocked(doctrineKey, techId) {
 }
 
 /**
+ * 科技成本文案（单一口径，UI 与“资源不足”提示共用）
+ * 只列出非零项：◈ 能源 / ◇ 介质 / 🍖 食物
+ */
+function formatTechCost(cost) {
+    const c = cost || {};
+    const parts = [];
+    if (c.energy) parts.push(`◈${c.energy}`);
+    if (c.media) parts.push(`◇${c.media}`);
+    if (c.food) parts.push(`🍖${c.food}`);
+    return parts.join(' ') || '免费';
+}
+
+/** 资源是否够付科技成本（能源 / 介质 / 食物三项须同时满足） */
+function canPayTechCost(state, cost) {
+    const c = cost || {};
+    const res = (state && state.resources) || {};
+    return (res.energy || 0) >= (c.energy || 0)
+        && (res.media || 0) >= (c.media || 0)
+        && (res.food || 0) >= (c.food || 0);
+}
+
+/**
  * 计算科技解锁状态（供 UI 与 unlockTech 共用，单一口径）
  * 返回 { ok: bool, reason: string }
  */
@@ -84,12 +106,11 @@ function getTechUnlockState(id) {
     }
     if (isDoctrineLocked(tech.doctrine, id)) {
         const picked = getTechById(state.techDoctrines[tech.doctrine]);
-        return { ok: false, reason: `学说互斥：已选「${picked ? picked.name : state.techDoctrines[tech.doctrine]}」` };
+        return { ok: false, reason: `学说互斥：已选“${picked ? picked.name : state.techDoctrines[tech.doctrine]}”` };
     }
     const cost = tech.cost || {};
-    if ((state.resources.energy || 0) < (cost.energy || 0) ||
-        (state.resources.media || 0) < (cost.media || 0)) {
-        return { ok: false, reason: `资源不足（需 ◈${cost.energy || 0} ◇${cost.media || 0}）` };
+    if (!canPayTechCost(state, cost)) {
+        return { ok: false, reason: `资源不足（需 ${formatTechCost(cost)}）` };
     }
     return { ok: true, reason: '可研究' };
 }
@@ -104,7 +125,7 @@ function unlockTech(id) {
 
     const check = getTechUnlockState(id);
     if (!check.ok) {
-        addLog(`🔬 无法研究「${(getTechById(id) || {}).name || id}」：${check.reason}。`, 'system');
+        addLog(`🔬 无法研究“${(getTechById(id) || {}).name || id}”：${check.reason}。`, 'system');
         return false;
     }
 
@@ -112,13 +133,14 @@ function unlockTech(id) {
     const cost = tech.cost || {};
     state.resources.energy -= cost.energy || 0;
     state.resources.media -= cost.media || 0;
+    state.resources.food = Math.max(0, (state.resources.food || 0) - (cost.food || 0));
     state.techUnlocked.push(id);
     // 学说路线记录首节点（分支代表）；同分支后继推进不覆盖
     if (tech.doctrine && !state.techDoctrines[tech.doctrine]) {
         state.techDoctrines[tech.doctrine] = id;
     }
 
-    addLog(`🔬 科技解锁：「${tech.name}」—— ${tech.effectText || ''}`, 'success');
+    addLog(`🔬 科技解锁：“${tech.name}”—— ${tech.effectText || ''}`, 'success');
     if (tech.doctrine) {
         const doctrineNames = (MemorySanctuary.data.techMeta && MemorySanctuary.data.techMeta.doctrineNames) || {};
         addLog(`⚖ ${doctrineNames[tech.doctrine] || '学说'}路线已确定（同组其它分支已锁死）。`, 'system');
@@ -145,9 +167,8 @@ function getTechUpgradeState(id) {
     if (!state.techUnlocked.includes(id)) return { ok: false, reason: '需先解锁' };
     if (state.techUpgrades.includes(id)) return { ok: false, reason: '已升级' };
     const cost = tech.upgrade.cost || {};
-    if ((state.resources.energy || 0) < (cost.energy || 0) ||
-        (state.resources.media || 0) < (cost.media || 0)) {
-        return { ok: false, reason: `资源不足（需 ◈${cost.energy || 0} ◇${cost.media || 0}）` };
+    if (!canPayTechCost(state, cost)) {
+        return { ok: false, reason: `资源不足（需 ${formatTechCost(cost)}）` };
     }
     return { ok: true, reason: '可升级' };
 }
@@ -159,7 +180,7 @@ function upgradeTech(id) {
 
     const check = getTechUpgradeState(id);
     if (!check.ok) {
-        addLog(`🔬 无法升级「${(getTechById(id) || {}).name || id}」：${check.reason}。`, 'system');
+        addLog(`🔬 无法升级“${(getTechById(id) || {}).name || id}”：${check.reason}。`, 'system');
         return false;
     }
 
@@ -167,10 +188,11 @@ function upgradeTech(id) {
     const cost = tech.upgrade.cost || {};
     state.resources.energy -= cost.energy || 0;
     state.resources.media -= cost.media || 0;
+    state.resources.food = Math.max(0, (state.resources.food || 0) - (cost.food || 0));
     if (!state.techUpgrades) state.techUpgrades = [];
     state.techUpgrades.push(id);
 
-    addLog(`🔬 科技升级：「${tech.upgrade.name || tech.name + '·进阶'}」—— ${tech.upgrade.text || ''}`, 'success');
+    addLog(`🔬 科技升级：“${tech.upgrade.name || tech.name + '·进阶'}”—— ${tech.upgrade.text || ''}`, 'success');
     if (typeof AudioSystem !== 'undefined' && AudioSystem.playProjectComplete) {
         AudioSystem.playProjectComplete();
     }

@@ -364,7 +364,7 @@ function resolveEvent(choiceIndex) {
     if (choice.effect.revealArchive) {
         const archive = getArchiveById(choice.effect.revealArchive);
         if (archive) {
-            addLog(`📜 新条目解锁：「${archive.title}」`, 'success');
+            addLog(`📜 新条目解锁：“${archive.title}”`, 'success');
             // 实际解锁 NG+ 条目（P1-6 修复：revealArchive 不再只打日志）
             if (archive.ngPlusExclusive) {
                 unlockNGPlusEntry(archive.id);
@@ -398,7 +398,7 @@ function resolveEvent(choiceIndex) {
         unlockNGPlusEntry(choice.feedback.unlockEntry);
         const unlockedEntry = getArchiveById(choice.feedback.unlockEntry);
         if (unlockedEntry) {
-            addLog(`解锁新条目：「${unlockedEntry.title}」`, 'success');
+            addLog(`解锁新条目：“${unlockedEntry.title}”`, 'success');
         }
     }
     
@@ -502,7 +502,7 @@ function applyEventFeedback(choiceIndex) {
         if (choice.feedback[gid]) {
             const guardian = getGuardianById(gid);
             if (guardian) {
-                addLog(`${guardian.name}：「${choice.feedback[gid]}」`, 'guardian');
+                addLog(`${guardian.name}：${quoteCJK(choice.feedback[gid])}`, 'guardian');
             }
         }
     }
