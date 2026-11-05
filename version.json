@@ -1,6 +1,6 @@
 {
-  "version": "0.2.11",
+  "version": "0.2.12",
   "releaseDate": "2026-11-05",
   "downloadUrl": "https://github.com/MUYU46548/memory-sanctuary/releases/latest",
-  "notes": "v0.2.11（文案归一 + 食物成本接线 + 移除终局心跳）：① 界面 16 处“叙事”清出（叙事诗保留）、113 处直角引号改“”、数据残留 ASCII 直引号/半角括号/半角省略点全部归一；新增 quoteCJK() 防嵌套引号；② 守护者台词 5 组跨池重复处理，lowEnergy 台词池接线；③ 科技 cost.food 此前不扣费不显示，现由 canPayTechCost/formatTechCost 统一校验、扣费与展示；项目食物成本补显示；④ 移除第 36 周起的终局心跳声（生理不适）；⑤ 项目/科技成本普降，归档率维持 27%（38/144）。"
+  "notes": "v0.2.12（标题改版 + BGM 自动播放 + 退出按钮）：① 标题画面改为菱形眼铭牌（细金线 + 四角切角），全部标题按钮统一为同一套形状语言，亮/暗双主题分别校准对比度，1200×750 最小窗口无溢出；② 桌面版 BGM 启动即响——快捷方式/安装后启动带 --edge-webview-switches=--autoplay-policy=no-user-gesture-required，“必须先点一下”的老问题修复，并修掉待播队列导致进游戏后 BGM 被开场曲顶掉的问题；③ 标题画面新增「退出游戏」按钮（Neutralino 原生退出）；④ exe 图标与文件属性换成圣所自己的（原为打包工具默认图标）；⑤ 文档全量校对：README 条目数与快捷键、LICENSE 补桌面发行组件与隐私说明、游戏内「关于」补版权与反馈、玩家说明修正导出存档路径。"
 }
