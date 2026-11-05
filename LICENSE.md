@@ -126,6 +126,31 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 
 ---
 
+## 桌面发行组件（仅安装包内含，网页版不含）
+
+安装包（`ms-<版本>-setup.exe`）除本作代码与素材外，还打包下列第三方组件，各自适用其原始许可：
+
+| 组件 | 用途 | 许可 |
+|------|------|------|
+| Neutralinojs runtime / client（`MemorySanctuary-win_x64.exe`、`neutralino.js`） | 桌面窗口与资源加载 | MIT |
+| Microsoft Edge WebView2 Runtime | 页面渲染内核（系统自带或由安装引导安装） | Microsoft 软件许可条款（可再分发运行时） |
+| Inno Setup 6 | 生成 Windows 安装程序 | Inno Setup License（允许自由分发由其生成的安装包） |
+| ChineseSimplified.isl | Inno Setup 简体中文语言包 | MIT（kira-96/Inno-Setup-Chinese-Simplified-Translation） |
+
+本作代码本身仍为上文 MIT 许可；上述组件的许可只约束组件自身，不改变本作许可。
+
+## 隐私与联网
+
+- 游戏**不收集、不上传**任何个人信息、遥测或存档内容。
+- 存档、设置、字体缓存全部保存在本机：
+  - 桌面版：`%APPDATA%\MemorySanctuary-win_x64.exe`（存档 + 设置 + WebView2 缓存）
+  - 网页版：浏览器 `localStorage` 与 Cache API
+- 启动时以及手动「检查更新」时，会访问 GitHub 公共接口（`api.github.com` / `github.com`）查询最新版本号；
+  请求只带常规 HTTP 头，不含个人数据。断网或请求失败时游戏照常运行，只是不提示更新。
+- 卸载时是否删除存档由玩家选择，默认保留。
+
+---
+
 ## 游戏内容
 
 绒花计划IP系列作品。

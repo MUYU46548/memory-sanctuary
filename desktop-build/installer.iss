@@ -18,6 +18,10 @@
 #define MyAppExeName "MemorySanctuary-win_x64.exe"
 #define MyAppDataDirName "MemorySanctuary-win_x64.exe"
 
+; 启动参数：让 WebView2 允许自动播放（否则首次启动必须点一下才出声，十几个版本的老问题）。
+; 只通过快捷方式/安装后启动传参，作用于本程序进程，不写系统环境变量、不影响其他软件。
+#define MyAppLaunchArgs "--edge-webview-switches=--autoplay-policy=no-user-gesture-required"
+
 [Setup]
 AppId={{B70F5349-5C8D-4122-AA2D-57E0959CE6DB}
 AppName={#MyAppName}
@@ -26,8 +30,10 @@ AppVerName={#MyAppFullName} v{#MyAppVersion}
 AppPublisher={#MyAppPublisher}
 AppComments=末日叙事资源管理 · 绿色安装、可完整卸载
 VersionInfoVersion={#MyAppVersion}
+VersionInfoCompany={#MyAppPublisher}
 VersionInfoProductName={#MyAppName}
 VersionInfoDescription={#MyAppFullName} 安装程序
+VersionInfoCopyright=© 2026 {#MyAppPublisher}
 DefaultDirName={localappdata}\Programs\MemorySanctuary
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
@@ -61,12 +67,12 @@ Source: "dist\MemorySanctuary\resources.neu"; DestDir: "{app}"; Flags: ignorever
 Source: "README-player.txt"; DestDir: "{app}"; DestName: "README.txt"; Flags: ignoreversion isreadme
 
 [Icons]
-Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Parameters: "{#MyAppLaunchArgs}"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; WorkingDir: "{app}"; Parameters: "{#MyAppLaunchArgs}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "立即启动 {#MyAppName}"; WorkingDir: "{app}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Parameters: "{#MyAppLaunchArgs}"; Description: "立即启动 {#MyAppName}"; WorkingDir: "{app}"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 ; 安装目录内的运行期残留：Neutralino 每次运行都会在程序目录写 neutralinojs.log，

@@ -46,6 +46,15 @@ desktop-build/
   `%APPDATA%\MemorySanctuary-win_x64.exe`（实测 700–900MB，几乎全是 WebView2 缓存）；
   `/VERYSILENT` 静默卸载默认**保留**存档，避免脚本化卸载误删进度
 - `AppId` 固定 GUID（`B70F5349-…`），保证覆盖安装/升级识别为同一程序
+- **exe 图标与版本信息**：由 `neutralino.config.json` 的 `applicationIcon`（`.png`）+
+  `applicationName / author / copyright / description` 决定，`neu build`（CLI ≥ 11.3）自动写入。
+  不配就会一直是 Neutralino 默认的橙色原子图标（窗口左上角、任务栏、快捷方式全跟着错）
+- **BGM 自动播放**：由快捷方式/安装后启动的 `Parameters: --edge-webview-switches=--autoplay-policy=no-user-gesture-required` 实现
+  （`installer.iss` 的 `MyAppLaunchArgs`）。**不要**改成写 `HKCU\Environment` 的全局环境变量——
+  那会让本机所有 WebView2 应用都允许自动播放（用户明确否决）
+- **退出游戏按钮**：需要 `neutralino.config.json` 里 `enableNativeAPI: true` + `nativeAllowList: ["app.exit"]`，
+  且 `build.sh` 会把 `<script src="neutralino.js">` 注入到**桌面产物**的 index.html（仓库 index.html 保持纯网页版）。
+  少了任何一环，点退出会被拒：`Missing permission to access Native API`
 
 ## 关键坑（本机实测）
 - **`neu create` 在本机超时**：访问 `api.github.com` latest 时 ETIMEDOUT。本工程已绕过——runtime 直接提交在 `bin/`，client lib 由 build.sh 从 `github.com` 主站下载（该站通畅）。

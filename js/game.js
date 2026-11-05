@@ -2748,7 +2748,7 @@ function showAboutModal() {
             <div class="about-grid">
                 <div class="about-section">
                     <div class="about-section-title">技术信息</div>
-                    <div class="about-section-content">HTML5 + CSS3 + Canvas 2D<br>Vanilla JavaScript · 绒花计划系列IP</div>
+                    <div class="about-section-content">HTML5 + CSS3 + Canvas 2D<br>Vanilla JavaScript · 桌面封装 Neutralinojs + WebView2<br>绒花计划系列IP</div>
                 </div>
                 <div class="about-section">
                     <div class="about-section-title">守护者</div>
@@ -2767,6 +2767,15 @@ function showAboutModal() {
             </div>
             <div class="about-actions">
                 <button id="about-check-update-btn" class="about-update-btn">🔄 检查更新</button>
+            </div>
+            <div class="about-section">
+                <div class="about-section-title">版本与版权</div>
+                <div class="about-section-content">
+                    v${GAME_VERSION} · © 2026 暮雨（绒花计划）<br>
+                    代码 MIT 许可 · 字体 霞鹜文楷（SIL OFL 1.1）· BGM 原创生成<br>
+                    反馈与问题：github.com/MUYU46548/memory-sanctuary/issues<br>
+                    桌面版存档：%APPDATA%\\MemorySanctuary-win_x64.exe
+                </div>
             </div>
             <div class="about-footer">
                 “我们曾存在，我们曾仰望，我们曾渴望触碰你们。”

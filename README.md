@@ -1,6 +1,6 @@
 # 记忆圣所 (Memory Sanctuary)
 
-![Version](https://img.shields.io/badge/version-v0.2.11-blue)
+![Version](https://img.shields.io/badge/version-v0.2.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tech](https://img.shields.io/badge/tech-HTML5%20%2B%20CSS3%20%2B%20Vanilla%20JS-orange)
 
@@ -65,7 +65,9 @@
 
 ### 启动方式
 
-> **面向玩家**：请使用发行页提供的安装包 **`ms-v<版本>-setup.exe`** —— 双击安装、开始菜单启动、控制面板可卸载（不需要管理员权限，存档可选择性保留）。无需任何命令行操作。
+> **面向玩家**：请使用发行页提供的安装包 **`ms-<版本>-setup.exe`** —— 双击安装、开始菜单启动、控制面板可卸载（不需要管理员权限，存档可选择性保留）。无需任何命令行操作。
+> 标题画面底部有 **「退出游戏」** 按钮可直接关闭程序；也可直接关窗。
+> 请从**桌面 / 开始菜单快捷方式**启动：快捷方式带 BGM 自动播放参数，直接双击安装目录里的 exe 则首次需要点一下才出声。
 > 以下本地服务器方式仅面向**开发者调试**，不是玩家的正常启动方式。
 
 ```bash
@@ -87,7 +89,7 @@ http://localhost:8099
 | `index.html` + `js/` + `css/` + `data/` + `assets/` + `fonts/` | 游戏本体 |
 | `desktop-build/` | 桌面玩家包与安装包工程（Neutralino + Inno Setup）：`build.sh` 出 exe/resources.neu，`build-installer.sh` 出安装包；`dist/`、`installer-dist/` 产物不入库 |
 | `scripts/` | 开发辅助脚本（v0.2.8 起历史一次性脚本已清理，均不入库） |
-| `开发清单.md`、`开发日志*.md`、`HANDOFF.md` 等 | 开发者交接文档，玩家无需关心 |
+| `立项契约.md`、`开发日志*.md`、`游戏章节拓展.md` | 开发文档（立项约定、开发历史、章节拓展规划），玩家无需关心 |
 
 ### 游戏流程
 
@@ -153,7 +155,7 @@ http://localhost:8099
 ### 数据驱动
 
 所有游戏内容存放在 `/data/*.json`：
-- `archives.json` — 归档条目（202 条，标题、内容、存储室、成本、解锁条件）
+- `archives.json` — 归档条目（200 条，标题、内容、存储室、成本、解锁条件）
 - `vaults.json` — 12 间存储室（容量、主题）
 - `guardians.json` — 守护者档案（技能、好感度对话、背景档案、回忆片段）
 - `events.json` — 随机/章节/排程事件（79 个，标题、描述、选择、效果）
@@ -197,7 +199,12 @@ const amber = style.getPropertyValue('--amber-primary').trim();
 **静音控制**：
 - 顶部栏静音按钮（全局）
 - 设置面板：BGM 音量、音效音量、全局静音
-- 快捷键：`Ctrl+Shift+M` 切换全局静音
+- 静音状态写入 `localStorage`（`memory-sanctuary-settings`），重启后保留
+
+**自动播放（仅桌面版）**：Chromium / WebView2 的自动播放策略默认要求一次用户手势，页面层无法绕过。桌面版的快捷方式与安装后启动会带参数
+`--edge-webview-switches=--autoplay-policy=no-user-gesture-required`，让 BGM 一启动就出声；
+该参数只作用于本程序进程，不写系统环境变量。玩家若绕过快捷方式直接双击 exe，
+则退化为首次点击/按键后出声（`js/main.js` 的捕获阶段解锁兜底）。
 
 ## 调试与开发
 
@@ -206,10 +213,11 @@ const amber = style.getPropertyValue('--amber-primary').trim();
 | 快捷键 | 功能 |
 |--------|------|
 | `Space` | 跳过回合（游戏内） |
-| `1` / `2` / `3` / `4` | 切换 归档 / 守护者 / 存储室 / 科技 标签页 |
 | `Esc` | 关闭弹窗（含确认弹窗） |
 | `Ctrl+Shift+D` | 切换调试面板 |
-| `Ctrl+Shift+M` | 切换全局静音 |
+
+> 全局静音没有键盘快捷键，请用顶部栏静音按钮或设置面板。
+> 标签页切换也没有数字键快捷键（归档 / 守护者 / 存储室 / 科技 用鼠标点击）。
 
 ### 调试面板
 

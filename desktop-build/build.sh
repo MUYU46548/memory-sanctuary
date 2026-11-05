@@ -40,6 +40,27 @@ if [ ! -f "$BUILD/resources/neutralino.js" ]; then
   python3 -c "import urllib.request; urllib.request.urlretrieve('https://github.com/neutralinojs/neutralino.js/releases/download/v6.9.0/neutralino.js', 'desktop-build/resources/neutralino.js')"
 fi
 
+# 3.5 桌面版注入 Neutralino 客户端脚本（仓库里的 index.html 保持纯网页版，不引它）
+#     注入后「退出游戏」按钮才能调用 Neutralino.app.exit() 真正关掉窗口。
+#     注意：Windows 下的 python 不认 MSYS 路径（/e/...），这里先 cd 到构建目录、只传相对路径。
+( cd "$BUILD" && python3 - "resources/index.html" <<'PY'
+import io, sys
+p = sys.argv[1]
+s = io.open(p, encoding='utf-8', newline='').read()
+tag = '<script src="neutralino.js"></script>'
+if tag not in s:
+    s = s.replace('</body>', '    ' + tag + '\n</body>')
+    io.open(p, 'w', encoding='utf-8', newline='').write(s)
+    print('==> 已注入 neutralino.js 客户端脚本')
+else:
+    print('==> neutralino.js 客户端脚本已存在，跳过')
+PY
+)
+if ! grep -q 'src="neutralino.js"' "$BUILD/resources/index.html"; then
+  echo "!! 注入失败：resources/index.html 里没有 neutralino.js 引用（退出按钮会失效）"
+  exit 1
+fi
+
 # 4. 构建自检：确认无嵌套目录
 if [ ! -f "$BUILD/resources/js/game-save.js" ]; then
   echo "!! 构建自检失败：resources/js/game-save.js 不存在（疑似嵌套目录）"

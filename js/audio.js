@@ -182,6 +182,7 @@ window.AudioSystem = (() => {
                     return;
                 }
                 bgmIsPlaying = true;
+                bgmPendingScene = null; // 播放成功即消费待播场景，防止旧场景被重放顶掉当前 BGM
                 fadeInBGM(config.volume);
                 if (DEBUG) console.log(`[BGM] 开始播放: ${sceneId}`);
             })
@@ -233,6 +234,7 @@ window.AudioSystem = (() => {
                     return;
                 }
                 bgmIsPlaying = true;
+                bgmPendingScene = null; // 播放成功即消费待播场景，防止旧场景被重放顶掉当前 BGM
                 fadeInBGM(config.volume);
                 if (DEBUG) console.log(`[BGM] 开始播放: ${sceneId}`);
             })
@@ -260,12 +262,17 @@ window.AudioSystem = (() => {
     }
 
     // 用户交互后尝试播放等待中的 BGM
+    // 注意：已有曲目在播放时不能重放 pending —— 否则点击“新建游戏”后
+    // 旧的开场受阻场景（title）会把 game 场景顶掉，听起来像进了游戏还在放标题曲。
     function tryPlayBGMAfterInteraction() {
-        if (bgmPendingScene) {
-            const pending = bgmPendingScene;
+        if (!bgmPendingScene) return;
+        if (bgmIsPlaying) {
             bgmPendingScene = null;
-            playBGM(pending);
+            return;
         }
+        const pending = bgmPendingScene;
+        bgmPendingScene = null;
+        playBGM(pending);
     }
 
     // 淡入 BGM

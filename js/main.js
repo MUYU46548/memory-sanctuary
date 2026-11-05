@@ -168,7 +168,7 @@ function hideConfirmDialog() {
 // ============================================================
 // 全局常量
 // ============================================================
-const GAME_VERSION = '0.2.11';
+const GAME_VERSION = '0.2.12';
 
 // ============================================================
 // 退出自动存档：关闭/刷新页面时把当前进度写入当前存档槽
@@ -257,6 +257,16 @@ function showMobileWarning() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // 桌面版（Neutralino）：初始化原生客户端，供“退出游戏”按钮调用 app.exit()。
+    // 网页版没有 Neutralino 全局对象，这里直接跳过。
+    if (typeof Neutralino !== 'undefined' && Neutralino.init) {
+        try {
+            Neutralino.init();
+        } catch (e) {
+            if (DEBUG) console.warn('[桌面] Neutralino 初始化失败:', e);
+        }
+    }
+
     // 早期移动端检测
     if (isMobileDevice()) {
         showMobileWarning();
@@ -327,14 +337,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         if (typeof AudioSystem !== 'undefined') {
-            const initAudio = () => {
+            // 自动播放解锁：Chromium / WebView2 的自动播放策略要求一次用户手势。
+            // 必须用「捕获阶段」：否则点击“新建游戏”时按钮自身的 playBGM 先执行，
+            // 之后才轮到这里的重放，会把游戏场景顶回标题曲。
+            // 桌面版正常从快捷方式启动时已带 --edge-webview-switches=--autoplay-policy=no-user-gesture-required，
+            // 会直接自动播放；本段只在网页版 / 玩家绕过快捷方式直接双击 exe 时兜底。
+            const unlockAudio = () => {
                 AudioSystem.init();
                 AudioSystem.tryPlayBGMAfterInteraction();
-                document.removeEventListener('click', initAudio);
-                document.removeEventListener('keydown', initAudio);
+                ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
+                    window.removeEventListener(ev, unlockAudio, true));
             };
-            document.addEventListener('click', initAudio);
-            document.addEventListener('keydown', initAudio);
+            ['pointerdown', 'keydown', 'touchstart'].forEach(ev =>
+                window.addEventListener(ev, unlockAudio, true));
         }
         
         initTitleScreen();
@@ -603,6 +618,29 @@ function initTheme() {
 // 标题画面
 // ==========================================
 
+/**
+ * 退出游戏
+ * 桌面版（Neutralino）：调用原生 app.exit()，需要 neutralino.config.json 的
+ *   enableNativeAPI=true + nativeAllowList 含 "app.exit"（已配置）。
+ * 网页版：先试 window.close()；浏览器一般只允许关闭脚本打开的窗口，
+ *   关不掉时提示玩家自行关闭窗口。
+ */
+function exitGame() {
+    if (typeof Neutralino !== 'undefined' && Neutralino.app && typeof Neutralino.app.exit === 'function') {
+        if (typeof showTransientNotice === 'function') showTransientNotice('正在退出……');
+        Neutralino.app.exit();
+        return;
+    }
+    try {
+        window.close();
+    } catch (e) { /* 浏览器会直接抛错或静默失败，交给下面的提示 */ }
+    setTimeout(() => {
+        if (!window.closed) {
+            showAlertDialog('退出游戏', '浏览器不允许网页关闭自身窗口，请直接关闭窗口或标签页。');
+        }
+    }, 250);
+}
+
 function initTitleScreen() {
     const titleScreen = document.getElementById('title-screen');
     const gameContainer = document.getElementById('game-container');
@@ -642,6 +680,12 @@ function initTitleScreen() {
         });
     }
     
+    // 退出游戏按钮
+    const titleExit = document.getElementById('title-exit');
+    if (titleExit) {
+        titleExit.addEventListener('click', () => exitGame());
+    }
+
     // DLC 模式切换按钮
     const titleDlcBtn = document.getElementById('title-dlc');
     if (titleDlcBtn) {

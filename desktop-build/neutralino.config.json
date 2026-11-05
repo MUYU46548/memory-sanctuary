@@ -1,10 +1,18 @@
 {
   "applicationId": "io.ronghua.memorysanctuary",
-  "version": "0.2.11",
+  "version": "0.2.12",
+  "applicationName": "记忆圣所",
+  "author": "暮雨",
+  "copyright": "© 2026 暮雨",
+  "description": "记忆圣所 · 末日叙事驱动的记忆留存游戏",
+  "applicationIcon": "../assets/icons/icon-256.png",
   "defaultMode": "window",
   "url": "/resources/index.html",
   "enableServer": true,
-  "enableNativeAPI": false,
+  "enableNativeAPI": true,
+  "nativeAllowList": [
+    "app.exit"
+  ],
   "nativeDependency": false,
   "tokenSecurity": "none",
   "modes": {
