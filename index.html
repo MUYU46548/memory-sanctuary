@@ -24,7 +24,7 @@
     <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/icon-32.png">
     <link rel="icon" type="image/x-icon" href="assets/icons/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/icon-256.png">
-    <link rel="stylesheet" href="css/main.css?v=0.2.11">
+    <link rel="stylesheet" href="css/main.css?v=0.2.12">
 </head>
 <body>
     <!-- 启动画面 — 外部 CSS 加载前渲染 -->
@@ -37,13 +37,26 @@
     <div id="title-screen">
         <div id="title-content">
             <div id="title-logo">
-                <div class="title-cn">记忆圣所</div>
-                <div class="title-en">MEMORY SANCTUARY</div>
-                <div class="title-sub">终来之刻，何物当存？</div>
+                <div class="title-plaque">
+                    <i class="plaque-tick plaque-tick-tr"></i>
+                    <i class="plaque-tick plaque-tick-bl"></i>
+                    <svg class="title-emblem" viewBox="0 0 120 120" aria-hidden="true" focusable="false">
+                        <g fill="none" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round">
+                            <path d="M60 9 L111 60 L60 111 L9 60 Z"/>
+                            <path d="M60 38 Q80 48 96 60 Q80 72 60 82 Q40 72 24 60 Q40 48 60 38 Z"/>
+                            <circle cx="60" cy="60" r="10"/>
+                        </g>
+                        <circle cx="60" cy="60" r="3.6" fill="currentColor"/>
+                    </svg>
+                    <div class="title-cn">记忆圣所</div>
+                    <div class="title-en">Memory Sanctuary</div>
+                    <div class="title-divider"></div>
+                    <div class="title-sub">终来之刻，何物当存？</div>
+                </div>
             </div>
             <div id="title-menu">
-                <button class="title-btn title-btn-full" id="title-new">新建游戏</button>
-                <button class="title-btn title-btn-full" id="title-load">读取存档</button>
+                <button class="title-btn title-btn-full title-btn-hero" id="title-new">新建游戏</button>
+                <button class="title-btn title-btn-full title-btn-hero" id="title-load">读取存档</button>
                 <div class="title-row">
                     <button class="title-btn" id="title-achievements">🏆 成就</button>
                     <button class="title-btn" id="title-codex">📖 回顾</button>
@@ -60,6 +73,7 @@
                     <span class="dlc-btn-label">🌌 游戏模式</span>
                     <span class="dlc-btn-current" id="dlc-current-label">圣所模式</span>
                 </button>
+                <button class="title-btn title-btn-full title-btn-exit" id="title-exit">退出游戏</button>
                 <div id="title-version"></div>
             </div>
             <div id="title-ngplus"></div>
@@ -775,26 +789,26 @@
         </div>
     </div>
 
-    <script src="js/font-loader.js?v=0.2.11"></script>
-    <script src="js/main.js?v=0.2.11"></script>
-    <script src="js/update-check.js?v=0.2.11"></script>
-    <script src="js/game.js?v=0.2.11"></script>
-    <script src="js/game-log.js?v=0.2.11"></script>
-    <script src="js/game-events.js?v=0.2.11"></script>
-    <script src="js/game-exploration.js?v=0.2.11"></script>
-    <script src="js/game-projects.js?v=0.2.11"></script>
-    <script src="js/game-tech.js?v=0.2.11"></script>
-    <script src="js/game-emergency.js?v=0.2.11"></script>
-    <script src="js/game-save.js?v=0.2.11"></script>
-    <script src="js/dlc.js?v=0.2.11"></script>
-    <script src="js/game-ending.js?v=0.2.11"></script>
-    <script src="js/game-archive.js?v=0.2.11"></script>
-    <script src="js/game-tutorial.js?v=0.2.11"></script>
-    <script src="js/debug-panel.js?v=0.2.11"></script>
-    <script src="js/ui.js?v=0.2.11"></script>
-    <script src="js/canvas.js?v=0.2.11"></script>
-    <script src="js/audio.js?v=0.2.11"></script>
-    <script src="js/vn.js?v=0.2.11"></script>
+    <script src="js/font-loader.js?v=0.2.12"></script>
+    <script src="js/main.js?v=0.2.12"></script>
+    <script src="js/update-check.js?v=0.2.12"></script>
+    <script src="js/game.js?v=0.2.12"></script>
+    <script src="js/game-log.js?v=0.2.12"></script>
+    <script src="js/game-events.js?v=0.2.12"></script>
+    <script src="js/game-exploration.js?v=0.2.12"></script>
+    <script src="js/game-projects.js?v=0.2.12"></script>
+    <script src="js/game-tech.js?v=0.2.12"></script>
+    <script src="js/game-emergency.js?v=0.2.12"></script>
+    <script src="js/game-save.js?v=0.2.12"></script>
+    <script src="js/dlc.js?v=0.2.12"></script>
+    <script src="js/game-ending.js?v=0.2.12"></script>
+    <script src="js/game-archive.js?v=0.2.12"></script>
+    <script src="js/game-tutorial.js?v=0.2.12"></script>
+    <script src="js/debug-panel.js?v=0.2.12"></script>
+    <script src="js/ui.js?v=0.2.12"></script>
+    <script src="js/canvas.js?v=0.2.12"></script>
+    <script src="js/audio.js?v=0.2.12"></script>
+    <script src="js/vn.js?v=0.2.12"></script>
 
     <!-- 结局结算页面 -->
     <div id="ending-overlay" class="hidden">
