@@ -1,6 +1,6 @@
 {
-  "version": "0.2.10",
-  "releaseDate": "2026-10-07",
+  "version": "0.2.11",
+  "releaseDate": "2026-11-05",
   "downloadUrl": "https://github.com/MUYU46548/memory-sanctuary/releases/latest",
-  "notes": "v0.2.10（BGM 回归 + 音频资产分层 + OFL 合规补齐）：① 主线 `assets/bgm/` 恢复为原版 6 首（与 `v0.2.8` 时期一致的音轨体验）；② 新增 `assets/bgm-dlc/` 松涛真韵 6 首（192kbps 高品质版），为 DLC 内容预先埋入资产——玩家安装包内即含，接线时无需重新发版；③ `fonts/OFL.txt` 随附霞鹜文楷官方许可文本（含 LXGW 附加许可段 + 上游 Klee 版权声明），OFL 合规齐活；④ 版本号全链路同步：`js/main.js` 的 `GAME_VERSION`、`desktop-build/neutralino.config.json`、`version.json`、`index.html` 21 处缓存参数、README 徽章。"
+  "notes": "v0.2.11（文案归一 + 食物成本接线 + 移除终局心跳）：① 界面 16 处“叙事”清出（叙事诗保留）、113 处直角引号改“”、数据残留 ASCII 直引号/半角括号/半角省略点全部归一；新增 quoteCJK() 防嵌套引号；② 守护者台词 5 组跨池重复处理，lowEnergy 台词池接线；③ 科技 cost.food 此前不扣费不显示，现由 canPayTechCost/formatTechCost 统一校验、扣费与展示；项目食物成本补显示；④ 移除第 36 周起的终局心跳声（生理不适）；⑤ 项目/科技成本普降，归档率维持 27%（38/144）。"
 }
