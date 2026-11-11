@@ -16,11 +16,11 @@
     --amber-dim: #8a6a2a;
     
     --vault-language: #1a2a4a;
-    --vault-language-accent: #4a6a9a;
+    --vault-language-accent: #7d9ac9;
     --vault-history: #3a2a1a;
-    --vault-history-accent: #8a6a3a;
+    --vault-history-accent: #b39060;
     --vault-disaster: #3a1a1a;
-    --vault-disaster-accent: #8a3a3a;
+    --vault-disaster-accent: #c07070;
     
     /* 守护者视觉标识（VN 立绘/说话人色；vn.js 每次渲染实时读取，切换主题即时生效） */
     --guardian-tika: #d4a04a;
@@ -33,16 +33,21 @@
     --guardian-lorn-glow: #e89a5c;
     --guardian-ethel: #8a5a9a;
     --guardian-ethel-glow: #aa7aba;
-    --guardian-narrator: #5a5040;
+    --guardian-narrator: #9a9184;
     --guardian-narrator-glow: #8a8070;
 
     --text-primary: #e8e0d0;
-    --text-secondary: #9a9080;
-    --text-dim: #5a5040;
+    --text-secondary: #b3aa99;
+    --text-dim: #8b8478;
     
-    --danger: #8a3a2a;
-    --success: #3a8a5a;
+    --danger: #c66855;
+    --success: #5aa87a;
     --warning: #d4a04a;
+
+    /* 实心填充用（v0.2.13）：--danger / --success 作为文字色要够亮，用作底色压白字时反而会糊。
+       凡是「深色底 + 白字/浅字」的实心块（速记按钮、未读角标、危险按钮）改吃这两个更深的色。 */
+    --danger-fill: #a8382a;
+    --success-fill: #2f7a4c;
     
     --border-subtle: #2a2a35;
     --border-strong: #3a3a45;
@@ -68,7 +73,7 @@
     --bg-panel-hover: #f0ebe3;
     --bg-input: #ffffff;
     
-    --amber-primary: #8a6a2a;
+    --amber-primary: #7f611f;
     --amber-glow: #a07a30;
     --amber-dim: #6a5020;
     
@@ -95,11 +100,15 @@
 
     --text-primary: #2a2520;
     --text-secondary: #5a5040;
-    --text-dim: #9a9080;
+    --text-dim: #6f685c;
     
-    --danger: #c44a3a;
-    --success: #3a8a5a;
-    --warning: #a07a30;
+    --danger: #ad3a2b;
+    --success: #2f7a4c;
+    --warning: #8a6520;
+
+    /* 实心填充用（见暗色块同名字段说明） */
+    --danger-fill: #ad3a2b;
+    --success-fill: #2f7a4c;
     
     --border-subtle: #d4cfc8;
     --border-strong: #b0aaa3;
@@ -182,6 +191,11 @@
     --archive-green-1: #41742e;
     --archive-green-2: #4f8136;
     --archive-green-3: #5f9142;
+}
+
+/* 亮色下 --amber-glow 作为文字只有 3.69:1（浅底提亮反而更糊），士气「良好」改吃 --warning */
+[data-theme="light"] #morale-display.morale-good .morale-label {
+    color: var(--warning);
 }
 
 /* ========== 动画降级 — 尊重用户偏好 ========== */
@@ -809,14 +823,14 @@ button:focus-visible,
 
 /* 快速归档按钮 */
 .quick-archive-btn {
-    background: var(--success) !important;
+    background: var(--success-fill) !important;
     color: var(--white) !important;
     font-size: 0.75rem !important;
     padding: 4px 8px !important;
 }
 
 .quick-archive-btn:hover {
-    background: color-mix(in srgb, var(--success) 80%, white) !important;
+    background: color-mix(in srgb, var(--success-fill) 80%, white) !important;
 }
 
 /* 速记本回合已用：置灰（基础 :disabled 会被上面的 !important 盖掉，需同级覆盖） */
@@ -2247,7 +2261,7 @@ button.archive-btn.ai-assist-btn:hover {
 }
 
 .guardian-overview-name {
-    font-size: 0.55rem;
+    font-size: 0.65rem;
     color: var(--text-dim);
     white-space: nowrap;
 }
@@ -2709,8 +2723,8 @@ button.archive-btn.recommended {
     min-width: 18px;
     height: 18px;
     border-radius: 9px;
-    background: var(--danger);
-    color: var(--text-primary);
+    background: var(--danger-fill);
+    color: var(--white);
     font-size: 0.6rem;
     font-weight: bold;
     display: flex;
@@ -3136,7 +3150,7 @@ button.archive-btn.recommended {
     border: 1px solid var(--border-subtle);
     border-radius: 3px;
     padding: 1px 4px;
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     color: var(--text-dim);
 }
 
@@ -3508,7 +3522,7 @@ button.archive-btn.recommended {
     top: -6px;
     right: -6px;
     font-size: 0.45rem;
-    background: var(--danger);
+    background: var(--danger-fill);
     color: var(--white);
     padding: 1px 4px;
     border-radius: 2px;
@@ -3769,7 +3783,7 @@ button.archive-btn.recommended {
 }
 
 #debug-close:hover {
-    background: var(--danger);
+    background: var(--danger-fill);
     color: white;
 }
 
@@ -3871,7 +3885,7 @@ button.archive-btn.recommended {
 }
 
 .debug-btn-danger {
-    background: var(--danger);
+    background: var(--danger-fill);
     color: white;
 }
 
@@ -6331,7 +6345,7 @@ button.archive-btn.recommended {
 
 .rt-capacity {
     margin-top: 6px;
-    font-size: 10px;
+    font-size: 11px;
     color: var(--text-dim);
     text-align: right;
 }
@@ -6373,13 +6387,13 @@ button.archive-btn.recommended {
 }
 
 .rt-crates-label {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--text-dim);
     margin-left: 2px;
 }
 
 .rt-food-warning {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--danger);
     margin-left: 6px;
 }
@@ -6435,7 +6449,7 @@ button.archive-btn.recommended {
 }
 
 .tp-section {
-    font-size: 10px;
+    font-size: 11px;
     letter-spacing: 0.08em;
     color: var(--text-dim);
     text-transform: uppercase;
@@ -6494,7 +6508,7 @@ button.archive-btn.recommended {
 
 .tp-milestone .tp-ms-week {
     margin-left: auto;
-    font-size: 10px;
+    font-size: 11px;
     opacity: 0.8;
 }
 
@@ -6533,7 +6547,7 @@ button.archive-btn.recommended {
 }
 
 .tp-g-tier {
-    font-size: 10.5px;
+    font-size: 11px;
     color: var(--text-dim);
 }
 
@@ -6542,7 +6556,7 @@ button.archive-btn.recommended {
 .tp-guardian.mood-hostile .tp-g-tier { color: var(--danger); }
 
 .tp-g-fatigue {
-    font-size: 10px;
+    font-size: 11px;
     color: var(--text-dim);
     border: 1px solid var(--border-subtle);
     border-radius: 3px;
@@ -6560,7 +6574,7 @@ button.archive-btn.recommended {
     margin-top: 8px;
     padding-top: 6px;
     border-top: 1px solid var(--border-subtle);
-    font-size: 10.5px;
+    font-size: 11px;
     color: var(--text-dim);
 }
 
@@ -7581,14 +7595,14 @@ button.archive-btn.recommended {
 }
 
 .modal-btn.danger {
-    background: var(--danger);
-    border-color: var(--danger);
+    background: var(--danger-fill);
+    border-color: var(--danger-fill);
     color: var(--white);
 }
 
 .modal-btn.danger:hover {
-    background: color-mix(in srgb, var(--danger) 75%, var(--btn-dark-text));
-    border-color: var(--danger);
+    background: color-mix(in srgb, var(--danger-fill) 75%, var(--btn-dark-text));
+    border-color: var(--danger-fill);
     color: var(--white);
 }
 

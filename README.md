@@ -1,6 +1,6 @@
 # 记忆圣所 (Memory Sanctuary)
 
-![Version](https://img.shields.io/badge/version-v0.2.12-blue)
+![Version](https://img.shields.io/badge/version-v0.2.13-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Tech](https://img.shields.io/badge/tech-HTML5%20%2B%20CSS3%20%2B%20Vanilla%20JS-orange)
 
@@ -272,6 +272,22 @@ node -c js/game.js && node -c js/ui.js && node -c js/main.js && node -c js/canva
 ### 其他
 
 游戏名称“记忆圣所”、角色名称、故事情节均为原创内容。
+
+## 更新日志
+
+### v0.2.13（2026-11-06）
+
+- **桌面版存档不再丢**：根因是 Neutralino 每次启动随机端口，页面 origin 每次都变、而 localStorage 按 origin 隔离。现在固定端口（`neutralino.config.json` 的 `port` + 安装包快捷方式 `--port=45999` 双保险），并给存档加了一层文件镜像 `%APPDATA%\MemorySanctuary-win_x64.exe\saves\`，启动时若 localStorage 为空会自动从文件恢复。
+- **退出前先存档**：点「退出游戏」和右上角 X 关闭窗口都会先写盘再退出（后者靠 `windowClose` 事件 + `exitProcessOnClose: false`）。
+- **双主题可读性按 WCAG 实测重校**：暗色主题 `--text-dim` / `--danger` / 守护者旁白色 / 三个存储室强调色全部提亮，亮色主题对应压深；实测主界面低对比文字从暗色 32%、亮色 46% 降到 0。附带把 9.4px / 10px 的超小字号抬到 11px 起。
+- **窗口左上角图标**：config 的 `applicationIcon` 只写进 exe 资源，运行期没人给窗口设图标（`WM_GETICON` 取不到句柄），改为 `Neutralino.window.setIcon('/resources/assets/icons/icon-32.png')`。
+- **覆盖安装认目录**：安装包固定按用户安装（不再提权，避免安装记录落到另一个注册表 hive），并在装前自动探测已有安装目录（注册表两个 hive + 常见路径 + 各盘符）。
+
+### v0.2.12（2026-11-05）
+
+- 标题画面改版（菱形眼铭牌 + 细金线四角切角），亮/暗双主题分别校准，1200×750 无溢出。
+- 桌面版 BGM 启动即响（启动参数 `--edge-webview-switches=--autoplay-policy=no-user-gesture-required`），修掉待播队列把进游戏 BGM 顶掉的问题。
+- 标题画面新增「退出游戏」；exe 图标与文件属性换成项目自己的。
 
 ## 致谢
 

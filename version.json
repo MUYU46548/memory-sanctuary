@@ -1,6 +1,6 @@
 {
-  "version": "0.2.12",
-  "releaseDate": "2026-11-05",
+  "version": "0.2.13",
+  "releaseDate": "2026-11-06",
   "downloadUrl": "https://github.com/MUYU46548/memory-sanctuary/releases/latest",
-  "notes": "v0.2.12（标题改版 + BGM 自动播放 + 退出按钮）：① 标题画面改为菱形眼铭牌（细金线 + 四角切角），全部标题按钮统一为同一套形状语言，亮/暗双主题分别校准对比度，1200×750 最小窗口无溢出；② 桌面版 BGM 启动即响——快捷方式/安装后启动带 --edge-webview-switches=--autoplay-policy=no-user-gesture-required，“必须先点一下”的老问题修复，并修掉待播队列导致进游戏后 BGM 被开场曲顶掉的问题；③ 标题画面新增「退出游戏」按钮（Neutralino 原生退出）；④ exe 图标与文件属性换成圣所自己的（原为打包工具默认图标）；⑤ 文档全量校对：README 条目数与快捷键、LICENSE 补桌面发行组件与隐私说明、游戏内「关于」补版权与反馈、玩家说明修正导出存档路径。"
+  "notes": "v0.2.13（存档不再丢 + 暗色可读性 + 窗口图标 + 覆盖安装认目录）：① 桌面版存档丢失的根因是 Neutralino 每次启动随机端口，页面 origin 每次都变、而 localStorage 按 origin 隔离——现在固定端口 45999（config + 快捷方式参数双保险），并给存档加了一层文件镜像（%APPDATA%\\MemorySanctuary-win_x64.exe\\saves\\），启动时 localStorage 为空会自动从文件恢复；② 退出前先存档：点「退出游戏」与右上角 X 关闭窗口都会先写盘再退出，不再丢最后一次进度；③ 双主题可读性按 WCAG 实测重校：暗色主界面低对比文字从 32% 降到 1% 附近，亮色从 46% 降下来，同时修掉 9.4px / 10px 的超小字号；④ 窗口左上角图标改由 modes.window.icon 真正设置（此前 config 的 applicationIcon 只写进 exe 资源，运行期没人给窗口设图标，标题栏画的是 Windows 兜底图标）；⑤ 安装包改为固定按用户安装，并在安装前自动探测已有安装目录（注册表两个 hive + 常见路径 + 各盘符），覆盖安装不再装成两份。"
 }

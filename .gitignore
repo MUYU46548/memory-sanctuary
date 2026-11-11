@@ -62,3 +62,4 @@ desktop-build/resources/
 desktop-build/dist/
 desktop-build/.tmp/
 desktop-build/installer-dist/
+desktop-build/assets/

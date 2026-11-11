@@ -1,23 +1,32 @@
 {
   "applicationId": "io.ronghua.memorysanctuary",
-  "version": "0.2.12",
+  "version": "0.2.13",
   "applicationName": "记忆圣所",
   "author": "暮雨",
   "copyright": "© 2026 暮雨",
   "description": "记忆圣所 · 末日叙事驱动的记忆留存游戏",
   "applicationIcon": "../assets/icons/icon-256.png",
   "defaultMode": "window",
+  "port": 45999,
   "url": "/resources/index.html",
   "enableServer": true,
   "enableNativeAPI": true,
   "nativeAllowList": [
-    "app.exit"
+    "app.exit",
+    "events.on",
+    "os.getPath",
+    "window.setIcon",
+    "filesystem.createDirectory",
+    "filesystem.writeFile",
+    "filesystem.readFile",
+    "filesystem.remove"
   ],
   "nativeDependency": false,
   "tokenSecurity": "none",
   "modes": {
     "window": {
       "title": "记忆圣所 · Memory Sanctuary",
+      "icon": "../assets/icons/icon-64.png",
       "width": 1400,
       "height": 900,
       "minWidth": 1200,
@@ -27,7 +36,8 @@
       "maximize": true,
       "fullscreen": false,
       "enableInspector": false,
-      "borderless": false
+      "borderless": false,
+      "exitProcessOnClose": false
     }
   },
   "cli": {

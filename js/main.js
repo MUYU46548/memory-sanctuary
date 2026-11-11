@@ -168,7 +168,7 @@ function hideConfirmDialog() {
 // ============================================================
 // 全局常量
 // ============================================================
-const GAME_VERSION = '0.2.12';
+const GAME_VERSION = '0.2.13';
 
 // ============================================================
 // 退出自动存档：关闭/刷新页面时把当前进度写入当前存档槽
@@ -262,6 +262,34 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (typeof Neutralino !== 'undefined' && Neutralino.init) {
         try {
             Neutralino.init();
+            // v0.2.13：给窗口真正设一个图标。
+            // 背景：config 的 applicationIcon 只写进 exe 资源，运行期没人调用 SetIcon，
+            // 于是标题栏画的是 Windows 兜底图标（为了证实这点用 WM_GETICON 取过句柄：全为 0）。
+            // modes.window.icon 在这版 runtime 上仍然取不到句柄，改用 window.setIcon（runtime 有这个原生方法）。
+            if (Neutralino.window && typeof Neutralino.window.setIcon === 'function') {
+                try {
+                    // 注意路径：cli.resourcesPath = "resources"，所以桌面包里的资源在 /resources/ 下
+                    // （/assets/... 在 runtime 上是 404，实测过）。设置失败不阻塞启动。
+                    Neutralino.window.setIcon('/resources/assets/icons/icon-32.png');
+                } catch (e) {
+                    if (DEBUG) console.warn('[桌面] 设置窗口图标失败:', e);
+                }
+            }
+            // v0.2.13：拦截右上角 X（关窗）——先存档再真正退出。
+            // 配套 neutralino.config.json 的 modes.window.exitProcessOnClose = false：
+            // 默认 true 时关窗直接杀进程，存档来不及写。这里存完再 app.exit()。
+            if (Neutralino.events && typeof Neutralino.events.on === 'function' && Neutralino.app) {
+                const quit = () => {
+                    try { Neutralino.app.exit(); } catch (e) { /* ignore */ }
+                };
+                Neutralino.events.on('windowClose', () => {
+                    if (typeof performExitAutoSave === 'function') performExitAutoSave();
+                    const wait = (typeof flushSaveMirror === 'function') ? flushSaveMirror(800) : Promise.resolve();
+                    wait.then(quit, quit);
+                    // 兜底：即使存档链路卡住，2 秒后也强制退出，绝不出现「点了 X 关不掉」
+                    setTimeout(quit, 2000);
+                });
+            }
         } catch (e) {
             if (DEBUG) console.warn('[桌面] Neutralino 初始化失败:', e);
         }
@@ -352,6 +380,23 @@ document.addEventListener('DOMContentLoaded', async () => {
                 window.addEventListener(ev, unlockAudio, true));
         }
         
+        // 桌面版：localStorage 里没有存档时，从文件镜像恢复（v0.2.13）。
+        // 放在 initTitleScreen 之前，保证「读取存档」一打开就能看到恢复后的槽位；
+        // 最多等 1.5 秒，读不到就照常启动，绝不阻塞。
+        if (typeof Neutralino !== 'undefined' && typeof initSaveMirror === 'function') {
+            try {
+                await Promise.race([
+                    (async () => {
+                        await initSaveMirror();
+                        if (typeof restoreSavesFromFiles === 'function') await restoreSavesFromFiles();
+                    })(),
+                    new Promise(resolve => setTimeout(resolve, 1500))
+                ]);
+            } catch (e) {
+                if (DEBUG) console.warn('[存档镜像] 初始化/恢复失败:', e);
+            }
+        }
+
         initTitleScreen();
 
         // 版本更新检测（轻量方案 A，失败静默降级，绝不阻塞启动）
@@ -626,9 +671,19 @@ function initTheme() {
  *   关不掉时提示玩家自行关闭窗口。
  */
 function exitGame() {
+    // v0.2.13：桌面壳退出前先把进度写盘。
+    // Neutralino 的 app.exit() / 关窗是硬退，WebView2 不会走浏览器卸载流程
+    // （pagehide / beforeunload 不保证触发），所以必须在退出动作前同步存档。
+    const flushThenExit = () => {
+        if (typeof Neutralino !== 'undefined' && Neutralino.app && typeof Neutralino.app.exit === 'function') {
+            Neutralino.app.exit();
+        }
+    };
     if (typeof Neutralino !== 'undefined' && Neutralino.app && typeof Neutralino.app.exit === 'function') {
+        if (typeof performExitAutoSave === 'function') performExitAutoSave();
+        const wait = (typeof flushSaveMirror === 'function') ? flushSaveMirror(800) : Promise.resolve();
         if (typeof showTransientNotice === 'function') showTransientNotice('正在退出……');
-        Neutralino.app.exit();
+        wait.then(flushThenExit, flushThenExit);
         return;
     }
     try {

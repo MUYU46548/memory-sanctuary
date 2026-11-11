@@ -1,7 +1,141 @@
 /**
  * game-save.js - 从 game.js 拆分的模块
  * 包含: saveGame, tryRecoverFromBackup, loadGame...
+ *
+ * v0.2.13：桌面版存档镜像。
+ * 背景：Neutralino 的页面跑在 http://127.0.0.1:<端口> 上，localStorage 按 origin 隔离。
+ * 早期版本端口随机（每次启动都变），于是每次启动都是「新的空存储」，玩家表现为存档直接消失。
+ * 修复分两层：
+ *   1) neutralino.config.json 固定 port（+ 快捷方式参数），让 origin 稳定；
+ *   2) 本文件的镜像层：每次写存档同时落一份 JSON 到 %APPDATA%\<exe名>\saves\，
+ *      启动时若 localStorage 里没有存档就从文件恢复 —— 即使端口冲突、缓存被清也不会丢。
+ * 网页版没有 Neutralino 全局对象，所有镜像调用直接跳过。
  */
+
+/**
+ * 桌面存档镜像目录（异步解析，启动时调一次 initSaveMirror 缓存结果）。
+ * 返回 null 表示桌面镜像不可用（网页版 / 拿不到数据目录），所有镜像操作直接跳过。
+ */
+let saveMirrorDirCache = null;   // null=未探测；''=不可用；其它=目录
+
+/** 桌面数据目录名（Neutralino 用 exe 名决定，改名 = 存档失联，安装脚本里也锁了这条） */
+const SAVE_MIRROR_APP_DIR = 'MemorySanctuary-win_x64.exe';
+
+/** 探测并缓存镜像目录；桌面端启动时调用一次 */
+async function initSaveMirror() {
+    if (typeof Neutralino === 'undefined' || !Neutralino.filesystem) {
+        saveMirrorDirCache = '';
+        return false;
+    }
+    let base = '';
+    // 1) 首选 %APPDATA%\<exe名>\saves —— 与 Neutralino 自己的数据目录同一个地方，
+    //    卸载时「是否删除存档」问的就是这个目录，玩家不会出现「备份跟着程序一起被删」。
+    //    注意：exe 文件名不得改（安装脚本注释里也写了），否则 Neutralino 的数据目录本身就会失联。
+    if (window.NL_OS === 'Windows' && Neutralino.os && typeof Neutralino.os.getPath === 'function') {
+        try {
+            const roaming = await Neutralino.os.getPath('data');
+            if (roaming) base = roaming.replace(/[\\/]+$/, '') + '/' + SAVE_MIRROR_APP_DIR;
+        } catch (e) {
+            if (DEBUG) console.warn('[存档镜像] os.getPath 失败:', e);
+        }
+    }
+    // 2) 兜底：NL_DATAPATH（= 程序目录）+ /saves
+    if (!base && typeof window !== 'undefined' && typeof window.NL_DATAPATH === 'string' && window.NL_DATAPATH) {
+        base = window.NL_DATAPATH;
+    }
+    base = (base || '').replace(/[\\/]+$/, '');
+    if (base) {
+        saveMirrorDirCache = base + '/saves';
+        return true;
+    }
+    // 3) 最后兜底：相对程序目录
+    saveMirrorDirCache = 'saves';
+    return true;
+}
+
+/** 取镜像目录（未解析时返回 null，表示不做镜像） */
+function getSaveMirrorDir() {
+    if (saveMirrorDirCache === null) return null;
+    return saveMirrorDirCache || null;
+}
+
+/** 存档镜像是否可用 */
+function isSaveMirrorAvailable() {
+    return !!getSaveMirrorDir();
+}
+
+/**
+ * 把一次存档写进文件镜像（异步、失败静默）。
+ * @returns {Promise<void>} 调用方可 await 它，确保退出前刷盘
+ */
+async function mirrorSaveToFile(slot, serialized) {
+    const dir = getSaveMirrorDir();
+    if (!dir || !Neutralino.filesystem.writeFile) return;
+    try {
+        try {
+            await Neutralino.filesystem.createDirectory(dir);
+        } catch (e) {
+            /* 目录已存在会抛错，忽略 */
+        }
+        await Neutralino.filesystem.writeFile(dir + '/slot-' + slot + '.json', serialized);
+    } catch (e) {
+        if (DEBUG) console.warn('[存档镜像] 写入失败:', e);
+    }
+}
+
+/** 删除文件镜像（异步、失败静默） */
+async function mirrorDeleteSaveFile(slot) {
+    const dir = getSaveMirrorDir();
+    if (!dir || !Neutralino.filesystem.remove) return;
+    try {
+        await Neutralino.filesystem.remove(dir + '/slot-' + slot + '.json');
+    } catch (e) {
+        /* 文件不存在，正常 */
+    }
+}
+
+/**
+ * 启动时把文件镜像补回 localStorage（只在对应槽位为空时补，不覆盖现有存档）。
+ * @returns {Promise<number>} 恢复的槽位数量
+ */
+async function restoreSavesFromFiles() {
+    const dir = getSaveMirrorDir();
+    if (!dir || !Neutralino.filesystem.readFile) return 0;
+    let restored = 0;
+    for (let slot = 1; slot <= SAVE_SLOT_COUNT; slot++) {
+        if (localStorage.getItem(SAVE_KEY_PREFIX + slot)) continue;
+        try {
+            const raw = await Neutralino.filesystem.readFile(dir + '/slot-' + slot + '.json');
+            if (!raw || raw.length < 20) continue;
+            const parsed = JSON.parse(raw);
+            if (!parsed || !parsed.state || !parsed.version) continue;
+            localStorage.setItem(SAVE_KEY_PREFIX + slot, raw);
+            restored++;
+        } catch (e) {
+            /* 文件不存在或损坏，继续下一个槽位 */
+        }
+    }
+    if (restored > 0) {
+        console.log('[存档镜像] 已从文件恢复 ' + restored + ' 个存档槽');
+    }
+    return restored;
+}
+
+/** 最近一次镜像写入的 promise，退出前用它确保落盘 */
+let lastMirrorPromise = null;
+
+/**
+ * 等待最近一次镜像写入完成（最多等 ms 毫秒，避免卡住退出流程）。
+ * @param {number} ms
+ */
+function flushSaveMirror(ms = 800) {
+    if (!lastMirrorPromise) return Promise.resolve();
+    return Promise.race([
+        Promise.resolve(lastMirrorPromise).catch(() => {}),
+        new Promise(resolve => setTimeout(resolve, ms))
+    ]);
+}
+
 
 function saveGame(slot) {
     if (slot < 1 || slot > SAVE_SLOT_COUNT) return false;
@@ -110,9 +244,14 @@ function saveGame(slot) {
         if (saveCounter % BACKUP_INTERVAL === 0) {
             localStorage.setItem(BACKUP_KEY_PREFIX + slot, serialized);
         }
+
+        // 桌面版：同步刷一份文件镜像（网页版自动跳过）。
+        // 记录 promise，退出前 await flushSaveMirror() 确保落盘。
+        lastMirrorPromise = mirrorSaveToFile(slot, serialized);
         
         addLog(`游戏已保存至存档槽 ${slot}。`, 'system');
         return true;
+
     } catch (e) {
         if (DEBUG) console.error('[存档] 保存失败:', e);
         addLog('存档失败：存储空间不足。', 'system');
@@ -332,6 +471,8 @@ function deleteSaveSlot(slot) {
     if (slot < 1 || slot > SAVE_SLOT_COUNT) return;
     localStorage.removeItem(SAVE_KEY_PREFIX + slot);
     localStorage.removeItem(BACKUP_KEY_PREFIX + slot);
+    // 桌面版：连文件镜像一起删，否则下次启动会被 restoreSavesFromFiles 复活
+    mirrorDeleteSaveFile(slot);
 }
 
 
@@ -601,6 +742,11 @@ function renderStorageInfo() {
         html = `<div class="save-storage-warning">⚠️ 浏览器存储不可用（${env.error}），存档将无法保存。建议：① 使用本地服务器打开（python -m http.server 8099）；② 退出浏览器隐私模式。也可用下方“📤 导出存档”手动备份。</div>`;
     } else if (isFileProtocol) {
         html = `<div class="save-storage-hint">ℹ️ 当前以 file:// 方式打开：不同浏览器 / 不同入口打开时，存储可能互相隔离，导致存档看似“消失”。推荐使用本地服务器访问（项目根目录运行 python -m http.server 8099）。建议定期用“📤 导出存档”备份。</div>`;
+    } else if (typeof Neutralino !== 'undefined') {
+        // 桌面版：v0.2.13 起端口固定 + 每次存档额外落一份文件镜像，重启不会丢
+        html = isSaveMirrorAvailable()
+            ? `<div class="save-storage-ok">✓ 存档保存在本机，并在数据目录留了一份副本，正常重启不会丢失。</div>`
+            : `<div class="save-storage-ok">✓ 存档保存在本机，正常重启不会丢失。</div>`;
     } else {
         html = `<div class="save-storage-ok">✓ 本地存储可用，存档保存在本机浏览器中，正常重启不会丢失。</div>`;
     }
