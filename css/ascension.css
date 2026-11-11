@@ -1,0 +1,768 @@
+/* ============================================================
+   ascension.css — 升天之仪（DLC 模式）
+   颜色一律走 css/main.css 的主题变量，dark / light 双主题自适应。
+   本文件不定义任何硬编码色值。
+   ============================================================ */
+
+/* ── 屏幕容器 ───────────────────────────────────────────── */
+#ascension-screen {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-overlay, 1000);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    overflow: hidden;
+}
+
+#ascension-screen.hidden { display: none; }
+
+/* 沙尘与火光：两层极淡的径向渐变，制造发射台顶灯感 */
+#ascension-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(60% 40% at 50% 0%, color-mix(in srgb, var(--amber-primary) 9%, transparent), transparent 70%),
+        radial-gradient(40% 60% at 50% 110%, color-mix(in srgb, var(--amber-dim) 12%, transparent), transparent 70%);
+}
+
+.asc-shell {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    max-width: 980px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+/* ── 顶栏 ──────────────────────────────────────────────── */
+.asc-top {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 16px 0 12px;
+    border-bottom: 1px solid var(--border-subtle);
+    flex: none;
+}
+
+.asc-stage-indicator {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.asc-stage-name {
+    font-size: 15px;
+    color: var(--amber-primary);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+}
+
+.asc-clock {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+    font-size: 18px;
+    letter-spacing: 0.06em;
+    color: var(--text-primary);
+    padding: 2px 10px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 2px;
+}
+
+.asc-clock::before {
+    content: '窗口 ';
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+}
+
+.asc-clock.urgent {
+    color: var(--danger);
+    border-color: var(--danger);
+    animation: asc-clock-pulse 1.6s ease-in-out infinite;
+}
+
+.asc-clock.dead {
+    color: var(--text-dim);
+    border-color: var(--border-subtle);
+    animation: none;
+}
+
+@keyframes asc-clock-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.55; }
+}
+
+.asc-ritual {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 160px;
+}
+
+.asc-ritual-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+}
+
+.asc-ritual-bar {
+    position: relative;
+    flex: 1;
+    height: 4px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+}
+
+.asc-ritual-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 60%;
+    background: var(--amber-primary);
+    transition: width 320ms ease, background-color 320ms ease;
+}
+
+.asc-ritual-fill.low { background: var(--danger); }
+.asc-ritual-fill.high { background: var(--success); }
+
+/* ── 场景文本 ──────────────────────────────────────────── */
+.asc-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px 12px 8px 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+}
+
+.asc-scroll::-webkit-scrollbar { width: 6px; }
+.asc-scroll::-webkit-scrollbar-track { background: transparent; }
+.asc-scroll::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 3px;
+}
+
+.asc-scene {
+    font-size: 15px;
+    line-height: 2.0;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    margin-bottom: 20px;
+    animation: asc-fade-in 420ms ease both;
+}
+
+.asc-hint {
+    font-size: 12.5px;
+    line-height: 1.9;
+    color: var(--text-dim);
+    border-left: 2px solid var(--border-subtle);
+    padding: 2px 0 2px 12px;
+    margin-bottom: 18px;
+}
+
+.asc-slot-label {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--amber-primary);
+    margin-bottom: 10px;
+}
+
+@keyframes asc-fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* ── 通用按钮 ──────────────────────────────────────────── */
+.asc-btn {
+    font-family: inherit;
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--text-primary);
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 2px;
+    padding: 9px 14px;
+    cursor: pointer;
+    text-align: left;
+    transition: border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+}
+
+.asc-btn:hover:not([disabled]) {
+    border-color: var(--amber-primary);
+    background: var(--bg-panel-hover);
+}
+
+.asc-btn:focus-visible {
+    outline: 2px solid var(--amber-primary);
+    outline-offset: 2px;
+}
+
+.asc-btn[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.asc-btn.primary {
+    border-color: var(--amber-primary);
+    color: var(--amber-primary);
+    text-align: center;
+    letter-spacing: 0.1em;
+}
+
+.asc-btn.primary:hover:not([disabled]) {
+    background: color-mix(in srgb, var(--amber-primary) 12%, transparent);
+}
+
+/* 条件未满足时，主按钮要真的像按不动，不能只是变淡的琥珀 */
+.asc-btn.primary[disabled] {
+    border-color: var(--border-subtle);
+    color: var(--text-dim);
+    opacity: 0.5;
+}
+
+/* 中止是重动作，但不能抢走「继续」的视觉重心：默认灰，悬停才红 */
+.asc-btn.danger {
+    border-color: var(--border-subtle);
+    color: var(--text-dim);
+}
+
+.asc-btn.danger:hover:not([disabled]) {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: transparent;
+}
+
+/* ── 检修清单 ──────────────────────────────────────────── */
+.asc-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.asc-check {
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-panel);
+    border-radius: 2px;
+    padding: 12px 14px;
+    transition: border-color 200ms ease;
+}
+
+.asc-check.done {
+    border-color: var(--border-subtle);
+    border-left: 2px solid var(--success);
+    opacity: 0.66;
+    transition: opacity 180ms ease, border-color 200ms ease;
+}
+
+.asc-check.done:hover { opacity: 1; }
+
+.asc-check.done .asc-check-label::before {
+    content: '✓ ';
+    color: var(--success);
+}
+
+/* 场景折叠条：检修阶段读过一次后收起，把屏幕让给清单 */
+.asc-scene-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--text-dim);
+    border-left: 2px solid var(--border-subtle);
+    padding: 6px 0 6px 12px;
+    margin-bottom: 14px;
+}
+
+.asc-scene-bar button {
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--amber-primary);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+/* 检修进度：已裁定 x / 9 */
+.asc-progress-mini {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+    font-variant-numeric: tabular-nums;
+}
+
+.asc-check-head {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.asc-check-no {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+    min-width: 22px;
+}
+
+.asc-check-label {
+    font-size: 13.5px;
+    color: var(--text-primary);
+}
+
+.asc-check-reading {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    margin-bottom: 4px;
+}
+
+.asc-check-rule {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.8;
+    margin-bottom: 10px;
+}
+
+.asc-check-options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.asc-check-options .asc-btn {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12.8px;
+    padding: 7px 11px;
+    background: var(--bg-input);
+}
+
+.asc-check-options .asc-btn:hover:not([disabled]) {
+    background: var(--bg-panel-hover);
+}
+
+.asc-check-options .asc-btn::before {
+    content: '›';
+    color: var(--text-dim);
+    margin-right: 8px;
+    transition: color 160ms ease, transform 160ms ease;
+}
+
+.asc-check-options .asc-btn:hover:not([disabled])::before {
+    color: var(--amber-primary);
+    transform: translateX(2px);
+}
+
+.asc-cost {
+    color: var(--text-dim);
+    font-size: 11.5px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.asc-check-result {
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    line-height: 1.9;
+}
+
+.asc-check-result .picked { color: var(--amber-primary); }
+
+.asc-check-note {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-style: normal;
+    line-height: 1.85;
+}
+
+/* ── 载荷卡片 ──────────────────────────────────────────── */
+.asc-payloads {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.asc-payload {
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-panel);
+    border-radius: 2px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 200ms ease, background-color 200ms ease;
+}
+
+.asc-payload:hover { border-color: var(--border-strong); }
+
+.asc-payload.selected {
+    border-color: var(--amber-primary);
+    background: color-mix(in srgb, var(--amber-primary) 7%, var(--bg-panel));
+}
+
+.asc-payload.locked {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+}
+
+.asc-payload-title {
+    font-size: 14.5px;
+    color: var(--text-primary);
+    letter-spacing: 0.03em;
+    margin-bottom: 8px;
+}
+
+.asc-payload-preview {
+    font-size: 12.8px;
+    line-height: 1.95;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+}
+
+.asc-payload-expand {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--amber-primary);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.asc-appeal {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-left: 2px solid var(--border-subtle);
+    font-size: 12.5px;
+    line-height: 1.95;
+    color: var(--text-secondary);
+}
+
+.asc-appeal.for { border-left-color: var(--success); }
+.asc-appeal.against { border-left-color: var(--danger); }
+
+.asc-appeal-who {
+    color: var(--text-dim);
+    font-size: 11.5px;
+    letter-spacing: 0.06em;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.asc-payload-tag {
+    float: right;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+}
+
+/* 封装是这一格里唯一不可撤回的动作，必须长得像主行动 */
+.asc-seal-box {
+    margin-top: 14px;
+}
+
+.asc-seal-warn {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.85;
+    margin-bottom: 4px;
+}
+
+.asc-seal-count {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+}
+
+.asc-seal-count.done { color: var(--success); }
+
+/* 二次确认态：按钮短暂变红，提醒这一步真的退不回来 */
+.asc-btn.solid.confirming {
+    background: var(--danger-fill);
+    border-color: var(--danger-fill);
+}
+
+.asc-btn.solid {
+    width: 100%;
+    text-align: center;
+    background: var(--amber-primary);
+    border-color: var(--amber-primary);
+    color: var(--bg-deep);
+    font-size: 14.5px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    padding: 12px 14px;
+}
+
+.asc-btn.solid:hover:not([disabled]) {
+    background: var(--amber-glow);
+    border-color: var(--amber-glow);
+    color: var(--bg-deep);
+}
+
+.asc-btn.solid.confirming:hover:not([disabled]) {
+    background: var(--danger-fill);
+    border-color: var(--danger-fill);
+}
+
+/* ── 羽毛 ──────────────────────────────────────────────── */
+.asc-plumes {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.asc-plume {
+    flex: 1 1 220px;
+    border: 1px solid var(--border-subtle);
+    background: var(--bg-panel);
+    padding: 18px 16px;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 2px;
+    transition: border-color 200ms ease;
+}
+
+.asc-plume:hover { border-color: var(--border-strong); }
+.asc-plume.selected { border-color: var(--amber-primary); }
+
+.asc-plume-icon {
+    font-size: 30px;
+    line-height: 1;
+    margin-bottom: 10px;
+    color: var(--text-dim);
+}
+
+.asc-plume.selected .asc-plume-icon { color: var(--amber-primary); }
+
+.asc-plume-name {
+    font-size: 14px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+}
+
+.asc-plume-desc {
+    font-size: 12.2px;
+    color: var(--text-dim);
+    line-height: 1.85;
+}
+
+/* ── 长啸 ──────────────────────────────────────────────── */
+.asc-chant-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 26px 0;
+}
+
+.asc-chant-btn {
+    width: 220px;
+    height: 120px;
+    border: 1px solid var(--amber-primary);
+    background: transparent;
+    color: var(--amber-primary);
+    font-family: inherit;
+    font-size: 15px;
+    letter-spacing: 0.2em;
+    cursor: pointer;
+    border-radius: 2px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    transition: background-color 120ms ease, transform 120ms ease;
+}
+
+.asc-chant-btn.holding {
+    background: color-mix(in srgb, var(--amber-primary) 16%, transparent);
+    transform: scale(0.985);
+}
+
+.asc-chant-meter {
+    width: 220px;
+    height: 3px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+}
+
+.asc-chant-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--amber-primary);
+    transition: width 60ms linear;
+}
+
+.asc-chant-read {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── 发射与结算 ────────────────────────────────────────── */
+.asc-launch-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 16px 0;
+    font-size: 12.5px;
+    font-variant-numeric: tabular-nums;
+}
+
+.asc-launch-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px dotted var(--border-subtle);
+    color: var(--text-secondary);
+}
+
+.asc-launch-row.total {
+    border-bottom: none;
+    margin-top: 6px;
+    color: var(--text-primary);
+}
+
+.asc-launch-row .neg { color: var(--danger); }
+.asc-launch-row .pos { color: var(--success); }
+
+.asc-ledge {
+    font-size: 12.5px;
+    line-height: 1.95;
+    color: var(--text-dim);
+    margin-top: 14px;
+}
+
+.asc-ledge-item { display: block; }
+
+/* ── 结局 ──────────────────────────────────────────────── */
+.asc-ending {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 10px 0 40px;
+    animation: asc-fade-in 600ms ease both;
+}
+
+.asc-ending-title {
+    font-size: 22px;
+    letter-spacing: 0.1em;
+    color: var(--amber-primary);
+    margin-bottom: 20px;
+}
+
+.asc-ending-body {
+    font-size: 14.5px;
+    line-height: 2.1;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    margin-bottom: 26px;
+}
+
+.asc-ending-sub {
+    font-size: 11.5px;
+    letter-spacing: 0.16em;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+}
+
+.asc-ending-future {
+    font-size: 13.5px;
+    line-height: 2.05;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+    border-left: 2px solid var(--amber-dim);
+    padding-left: 16px;
+    margin-bottom: 30px;
+}
+
+.asc-ending-summary {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 6px 16px;
+    font-size: 12.5px;
+    color: var(--text-dim);
+    margin-bottom: 30px;
+    line-height: 1.9;
+}
+
+.asc-ending-summary dt { color: var(--text-dim); }
+.asc-ending-summary dd { color: var(--text-secondary); margin: 0; }
+
+/* ── 底栏 ──────────────────────────────────────────────── */
+.asc-foot {
+    flex: none;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 14px 0 18px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.asc-foot .spacer { flex: 1; }
+
+.asc-foot-note {
+    font-size: 11.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+}
+
+/* ── 开场卡 ────────────────────────────────────────────── */
+.asc-intro {
+    max-width: 640px;
+    margin: 40px auto;
+    animation: asc-fade-in 700ms ease both;
+}
+
+.asc-intro h2 {
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    color: var(--amber-primary);
+    margin: 0 0 6px;
+    font-weight: normal;
+}
+
+.asc-intro-sub {
+    font-size: 11.5px;
+    letter-spacing: 0.18em;
+    color: var(--text-dim);
+    margin-bottom: 26px;
+}
+
+.asc-intro p {
+    font-size: 14px;
+    line-height: 2.1;
+    color: var(--text-secondary);
+    margin: 0 0 16px;
+    white-space: pre-wrap;
+}
+
+.asc-intro-rule {
+    font-size: 12.5px;
+    line-height: 2;
+    color: var(--text-dim);
+    border-left: 2px solid var(--border-subtle);
+    padding-left: 14px;
+    margin: 22px 0 30px;
+}
+
+/* ── 窄屏 ──────────────────────────────────────────────── */
+@media (max-width: 720px) {
+    .asc-shell { padding: 0 14px; }
+    .asc-top { flex-wrap: wrap; gap: 10px; }
+    .asc-ritual { min-width: 120px; }
+    .asc-plumes { flex-direction: column; }
+    .asc-ending-title { font-size: 19px; }
+}

@@ -854,10 +854,15 @@ function openDLCPanel() {
     // 填充 DLC 列表
     list.innerHTML = '';
 
-    // DLC 本期未实装（HANDOFF §6）：仅“圣所”主模式可玩
+    // 已实装的模式才开放入口；未实装的保持「🚧 暂未实装」门禁
+    const anyPlayable = Object.keys(DLC_MODULES).some(id => isModulePlayable(id));
+    const noticeEl = document.getElementById('dlc-panel-notice');
+    if (noticeEl) noticeEl.style.display = anyPlayable ? 'none' : '';
+
     for (const [id, module] of Object.entries(DLC_MODULES)) {
-        const notImplemented = id !== 'sanctuary';
-        const unlocked = isModuleUnlocked(id);
+        const playable = isModulePlayable(id);
+        const notImplemented = id !== 'sanctuary' && !playable;
+        const unlocked = playable || isModuleUnlocked(id);
         const isActive = MemorySanctuary.activeModule === id;
         const progress = getModuleUnlockProgress(id);
 
@@ -869,7 +874,7 @@ function openDLCPanel() {
 
         const statusText = notImplemented
             ? '🚧 暂未实装'
-            : (isActive ? '当前' : (unlocked ? '已解锁' : progress));
+            : (playable ? '已开放' : (isActive ? '当前' : (unlocked ? '已解锁' : progress)));
 
         item.innerHTML = `
             <span class="dlc-item-icon">${module.icon}</span>
@@ -877,7 +882,7 @@ function openDLCPanel() {
                 <div class="dlc-item-name">${module.name}</div>
                 <div class="dlc-item-desc">${notImplemented ? '该模式正在制作中，请等待后续版本更新。' : module.description}</div>
             </div>
-            <span class="dlc-item-status ${notImplemented ? 'dlc-status-locked' : (isActive ? 'dlc-status-active' : (unlocked ? 'dlc-status-unlocked' : 'dlc-status-locked'))}">
+            <span class="dlc-item-status ${notImplemented ? 'dlc-status-locked' : (playable || isActive ? 'dlc-status-active' : (unlocked ? 'dlc-status-unlocked' : 'dlc-status-locked'))}">
                 ${statusText}
             </span>
         `;
@@ -889,6 +894,17 @@ function openDLCPanel() {
                     showTransientNotice('🚧 该模式暂未实装，请等待后续版本更新。');
                 } else {
                     showAlertDialog('暂未实装', '该模式暂未实装，请等待后续版本更新。');
+                }
+            });
+        } else if (playable) {
+            // 已实装：直接进入该模式的独立界面（不走 switchModule，主游戏状态不受影响）
+            item.addEventListener('click', () => {
+                closeDLCPanel();
+                if (id === 'ascension' && typeof AscensionUI !== 'undefined') {
+                    if (typeof AudioAscension !== 'undefined') {
+                        try { AudioAscension.startAmbience(); } catch (e) { /* ignore */ }
+                    }
+                    AscensionUI.open();
                 }
             });
         } else if (unlocked && !isActive) {

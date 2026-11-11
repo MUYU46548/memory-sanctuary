@@ -37,8 +37,8 @@ const DLC_MODULES = {
         unlockRequirement: { type: 'playthrough', count: 1 },
         unlockLabel: '通关 1 周目解锁',
         systems: ['ascension'],
-        dataFiles: ['ascension_archives', 'ascension_events', 'ascension_endings'],
-        maxDays: 7
+        dataFiles: ['ascension_stages', 'ascension_payloads', 'ascension_endings'],
+        maxDays: 1
     },
     greenOrb: {
         id: 'greenOrb',
@@ -52,6 +52,33 @@ const DLC_MODULES = {
         maxDays: null // 自由探索，无时间限制
     }
 };
+
+// ==========================================
+// DLC 功能开关（藏在代码里，正式构建默认关）
+// ==========================================
+// 开启方式：?dlc=ascension 或 ?dlc=ascension,greenOrb
+// 关闭时标题页保持「🚧 暂未实装」，玩家看不到入口。
+const DLC_FLAGS = {
+    ascension: false,
+    greenOrb: false
+};
+
+(function applyDLCUrlFlags() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const raw = params.get('dlc');
+        if (!raw) return;
+        raw.split(',').forEach(token => {
+            const id = token.trim();
+            if (id in DLC_FLAGS) DLC_FLAGS[id] = true;
+        });
+    } catch (e) { /* 老浏览器无 URLSearchParams 时静默跳过 */ }
+})();
+
+/** 模块是否已实装并可进入（与「是否解锁」是两件事） */
+function isModulePlayable(moduleId) {
+    return DLC_FLAGS[moduleId] === true;
+}
 
 // 当前激活的模块
 MemorySanctuary.activeModule = 'sanctuary';
