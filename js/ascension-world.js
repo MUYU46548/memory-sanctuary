@@ -27,7 +27,10 @@ window.AscensionWorld = (function () {
         camBack: 9.5
     };
 
-    const ROOM_FILES = ['data/dlc/ascension/rooms/ration.json'];
+    const ROOM_FILES = [
+        'data/dlc/ascension/rooms/ration.json',
+        'data/dlc/ascension/rooms/living.json'
+    ];
 
     // 避难所大厅的边界（房间在里面，见 json 的 shell）
     const SHELTER = { minX: -15, maxX: 15, minZ: -13, maxZ: 13 };
@@ -417,7 +420,7 @@ window.AscensionWorld = (function () {
         });
 
         // 储物柜
-        [[-12, -10, 1.1, 2.0], [-9.5, -10, 1.1, 1.6], [-12, 9, 1.2, 1.7]].forEach(([x, z, w, h]) => {
+        [[-12, 12.4, 1.1, 2.0], [-9.4, 12.4, 1.1, 1.6], [-12, 9, 1.2, 1.7]].forEach(([x, z, w, h]) => {
             const l = box(w, h, 0.9, '--aw-metal', { metalness: 0.35, roughness: 0.7 });
             l.position.set(x, h / 2, z);
             g.add(l);
@@ -427,12 +430,12 @@ window.AscensionWorld = (function () {
             g.add(glow);
         });
 
-        // 床铺（第一幕 28 张铺，这里只摆看得见的一排）
-        for (let i = 0; i < 6; i++) {
-            const bed = box(1.1, 0.35, 2.1, '--aw-prop-2', { roughness: 0.95 });
-            bed.position.set(-13 + i * 2.1, 0.18, 7.4);
-            g.add(bed);
-        }
+        // 大厅里不摆床：床在居住区。这里只放两条长凳，让大厅不至于空。
+        [[-6.4, 3.0], [-3.2, 3.0]].forEach(([x, z]) => {
+            const bench = box(2.4, 0.4, 0.6, '--aw-prop-2', { roughness: 0.95 });
+            bench.position.set(x, 0.2, z);
+            g.add(bench);
+        });
 
         // 避难所里那几盏灯
         [[-6, 1], [3, 5.5], [-10, -6]].forEach(([x, z]) => {
@@ -457,6 +460,7 @@ window.AscensionWorld = (function () {
         // 房间：壳与物件（全部来自 data/dlc/ascension/rooms/*.json）
         const book = window.AscensionRooms ? window.AscensionRooms.book : null;
         (book && book.shells ? book.shells : []).forEach(sh => buildRoomShell(g, sh));
+        (book && book.shells ? book.shells : []).forEach(sh => buildBedsInShell(g, sh));
         buildRoomProps(g);
     }
 
@@ -513,6 +517,25 @@ window.AscensionWorld = (function () {
         });
     }
 
+    // 床：第一幕二十八张（四张一列、七列）。文本里「数得出来」，场景里就得真数得出来。
+    function buildBedsInShell(group, r) {
+        const b = r && r.beds;
+        if (!b) return;
+        for (let c = 0; c < b.cols; c++) {
+            for (let i = 0; i < b.perCol; i++) {
+                const bx = b.x0 + c * b.dx;
+                const bz = b.z0 + i * b.dz;
+                const bed = box(b.w, 0.35, b.d, '--aw-prop-2', { roughness: 0.95 });
+                bed.position.set(bx, 0.18, bz);
+                group.add(bed);
+                // 床头的号牌
+                const tag = box(0.16, 0.1, 0.04, '--aw-metal', { metalness: 0.4, roughness: 0.7 });
+                tag.position.set(bx + 0.4, 0.95, bz + b.d / 2 - 0.08);
+                group.add(tag);
+            }
+        }
+    }
+
     function buildRoomProps(group) {
         const book = window.AscensionRooms ? window.AscensionRooms.book : null;
         if (!book) return;
@@ -524,6 +547,15 @@ window.AscensionWorld = (function () {
             if (p.shape === 'wall') {
                 mesh = box(0.85, 0.9, 0.1, '--aw-prop', { roughness: 0.85 });
                 mesh.position.set(x, 1.5, z);
+                markY = 0.5;
+            } else if (p.shape === 'floor') {
+                // 地上画的东西 / 落在地上的东西：一块贴地的薄板
+                mesh = box(1.5, 0.05, 1.5, '--aw-prop', { roughness: 0.95, metalness: 0.05 });
+                mesh.position.set(x, 0.03, z);
+                markY = 0.35;
+            } else if (p.shape === 'bed') {
+                mesh = box(1.1, 0.35, 2.1, '--aw-prop-2', { roughness: 0.95 });
+                mesh.position.set(x, 0.18, z);
                 markY = 0.5;
             } else if (p.shape === 'shelf') {
                 mesh = box(1.15, 1.85, 0.6, '--aw-shelf', { roughness: 0.85 });
@@ -845,7 +877,7 @@ window.AscensionWorld = (function () {
         $('aw-seen-count').textContent = String(Object.keys(S.seen).length);
         const goals = {
             surface: '· 走到装配台，开始这一枚',
-            shelter: '· 配给室里还有人没问过'
+            shelter: '· 配给室、居住区，两个人还没问完'
         };
         $('aw-goal').textContent = goals[S.area] || '';
     }
