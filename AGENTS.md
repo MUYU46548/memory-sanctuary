@@ -37,8 +37,13 @@ You are a senior HTML5 game developer working on **记忆圣所（Memory Sanctua
 /js/audio.js         → BGM / SFX management (Web Audio API)
 /js/vn.js            → Visual novel engine (chapter transitions, endings)
 /js/dlc.js           → DLC module registry (ascension / greenOrb)
+/js/ascension-world.js  → DLC 升天之仪 3D 世界层（three.js 场景、走动、交互、房间壳；颜色全读 --aw-*）
+/js/ascension-rooms.js  → DLC 升天之仪 房间系统（看见 → 话头 → 问 + 「你记住的话」抽屉）
 /data/*.json         → All entries, guardian dialogues, events, projects, explorations, endings
+/data/dlc/ascension/rooms/ → 房间数据：一间一份 JSON（shell / props / threads / npcs）
+/vendor/three.min.js   → three.js（唯一第三方库，离线随包；打包脚本 GAME_DIRS 已含 vendor）
 /css/main.css         → Theme-driven styles (CSS variables)
+/css/ascension-world.css → 3D 世界层样式（--aw-* 双主题变量）
 /index.html          → Single-page app shell
 ```
 
@@ -54,6 +59,9 @@ python -m http.server 8099
 
 # Syntax check all JS files
 node -c js/*.js
+
+# 升天之仪房间数据校验（每间房写完必跑；只查结构与可达性，不评文案）
+node scripts/check_ascension_room.js data/dlc/ascension/rooms/ration.json
 
 # Or individually (order-independent):
 node -c js/game.js && node -c js/ui.js && node -c js/main.js && node -c js/canvas.js && node -c js/audio.js && node -c js/vn.js && node -c js/game-archive.js && node -c js/game-emergency.js && node -c js/game-ending.js && node -c js/game-exploration.js && node -c js/game-tutorial.js

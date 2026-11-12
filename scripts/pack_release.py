@@ -33,7 +33,7 @@ import zipfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DESKTOP = os.path.join(ROOT, 'desktop-build')
-GAME_DIRS = ['index.html', 'css', 'js', 'data', 'fonts', 'assets']
+GAME_DIRS = ['index.html', 'css', 'js', 'data', 'fonts', 'assets', 'vendor']   # vendor：three.js（升天之仪 3D 世界）
 EXE_SRC = os.path.join(DESKTOP, 'dist', 'MemorySanctuary', 'MemorySanctuary-win_x64.exe')
 EXE_FALLBACK = os.path.join(DESKTOP, 'bin', 'neutralino-win_x64.exe')
 NEUTRALINO_JS = os.path.join(DESKTOP, 'resources', 'neutralino.js')

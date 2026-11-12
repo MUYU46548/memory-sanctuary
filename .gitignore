@@ -3,6 +3,8 @@ scripts/hermes-verify-*.js
 scripts/*
 # 发版打包脚本例外（稳定流程，入库防丢）
 !scripts/pack_release.py
+# 房间数据校验脚本（稳定流程，入库防丢）
+!scripts/check_ascension_room.js
 
 # Hermes 桌面附件缓存
 .hermes/desktop-attachments/
@@ -56,6 +58,20 @@ P2修复任务清单.md
 # Python 缓存（headless 验证脚本）
 __pycache__/
 *.pyc
+
+# 废弃设计稿（仅追溯，不入库）
+升天之仪·理解驱动设计.md
+
+# 原型目录的运行期产物（截图/录屏/调试日志不进仓库）
+proto/**/*.png
+proto/**/*.jpg
+proto/**/*.jpeg
+proto/**/*.webp
+proto/**/*.mp4
+proto/**/*.webm
+proto/**/*.log
+proto/**/__pycache__/
+proto/**/*.pyc
 
 # 桌面打包工程（Neutralino）：仅保留骨架，运行期产物不进仓库
 desktop-build/resources/

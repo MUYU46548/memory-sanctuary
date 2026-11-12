@@ -900,11 +900,16 @@ function openDLCPanel() {
             // 已实装：直接进入该模式的独立界面（不走 switchModule，主游戏状态不受影响）
             item.addEventListener('click', () => {
                 closeDLCPanel();
-                if (id === 'ascension' && typeof AscensionUI !== 'undefined') {
-                    if (typeof AudioAscension !== 'undefined') {
-                        try { AudioAscension.startAmbience(); } catch (e) { /* ignore */ }
+                if (id === 'ascension') {
+                    // 3D 世界是入口；仪式（九阶段）由世界里的装配台打开
+                    if (typeof AscensionWorld !== 'undefined' && AscensionWorld) {
+                        AscensionWorld.open();
+                    } else if (typeof AscensionUI !== 'undefined') {
+                        if (typeof AudioAscension !== 'undefined') {
+                            try { AudioAscension.startAmbience(); } catch (e) { /* ignore */ }
+                        }
+                        AscensionUI.open();
                     }
-                    AscensionUI.open();
                 }
             });
         } else if (unlocked && !isActive) {

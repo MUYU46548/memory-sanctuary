@@ -134,6 +134,11 @@ window.AscensionUI = (function () {
         if (typeof AudioAscension !== 'undefined' && AudioAscension) {
             try { AudioAscension.stopAll(); } catch (e) { /* ignore */ }
         }
+        // 从 3D 世界进来的：回到世界，不下标题页
+        if (typeof AscensionWorld !== 'undefined' && AscensionWorld && AscensionWorld.isOpen) {
+            AscensionWorld.onRitualClosed();
+            return;
+        }
         if (typeof AudioSystem !== 'undefined' && AudioSystem.playBGM) AudioSystem.playBGM('title');
         if (typeof showTitleScreen === 'function') showTitleScreen();
     }
