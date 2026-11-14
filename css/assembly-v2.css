@@ -1,0 +1,657 @@
+/**
+ * assembly-v2.css — 装配台 · 舞台版
+ *
+ * 参考的是同类游戏的做法，不是网页设计：
+ *   KSP 装配楼（物件居中、数据在侧）、Frostpunk（表盘/刻度/红区、暗场一盏暖灯）、
+ *   The Room（材质）、Disco Elysium（人站在旁边）。
+ *
+ * 颜色一律走变量（--as-* 映射到 --aw-* 与本体变量），零硬编码色值，双主题自动跟随。
+ * 遮字（.as-notext）之后必须仍然可读：仪表本身是图形，零件有质量块，人物是剪影。
+ */
+
+#as-root {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal, 1100);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    overflow: auto;
+    background: color-mix(in srgb, var(--aw-void) 88%, transparent);
+    backdrop-filter: blur(3px);
+    font-family: inherit;
+    color: var(--text-primary);
+    --as-ink: var(--text-primary);
+    --as-soft: var(--aw-trim);
+    --as-hot: var(--aw-lamp);
+    --as-bad: var(--danger);
+    --as-good: var(--aw-mark);
+    --as-line: color-mix(in srgb, var(--aw-trim) 85%, transparent);
+}
+
+#as-root.hidden { display: none; }
+body.as-open { overflow: hidden; }
+
+/* ══════════════ 舞台 ══════════════ */
+
+.as-stage {
+    position: relative;
+    width: min(1360px, 100%);
+    height: clamp(700px, 94vh, 940px);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    background:
+        radial-gradient(ellipse 60% 45% at 50% 32%,
+            color-mix(in srgb, var(--as-hot) 9%, transparent), transparent 72%),
+        radial-gradient(ellipse 90% 70% at 50% 100%,
+            color-mix(in srgb, var(--aw-void) 60%, transparent), transparent 70%),
+        var(--bg-panel);
+    border: 1px solid var(--as-line);
+    overflow: hidden;
+}
+
+/* 暗角：让中间亮、四角沉下去（Frostpunk 的灯） */
+.as-stage::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow: inset 0 0 120px 40px color-mix(in srgb, var(--aw-void) 70%, transparent);
+}
+
+/* ══════════════ 顶 ══════════════ */
+
+.as-top {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 12px 18px 10px;
+    border-bottom: 1px solid var(--as-line);
+    z-index: 2;
+}
+
+.as-title { display: flex; align-items: baseline; gap: 10px; }
+
+.as-kicker {
+    font-size: 13px;
+    letter-spacing: 0.42em;
+    opacity: 0.62;
+}
+
+.as-ord {
+    font-size: 21px;
+    letter-spacing: 0.16em;
+    color: var(--as-hot);
+}
+
+.as-tools { margin-left: auto; display: flex; gap: 8px; }
+
+.as-tool {
+    padding: 4px 10px;
+    font: inherit;
+    font-size: 13px;
+    color: var(--as-soft);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+}
+.as-tool:hover { color: var(--as-ink); border-color: var(--as-line); }
+.as-tool.on { color: var(--as-hot); border-color: var(--as-hot); }
+.as-key { font-size: 10px; opacity: 0.45; margin-left: 4px; }
+
+/* ══════════════ 三栏场景 ══════════════ */
+
+.as-scene {
+    display: grid;
+    grid-template-columns: 248px 1fr 118px;
+    min-height: 0;
+    z-index: 1;
+}
+
+/* ── 左：零件抽屉 ── */
+
+.as-drawer {
+    overflow-y: auto;
+    padding: 14px 14px 28px;
+    border-right: 1px solid var(--as-line);
+    background: color-mix(in srgb, var(--aw-void) 42%, transparent);
+}
+
+.as-bin { margin-bottom: 16px; }
+
+.as-bin-name {
+    margin: 0 0 6px;
+    font-size: 11px;
+    font-weight: normal;
+    letter-spacing: 0.26em;
+    opacity: 0.5;
+    border-bottom: 1px solid var(--as-line);
+    padding-bottom: 4px;
+}
+
+.as-part {
+    display: block;
+    width: 100%;
+    margin-bottom: 4px;
+    padding: 7px 9px;
+    text-align: left;
+    font: inherit;
+    color: var(--as-ink);
+    background: transparent;
+    border: 1px solid transparent;
+    border-left: 2px solid var(--as-line);
+    cursor: grab;
+    transition: background 0.12s, border-color 0.12s;
+}
+
+.as-part:hover { background: color-mix(in srgb, var(--as-hot) 7%, transparent); border-left-color: var(--as-hot); }
+.as-part.dragging { opacity: 0.35; }
+.as-part.placed { border-left-color: var(--as-good); opacity: 0.5; }
+.as-part.picked { background: color-mix(in srgb, var(--as-hot) 12%, transparent); border-left-color: var(--as-hot); }
+
+.as-part-top { display: flex; align-items: center; gap: 7px; }
+
+/* 质量块：宽度=质量。遮字之后靠它认这块零件有多大 */
+.as-chunk {
+    flex: none;
+    height: 4px;
+    background: var(--as-soft);
+    opacity: 0.8;
+}
+
+.as-part.picked .as-chunk { background: var(--as-hot); opacity: 1; }
+
+.as-part-name { flex: 1; font-size: 14px; line-height: 1.3; }
+.as-part-mass { font-size: 11px; opacity: 0.5; font-variant-numeric: tabular-nums; }
+.as-part-note { display: block; margin-top: 3px; font-size: 12px; line-height: 1.45; opacity: 0.58; }
+
+/* ── 中：瓶身 ── */
+
+.as-core {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 18px 20px 10px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.as-people {
+    position: absolute;
+    left: 18px;
+    bottom: 16px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+
+.as-figure {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--as-soft);
+}
+
+.as-figure-head {
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.55;
+}
+
+.as-figure-body {
+    width: 26px; height: 34px;
+    border-radius: 12px 12px 3px 3px;
+    background: currentColor;
+    opacity: 0.32;
+}
+
+.as-figure:hover:not(:disabled) { color: var(--as-hot); }
+.as-figure:hover:not(:disabled) .as-figure-body { opacity: 0.55; }
+.as-figure:hover:not(:disabled) .as-figure-head { opacity: 0.9; }
+
+.as-figure.gone { color: var(--as-soft); opacity: 0.4; }
+.as-figure.gone .as-figure-head,
+.as-figure.gone .as-figure-body {
+    background: transparent;
+    border: 1px dashed currentColor;
+}
+.as-figure.used { opacity: 0.28; }
+.as-figure:disabled { cursor: default; }
+
+.as-figure-name { font-size: 11px; letter-spacing: 0.06em; }
+.as-figure-job { font-size: 10px; opacity: 0.5; }
+
+/* 瓶子：中间的主角 */
+.as-vessel-wrap { flex: 1; display: flex; align-items: center; justify-content: center; }
+
+.as-vessel {
+    width: min(430px, 74%);
+    display: flex;
+    flex-direction: column;
+    filter: drop-shadow(0 18px 34px color-mix(in srgb, var(--aw-void) 65%, transparent));
+}
+
+.as-vessel-nose {
+    height: 26px;
+    margin: 0 22%;
+    border: 1px solid var(--as-line);
+    border-bottom: none;
+    border-radius: 50% 50% 0 0;
+    background: linear-gradient(180deg,
+        color-mix(in srgb, var(--aw-metal) 55%, transparent),
+        color-mix(in srgb, var(--aw-metal) 20%, transparent));
+}
+
+.as-vessel-tail {
+    height: 18px;
+    margin: 0 14%;
+    border: 1px solid var(--as-line);
+    border-top: none;
+    border-radius: 0 0 50% 50%;
+    background: color-mix(in srgb, var(--aw-metal) 25%, transparent);
+}
+
+.as-seg {
+    position: relative;
+    display: grid;
+    grid-template-columns: 46px 1fr 82px 96px;
+    align-items: center;
+    gap: 8px;
+    min-height: 62px;
+    padding: 5px 10px;
+    border: 1px solid var(--as-line);
+    border-top: none;
+    background: color-mix(in srgb, var(--aw-void) 30%, transparent);
+    cursor: pointer;
+}
+
+.as-seg:first-of-type { border-top: 1px solid var(--as-line); }
+.as-seg:hover { background: color-mix(in srgb, var(--as-hot) 8%, transparent); }
+.as-seg.hover { background: color-mix(in srgb, var(--as-hot) 16%, transparent); border-color: var(--as-hot); }
+.as-seg.filled { background: color-mix(in srgb, var(--aw-void) 46%, transparent); }
+.as-seg.optional { opacity: 0.85; }
+
+.as-seg-label { font-size: 11px; letter-spacing: 0.16em; opacity: 0.55; text-align: right; }
+.as-seg-body { display: flex; justify-content: center; }
+.as-seg-tag { font-size: 11px; opacity: 0.72; text-align: right; }
+
+/* 材质：装了零件，这一段真的变样 */
+.mat { display: block; height: 26px; }
+
+.mat-crystal {
+    width: 26px;
+    border-radius: 4px;
+    background:
+        radial-gradient(circle at 50% 42%, var(--as-good), transparent 68%),
+        color-mix(in srgb, var(--as-good) 22%, transparent);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--as-good) 45%, transparent);
+}
+.mat-crystal.big { width: 38px; height: 30px; }
+
+.mat-pad {
+    width: 74%;
+    height: 8px;
+    border-radius: 4px;
+    background: repeating-linear-gradient(90deg,
+        color-mix(in srgb, var(--aw-lamp) 45%, transparent) 0 5px,
+        transparent 5px 9px);
+}
+.mat-pad.thick { height: 14px; }
+
+.mat-shell {
+    width: 88%;
+    height: 22px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--aw-metal) 75%, transparent);
+}
+.mat-shell.new { background: color-mix(in srgb, var(--aw-metal) 45%, transparent); height: 16px; }
+
+.mat-coat {
+    width: 94%;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(90deg, transparent,
+        var(--as-hot) 18%, var(--as-hot) 82%, transparent);
+    opacity: 0.75;
+}
+
+.mat-ring {
+    width: 34px;
+    height: 14px;
+    border: 3px solid var(--as-soft);
+    border-radius: 3px;
+}
+.mat-ring.braced { border-width: 5px; border-color: var(--as-hot); }
+
+.mat-feather {
+    width: 3px;
+    height: 32px;
+    border-radius: 2px;
+    background: var(--as-hot);
+    transform: rotate(8deg);
+}
+
+.as-hint {
+    min-height: 40px;
+    max-width: 560px;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--as-hot);
+    text-align: center;
+}
+
+.as-result { display: flex; flex-direction: column; gap: 2px; text-align: center; }
+.as-result b { font-weight: normal; letter-spacing: 0.18em; color: var(--as-hot); }
+.as-result-note { margin-top: 6px; color: var(--as-soft); }
+
+/* ── 右：六块表 ── */
+
+.as-dials {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    align-content: start;
+    padding: 12px;
+    border-left: 1px solid var(--as-line);
+    background: color-mix(in srgb, var(--aw-void) 42%, transparent);
+    overflow-y: auto;
+}
+
+.as-dial {
+    margin: 0;
+    padding: 8px 6px 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    border: 1px solid transparent;
+}
+
+.as-dial.ok { color: var(--as-good); }
+.as-dial.bad { color: var(--as-bad); }
+.as-dial.pending { color: var(--as-soft); opacity: 0.5; }
+.as-dial.unknown { color: var(--as-soft); }
+
+.as-dial.ok, .as-dial.bad { border-color: color-mix(in srgb, currentColor 22%, transparent); }
+
+.as-dial-label { font-size: 11px; letter-spacing: 0.2em; opacity: 0.6; color: var(--as-soft); }
+.as-dial-face { width: 100%; display: flex; justify-content: center; }
+.as-dial-read { font-size: 12px; font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+.as-dial.unknown .as-dial-read { font-style: italic; opacity: 0.55; }
+
+.as-svg { width: 90px; height: 46px; overflow: visible; }
+
+/* SVG 的笔：全部 currentColor，跟着 .as-dial 的状态变色 */
+.ink-thin { stroke: currentColor; stroke-width: 1; opacity: 0.5; }
+.ink-bean { stroke: currentColor; stroke-width: 3; fill: none; }
+.ink-dot { fill: currentColor; opacity: 0.85; }
+.ink-solid { fill: currentColor; }
+.ink-track { fill: currentColor; opacity: 0.16; }
+.ink-red { stroke: var(--as-bad); stroke-width: 3; opacity: 0.8; }
+.ink-limit { stroke: var(--as-hot); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.ink-loop { stroke: currentColor; stroke-width: 1.6; }
+.ink-pointer { stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.dashed { stroke-dasharray: 4 4; }
+
+/* 看不见的读数：整块打斜纹，形状本身就在说「这不是真的」 */
+.as-dial.unknown .as-dial-face {
+    background: repeating-linear-gradient(45deg,
+        color-mix(in srgb, var(--as-soft) 22%, transparent) 0 3px, transparent 3px 8px);
+}
+
+/* ══════════════ 底：货格 + 合壳 ══════════════ */
+
+.as-tray {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 20px;
+    padding: 12px 18px 14px;
+    border-top: 1px solid var(--as-line);
+    background: color-mix(in srgb, var(--aw-void) 34%, transparent);
+    z-index: 2;
+}
+
+.as-cargo-head { font-size: 11px; letter-spacing: 0.2em; opacity: 0.5; margin-bottom: 7px; }
+.as-cargo-row { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* 内容格：像四个小抽屉，高度=它要占多少容量 */
+.as-crate {
+    position: relative;
+    width: 132px;
+    height: 62px;
+    padding: 8px 9px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 3px;
+    text-align: left;
+    font: inherit;
+    color: var(--as-soft);
+    background: color-mix(in srgb, var(--aw-void) 40%, transparent);
+    border: 1px solid var(--as-line);
+    cursor: pointer;
+    overflow: hidden;
+    transition: border-color 0.14s, color 0.14s;
+}
+
+.as-crate-fill {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: color-mix(in srgb, var(--as-good) 22%, transparent);
+    pointer-events: none;
+}
+
+.as-crate.on { color: var(--as-ink); border-color: var(--as-good); }
+.as-crate.on .as-crate-fill { background: color-mix(in srgb, var(--as-good) 34%, transparent); }
+.as-crate:hover:not(:disabled) { border-color: var(--as-hot); }
+.as-crate:disabled { cursor: default; }
+
+.as-crate-name { position: relative; font-size: 12.5px; line-height: 1.35; }
+.as-crate-need { position: relative; font-size: 11px; opacity: 0.6; font-variant-numeric: tabular-nums; }
+
+.as-commit { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.as-status { font-size: 13px; opacity: 0.72; max-width: 340px; text-align: right; }
+.as-status.bad { color: var(--as-bad); opacity: 1; }
+.as-status.ok { color: var(--as-good); opacity: 1; }
+
+.as-commit-btns { display: flex; gap: 8px; }
+
+.as-btn {
+    padding: 9px 22px;
+    font: inherit;
+    font-size: 15px;
+    letter-spacing: 0.16em;
+    color: var(--aw-void);
+    background: var(--as-hot);
+    border: 1px solid var(--as-hot);
+    cursor: pointer;
+    transition: opacity 0.14s, background 0.14s;
+}
+
+.as-btn:disabled {
+    color: var(--as-soft);
+    background: transparent;
+    border: 1px dashed var(--as-line);
+    cursor: default;
+    opacity: 0.7;
+}
+
+.as-btn.ready { box-shadow: 0 0 0 0 var(--as-hot); animation: as-pulse 2.4s ease-in-out infinite; }
+@keyframes as-pulse {
+    0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--as-hot) 40%, transparent); }
+    50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--as-hot) 0%, transparent); }
+}
+
+.as-btn-ghost {
+    color: var(--as-soft);
+    background: transparent;
+    border: 1px solid var(--as-line);
+}
+.as-btn-ghost:hover:not(:disabled) { color: var(--as-ink); border-color: var(--as-soft); }
+
+/* ══════════════ 遮字 ══════════════ */
+
+.as-notext .as-t,
+.as-notext .as-part-note,
+.as-notext .as-part-name,
+.as-notext .as-bin-name,
+.as-notext .as-seg-label,
+.as-notext .as-seg-tag,
+.as-notext .as-dial-label,
+.as-notext .as-dial-read,
+.as-notext .as-cargo-head,
+.as-notext .as-crate-name,
+.as-notext .as-crate-need,
+.as-notext .as-figure-name,
+.as-notext .as-figure-job,
+.as-notext .as-hint,
+.as-notext .as-status,
+.as-notext .as-kicker,
+.as-notext .as-key { display: none !important; }
+
+/* 遮字后：零件只剩质量块 + 质量数，仪表只剩图形 */
+.as-notext .as-seg { grid-template-columns: 1fr; justify-items: center; }
+.as-notext .as-part { padding: 9px 8px; }
+.as-notext .as-part-top { justify-content: center; }
+.as-notext .as-crate { height: 44px; width: 40px; }
+
+/* ══════════════ 滚动条 ══════════════ */
+
+.as-drawer::-webkit-scrollbar,
+.as-dials::-webkit-scrollbar { width: 5px; }
+.as-drawer::-webkit-scrollbar-thumb,
+.as-dials::-webkit-scrollbar-thumb {
+    background: var(--as-line);
+    border-radius: 3px;
+}
+
+/* ══════════════ 窄屏 ══════════════ */
+
+@media (max-width: 1180px) {
+    .as-scene { grid-template-columns: 258px 1fr 274px; }
+    .as-vessel { width: min(300px, 70%); }
+}
+
+@media (max-width: 900px) {
+    .as-stage { height: auto; min-height: 1000px; }
+    .as-scene { grid-template-columns: 1fr; grid-template-rows: 280px 460px 300px; }
+    .as-drawer { border-right: none; border-bottom: 1px solid var(--as-line); }
+    .as-dials { border-left: none; border-top: 1px solid var(--as-line); grid-template-columns: repeat(3, 1fr); }
+    .as-core { padding: 10px; }
+    .as-people { position: static; margin-bottom: 8px; }
+    .as-tray { grid-template-columns: 1fr; }
+    .as-commit { align-items: flex-start; }
+    .as-status { text-align: left; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .as-btn.ready { animation: none; }
+}
+
+
+/* ══════════════ v3 补丁：读数长在段上，人站在右边 ══════════════ */
+
+/* 段内小表：这一段影响哪条读数，表就长在这一段上 */
+.as-seg-dial {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    min-width: 0;
+}
+.as-seg-dial .as-svg { width: 92px; height: 40px; }
+
+.as-seg-dial.ok { color: var(--as-good); }
+.as-seg-dial.bad { color: var(--as-bad); }
+.as-seg-dial.pending { color: var(--as-soft); opacity: 0.4; }
+.as-seg-dial.unknown {
+    color: var(--as-soft);
+    background: repeating-linear-gradient(45deg,
+        color-mix(in srgb, var(--as-soft) 20%, transparent) 0 3px, transparent 3px 8px);
+}
+
+/* 瓶身的体积：拉丝金属 + 投影 + 描边 */
+.as-vessel {
+    box-shadow: 0 0 0 1px var(--as-line),
+                0 26px 60px color-mix(in srgb, var(--aw-void) 60%, transparent);
+    background:
+        repeating-linear-gradient(90deg,
+            color-mix(in srgb, var(--aw-metal) 12%, transparent) 0 2px,
+            transparent 2px 5px);
+}
+
+.as-seg.filled {
+    background:
+        repeating-linear-gradient(90deg,
+            color-mix(in srgb, var(--aw-metal) 14%, transparent) 0 2px,
+            transparent 2px 6px),
+        color-mix(in srgb, var(--aw-void) 52%, transparent);
+}
+
+/* 瓶身下方：总表（只有质量是全局的） */
+.as-total {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 10px;
+    padding: 6px 12px;
+    border: 1px solid var(--as-line);
+    background: color-mix(in srgb, var(--aw-void) 40%, transparent);
+}
+
+.as-mass { margin: 0; display: flex; align-items: center; gap: 8px; }
+.as-mass figcaption { font-size: 11px; letter-spacing: 0.18em; opacity: 0.55; }
+.as-mass .as-svg { width: 78px; height: 38px; }
+.as-mass-read { font-size: 12px; font-variant-numeric: tabular-nums; }
+
+.as-mass.ok { color: var(--as-good); }
+.as-mass.bad { color: var(--as-bad); }
+
+.as-pills { display: flex; gap: 5px; margin-left: auto; }
+.as-pill { width: 9px; height: 9px; background: var(--as-soft); opacity: 0.3; }
+.as-pill.ok { background: var(--as-good); opacity: 0.85; }
+.as-pill.bad { background: var(--as-bad); opacity: 1; }
+.as-pill.unknown {
+    background: transparent;
+    border: 1px solid var(--as-soft);
+    opacity: 0.8;
+    transform: rotate(45deg);
+}
+.as-pill.pending { opacity: 0.18; }
+
+/* 右边：三个人站在台边（竖排） */
+.as-figures {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 22px;
+    padding: 12px 6px;
+    border-left: 1px solid var(--as-line);
+    background: color-mix(in srgb, var(--aw-void) 34%, transparent);
+}
+
+.as-figure { transform: none; }
+.as-figure-name { font-size: 12px; }
+
+@media (max-width: 1180px) {
+    .as-scene { grid-template-columns: 220px 1fr 104px; }
+    .as-vessel { width: min(360px, 82%); }
+    .as-seg { grid-template-columns: 40px 1fr 74px 84px; }
+}
+
+@media (max-width: 900px) {
+    .as-scene { grid-template-columns: 1fr; grid-template-rows: 260px 480px 120px; }
+    .as-figures { flex-direction: row; gap: 18px; border-left: none; border-top: 1px solid var(--as-line); }
+    .as-seg { grid-template-columns: 40px 1fr 70px 84px; }
+}
