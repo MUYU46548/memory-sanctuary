@@ -1,0 +1,710 @@
+{
+  "_comment": "冬天 · 第一枚之后。十二周。这是一个正在死的地方，你要活过三个月，然后去装第二枚。文案全是占位。",
+  "_schema": {
+    "laborPerWeek": "每周能派出去的工人数（其余人维持基本运转，抽不动）",
+    "exposure": "地表暴露人周累计。超过 riskAt 就有人不回来，确定性推进，不是掷骰",
+    "danger": "资源低于此值，当周有人死"
+  },
+  "meta": {
+    "title": "冬天",
+    "subtitle": "第一枚之后 · 三个月",
+    "weeks": 12,
+    "population": 28,
+    "laborPerWeek": 6,
+    "laborNote": "二十八人里，每周只抽得出六个。其余人在看孩子、照顾伤员、烧锅炉。人口要一周一周地数。",
+    "resourceCap": 100,
+    "actionsPerWeek": 3,
+    "actionsNote": "每周走得动三个地方。剩下的时间在睡觉、在搬东西、在看别人搬东西。"
+  },
+  "resources": [
+    {
+      "id": "power",
+      "name": "电",
+      "start": 100,
+      "perWeek": -11,
+      "danger": 30,
+      "hint": "供暖。停了先冻死老人。"
+    },
+    {
+      "id": "water",
+      "name": "水",
+      "start": 100,
+      "perWeek": -5,
+      "danger": 25,
+      "hint": "循环系统的存量。"
+    },
+    {
+      "id": "food",
+      "name": "食",
+      "start": 100,
+      "perWeek": -12,
+      "danger": 20,
+      "hint": "合成藻与存粮。"
+    },
+    {
+      "id": "unity",
+      "name": "人心",
+      "start": 70,
+      "perWeek": -3,
+      "danger": 30,
+      "hint": "还愿意听你说话的人。它自己会掉。"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "scavenge",
+      "name": "地表回收",
+      "labor": 4,
+      "exposure": 4,
+      "gain": {
+        "parts": 2
+      },
+      "desc": "去南面的旧仓库。白天出去，天黑前回来。风大的时候看不清路。"
+    },
+    {
+      "id": "forage",
+      "name": "找食物",
+      "labor": 4,
+      "exposure": 3,
+      "gain": {
+        "food": 12
+      },
+      "desc": "沿着干掉的河床往北。以前是红树林，现在是盐壳。"
+    },
+    {
+      "id": "generator",
+      "name": "修电机",
+      "labor": 2,
+      "gain": {
+        "power": 12
+      },
+      "desc": "三号机的轴承磨平了。拆一台废的下来换。"
+    },
+    {
+      "id": "well",
+      "name": "挖水井",
+      "labor": 3,
+      "gain": {
+        "water": 12
+      },
+      "desc": "往下十二米还有一层湿沙。"
+    },
+    {
+      "id": "strip2",
+      "name": "拆第二避难所",
+      "labor": 5,
+      "gain": {
+        "rare": 1
+      },
+      "cost": {
+        "power": -15,
+        "unity": -5
+      },
+      "desc": "那道闸门是最后一道。拆了之后，风会一直吹到第三层。"
+    },
+    {
+      "id": "kamu_ring",
+      "name": "让卡穆做加固环",
+      "labor": 1,
+      "npc": "卡穆",
+      "gain": {
+        "ring": 1
+      },
+      "desc": "他手上还剩一点备用金属。四百克。"
+    },
+    {
+      "id": "wei_index",
+      "name": "让薇希整理索引",
+      "labor": 0,
+      "npc": "薇希",
+      "gain": {
+        "capacity": 10
+      },
+      "desc": "她的手还划着。但索引只有她记得全。",
+      "status": -1
+    },
+    {
+      "id": "seran_sing",
+      "name": "让瑟兰唱一段",
+      "labor": 0,
+      "npc": "瑟兰",
+      "gain": {
+        "unity": 12
+      },
+      "desc": "每天傍晚她唱一段。不是为了仪式，就是唱。"
+    },
+    {
+      "id": "send_wei",
+      "name": "让薇希去地表翻索引",
+      "labor": 0,
+      "npc": "薇希",
+      "gain": {
+        "capacity": 20
+      },
+      "gone": "wei",
+      "desc": "第二避难所的索引柜还在。只有她认得全。",
+      "risk": "她不一定回来。"
+    },
+    {
+      "id": "send_kamu",
+      "name": "让卡穆去地表找件",
+      "labor": 0,
+      "npc": "卡穆",
+      "gain": {
+        "parts": 3
+      },
+      "gone": "kamu",
+      "desc": "他知道哪个仓库还有能用的螺纹。",
+      "risk": "他知道，但他不一定回得来。"
+    }
+  ],
+  "stockLabels": {
+    "parts": "通用零件",
+    "rare": "稀缺件",
+    "ring": "加固环",
+    "capacity": "下枚容量 +%"
+  },
+  "events": [
+    {
+      "week": 2,
+      "id": "theft",
+      "title": "有人偷配给",
+      "text": "存粮少了三份。不像是记错了。（占位）",
+      "options": [
+        {
+          "text": "公开处理",
+          "note": "让所有人看着。",
+          "effect": {
+            "unity": -8,
+            "food": 2
+          }
+        },
+        {
+          "text": "私下补上",
+          "note": "从自己的份里扣。",
+          "effect": {
+            "unity": 4,
+            "food": -4
+          }
+        },
+        {
+          "text": "不管",
+          "note": "三份而已。",
+          "effect": {
+            "unity": -3
+          }
+        }
+      ]
+    },
+    {
+      "week": 3,
+      "id": "child_sick",
+      "title": "孩子病了",
+      "text": "两个孩子开始咳。只剩两支针剂。（占位）",
+      "options": [
+        {
+          "text": "一人一支",
+          "note": "都不一定够。",
+          "effect": {
+            "unity": 6
+          }
+        },
+        {
+          "text": "先救咳得凶的",
+          "note": "另一个还有机会。",
+          "effect": {
+            "unity": -4
+          }
+        },
+        {
+          "text": "留着等确诊",
+          "note": "等的时候可能就没了。",
+          "effect": {
+            "unity": -7
+          }
+        }
+      ]
+    },
+    {
+      "week": 4,
+      "id": "motor",
+      "title": "三号机烧了",
+      "text": "绕组烧穿。（占位）",
+      "options": [
+        {
+          "text": "修",
+          "note": "三天，两个人。",
+          "effect": {
+            "power": 12,
+            "unity": 3
+          }
+        },
+        {
+          "text": "拆了换灯",
+          "note": "至少晚上看得见。",
+          "effect": {
+            "power": -20,
+            "unity": 8
+          }
+        },
+        {
+          "text": "先放着",
+          "note": "冷就冷吧。",
+          "effect": {
+            "power": -25,
+            "unity": -4
+          }
+        }
+      ]
+    },
+    {
+      "week": 5,
+      "id": "want_leave",
+      "title": "有人要走",
+      "text": "四个年轻人说北边还有活的。（占位）",
+      "options": [
+        {
+          "text": "让他们走",
+          "note": "少四个人，也少四张嘴。",
+          "effect": {
+            "unity": -6,
+            "food": 8,
+            "water": 6,
+            "pop": -4
+          }
+        },
+        {
+          "text": "拦住",
+          "note": "外面活不了三天。",
+          "effect": {
+            "unity": -10
+          }
+        },
+        {
+          "text": "让他们走，多给一天水",
+          "note": "这是你能做的。",
+          "effect": {
+            "unity": 8,
+            "water": -8,
+            "pop": -4
+          }
+        }
+      ]
+    },
+    {
+      "week": 6,
+      "id": "vote",
+      "title": "有人要投票",
+      "text": "管配给的人说：从今天起，配给由大家定。（占位）",
+      "options": [
+        {
+          "text": "同意",
+          "note": "失去一半权力，也失去一半效率。",
+          "effect": {
+            "unity": 12,
+            "food": -6
+          },
+          "flag": {
+            "rule": "vote"
+          }
+        },
+        {
+          "text": "拒绝",
+          "note": "现在不是投票的时候。",
+          "effect": {
+            "unity": -9
+          },
+          "flag": {
+            "rule": "order"
+          }
+        },
+        {
+          "text": "折中：三个人加你",
+          "note": "慢，但他们能说话。",
+          "effect": {
+            "unity": 5
+          },
+          "flag": {
+            "rule": "council"
+          }
+        }
+      ]
+    },
+    {
+      "week": 7,
+      "id": "second_shelter",
+      "title": "第二避难所还有信号",
+      "text": "无线电里有人敲了三下。（占位）",
+      "options": [
+        {
+          "text": "派人去",
+          "note": "两个，三天。",
+          "effect": {
+            "parts": 2,
+            "unity": -4
+          }
+        },
+        {
+          "text": "回敲三下，不派人",
+          "note": "让他们知道外面还有人。",
+          "effect": {
+            "unity": 7
+          }
+        },
+        {
+          "text": "关掉无线电",
+          "note": "省电，也省事。",
+          "effect": {
+            "unity": -8,
+            "power": 6
+          }
+        }
+      ]
+    },
+    {
+      "week": 8,
+      "id": "feathers",
+      "title": "开始掉羽毛",
+      "text": "最先掉的是老人。（占位）",
+      "options": [
+        {
+          "text": "让大家把掉的收起来",
+          "note": "以后还有用。",
+          "effect": {
+            "unity": 5,
+            "rare": 1
+          }
+        },
+        {
+          "text": "不要提这件事",
+          "note": "提了也没用。",
+          "effect": {
+            "unity": -5
+          }
+        },
+        {
+          "text": "请瑟兰唱一段",
+          "note": "她唱得很轻。",
+          "effect": {
+            "unity": 11,
+            "power": -4
+          }
+        }
+      ]
+    },
+    {
+      "week": 9,
+      "id": "white_wings",
+      "title": "有人自折翅膀",
+      "text": "最里面那间有人把自己右边的翅膀折断了。（占位）",
+      "options": [
+        {
+          "text": "绑起来喂他",
+          "note": "他会恨你。他会活着。",
+          "effect": {
+            "unity": -6,
+            "food": -3
+          }
+        },
+        {
+          "text": "让他自己决定",
+          "note": "这是他的翅膀。",
+          "effect": {
+            "unity": 4
+          }
+        },
+        {
+          "text": "挪到单间",
+          "note": "别让人看见。",
+          "effect": {
+            "unity": -2
+          }
+        }
+      ]
+    },
+    {
+      "week": 10,
+      "id": "grain_mill",
+      "title": "粮食工厂停机",
+      "text": "合成藻生产线停了。（占位）",
+      "options": [
+        {
+          "text": "保生产",
+          "note": "吃得饱，冻得死。",
+          "effect": {
+            "food": 25,
+            "power": -22
+          }
+        },
+        {
+          "text": "保供暖",
+          "note": "冻不死，饿得慢。",
+          "effect": {
+            "power": 8,
+            "food": -18
+          }
+        },
+        {
+          "text": "两样各一半",
+          "note": "两样都不够。",
+          "effect": {
+            "power": -8,
+            "food": -8
+          }
+        }
+      ]
+    },
+    {
+      "week": 11,
+      "id": "last_needle",
+      "title": "最后一支针",
+      "text": "医务室只剩一支。三个人用得上。（占位）",
+      "options": [
+        {
+          "text": "给孩子",
+          "note": "",
+          "effect": {
+            "unity": 8
+          },
+          "flag": {
+            "needle": "child"
+          }
+        },
+        {
+          "text": "给修电机的",
+          "note": "他能让更多人活。",
+          "effect": {
+            "unity": -5,
+            "power": 10
+          },
+          "flag": {
+            "needle": "engineer"
+          }
+        },
+        {
+          "text": "给老歌者",
+          "note": "她还能唱。",
+          "effect": {
+            "unity": 3
+          },
+          "flag": {
+            "needle": "singer"
+          }
+        }
+      ]
+    },
+    {
+      "week": 12,
+      "id": "who_stays",
+      "title": "最后一个晚上",
+      "text": "明天你要上去了。（占位）",
+      "options": [
+        {
+          "text": "让年纪最小的留下",
+          "note": "他还能等。",
+          "effect": {
+            "unity": -4
+          }
+        },
+        {
+          "text": "让最会修的留下",
+          "note": "门比人重要。",
+          "effect": {
+            "unity": 2
+          }
+        },
+        {
+          "text": "一起上去看",
+          "note": "就看这一次。",
+          "effect": {
+            "unity": 14,
+            "power": -6
+          }
+        }
+      ]
+    }
+  ],
+  "map": {
+    "title": "避难所 · 剖面",
+    "rooms": [
+      {
+        "id": "surface",
+        "name": "地表 · 发射架",
+        "level": "0",
+        "x": 300,
+        "y": 40,
+        "w": 150,
+        "h": 56,
+        "desc": "风把沙吹进台基的缝里。顶灯只剩一盏。（占位）",
+        "points": [
+          {
+            "id": "sf_look",
+            "text": "看台基",
+            "result": "焊缝有七处。你数过很多遍了。（占位）"
+          },
+          {
+            "id": "sf_climb",
+            "text": "爬上去看北边",
+            "result": "什么也看不见。风太大。（占位）",
+            "cost": 1
+          }
+        ]
+      },
+      {
+        "id": "gate",
+        "name": "第一层 · 闸门",
+        "level": "1",
+        "x": 220,
+        "y": 130,
+        "w": 120,
+        "h": 50,
+        "desc": "守闸人坐在闸门旁边的凳子上。她已经坐了四个月。（占位）",
+        "points": [
+          {
+            "id": "gate_talk",
+            "text": "和守闸人说话",
+            "result": "她说外面那台无线电还在响，只是没人接了。（占位）",
+            "gain": {
+              "unity": 3
+            }
+          },
+          {
+            "id": "gate_listen",
+            "text": "贴着闸门听",
+            "result": "风声。像有人在很远的地方磨牙。（占位）"
+          }
+        ]
+      },
+      {
+        "id": "ration",
+        "name": "第一层 · 配给站",
+        "level": "1",
+        "x": 360,
+        "y": 130,
+        "w": 110,
+        "h": 50,
+        "desc": "配给册挂在墙上。最后一页写着下个月的份数，写好了又划掉。（占位）",
+        "points": [
+          {
+            "id": "rt_read",
+            "text": "翻配给册",
+            "result": "二十八人的份，划成了二十份。（占位）"
+          },
+          {
+            "id": "rt_take",
+            "text": "拿走两份存着",
+            "result": "你把它塞进外衣里。没人看见。（占位）",
+            "gain": {
+              "food": 6,
+              "unity": -4
+            }
+          }
+        ]
+      },
+      {
+        "id": "boiler",
+        "name": "第三层 · 锅炉",
+        "level": "3",
+        "x": 200,
+        "y": 215,
+        "w": 130,
+        "h": 52,
+        "desc": "三号机在旁边。外壳上有人用粉笔写了一行数字，改过三次。（占位）",
+        "points": [
+          {
+            "id": "bl_fix",
+            "text": "自己动手修",
+            "result": "轴承磨平了，你只能先垫一片铁皮。（占位）",
+            "cost": 1,
+            "gain": {
+              "power": 8
+            }
+          },
+          {
+            "id": "bl_check",
+            "text": "看那个数字",
+            "result": "是剩余电量的估算。昨天写的是 41。（占位）"
+          }
+        ]
+      },
+      {
+        "id": "living",
+        "name": "第三层 · 居住区",
+        "level": "3",
+        "x": 350,
+        "y": 215,
+        "w": 140,
+        "h": 52,
+        "desc": "二十几张铺，有的已经空了，被子叠得很整齐。（占位）",
+        "points": [
+          {
+            "id": "lv_wall",
+            "text": "看墙上的刻字",
+            "result": "有人刻了「妈妈不会回来了」。下面还有一行更小的。（占位）"
+          },
+          {
+            "id": "lv_sit",
+            "text": "在空铺边坐一会",
+            "result": "你坐了十分钟。没有人来找你。（占位）",
+            "gain": {
+              "unity": 2
+            }
+          }
+        ]
+      },
+      {
+        "id": "clinic",
+        "name": "第五层 · 医务室",
+        "level": "5",
+        "x": 240,
+        "y": 300,
+        "w": 120,
+        "h": 50,
+        "desc": "两支针剂在铁盒里。盒子没锁。（占位）",
+        "points": [
+          {
+            "id": "cl_count",
+            "text": "数一数还剩什么",
+            "result": "两支针，半瓶消毒液，一卷绷带。（占位）"
+          },
+          {
+            "id": "cl_take",
+            "text": "把针收进外衣",
+            "result": "以后用得上。或者用不上。（占位）",
+            "gain": {
+              "rare": 1,
+              "unity": -3
+            }
+          }
+        ]
+      },
+      {
+        "id": "vault",
+        "name": "深处 · 圣所入口",
+        "level": "B1",
+        "x": 320,
+        "y": 380,
+        "w": 170,
+        "h": 52,
+        "desc": "一条挖了一半的通道。你们本来打算把记忆搬下去。（占位）",
+        "points": [
+          {
+            "id": "vt_look",
+            "text": "往里看",
+            "result": "十二间存储室只开了一间。里面是空的。（占位）"
+          },
+          {
+            "id": "vt_dig",
+            "text": "再挖一段",
+            "result": "你挖了两米。手上全是血泡。（占位）",
+            "cost": 1,
+            "gain": {
+              "unity": -2,
+              "parts": 1
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

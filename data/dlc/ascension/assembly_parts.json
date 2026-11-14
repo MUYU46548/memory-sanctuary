@@ -1,0 +1,698 @@
+{
+  "_comment": "升天之仪·装配台原型数据。六维约束互相牵制，标准件刚好差一点，玩家必须取舍。",
+  "_schema": {
+    "slots": "六个装配位，每位的零件互斥",
+    "parts": "零件。mass 单位 kg，其他字段为对读数的修正",
+    "contents": "晶体内容，capacity 为占用百分比，合计超过晶体容量即装不下",
+    "limits": "合格阈值。全部来自正典或工程自洽，不是拍脑袋"
+  },
+  "meta": {
+    "title": "祈愿瓶 · 装配台",
+    "subtitle": "第 一 枚",
+    "massMax": 78.0
+  },
+  "limits": {
+    "sealBase": 0.978,
+    "sealMin": 0.99,
+    "resonanceBase": 0.35,
+    "resonanceMax": 0.45,
+    "balanceBase": 1.8,
+    "balanceMax": 1.5,
+    "ablativeMinOld": 5.0,
+    "ablativeMinNew": 4.0,
+    "capacityBase": 0
+  },
+  "slots": [
+    {
+      "id": "crystal",
+      "name": "晶体座",
+      "hint": "一枚光学存储晶体"
+    },
+    {
+      "id": "pad",
+      "name": "缓冲层",
+      "hint": "壳体与晶体之间"
+    },
+    {
+      "id": "shell",
+      "name": "壳体",
+      "hint": "两半合拢"
+    },
+    {
+      "id": "coat",
+      "name": "外层",
+      "hint": "烧蚀涂层，可空"
+    },
+    {
+      "id": "ring",
+      "name": "固定环",
+      "hint": "重心与密封"
+    },
+    {
+      "id": "feather",
+      "name": "羽系",
+      "hint": "瓶外的羽毛"
+    }
+  ],
+  "parts": [
+    {
+      "id": "crystal_std",
+      "slot": "crystal",
+      "name": "晶体 · 标准",
+      "mass": 12.0,
+      "capacity": 100,
+      "seal": 0.0,
+      "note": "配给册上的标准件。装得下八成内容。",
+      "cost": {
+        "parts": 1
+      }
+    },
+    {
+      "id": "crystal_big",
+      "slot": "crystal",
+      "name": "晶体 · 加大",
+      "mass": 18.0,
+      "capacity": 135,
+      "seal": -0.002,
+      "note": "最后一块。装得下全部，但重了六公斤，密封也差一点。",
+      "cost": {
+        "parts": 2
+      }
+    },
+    {
+      "id": "pad_thick",
+      "slot": "pad",
+      "name": "缓冲垫 · 厚 8mm",
+      "mass": 2.4,
+      "seal": 0.015,
+      "resonance": -0.12,
+      "note": "厚，密封好，压得住振动。壳体合拢要用力。",
+      "cost": {
+        "parts": 1
+      }
+    },
+    {
+      "id": "pad_thin",
+      "slot": "pad",
+      "name": "缓冲垫 · 薄 3mm",
+      "mass": 0.9,
+      "seal": -0.005,
+      "resonance": -0.05,
+      "note": "薄，轻。合拢轻松，但密封差一点。",
+      "cost": {
+        "parts": 1
+      }
+    },
+    {
+      "id": "shell_std",
+      "slot": "shell",
+      "name": "壳体 · 旧规程",
+      "mass": 48.0,
+      "ablative": 4.2,
+      "note": "清单上写的是 5.0 毫米起算。实测 4.2。",
+      "cost": {
+        "parts": 2
+      }
+    },
+    {
+      "id": "shell_new",
+      "slot": "shell",
+      "name": "壳体 · 新配方",
+      "mass": 46.0,
+      "ablative": 3.2,
+      "note": "出厂单背面写着一行小字：新配方，4.0 毫米起算。清单还没改。",
+      "cost": {
+        "parts": 2
+      }
+    },
+    {
+      "id": "coat",
+      "slot": "coat",
+      "name": "烧蚀涂层",
+      "mass": 1.8,
+      "ablative": 1.1,
+      "note": "最后一罐。补涂要等固化。",
+      "cost": {
+        "rare": 1
+      }
+    },
+    {
+      "id": "ring_std",
+      "slot": "ring",
+      "name": "固定环",
+      "mass": 3.2,
+      "balance": -0.8,
+      "note": "把重心拉回轴心。装反了会更偏。",
+      "cost": {
+        "parts": 1
+      }
+    },
+    {
+      "id": "feather_wire",
+      "slot": "feather",
+      "name": "金属丝系羽",
+      "mass": 0.02,
+      "resonance": 0.18,
+      "note": "结实。但在上升段会响。",
+      "cost": {
+        "parts": 0
+      }
+    },
+    {
+      "id": "feather_thread",
+      "slot": "feather",
+      "name": "棉线系羽",
+      "mass": 0.01,
+      "resonance": 0.05,
+      "detachAt": 0.4,
+      "note": "不响。但到了上面会散。",
+      "cost": {
+        "parts": 0
+      }
+    },
+    {
+      "id": "ring_braced",
+      "slot": "ring",
+      "name": "固定环 · 加固",
+      "mass": 3.6,
+      "balance": -0.8,
+      "hidden": true,
+      "note": "卡穆重新车了一道螺纹。重了四百克，但不会再松。",
+      "cost": {
+        "ring": 1
+      }
+    },
+    {
+      "id": "coat_scrap",
+      "slot": "coat",
+      "name": "涂层 · 残骸料",
+      "mass": 2.6,
+      "ablative": 1.0,
+      "cost": {
+        "parts": 1
+      },
+      "note": "从第一枚的残骸上刮下来的。厚度不可控，但比没有强。"
+    },
+    {
+      "id": "crystal_pieced",
+      "slot": "crystal",
+      "gen": 3,
+      "name": "晶体 · 拼合",
+      "mass": 14.0,
+      "capacity": 75,
+      "seal": -0.002,
+      "cost": {
+        "parts": 0
+      },
+      "note": "两块拼的。接缝处有一道看不见的裂。"
+    },
+    {
+      "id": "pad_cloth",
+      "slot": "pad",
+      "gen": 3,
+      "name": "缓冲 · 布条",
+      "mass": 0.5,
+      "seal": -0.004,
+      "resonance": -0.03,
+      "cost": {
+        "parts": 0
+      },
+      "note": "从衣服上撕的。三层，压得很实。"
+    },
+    {
+      "id": "shell_scrap",
+      "slot": "shell",
+      "gen": 3,
+      "name": "壳体 · 残骸拼接",
+      "mass": 44.0,
+      "ablative": 3.5,
+      "cost": {
+        "parts": 0
+      },
+      "note": "从第一枚的残骸上切下来的。焊缝有七处。"
+    },
+    {
+      "id": "coat_scrap3",
+      "slot": "coat",
+      "gen": 3,
+      "name": "涂层 · 刮下来的",
+      "mass": 2.2,
+      "ablative": 1.2,
+      "cost": {
+        "parts": 0
+      },
+      "note": "残骸内壁上还留着一点没烧完的。"
+    },
+    {
+      "id": "ring_wire",
+      "slot": "ring",
+      "gen": 3,
+      "name": "固定环 · 铁丝",
+      "mass": 2.1,
+      "balance": -0.5,
+      "resonance": 0.08,
+      "cost": {
+        "parts": 0
+      },
+      "note": "没有环了。你用铁丝缠的，缠了六道。"
+    },
+    {
+      "id": "feather_last",
+      "slot": "feather",
+      "gen": 3,
+      "name": "最后一根羽毛",
+      "mass": 0.01,
+      "resonance": 0.02,
+      "cost": {
+        "parts": 0
+      },
+      "note": "你自己的。别人的都用完了。"
+    }
+  ],
+  "contents": [
+    {
+      "id": "lexicon",
+      "name": "四种语言的完整词表",
+      "capacity": 60,
+      "mass": 2.0,
+      "note": "一百四十万词条。"
+    },
+    {
+      "id": "hymn",
+      "name": "《翼神升天颂》全本",
+      "capacity": 20,
+      "mass": 0.8,
+      "note": "她唱了三十一年的那一首。"
+    },
+    {
+      "id": "lullaby",
+      "name": "童谣与家庭录音",
+      "capacity": 15,
+      "mass": 0.4,
+      "note": "没有史料价值，有体温。"
+    },
+    {
+      "id": "greeting",
+      "name": "多频率问候音频",
+      "capacity": 20,
+      "mass": 0.6,
+      "note": "四格里的最后一格。"
+    }
+  ],
+  "npcs": [
+    {
+      "id": "kamu",
+      "name": "卡穆",
+      "role": "发射技师",
+      "state": "他在数螺母，数了两遍。",
+      "action": "让他复检",
+      "says": "这个环的螺纹滑了两扣。你现在装上去，读数是对的——它不是现在松，是到上面才松。",
+      "reveals": "ring_std",
+      "unlocks": "ring_braced",
+      "after": "他把加固环推过来。四百克，多出来的。",
+      "effects": {}
+    },
+    {
+      "id": "seran",
+      "name": "瑟兰",
+      "role": "年长歌者",
+      "state": "她把右手压在左肩上。",
+      "action": "请她听一下",
+      "says": "你这个系法会响。台基把它放大，到上面会颤。",
+      "effect": "resonance",
+      "value": -0.05,
+      "after": "她换了绕法。绳子短了两寸。",
+      "effects": {
+        "resonance": -0.05
+      }
+    },
+    {
+      "id": "wei",
+      "name": "薇希",
+      "role": "年轻歌者",
+      "state": "她在哼，哼到一半就停。",
+      "action": "让她伸手进去",
+      "says": "够不到底。我手比你小，我来——这里，有一道缝。早就有了。",
+      "effect": "capacity",
+      "value": 0.2,
+      "after": "她的手背上多了一道口子。晶体推到最里面去了。",
+      "effects": {
+        "capacityFactor": 0.2
+      }
+    }
+  ],
+  "stages": [
+    {
+      "id": "inspect",
+      "name": "检修",
+      "kind": "assembly",
+      "scene": "发射架顶灯只开了两盏。剩下的两盏在上个月的配给单里被划掉了，划得很干净，连理由都没写。",
+      "hint": "六位齐了才能进下一步。",
+      "run2": {
+        "scene": "顶灯只剩一盏了。另一盏的灯泡你上周拆下来补了锅炉。清单摊在同一个位置，四角压着同几颗螺母——少了一颗。"
+      },
+      "run3": {
+        "scene": "顶灯一盏都没有了。灯泡全拆去烧锅炉，你是摸着装的。清单上的字你已经不用看——它在你手上。"
+      }
+    },
+    {
+      "id": "unseal",
+      "name": "拆封",
+      "kind": "choice",
+      "scene": "晶体封在壳体里。封条上有一行手写的小字，很浅，要斜着光才看得见。",
+      "options": [
+        {
+          "id": "unseal_care",
+          "text": "沿原线剥开",
+          "note": "慢。但索引完整。",
+          "flag": {
+            "unseal": "care"
+          }
+        },
+        {
+          "id": "unseal_tear",
+          "text": "撕开",
+          "note": "快。可能连索引一起撕下来。",
+          "flag": {
+            "unseal": "tear"
+          },
+          "capacity": -10
+        }
+      ],
+      "run2": {
+        "scene": "这一枚的封条是新的，但封条上还是有一行手写的小字。同一个人写的，笔迹一模一样。冬天里已经没有人写字了。"
+      },
+      "run3": {
+        "scene": "这一枚没有封条。你不是拿到它的，你是一片一片捡回来的，拼在一起的。"
+      }
+    },
+    {
+      "id": "load",
+      "name": "装舱",
+      "kind": "assembly",
+      "scene": "舱盖开着。里面是三样东西等着的空格。",
+      "hint": "装不下的内容，要你自己删。",
+      "run2": {
+        "scene": "舱盖开着。上一枚你在里面垫过一块布，写着「别压坏它」。布还在，字淡了。"
+      },
+      "run3": {
+        "scene": "舱盖合不严。你用铁丝在中间缠了两道。里面那点地方，装不下你想装的。"
+      }
+    },
+    {
+      "id": "plume",
+      "name": "拭羽",
+      "kind": "assembly",
+      "scene": "羽匣盖内侧写着一行字：瓶外羽，执仪者本人或已故亲人。",
+      "hint": "系哪种法，到上面才知道分别。",
+      "run2": {
+        "scene": "羽匣里只剩两枚。一枚是你的，一枚是他留下的。上一枚用掉的那一根，火盆里还剩一点灰。"
+      },
+      "run3": {
+        "scene": "羽匣空了。你从自己身上拔了一根——最后一片还没有掉的。拔的时候没有疼，那一片周围早就没感觉了。"
+      }
+    },
+    {
+      "id": "singers",
+      "name": "歌者",
+      "kind": "choice",
+      "scene": "该来三位。门外站着两个。",
+      "options": [
+        {
+          "id": "sing_three",
+          "text": "等第三位",
+          "note": "规程要三到五位。天快亮了。",
+          "flag": {
+            "singers": "three"
+          }
+        },
+        {
+          "id": "sing_two",
+          "text": "两位也唱",
+          "note": "少一个声部。",
+          "flag": {
+            "singers": "two"
+          }
+        },
+        {
+          "id": "sing_self",
+          "text": "自己唱",
+          "note": "不合仪轨。但能唱。",
+          "flag": {
+            "singers": "self"
+          }
+        }
+      ],
+      "run2": {
+        "scene": "该来三位。门外站着一位。",
+        "options": [
+          {
+            "id": "sing_one",
+            "text": "一个人也唱",
+            "note": "规程要三到五名。",
+            "flag": {
+              "singers": "one"
+            }
+          },
+          {
+            "id": "sing_self2",
+            "text": "自己补上去",
+            "note": "你不会唱。",
+            "flag": {
+              "singers": "self"
+            }
+          },
+          {
+            "id": "sing_none2",
+            "text": "不唱了",
+            "note": "就这样送上去。",
+            "flag": {
+              "singers": "none2"
+            }
+          }
+        ],
+        "gone": {
+          "wei": {
+            "scene": "该来三位。门外站着瑟兰一个人。她没有往里走，站在门槛上。",
+            "options": [
+              {
+                "id": "sing_s_only",
+                "text": "让她一个人唱",
+                "note": "她唱不完。",
+                "flag": {
+                  "singers": "seran_alone"
+                }
+              },
+              {
+                "id": "sing_s_self",
+                "text": "你陪她一起",
+                "note": "你不会唱。",
+                "flag": {
+                  "singers": "self"
+                }
+              },
+              {
+                "id": "sing_s_none",
+                "text": "不唱了",
+                "note": "",
+                "flag": {
+                  "singers": "none2"
+                }
+              }
+            ]
+          },
+          "seran": {
+            "scene": "该来三位。门外站着薇希，一个人。她手里攥着自己那根羽毛，攥得很紧。",
+            "options": [
+              {
+                "id": "sing_w_only",
+                "text": "让她唱",
+                "note": "她会破。",
+                "flag": {
+                  "singers": "wei_alone"
+                }
+              },
+              {
+                "id": "sing_w_none",
+                "text": "不唱了",
+                "note": "",
+                "flag": {
+                  "singers": "none2"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "run3": {
+        "scene": "没有人来。台基下面只有你的影子。",
+        "options": [
+          {
+            "id": "sing_alone3",
+            "text": "自己唱",
+            "note": "你不会唱。",
+            "flag": {
+              "singers": "alone3"
+            }
+          },
+          {
+            "id": "sing_silent3",
+            "text": "不唱",
+            "note": "就这样送上去。",
+            "flag": {
+              "singers": "none3"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "carry",
+      "name": "抬台",
+      "kind": "confirm",
+      "scene": "全体面向天空站立，展开双臂——即使翅膀已经不能飞。",
+      "hint": "重心偏多少，这一刻才知道。",
+      "check": "balance",
+      "run2": {
+        "scene": "全体面向天空站立。抬起的时候你听见自己的膝盖响了一声。上一枚有四个人抬，这次只有两个。"
+      },
+      "run3": {
+        "scene": "你一个人抬不起来。你把瓶子滚上台阶的，一级一级，滚了四十七级。"
+      }
+    },
+    {
+      "id": "chant",
+      "name": "诵唱",
+      "kind": "choice",
+      "scene": "发射前十秒。歌者要发出最高音域的长啸。",
+      "options": [
+        {
+          "id": "chant_full",
+          "text": "唱完",
+          "note": "",
+          "flag": {
+            "chant": "full"
+          }
+        },
+        {
+          "id": "chant_half",
+          "text": "只唱前半",
+          "note": "后面没有词。",
+          "flag": {
+            "chant": "half"
+          }
+        },
+        {
+          "id": "chant_none",
+          "text": "不唱",
+          "note": "",
+          "flag": {
+            "chant": "none"
+          }
+        }
+      ],
+      "run2": {
+        "scene": "发射前十秒。",
+        "options": [
+          {
+            "id": "chant_one",
+            "text": "让她唱",
+            "note": "",
+            "flag": {
+              "chant": "one"
+            }
+          },
+          {
+            "id": "chant_none2",
+            "text": "不唱",
+            "note": "",
+            "flag": {
+              "chant": "none"
+            }
+          }
+        ],
+        "gone": {
+          "wei": {
+            "scene": "发射前十秒。瑟兰开口，唱到第三句停了。她往右边看了一眼——那边没有人。",
+            "options": [
+              {
+                "id": "chant_go_on",
+                "text": "让她往下唱",
+                "note": "",
+                "flag": {
+                  "chant": "broken"
+                }
+              },
+              {
+                "id": "chant_stop",
+                "text": "就停在这里",
+                "note": "",
+                "flag": {
+                  "chant": "stop"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "run3": {
+        "scene": "发射前十秒。",
+        "options": [
+          {
+            "id": "chant_alone3",
+            "text": "开口",
+            "note": "",
+            "flag": {
+              "chant": "alone3"
+            }
+          },
+          {
+            "id": "chant_silent3",
+            "text": "不出声",
+            "note": "",
+            "flag": {
+              "chant": "silent3"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "launch",
+      "name": "发射",
+      "kind": "launch",
+      "scene": "点火。",
+      "hint": ""
+    },
+    {
+      "id": "farewell",
+      "name": "割羽",
+      "kind": "choice",
+      "scene": "火盆在台基下面。割下来的羽毛要投进去。",
+      "options": [
+        {
+          "id": "cut_self",
+          "text": "割自己的",
+          "note": "疼。但这是你的仪式。",
+          "flag": {
+            "farewell": "self"
+          }
+        },
+        {
+          "id": "cut_kin",
+          "text": "割亲人的那根",
+          "note": "你不疼。",
+          "flag": {
+            "farewell": "kin"
+          }
+        }
+      ],
+      "run2": {
+        "scene": "火盆里还有上一枚的灰。你把羽毛放进去的时候，它压在那层灰上面。"
+      },
+      "run3": {
+        "scene": "火盆里有两次的灰。你把最后一根放进去，它压在最上面。"
+      }
+    }
+  ]
+}
