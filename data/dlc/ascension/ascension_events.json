@@ -1,0 +1,292 @@
+{
+  "_comment": "升天之仪 · 幕内事件。事件不弹窗：那个人走到你面前，或者已经在那个房间等你。",
+  "_schema": {
+    "act": "第几幕（1/2/3）",
+    "dayMin": "最早第几天会发生（幕内天数，从 1 起）",
+    "dayMax": "最晚第几天",
+    "who": "来找你的人（rooms/*.json 的 npcs id）",
+    "where": "在哪个房间（null = 不限）",
+    "require": "前置：必须已经做过的 flag（数组，全部满足）",
+    "forbid": "前置：只要有其中一个就不触发",
+    "lines": "他说的话，逐句",
+    "choices": "选项。effect 只改三样东西：people（在场状态）/ inv（库存）/ flags（后续判定）",
+    "effect.people": "present / absent / dead",
+    "effect.inv": "整数增减（parts 零件、rare 稀有件、crystal 晶体）",
+    "effect.flags": "打上的旗标，后续事件与结局读它",
+    "after": "选完之后的回应"
+  },
+  "events": [
+    {
+      "id": "ev_share_short",
+      "act": 1,
+      "dayMin": 2,
+      "dayMax": 9,
+      "who": "quartermaster",
+      "where": "ration",
+      "lines": [
+        "存粮少了三份。",
+        "他知道是谁拿的。他说话的时候手一直压在册子上，压得很平。",
+        "现在有两个做法：当众把这件事摊开，或者私下把缺的那三份补上，账面上什么也看不出来。"
+      ],
+      "hint": "三份口粮，十九个人还剩十四天的量。",
+      "choices": [
+        {
+          "id": "public",
+          "text": "当众处理",
+          "effect": { "flags": ["ledger_public"] },
+          "after": "你把这件事摆在所有人面前。他念了名字，念得很慢。念完之后，那个人的位置空了两天。人心里有一部分东西从这天开始凉了。"
+        },
+        {
+          "id": "private",
+          "text": "私下补上",
+          "effect": { "inv": { "parts": -1 }, "flags": ["ledger_quiet"] },
+          "after": "你从零件里匀了一份出来抵账。他合上册子，说了一句：这样谁都看得出来。"
+        },
+        {
+          "id": "ignore",
+          "text": "不管",
+          "effect": { "flags": ["ledger_loose"] },
+          "after": "你说这事先放着。他把册子合上，扣好那根电线。从那天起，册子上的数字开始对不上了。"
+        }
+      ]
+    },
+    {
+      "id": "ev_child_sick",
+      "act": 1,
+      "dayMin": 3,
+      "dayMax": 11,
+      "who": "mother",
+      "where": "infirmary",
+      "lines": [
+        "孩子咳了两天，今天咳出血丝。",
+        "她把手里的铁盒打开给你看：两支针剂，没标签，盒底的绒布已经磨秃了。",
+        "她说她不是来求你的，她只是让你知道盒子里还剩几支。"
+      ],
+      "hint": "两支针，医务室三个人用。",
+      "choices": [
+        {
+          "id": "both_child",
+          "text": "两支都给孩子",
+          "effect": { "inv": { "rare": -2 }, "flags": ["needle_child"] },
+          "after": "她收下针的时候没有说谢，只是把盒盖扣回去，扣了两次才扣上。"
+        },
+        {
+          "id": "worst_first",
+          "text": "谁重给谁",
+          "effect": { "inv": { "rare": -1 }, "flags": ["needle_triage"] },
+          "after": "她点头，说这样对。转身走了两步，又回来说：那你得先去看另一个。"
+        },
+        {
+          "id": "keep",
+          "text": "先留着",
+          "effect": { "flags": ["needle_kept"] },
+          "after": "她把铁盒收进衣兜，说你留着吧，我记着这个数。那两天她没再来找你。"
+        }
+      ]
+    },
+    {
+      "id": "ev_motor",
+      "act": 1,
+      "dayMin": 3,
+      "dayMax": 12,
+      "who": "kamu",
+      "where": "boiler",
+      "lines": [
+        "三号机的绕组烧穿了。他给你看那一圈焦黑，说这已经是第二回。",
+        "要修得占掉三天人手，还得从备件里拆两组线圈。",
+        "不修也行。拆了它，这间房能多点两盏灯。"
+      ],
+      "hint": "电只够暖，或者只够亮。",
+      "choices": [
+        {
+          "id": "fix",
+          "text": "修",
+          "effect": { "inv": { "parts": -2 }, "flags": ["power_fixed"] },
+          "after": "他蹲下去开始拆。第二天你路过，机子在响，声音比之前沉一点。他没抬头。"
+        },
+        {
+          "id": "strip",
+          "text": "拆了换灯",
+          "effect": { "inv": { "parts": 1 }, "flags": ["power_stripped"] },
+          "after": "他把绕组拖出去，铜还是亮的。这间房亮了两天，第三天锅炉不响了，走廊那一段再没亮过。"
+        },
+        {
+          "id": "leave",
+          "text": "放着",
+          "effect": { "flags": ["power_left"] },
+          "after": "他说行。那台机子后来一直没响，粉笔数字也停在原来的位置，没人再改。"
+        }
+      ]
+    },
+    {
+      "id": "ev_leave",
+      "act": 1,
+      "dayMin": 5,
+      "dayMax": 13,
+      "who": "gatekeeper",
+      "where": "gate",
+      "lines": [
+        "门后那个声音说，有四个年轻人夜里在门口等着。",
+        "他们要走，带走一份配给和三天的水。",
+        "他们不吵，也不打算说服谁。就是站着。"
+      ],
+      "hint": "四个人，四份配给，三天水。",
+      "choices": [
+        {
+          "id": "let_go",
+          "text": "让他们走",
+          "effect": { "inv": { "parts": -1 }, "flags": ["four_left"] },
+          "after": "门开了一条缝。他们没有回头。第二天早上门口只有四行脚印，往北去了。"
+        },
+        {
+          "id": "block",
+          "text": "拦住",
+          "effect": { "flags": ["four_stayed", "gate_hard"] },
+          "after": "闸门落下去了。他们没有再敲。那之后的很多天，门口都很安静。"
+        },
+        {
+          "id": "extra_water",
+          "text": "让走，多给他们一份水",
+          "effect": { "inv": { "parts": -1, "rare": -1 }, "flags": ["four_left_watered"] },
+          "after": "你多给了一份水。门后那个声音说：你这是让他们多走两天，不是让他们活。"
+        }
+      ]
+    },
+    {
+      "id": "ev_vote",
+      "act": 1,
+      "dayMin": 6,
+      "dayMax": 13,
+      "who": "quartermaster",
+      "where": "ration",
+      "lines": [
+        "他说配给不该由你一个人定。",
+        "他提出两个办法：所有人投票，或者由你、他，再加一个人，三个人定。",
+        "他说这话的时候没有看你，看的是墙上那张配给表。"
+      ],
+      "hint": "权力怎么分，决定第二幕里谁还听你的。",
+      "choices": [
+        {
+          "id": "all_vote",
+          "text": "所有人投票",
+          "effect": { "flags": ["power_vote"] },
+          "after": "投票的结果是大多数人愿意继续按你说的办。他数完票，把票纸收进册子里，说：那就这样。"
+        },
+        {
+          "id": "refuse",
+          "text": "拒绝",
+          "effect": { "flags": ["power_refused"] },
+          "after": "你说这件事不用议。他点头，说知道了。册子从那天起开始记两份。"
+        },
+        {
+          "id": "triumvirate",
+          "text": "三个人定",
+          "effect": { "flags": ["power_three"] },
+          "after": "第三个人是母亲。她坐在桌边一句话也没说，只是把铁盒放在两个人中间。"
+        }
+      ]
+    },
+    {
+      "id": "ev_radio",
+      "act": 1,
+      "dayMin": 4,
+      "dayMax": 12,
+      "who": "gatekeeper",
+      "where": "gate",
+      "lines": [
+        "无线电里有三下敲击，间隔很匀。",
+        "不是杂音。是人在敲。",
+        "门后那个声音说，敲的这个节奏，是二号避难所的人在问还剩几个。"
+      ],
+      "hint": "回敲要耗电。派人去要耗人。",
+      "choices": [
+        {
+          "id": "send",
+          "text": "派人去",
+          "effect": { "inv": { "parts": 1 }, "flags": ["radio_answered"] },
+          "after": "去了两个人，回来一个。带回来的东西是半箱螺栓，还有一句话：那边已经没人接机器了。"
+        },
+        {
+          "id": "knock_back",
+          "text": "回敲",
+          "effect": { "flags": ["radio_knocked"] },
+          "after": "你回了七下。对面停了很久，回了三下，然后再没有声音。"
+        },
+        {
+          "id": "off",
+          "text": "关机",
+          "effect": { "flags": ["radio_off"] },
+          "after": "你把电源拔了。那之后门口的很多事情，你都是最后一个知道的。"
+        }
+      ]
+    },
+    {
+      "id": "ev_seran_voice",
+      "act": 1,
+      "dayMin": 7,
+      "dayMax": 13,
+      "who": "seran",
+      "where": null,
+      "lines": [
+        "她坐在台基边上，手压在左肩上。",
+        "她说她唱不动了，问你还需不需要她唱。",
+        "她说这话的时候眼睛没看你，看的是发射架上那两盏灯。"
+      ],
+      "hint": "唱不动的人硬唱，长啸会断在半路。",
+      "choices": [
+        {
+          "id": "let_her_sing",
+          "text": "让她唱",
+          "effect": { "flags": ["seran_sings"] },
+          "after": "她说好。她站起来的时候扶了一下身后的墙，那一下很短，但她扶了。"
+        },
+        {
+          "id": "spare_her",
+          "text": "让她别唱",
+          "effect": { "flags": ["seran_rested"] },
+          "after": "她松了一口气，又立刻把这口气收回去，说：那我做什么。"
+        },
+        {
+          "id": "use_wei",
+          "text": "找薇希替",
+          "effect": { "flags": ["wei_sings"] },
+          "after": "你去找薇希。她练到一半，听你说完，只问了一句：她同意吗。你没回答。"
+        }
+      ]
+    },
+    {
+      "id": "ev_child_draw",
+      "act": 1,
+      "dayMin": 8,
+      "dayMax": 14,
+      "who": "child",
+      "where": "living",
+      "lines": [
+        "他拉住你的衣角，把地上那张纸推过来。",
+        "纸上是三个人的眼睛，都没有画。",
+        "他说，画上眼睛，天上的人就会下来接你；下来，就要带走一个。"
+      ],
+      "hint": "他画的东西，后面两幕会变。",
+      "choices": [
+        {
+          "id": "kneel",
+          "text": "蹲下来看",
+          "effect": { "flags": ["saw_drawing"] },
+          "after": "你蹲下来，看了很久。他把纸往你这边又推了一点，然后自己退开半步，让给你最好的位置。"
+        },
+        {
+          "id": "praise",
+          "text": "说画得好",
+          "effect": { "flags": ["praised_drawing"] },
+          "after": "他说这不是画得好，这是真的。然后他把纸收起来了。"
+        },
+        {
+          "id": "walk_away",
+          "text": "走开",
+          "effect": { "flags": ["left_drawing"] },
+          "after": "你走了。纸还在地上。第二天它还在原地，边上多了一个小脚印。"
+        }
+      ]
+    }
+  ]
+}

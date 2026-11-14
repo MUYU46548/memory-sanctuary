@@ -766,3 +766,14 @@
     .asc-plumes { flex-direction: column; }
     .asc-ending-title { font-size: 19px; }
 }
+
+
+/* 发射判定里的「为什么」：一句话，用玩家自己装出来的数字说 */
+.asc-launch-why {
+    margin: -4px 0 10px;
+    padding-left: 2px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--text-secondary);
+    opacity: 0.78;
+}

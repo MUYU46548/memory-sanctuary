@@ -34,6 +34,15 @@ window.AscensionWorld = (function () {
 
     // 避难所大厅的边界（房间在里面，见 json 的 shell）
     const SHELTER = { minX: -15, maxX: 15, minZ: -13, maxZ: 13 };
+
+    // 每一幕有多少天（到日子就该上地表了；晚了也能发，只是人更少）
+    const ACT_DAYS = { 1: 14, 2: 10, 3: 6 };
+
+    // 人名的唯一写法（事件面板上要显示，rooms 的 npcs 里只登记了在场的三个）
+    const PEOPLE_NAME = {
+        kamu: '卡穆', seran: '瑟兰', wei: '薇希', child: '孩子',
+        quartermaster: '管配给的', gatekeeper: '门后的声音', mother: '母亲'
+    };
     const SURFACE = { minX: -30, maxX: 30, minZ: -30, maxZ: 30 };
 
     // ── 世界状态（threads / seen / asked 进 DLC 存档）────────
@@ -448,6 +457,15 @@ window.AscensionWorld = (function () {
             g.add(bulb);
         });
 
+        // 躺下的地方（居住区）：过一天
+        const cot = box(1.9, 0.16, 0.9, '--aw-prop-2', { roughness: 0.95 });
+        cot.position.set(-9.2, 0.08, -8.6);
+        g.add(cot);
+        interactables.push({
+            kind: 'sleep', id: 'sleep', label: '躺下 · 过一天',
+            group: cot, anchor: new THREE.Vector3(-9.2, 1.1, -8.6), radius: CFG.interactRange
+        });
+
         // 回到地表的通道
         const up = box(2.4, 0.12, 2.4, '--aw-metal', { metalness: 0.3 });
         up.position.set(-9.4, 0.06, 10.4);
@@ -521,8 +539,14 @@ window.AscensionWorld = (function () {
     function buildBedsInShell(group, r) {
         const b = r && r.beds;
         if (!b) return;
+        // 床位随幕减少：28 → 14 → 3（空出来的地方就是内容）
+        const total = b.cols * b.perCol;
+        const keep = S.act === 1 ? total : (S.act === 2 ? Math.floor(total / 2) : 3);
+        let made = 0;
         for (let c = 0; c < b.cols; c++) {
             for (let i = 0; i < b.perCol; i++) {
+                if (made >= keep) return;
+                made++;
                 const bx = b.x0 + c * b.dx;
                 const bz = b.z0 + i * b.dz;
                 const bed = box(b.w, 0.35, b.d, '--aw-prop-2', { roughness: 0.95 });
@@ -603,6 +627,9 @@ window.AscensionWorld = (function () {
     }
 
     function addNpc(group, id, x, z) {
+        // 已经走了/死了的人，不该还站在原地
+        const st = (S && S.people) ? S.people[id] : 'present';
+        if (st && st !== 'present') return;
         const data = (window.AscensionRooms.book.npcs || {})[id] || { name: id };
 
         const grp = new THREE.Group();
@@ -669,7 +696,18 @@ window.AscensionWorld = (function () {
     // ══════════════════════════════════════════════════════
 
     function freshState() {
-        return { area: 'surface', threads: {}, seen: {}, asked: {} };
+        return {
+            area: 'surface', threads: {}, seen: {}, asked: {},
+            shots: [], act: 1, day: 1,
+            // 七个人：present / absent / dead
+            people: {
+                seran: 'present', kamu: 'present', wei: 'present', child: 'present',
+                quartermaster: 'present', gatekeeper: 'present', mother: 'absent'
+            },
+            inv: { parts: 3, rare: 1, crystal: 0 },
+            flags: [],
+            events: { done: [] }
+        };
     }
 
     const ROOM_KEY = 'memory-sanctuary-ascension-room';
@@ -685,6 +723,13 @@ window.AscensionWorld = (function () {
                     S.threads = room.threads || {};
                     S.seen = room.seen || {};
                     S.asked = room.asked || {};
+                    S.shots = Array.isArray(room.shots) ? room.shots : [];
+                    S.act = room.act || 1;
+                    S.day = room.day || 1;
+                    if (room.people) Object.assign(S.people, room.people);
+                    if (room.inv) Object.assign(S.inv, room.inv);
+                    S.flags = Array.isArray(room.flags) ? room.flags : [];
+                    if (room.events && Array.isArray(room.events.done)) S.events.done = room.events.done;
                     return;
                 }
             }
@@ -698,12 +743,23 @@ window.AscensionWorld = (function () {
                 S.threads = room.threads || {};
                 S.seen = room.seen || {};
                 S.asked = room.asked || {};
+                S.shots = Array.isArray(room.shots) ? room.shots : [];
+                S.act = room.act || 1;
+                S.day = room.day || 1;
+                if (room.people) Object.assign(S.people, room.people);
+                if (room.inv) Object.assign(S.inv, room.inv);
+                S.flags = Array.isArray(room.flags) ? room.flags : [];
+                if (room.events && Array.isArray(room.events.done)) S.events.done = room.events.done;
             }
         } catch (e) { /* 没有就是新的一份 */ }
     }
 
     function saveState() {
-        const room = { threads: S.threads, seen: S.seen, asked: S.asked };
+        const room = {
+            threads: S.threads, seen: S.seen, asked: S.asked,
+            shots: S.shots || [], act: S.act || 1, day: S.day || 1,
+            people: S.people, inv: S.inv, flags: S.flags, events: S.events
+        };
         // DLC 自己的账：标题页直接进 DLC 也存得住
         try { localStorage.setItem(ROOM_KEY, JSON.stringify(room)); } catch (e) { /* 满/禁用都不打断 */ }
         // 有游戏存档时跟着存档走（只增字段，不动结构）
@@ -779,6 +835,7 @@ window.AscensionWorld = (function () {
             switchArea(it.id === 'up' ? 'surface' : 'shelter');
             return;
         }
+        if (it.kind === 'sleep') { sleepOneDay(); return; }
         if (it.kind === 'ritual') { openRitual(); return; }
     }
 
@@ -872,11 +929,15 @@ window.AscensionWorld = (function () {
     }
 
     function updateHud() {
-        $('aw-region').textContent = S.area === 'surface' ? '发射场 · 地表' : '避难所 · 地下';
+        const dayMax = ACT_DAYS[S.act] || 14;
+        const where = S.area === 'surface' ? '发射场 · 地表' : '避难所 · 地下';
+        $('aw-region').textContent = where + ' · 第 ' + S.act + ' 幕 · 第 ' + S.day + '/' + dayMax + ' 天';
         $('aw-thread-count').textContent = String(Object.keys(S.threads).length);
         $('aw-seen-count').textContent = String(Object.keys(S.seen).length);
+        const n = (S.shots || []).length;
         const goals = {
-            surface: '· 走到装配台，开始这一枚',
+            surface: n === 0 ? '· 走到装配台，开始这一枚'
+                : (n >= 3 ? '· 三枚都发过了，台基上只剩灰' : '· 已经发过 ' + n + ' 枚，装配台上有新的零件'),
             shelter: '· 配给室、居住区，两个人还没问完'
         };
         $('aw-goal').textContent = goals[S.area] || '';
@@ -947,6 +1008,30 @@ window.AscensionWorld = (function () {
     // ══════════════════════════════════════════════════════
 
     function openRitual() {
+        // 装配台（核心动作）。?bench=3d 是 3D 台面（A 方案），?bench=1 是 2D 版（留档对照）。
+        // 两者都是独立沙盒：不进剧情、不读写存档。正式接线（装配结果写进发射日）在 M2。
+        const benchMode = (window.Assembly && Assembly.bench) || null;
+        const nextGen = Math.min(3, (S.shots || []).length + 1);
+
+        // 正式流程也走 3D 台面（?bench=3d 只是把台面单独拿出来验手感）
+        if (window.Assembly3D) {
+            pause();
+            if (typeof AudioAscension !== 'undefined' && AudioAscension) {
+                try { AudioAscension.startAmbience(); } catch (e) { /* 无音频也能玩 */ }
+            }
+            openAssembly3DSandbox(nextGen);
+            return;
+        }
+
+        if (benchMode === '2d' && window.AssemblyUI) {
+            pause();
+            if (typeof AudioAscension !== 'undefined' && AudioAscension) {
+                try { AudioAscension.startAmbience(); } catch (e) { /* 无音频也能玩 */ }
+            }
+            openAssemblySandbox();
+            return;
+        }
+
         if (typeof AscensionUI === 'undefined' || !AscensionUI) return;
         pause();
         if (typeof AudioAscension !== 'undefined' && AudioAscension) {
@@ -955,8 +1040,193 @@ window.AscensionWorld = (function () {
         AscensionUI.open();
     }
 
+    /** 3D 台面沙盒：同样先把数据装进 moduleData */
+    async function openAssembly3DSandbox(gen) {
+        try {
+            if (typeof loadModuleData === 'function') await loadModuleData('ascension');
+        } catch (e) { /* 下面 open 会判空 */ }
+        if (!Assembly3D.open(gen || 1)) {
+            resume();
+            toast('装配数据没加载到（data/dlc/ascension/assembly_parts.json）。');
+        }
+    }
+
+    /** 2D 版沙盒入口（留档对照） */
+    async function openAssemblySandbox() {
+        try {
+            if (typeof loadModuleData === 'function') await loadModuleData('ascension');
+        } catch (e) { /* 下面 open 会判空 */ }
+        if (!Assembly.open(1)) {
+            resume();
+            toast('装配数据没加载到（data/dlc/ascension/assembly_parts.json）。');
+            return;
+        }
+        // 2D 版要把自己的界面开起来（Assembly.open 已经不代劳了）
+        if (window.AssemblyUI && AssemblyUI.open) AssemblyUI.open();
+    }
+
+    // ══════════════════════════════════════════════════════
+    // 日子：睡觉推进，事件在日子里找人
+    // ══════════════════════════════════════════════════════
+
+    function eventPool() {
+        const md = window.MemorySanctuary && MemorySanctuary.moduleData && MemorySanctuary.moduleData.ascension;
+        const d = md && md.ascension_events;
+        return (d && Array.isArray(d.events)) ? d.events : [];
+    }
+
+    /** 今天有谁来找你：幕、天数、前置旗标都对得上、且没做过 */
+    function pickEvent() {
+        const done = (S.events && S.events.done) || [];
+        return eventPool().find(e => {
+            if (!e || done.indexOf(e.id) >= 0) return false;
+            if ((e.act || 1) !== S.act) return false;
+            const d = S.day || 1;
+            if (e.dayMin && d < e.dayMin) return false;
+            if (e.dayMax && d > e.dayMax) return false;
+            if (e.require && !e.require.every(f => S.flags.indexOf(f) >= 0)) return false;
+            if (e.forbid && e.forbid.some(f => S.flags.indexOf(f) >= 0)) return false;
+            // 死人不说话；缺席的人可以为了这件事特地来找你（母亲只在孩子病时出现）
+            if (e.who && S.people[e.who] === 'dead') return false;
+            return true;
+        }) || null;
+    }
+
+    /** 选完之后把结果落到世界上 */
+    function applyChoice(ev, ch) {
+        const ef = ch.effect || {};
+        if (ef.people) {
+            Object.keys(ef.people).forEach(id => {
+                if (S.people[id] !== undefined) S.people[id] = ef.people[id];
+            });
+        }
+        if (ef.inv) {
+            Object.keys(ef.inv).forEach(k => {
+                S.inv[k] = Math.max(0, (S.inv[k] || 0) + ef.inv[k]);
+            });
+        }
+        (ef.flags || []).forEach(f => { if (S.flags.indexOf(f) < 0) S.flags.push(f); });
+
+        S.events.done = S.events.done || [];
+        if (S.events.done.indexOf(ev.id) < 0) S.events.done.push(ev.id);
+        saveState();
+        updateHud();
+        rebuildShelter();          // 人变了，场景也要跟着变
+    }
+
+    function sleepOneDay() {
+        const maxDay = ACT_DAYS[S.act] || 14;
+        if (S.day >= maxDay) {
+            toast('第 ' + maxDay + ' 天了。该上去了——地表那台架子不会等你。');
+            return;
+        }
+        S.day += 1;
+        saveState();
+        updateHud();
+
+        const ev = pickEvent();
+        if (ev && window.AscensionRooms && AscensionRooms.openEvent) {
+            AscensionRooms.openEvent(ev, PEOPLE_NAME[ev.who] || '', ch => applyChoice(ev, ch));
+            return;
+        }
+        toast('第 ' + S.day + ' 天。');
+        checkActAdvance();
+    }
+
+    /** 发完这一枚、日子也到了，就进下一幕 */
+    function checkActAdvance() {
+        const shots = (S.shots || []).length;
+        if (S.act >= 3) return;
+        if (shots >= S.act) {
+            S.act += 1;
+            S.day = 1;
+            applyActPeople();
+            saveState();
+            rebuildShelter();
+            updateHud();
+            toast('第 ' + S.act + ' 幕。');
+        }
+    }
+
+    /** 幕变了，人也会变：谁走了、谁还在 */
+    function applyActPeople() {
+        if (S.act === 2) {
+            if (S.flags.indexOf('four_left') >= 0 || S.flags.indexOf('four_left_watered') >= 0) {
+                S.people.quartermaster = 'absent';
+            }
+            if (S.flags.indexOf('needle_kept') >= 0) S.people.mother = 'absent';
+            if (S.flags.indexOf('power_left') >= 0) S.people.kamu = 'absent';
+        }
+        if (S.act === 3) {
+            ['seran', 'kamu', 'quartermaster', 'mother', 'gatekeeper'].forEach(id => {
+                S.people[id] = 'absent';
+            });
+            S.people.wei = 'present';
+            S.people.child = 'present';
+        }
+    }
+
+    /** 重建避难所（床位、人、灯都跟着幕走） */
+    function rebuildShelter() {
+        if (!shelterGroup) return;
+        Array.from(shelterGroup.children).forEach(c => shelterGroup.remove(c));
+        interactables = interactables.filter(it => it.group.parent !== shelterGroup);
+        npcs = npcs.filter(it => it.group.parent !== shelterGroup);
+        colliders = colliders.filter(c => c.area !== shelterGroup);
+        buildShelter();
+    }
+
     function onRitualClosed() {
         resume();
+        updateHud();
+    }
+
+    /** 装配台合壳后交棒：关台面（静默），接着走发射日 */
+    function onAssemblySealed(summary) {
+        if (window.Assembly3D) {
+            try { Assembly3D.close({ silent: true }); } catch (e) { /* ignore */ }
+        }
+        if (window.AscensionUI && AscensionUI.open) {
+            try { AscensionUI.open(summary); return; } catch (e) { /* 落到下面 */ }
+        }
+        // 仪式打不开也别把玩家卡在空场景里
+        resume();
+        toast('仪式界面没打开。');
+    }
+
+    /** 一枚发完了：写进世界，让世界真的变一点 */
+    function recordShot(shot) {
+        S.shots = S.shots || [];
+        S.shots.push(shot);
+        saveState();
+        applyShotWear();
+        updateHud();
+        checkActAdvance();
+    }
+
+    /** 发过几枚，世界就该多几道东西（台基上的灰、架子上的划痕） */
+    function applyShotWear() {
+        const n = (S.shots || []).length;
+        // 台基旁那圈「发射过」的痕迹：每发一枚多一道
+        if (!surfaceGroup) return;
+        let wear = surfaceGroup.userData.wear;
+        if (!wear) {
+            wear = new THREE.Group();
+            surfaceGroup.add(wear);
+            surfaceGroup.userData.wear = wear;
+        }
+        while (wear.children.length < n) {
+            const i = wear.children.length;
+            const ring = new THREE.Mesh(
+                new THREE.RingGeometry(0.9 + i * 0.16, 1.02 + i * 0.16, 40),
+                new THREE.MeshBasicMaterial({
+                    color: C('--aw-lamp', 0xd8a860), transparent: true, opacity: 0.16
+                })
+            );
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.set(0, 0.02, -6.4);
+            wear.add(ring);
+        }
     }
 
     // ══════════════════════════════════════════════════════
@@ -1054,6 +1324,12 @@ window.AscensionWorld = (function () {
 
         if (!booted) await boot();
 
+        // DLC 的三份数据（仪式/装配/事件）一次性装进 moduleData：
+        // 事件是随日子触发的，不能等到开台面时再加载。
+        try {
+            if (typeof loadModuleData === 'function') await loadModuleData('ascension');
+        } catch (e) { /* 没数据就只是没有事件，不阻断走动 */ }
+
         running = true;
         paused = false;
         lastT = performance.now();
@@ -1096,11 +1372,35 @@ window.AscensionWorld = (function () {
         pause,
         resume,
         onRitualClosed,
+        onAssemblySealed,
+        recordShot,
         get isOpen() { return !!(root && !root.classList.contains('hidden')); },
         get state() { return S; },
         // 验收用（无鼠标自动化）：只在 ?dlc=ascension 的临时环境里用得到
         _debug: {
             get state() { return S; },
+            get runtime() {
+                return {
+                    running, paused,
+                    interactables: interactables.length,
+                    player: player ? [Number(player.position.x.toFixed(2)), Number(player.position.z.toFixed(2))] : null,
+                    surfaceChildren: surfaceGroup ? surfaceGroup.children.length : -1,
+                    shelterChildren: shelterGroup ? shelterGroup.children.length : -1
+                };
+            },
+            /** 当前区域里离玩家最近的几个可交互物（查「为什么按 E 没反应」用） */
+            rebuild() { rebuildShelter(); updateHud(); return true; },
+            get near() {
+                const areaGroup = S.area === 'surface' ? surfaceGroup : shelterGroup;
+                const mine = interactables.filter(it => it.group.parent === areaGroup);
+                return {
+                    count: mine.length,
+                    list: mine.map(it => ({
+                        id: it.id, kind: it.kind, radius: it.radius,
+                        d: Number(Math.hypot(player.position.x - it.anchor.x, player.position.z - it.anchor.z).toFixed(2))
+                    })).sort((a, b) => a.d - b.d).slice(0, 5)
+                };
+            },
             enterArea,
             tp(x, z) { if (player) player.position.set(x, 0, z); return [player.position.x, player.position.z]; },
             get nearest() { return nearest ? { kind: nearest.kind, id: nearest.id, label: nearest.label } : null; },

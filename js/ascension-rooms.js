@@ -143,6 +143,37 @@ window.AscensionRooms = (function () {
         render();
     }
 
+    /**
+     * 事件面板：那个人走到你面前（不弹窗、不打断走动，只是把话摊开）。
+     * @param {object} ev   ascension_events.json 里的一条
+     * @param {string} who  说话的人名（不在 rooms 的 npcs 里也要能显示）
+     * @param {function} onDone 选完之后回调，参数是选中的那条 choice
+     */
+    function openEvent(ev, who, onDone) {
+        if (!ev) return;
+        panel = { open: true, kind: 'event', prop: null, npcId: null, detail: null };
+        const name = who || ev.who || '';
+        const step = (lines, hint, rows) => {
+            showDialog(lines, name, hint || '');
+            els.choices.innerHTML = '';
+            rows.forEach(r => addRow(r.text, r.cls || '', r.onPick));
+        };
+
+        step(ev.lines, ev.hint, (ev.choices || []).map(ch => ({
+            text: ch.text,
+            onPick: () => {
+                step([ch.after || ''], '', [{
+                    text: '记住了',
+                    cls: 'primary',
+                    onPick: () => {
+                        close();
+                        if (onDone) onDone(ch);
+                    }
+                }]);
+            }
+        })));
+    }
+
     function openNpc(npcId) {
         if (!npcById(npcId)) return;
         panel = { open: true, kind: 'npc', prop: null, npcId, detail: null };
@@ -398,6 +429,7 @@ window.AscensionRooms = (function () {
         reset,
         openProp,
         openNpc,
+        openEvent,
         back,
         close,
         render,

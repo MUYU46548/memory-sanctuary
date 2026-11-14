@@ -37,7 +37,7 @@ const DLC_MODULES = {
         unlockRequirement: { type: 'playthrough', count: 1 },
         unlockLabel: '通关 1 周目解锁',
         systems: ['ascension'],
-        dataFiles: ['ascension_stages', 'ascension_payloads', 'ascension_endings'],
+        dataFiles: ['ascension_stages', 'ascension_payloads', 'ascension_endings', 'assembly_parts', 'ascension_events'],
         maxDays: 1
     },
     greenOrb: {

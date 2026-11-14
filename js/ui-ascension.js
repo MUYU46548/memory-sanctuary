@@ -96,7 +96,10 @@ window.AscensionUI = (function () {
 
     // ── 开场 / 关闭 ─────────────────────────────────────────
 
-    async function open() {
+    /**
+     * @param {object} [assembly] 装配台交来的结果；有它就跳过检修与装舱
+     */
+    async function open(assembly) {
         if (!window.AscensionSystem) {
             showAlertDialog('加载失败', '升天之仪模块未就绪。');
             return;
@@ -112,7 +115,7 @@ window.AscensionUI = (function () {
             try { await loadModuleData('ascension'); } catch (e) { /* 下面统一判空 */ }
         }
 
-        if (!AscensionSystem.load() || !AscensionSystem.start()) {
+        if (!AscensionSystem.load() || !AscensionSystem.start(assembly ? { assembly } : undefined)) {
             els.scroll.innerHTML = `<div class="asc-intro">
                 <h2>数据未就绪</h2>
                 <p>仪式数据加载失败。请确认 data/dlc/ascension/ 下的三个文件存在且为合法 JSON。</p>
@@ -123,6 +126,7 @@ window.AscensionUI = (function () {
 
         booted = true;
         inIntro = true;
+        shotFlushed = false;
         inspectSceneSeen = false;
         seenPayloads = new Set();
         expandedPayload = null;
@@ -145,7 +149,8 @@ window.AscensionUI = (function () {
 
     function renderIntro() {
         updateTop();
-        els.next.textContent = '开始检修';
+        const A = AscensionSystem.state && AscensionSystem.state.assembly;
+        els.next.textContent = A ? '开始系羽' : '开始检修';
         els.next.disabled = false;
         els.abort.style.visibility = 'hidden';
         els.note.textContent = '';
@@ -615,6 +620,7 @@ window.AscensionUI = (function () {
                 <span>${esc(r.label)}</span>
                 <span class="${r.delta > 0 ? 'pos' : r.delta < 0 ? 'neg' : ''}">${r.delta > 0 ? '+' : ''}${r.delta}</span>
             </div>
+            ${(r.why && r.delta < 0) ? `<div class="asc-launch-why">${esc(r.why)}</div>` : ''}
         `).join('');
 
         els.scroll.innerHTML = sceneBlock(st, `
@@ -676,7 +682,34 @@ window.AscensionUI = (function () {
 
     // ── 结局 ────────────────────────────────────────────────
 
+    let shotFlushed = false;
+
+    /** 把这一枚的结果写回世界（没有世界就什么也不做） */
+    function flushShot() {
+        if (shotFlushed) return;
+        const S = AscensionSystem.state;
+        if (!S || !S.ended) return;
+        shotFlushed = true;
+        if (typeof AscensionWorld !== 'undefined' && AscensionWorld && AscensionWorld.recordShot) {
+            try {
+                AscensionWorld.recordShot({
+                    ritual: S.ritual,
+                    launchOk: S.launchOk,
+                    launchScore: S.launchScore,
+                    ending: S.ending && S.ending.id,
+                    endingTitle: S.ending && S.ending.title,
+                    plume: S.plume,
+                    cut: S.cut,
+                    singers: S.singers,
+                    payloads: S.payloads,
+                    gen: S.assembly ? S.assembly.gen : 1
+                });
+            } catch (e) { /* 写回失败不该卡住结算页 */ }
+        }
+    }
+
     function renderEnding() {
+        flushShot();
         const S = AscensionSystem.state;
         if (!S) return;
 

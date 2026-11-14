@@ -62,12 +62,18 @@ window.AscensionSystem = (function () {
 
     // ── 新局 ────────────────────────────────────────────────
 
-    function start() {
+    /**
+     * @param {object} [opts]
+     * @param {object} [opts.assembly] 装配台交来的结果（六槽已装、已合壳）
+     *        有了它就不再走「检修九项」和「装舱」——那两段已经在台面上用手做完了。
+     */
+    function start(opts) {
         if (!D && !load()) return false;
 
         S = {
             stageIndex: 0,
             clock: WINDOW_SECONDS,
+            assembly: null,          // 装配台交来的结果（没有就是老路子：从检修开始）
             ritual: 60,              // 完成度，初始 60
             records: [],             // 事后记录（自行处理/上报都会留痕）
             checks: {},              // ck_id -> option_id
@@ -83,6 +89,25 @@ window.AscensionSystem = (function () {
             ending: null,
             stageOf: 0
         };
+
+        if (opts && opts.assembly) {
+            const a = opts.assembly;
+            S.assembly = a;
+            // 台面上已经做完的事，仪式里不再问第二遍：从「系羽」接上
+            const idx = D.stages.findIndex(s => s.code === 'plume');
+            S.stageIndex = idx >= 0 ? idx : 0;
+            // 装配质量直接换成仪式的起手分：六条全绿 78，一项超限 68，两项以上 56
+            S.ritual = 60 + (a.ritualBonus || 0);
+            S.checks = a.checks || {};
+            // 四格载荷（base/lexicon/art/greeting）在台面上已经定过了：
+            // 台面选了几样内容就按顺序落进这四格，空格记 'none'（有意留白，不是没做完）。
+            const ORDER = ['base', 'lexicon', 'art', 'greeting'];
+            const picked = (a.contents || []).slice();
+            ORDER.forEach((slot, i) => {
+                if (a.payloads && a.payloads[slot]) S.payloads[slot] = a.payloads[slot];
+                else S.payloads[slot] = picked[i] || 'none';
+            });
+        }
         return true;
     }
 
@@ -266,6 +291,9 @@ window.AscensionSystem = (function () {
     // ── 发射判定（确定性）────────────────────────────────────
 
     function launchBreakdown() {
+        // 从台面上来的这一枚：判定吃的是装配的六条读数，不是检修清单
+        if (S && S.assembly) return assemblyBreakdown();
+
         const rows = [];
         let score = 40;
         rows.push({ label: '基础', delta: 40, total: score });
@@ -297,6 +325,86 @@ window.AscensionSystem = (function () {
 
         const chantD = S.chantMs >= 8000 ? 10 : S.chantMs >= 4000 ? 5 : 0;
         score += chantD; if (chantD) rows.push({ label: '长啸调制', delta: chantD, total: score });
+
+        return { score, pass: score >= LAUNCH_PASS, rows, threshold: LAUNCH_PASS };
+    }
+
+    /**
+     * 装配台的六条读数 → 发射判定。
+     * 每一行都带一句「为什么会这样」，用玩家自己刚才装出来的数字说，而不是笼统扣分。
+     */
+    function assemblyBreakdown() {
+        const a = S.assembly || {};
+        const st = a.stats || {};
+        const c = a.checks || {};
+        const L = a.limits || {};
+        const rows = [];
+        let score = 40;
+        rows.push({ label: '基础', delta: 40, total: score, why: '瓶子本身的规程余量。' });
+
+        const add = (label, delta, why) => {
+            score += delta;
+            rows.push({ label, delta, total: score, why: why || '' });
+        };
+        const over = k => c[k] === 'over';
+        const unseen = k => c[k] === 'unknown' || c[k] === 'pending';
+
+        if (over('seal')) {
+            add('密封不足', -16, '密封 ' + Number(st.seal).toFixed(3)
+                + '，规程 ' + (L.sealLimit || 0.99) + '。上升段一开始就漏，晶体先氧化。');
+        } else if (unseen('seal')) {
+            add('密封未经复检', -6, '垫片没人看过，这一条只是表上的数。');
+        }
+
+        if (over('ablative')) {
+            add('烧蚀不足', -18, '烧蚀 ' + Number(st.ablative).toFixed(1)
+                + ' 毫米，规程 ' + (L.ablativeLimit || 5) + '。过大气层的时候外壳先没。');
+        }
+
+        if (over('balance')) {
+            add('重心偏', -14, '平衡 ' + Number(st.balance).toFixed(2)
+                + '，上限 ' + (L.balanceLimit || 1.5) + '。抬台那一秒它就开始歪。');
+        } else if (unseen('balance')) {
+            add('螺纹未经复检', -6, '卡穆不在，这只环的螺纹没人看过。');
+        }
+
+        if (over('resonance')) {
+            add('共振超标', -12, '共振 ' + Number(st.resonance).toFixed(2)
+                + '，上限 ' + (L.resonanceLimit || 0.45) + '。台基把它放大，到上面会颤。');
+        } else if (unseen('resonance')) {
+            add('共振没人听', -5, '瑟兰不在，没人听过这只瓶子。');
+        }
+
+        if (over('mass')) {
+            add('超重', -15, '质量 ' + Number(st.mass).toFixed(1)
+                + ' 公斤，发射架上限 ' + (L.massLimit || 78) + '。推到一半会滑。');
+        }
+
+        if (over('capacity')) {
+            add('装不下', -8, '容量 ' + st.capacity + '，要装 ' + st.need
+                + '。到了上面，后面那一段会丢。');
+        }
+
+        // 仪式侧（与没有装配台时同一套口径）
+        // 从台面上来的这一枚，起手分本来就在 60 以上（装配质量已经折进去了），
+        // 所以门槛放到 60；否则「只差一项」会和「全绿」拉开一道断崖。
+        const ritD = S.ritual >= 60 ? 20 : S.ritual < 40 ? -30 : 0;
+        add('仪式完成度', ritD,
+            S.ritual >= 70 ? '该念的都念了。'
+                : (S.ritual >= 60 ? '念完了，但有几处是你自己补的。'
+                    : (S.ritual < 40 ? '仪式在规程上不成立。' : '中间有几段是靠糊过去的。')));
+
+        const clockD = (S.timeAtLaunch !== null && S.timeAtLaunch <= 0) ? -15 : 0;
+        if (clockD) add('窗口耗尽', clockD, '天已经亮了，你是在亮天里点的火。');
+
+        if (S.singers === 'wait') add('歌者状态', 5, '等了七分钟，第三位还是没来。');
+        else if (S.singers === 'tech') add('歌者状态', -10, '技师代唱，不合仪轨。');
+
+        const chantD = S.chantMs >= 8000 ? 10 : S.chantMs >= 4000 ? 5 : 0;
+        if (chantD) add('长啸调制', chantD, S.chantMs >= 8000 ? '那一声够长，载波完整。' : '长啸只到一半。');
+
+        const winD = (S.timeAtLaunch !== null && S.timeAtLaunch > 600) ? 5 : 0;
+        if (winD) add('晴空判断', winD, '窗口还宽，你挑了个好时辰。');
 
         return { score, pass: score >= LAUNCH_PASS, rows, threshold: LAUNCH_PASS };
     }
