@@ -3933,6 +3933,40 @@
       "availableAfter": 36,
       "discoveryMethod": "bot_passive",
       "botPassive": true
+    },
+    {
+      "id": "arch_bf_transit_01",
+      "title": "末班车时刻表",
+      "vault": 9,
+      "type": "document",
+      "dataCost": 5,
+      "energyCost": 4,
+      "description": "轨道交通中枢的显示屏，定格在灾变当日。",
+      "content": "轨道交通中枢的显示屏，定格在灾变当日：\n“末班车：23:40 始发，途经 27 站，预计 00:12 抵达终点。”\n车辆调度系统显示，那班车准点发出，准点抵达。\n车上没有乘客。车长照常播报了到站广播。",
+      "relatedArchives": [
+        "arch_bf_transit_02"
+      ],
+      "availableAfter": 29,
+      "expiresAfter": 46,
+      "discoveryMethod": "bot_exploration",
+      "fragmentFrom": "exp_bot_transit_28"
+    },
+    {
+      "id": "arch_bf_transit_02",
+      "title": "轨道检修记录",
+      "vault": 10,
+      "type": "document",
+      "dataCost": 5,
+      "energyCost": 4,
+      "description": "检修工区的记录簿，最后一条写得很平常。",
+      "content": "检修工区的记录簿，最后一条：\n“今日：全线巡检 48 公里，紧固螺栓 132 处，更换磨损钢轨 2 段。\n附注：检修车 7 号的后视镜坏了，还没来得及换。\n如果下次还有人要用它，记得先看右边。”\n检修车 7 号还停在工区里，钥匙挂在墙上。",
+      "relatedArchives": [
+        "arch_bf_transit_01"
+      ],
+      "availableAfter": 30,
+      "expiresAfter": 48,
+      "discoveryMethod": "bot_exploration",
+      "fragmentFrom": "exp_bot_transit_28"
     }
   ]
 }

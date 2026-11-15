@@ -547,6 +547,9 @@ function renderGuardianMood() {
 function renderGuardianOverview() {
     const container = document.getElementById('guardian-overview');
     if (!container) return;
+    // 空态守卫（2026-11-15 发布前审计发现）：标题界面 state 为 null 时直接调用会抛
+    // TypeError（读 state.guardianMoods），被 try/catch 吞掉后表现为整个渲染链静默断裂。
+    if (!MemorySanctuary.state) return;
     
     const guardians = MemorySanctuary.data.guardians;
     const currentName = document.getElementById('guardian-name')?.textContent;
