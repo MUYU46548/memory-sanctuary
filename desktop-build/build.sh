@@ -33,6 +33,10 @@ cp -r "$ROOT/js"                            "$BUILD/resources/js"
 cp -r "$ROOT/data"                          "$BUILD/resources/data"
 cp -r "$ROOT/fonts"                         "$BUILD/resources/fonts"
 cp -r "$ROOT/assets"                        "$BUILD/resources/assets"
+# vendor/（three.js）——index.html 里 <script src="vendor/three.min.js"> 硬引用，
+# 漏了这行会让桌面包每次启动都 404 并抛 "THREE is not defined"（升天之仪 3D 层直接废掉）。
+# 2026-11-15 v1.0.0 打包前审计发现此处缺失，已补。
+cp -r "$ROOT/vendor"                        "$BUILD/resources/vendor"
 
 # 3. 放置 Neutralino 客户端库（v6.9.0，与 config.cli.clientVersion 对齐）
 if [ ! -f "$BUILD/resources/neutralino.js" ]; then

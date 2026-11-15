@@ -140,7 +140,7 @@
       "id": 10,
       "name": "建筑与工程",
       "theme": "architecture",
-      "capacity": 120,
+      "capacity": 160,
       "priority": "medium",
       "color": "#3a2a2a",
       "accentColor": "#9a7a7a",
