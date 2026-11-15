@@ -57,13 +57,19 @@ const DLC_MODULES = {
 // DLC 功能开关（藏在代码里，正式构建默认关）
 // ==========================================
 // 开启方式：?dlc=ascension 或 ?dlc=ascension,greenOrb
-// 关闭时标题页保持「🚧 暂未实装」，玩家看不到入口。
+// 关闭时标题页整个隐藏「游戏模式」入口（见 main.js initTitleScreen）。
 const DLC_FLAGS = {
     ascension: false,
     greenOrb: false
 };
 
 (function applyDLCUrlFlags() {
+    // 2026-11-15：玩家版（安装包）里 URL 开关一律失效。
+    // 打包脚本在剔除 DLC 资产时会注入 window.MEMORY_SANCTUARY_NO_DLC = true，
+    // 于是即使有人改快捷方式加上 ?dlc=ascension，也打不开这个半成品模式
+    // （DLC 数据与脚本根本没进包，flag 打开只会得到一个空壳）。
+    // 内部试玩请跑网页版（python -m http.server）或 SHIP_DLC=1 打包。
+    if (typeof window !== 'undefined' && window.MEMORY_SANCTUARY_NO_DLC) return;
     try {
         const params = new URLSearchParams(window.location.search);
         const raw = params.get('dlc');

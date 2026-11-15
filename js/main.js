@@ -742,11 +742,23 @@ function initTitleScreen() {
     }
 
     // DLC 模式切换按钮
+    // 2026-11-15：玩家版里没有任何可玩 DLC 时，整个入口隐藏。
+    // 此前标题页常驻「🌌 游戏模式 / 圣所模式」，点开是一个「🚧 暂未实装」的列表——
+    // 等于把开发中的半成品当成已上线功能摆给玩家看。开发时用 ?dlc=ascension 打开，
+    // isModulePlayable 变 true，按钮自然出现。
     const titleDlcBtn = document.getElementById('title-dlc');
     if (titleDlcBtn) {
-        titleDlcBtn.addEventListener('click', () => {
-            openDLCPanel();
-        });
+        const anyPlayable = (typeof DLC_MODULES !== 'undefined')
+            && Object.keys(DLC_MODULES).some(id =>
+                typeof isModulePlayable === 'function' && isModulePlayable(id));
+        if (!anyPlayable) {
+            titleDlcBtn.classList.add('hidden');
+        } else {
+            titleDlcBtn.classList.remove('hidden');
+            titleDlcBtn.addEventListener('click', () => {
+                openDLCPanel();
+            });
+        }
     }
     
     // DLC 面板关闭按钮
