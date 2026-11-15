@@ -79,3 +79,8 @@ desktop-build/dist/
 desktop-build/.tmp/
 desktop-build/installer-dist/
 desktop-build/assets/
+
+# 内部文档（2026-11-15 移出公开仓库，本地保留）：立项契约、DLC 施工总纲、设计稿归档
+立项契约.md
+升天之仪·施工总纲.md
+docs/design-archive/
