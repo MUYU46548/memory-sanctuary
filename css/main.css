@@ -844,6 +844,25 @@ button:focus-visible,
 }
 
 /* 条目列表控件 */
+/* 归档面板：本周通道 + 本室分母拆分（2026-11-15） */
+.archive-week-hint {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    font-size: 0.7rem;
+    line-height: 1.5;
+    color: var(--text-dim);
+    background: var(--bg-panel);
+    border-left: 2px solid var(--amber-primary);
+    border-radius: 3px;
+}
+
+.archive-week-hint .hint-split {
+    color: var(--text-secondary);
+}
+
 .entry-controls {
     display: flex;
     gap: 8px;
@@ -883,20 +902,9 @@ button:focus-visible,
     box-shadow: 0 0 4px color-mix(in srgb, var(--success) 30%, transparent);
 }
 
-.entry-item.theme-mismatch-border {
-    border-color: var(--warning) !important;
-    box-shadow: 0 0 4px color-mix(in srgb, var(--warning) 30%, transparent);
-}
-
-/* 主题匹配指示 */
+/* 主题匹配指示（2026-11-15：「主题不合」分支已删，只剩契合一档） */
 .theme-match {
     color: var(--success);
-    font-size: 0.75rem;
-    margin-left: 4px;
-}
-
-.theme-mismatch {
-    color: var(--warning);
     font-size: 0.75rem;
     margin-left: 4px;
 }
@@ -1968,6 +1976,8 @@ button:focus-visible,
 
 .cost-energy { color: var(--warning); }
 .cost-data { color: var(--vault-language-accent); }
+/* 饥荒惩罚附加能耗（食物归零时） */
+.cost-penalty { color: var(--danger); font-size: 0.65rem; }
 
 /* 录入按钮 */
 .archive-btn {

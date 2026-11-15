@@ -215,23 +215,58 @@ function selectExploration(expData, element) {
 
     renderDispatchGuardians(expData);
     renderOutcomeBars(expData);
-    
-    // Check food sufficiency and disable button if needed（紧急勘探免食物额度时不禁用；机器人专属点免食物）
-    const foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
-    const isBotOnly = !!expData.botOnly;
+
+    // 派遣按钮状态统一由 updateDispatchButtonState 决定（食物 / 选人 / 疲劳 三者共同约束）
+    updateDispatchButtonState(expData);
+}
+
+/**
+ * 派遣按钮状态（唯一入口）
+ *
+ * 此前这里只判食物：于是「全员疲劳、一个人都选不了」时按钮依旧可点，
+ * 点下去会派出一支空队伍并立刻带回资源与碎片（玩家反馈：疲劳派不出去，勘探却返回了）。
+ * 现在：没选人 / 全员疲劳 / 食物不足 都会禁用按钮并明说原因。
+ */
+function updateDispatchButtonState(expData) {
     const dispatchBtn = document.getElementById('dispatch-btn');
-    const currentFood = MemorySanctuary.state.resources.food;
-    const foodFree = !!MemorySanctuary.state.emergencyExploreFoodFree;
-    dispatchBtn.disabled = !foodFree && !isBotOnly && currentFood < foodCost;
+    if (!dispatchBtn || !expData) return;
+    const state = MemorySanctuary.state;
+    const isBotOnly = !!expData.botOnly;
+
     if (isBotOnly) {
+        dispatchBtn.disabled = false;
         dispatchBtn.textContent = '派遣机器人编队';
-    } else if (foodFree) {
-        dispatchBtn.textContent = '派遣勘探队（免食物）';
-    } else if (currentFood < foodCost) {
-        dispatchBtn.textContent = `食物不足 (${currentFood}/${foodCost})`;
-    } else {
-        dispatchBtn.textContent = '派遣勘探队';
+        dispatchBtn.title = '工程机器人自动执行，无需守护者';
+        return;
     }
+
+    const foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
+    const currentFood = state.resources.food;
+    const foodFree = !!state.emergencyExploreFoodFree;
+    const availableGuardians = (MemorySanctuary.data.guardians || [])
+        .filter(g => !isGuardianFatigued(g.id)).length;
+
+    if (availableGuardians === 0) {
+        dispatchBtn.disabled = true;
+        dispatchBtn.textContent = '全员疲劳中，等待休整';
+        dispatchBtn.title = '所有守护者都在疲劳状态，恢复后才能派遣';
+        return;
+    }
+    if (selectedGuardians.size === 0) {
+        dispatchBtn.disabled = true;
+        dispatchBtn.textContent = '请先选择至少一名守护者';
+        dispatchBtn.title = '';
+        return;
+    }
+    if (!foodFree && currentFood < foodCost) {
+        dispatchBtn.disabled = true;
+        dispatchBtn.textContent = `食物不足 (${currentFood}/${foodCost})`;
+        dispatchBtn.title = '';
+        return;
+    }
+    dispatchBtn.disabled = false;
+    dispatchBtn.textContent = foodFree ? '派遣勘探队（免食物）' : '派遣勘探队';
+    dispatchBtn.title = '';
 }
 
 
@@ -390,6 +425,9 @@ function renderOutcomeBars(expData) {
         bar.appendChild(fill);
         container.appendChild(bar);
     });
+
+    // 选人变化后立刻刷新派遣按钮（选/取消都走这里）
+    updateDispatchButtonState(expData);
 }
 
 
@@ -435,6 +473,16 @@ function executeExploration() {
     if (!expData) return;
 
     const isBotOnly = !!expData.botOnly;
+
+    // 2026-11-15：非机器人专属点必须有至少一名守护者。
+    // 此前 0 人也能出发并立刻带回资源/碎片——「全员疲劳、谁都选不了」时按钮却仍可点，
+    // 于是出现「派不出去，勘探却返回了」。
+    if (!isBotOnly && selectedGuardians.size === 0) {
+        addLog('⚠️ 未选择任何守护者，无法派遣勘探队。', 'warning');
+        if (typeof showTransientNotice === 'function') showTransientNotice('⚠️ 请先选择至少一名守护者');
+        updateDispatchButtonState(expData);
+        return;
+    }
 
     // 食物消耗：按难度分档，默认 0（紧急勘探激活时本次免食物；机器人专属点恒为 0）
     let foodCost = expData.foodCost ?? (expData.difficulty === 3 ? 12 : expData.difficulty === 2 ? 8 : 5);
@@ -736,6 +784,12 @@ function applyExplorationResult(outcome, expData) {
             fatigueWeeks = Math.max(1, fatigueWeeks - Math.round(techEnv.fatigueGuard));
         }
 
+        // 紧急勘探（本周内出发）：本次疲劳封顶 1 周，兑现协议文案承诺的「疲劳仅 1 周」。
+        // 旧实现是在激活协议时就给全员上 2 周疲劳（哪怕一个人都没出发），见 game.js EMERGENCY_PROTOCOLS。
+        if (MemorySanctuary.state.emergencyExploreWeek === MemorySanctuary.state.week) {
+            fatigueWeeks = 1;
+        }
+
         selectedGuardians.forEach(gid => {
             // Fatigue: cannot deploy for fatigueWeeks weeks AFTER the return week
             // 语义：返回周起后续 fatigueWeeks 周不可再派遣（N=1 时下周仍疲劳，验证：N=1 部署后下周不可再派）
@@ -785,6 +839,11 @@ function applyExplorationResult(outcome, expData) {
                 }
             }
         });
+    }
+
+    // 紧急勘探的一次性标记：本次结算用掉即失效（激活后当周没出发，则跨周自然作废）
+    if (!expData.botOnly) {
+        MemorySanctuary.state.emergencyExploreWeek = null;
     }
 
     addLog(`勘探队从 ${expData.name} 返回。${outcome.message}`, 'system');

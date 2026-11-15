@@ -13,8 +13,7 @@
         "language",
         "text"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     },
     {
       "id": 2,
@@ -29,8 +28,7 @@
         "history",
         "document"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     },
     {
       "id": 3,
@@ -45,8 +43,7 @@
         "disaster",
         "record"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     },
     {
       "id": 4,
@@ -62,8 +59,7 @@
         "audio",
         "music"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     },
     {
       "id": 5,
@@ -78,8 +74,7 @@
         "philosophy",
         "religion"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     },
     {
       "id": 6,
@@ -94,8 +89,7 @@
         "science",
         "tech"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     },
     {
       "id": 7,
@@ -110,8 +104,7 @@
         "ecology",
         "nature"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     },
     {
       "id": 8,
@@ -126,8 +119,7 @@
         "law",
         "governance"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     },
     {
       "id": 9,
@@ -142,8 +134,7 @@
         "daily",
         "life"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     },
     {
       "id": 10,
@@ -158,8 +149,7 @@
         "architecture",
         "engineering"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     },
     {
       "id": 11,
@@ -174,8 +164,7 @@
         "medicine",
         "biology"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     },
     {
       "id": 12,
@@ -190,8 +179,7 @@
         "astronomy",
         "cosmos"
       ],
-      "themeBonus": 0.2,
-      "themePenalty": 0.3
+      "themeBonus": 0.2
     }
   ]
 }

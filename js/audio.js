@@ -686,8 +686,12 @@ window.AudioSystem = (() => {
     }
     
     // 播放机械启动音（项目面板/应急协议）
+    // 2026-11-15：加入 800–1000Hz 金属撞击层与 1.2kHz 噪声爆破层。
+    // 旧版只有 60–120Hz 锯齿与 300Hz 方波（峰值 ≈0.03，且几乎全在 300Hz 以下），
+    // 笔记本/桌面小喇叭基本无法重放这个频段，实测在持续 60Hz drone（rms 0.0042）之上
+    // 只抬升约 1.5dB —— 玩家听不到不是因为没调用，而是因为频率与响度都被埋掉了。
     function playMechanicalEngage() {
-        if (!ctx || isMuted || sfxMuted || globalMuted) return;
+        if (!ctx || isMuted) return;
         resume();
         
         const now = ctx.currentTime;
@@ -697,12 +701,12 @@ window.AudioSystem = (() => {
         const gain = ctx.createGain();
         
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(80, now);
-        osc.frequency.linearRampToValueAtTime(120, now + 0.15);
-        osc.frequency.linearRampToValueAtTime(60, now + 0.3);
+        osc.frequency.setValueAtTime(90, now);
+        osc.frequency.linearRampToValueAtTime(140, now + 0.15);
+        osc.frequency.linearRampToValueAtTime(70, now + 0.3);
         
-        gain.gain.setValueAtTime(0.06, now);
-        gain.gain.linearRampToValueAtTime(0.1, now + 0.15);
+        gain.gain.setValueAtTime(0.07, now);
+        gain.gain.linearRampToValueAtTime(0.11, now + 0.15);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
         
         osc.connect(gain);
@@ -711,28 +715,65 @@ window.AudioSystem = (() => {
         osc.start(now);
         osc.stop(now + 0.45);
         
-        // 金属撞击泛音
-        const osc2 = ctx.createOscillator();
-        const gain2 = ctx.createGain();
+        // 金属撞击（中频，真正能被听到的一层）
+        const clank = ctx.createOscillator();
+        const clankGain = ctx.createGain();
+        clank.type = 'triangle';
+        clank.frequency.setValueAtTime(920, now + 0.02);
+        clank.frequency.exponentialRampToValueAtTime(380, now + 0.18);
+        clankGain.gain.setValueAtTime(0, now);
+        clankGain.gain.linearRampToValueAtTime(0.19, now + 0.04);
+        clankGain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+        clank.connect(clankGain);
+        clankGain.connect(masterGain);
+        clank.start(now + 0.02);
+        clank.stop(now + 0.3);
         
-        osc2.type = 'square';
-        osc2.frequency.setValueAtTime(300, now + 0.05);
-        osc2.frequency.exponentialRampToValueAtTime(100, now + 0.2);
-        
-        gain2.gain.setValueAtTime(0, now);
-        gain2.gain.linearRampToValueAtTime(0.06, now + 0.05);
-        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-        
-        osc2.connect(gain2);
-        gain2.connect(masterGain);
-        
-        osc2.start(now + 0.05);
-        osc2.stop(now + 0.3);
+        // 上电确认音（1.1kHz / 1.65kHz 三角波）——这一层才决定"听不听得见"：
+        // 实测扣掉常驻 drone 后，只有 60–300Hz 的版本 A 加权比归档风铃低 30dB。
+        [[1100, 0.22], [1650, 0.10]].forEach(([freq, level]) => {
+            const ping = ctx.createOscillator();
+            const pingGain = ctx.createGain();
+            ping.type = 'triangle';
+            ping.frequency.setValueAtTime(freq, now + 0.03);
+            ping.frequency.linearRampToValueAtTime(freq * 0.85, now + 0.3);
+            pingGain.gain.setValueAtTime(0, now);
+            pingGain.gain.linearRampToValueAtTime(level, now + 0.06);
+            pingGain.gain.exponentialRampToValueAtTime(0.001, now + 0.34);
+            ping.connect(pingGain);
+            pingGain.connect(masterGain);
+            ping.start(now + 0.03);
+            ping.stop(now + 0.36);
+        });
+
+        // 启动噪爆（1.2kHz 带通，短促"咔哒+气动"）
+        const burstLen = Math.round(ctx.sampleRate * 0.1);
+        const burstBuf = ctx.createBuffer(1, burstLen, ctx.sampleRate);
+        const burstData = burstBuf.getChannelData(0);
+        for (let i = 0; i < burstLen; i++) {
+            burstData[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.02));
+        }
+        const burst = ctx.createBufferSource();
+        burst.buffer = burstBuf;
+        const burstFilter = ctx.createBiquadFilter();
+        burstFilter.type = 'bandpass';
+        burstFilter.frequency.value = 1200;
+        burstFilter.Q.value = 0.8;
+        const burstGain = ctx.createGain();
+        burstGain.gain.setValueAtTime(0.16, now + 0.01);
+        burstGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+        burst.connect(burstFilter);
+        burstFilter.connect(burstGain);
+        burstGain.connect(masterGain);
+        burst.start(now + 0.01);
     }
 
     // 播放应急协议腐化音效（诡异/失谐/腐化质感）
+    // 2026-11-15：保留 80Hz 失谐体感层与 40Hz 心跳，另外叠加两层能听见的警报音
+    // （1046→784→523Hz 三角波下行）+ 3kHz 噪爆。旧版全在 200Hz 以下，
+    // 与常驻 60Hz drone 只差 1.5dB，等于没响。
     function playEmergencyCorrupt() {
-        if (!ctx || isMuted || sfxMuted || globalMuted) return;
+        if (!ctx || isMuted) return;
         resume();
         
         const now = ctx.currentTime;
@@ -768,9 +809,26 @@ window.AudioSystem = (() => {
             osc.start(t);
             osc.stop(t + 0.15);
         }
+
+        // 警报双音（中频层，协议激活的主听感）：1046 → 784 → 523
+        [1046, 784, 523].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            const t = now + i * 0.16;
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, t);
+            osc.frequency.exponentialRampToValueAtTime(freq * 0.92, t + 0.14);
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(0.16, t + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(t);
+            osc.stop(t + 0.24);
+        });
         
         // 白噪声 burst — 碎裂质感
-        const bufferSize = ctx.sampleRate * 0.15;
+        const bufferSize = Math.round(ctx.sampleRate * 0.15);
         const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) {
@@ -782,7 +840,7 @@ window.AudioSystem = (() => {
         noiseFilter.type = 'highpass';
         noiseFilter.frequency.value = 2000;
         const noiseGain = ctx.createGain();
-        noiseGain.gain.setValueAtTime(0.15, now + 0.05);
+        noiseGain.gain.setValueAtTime(0.2, now + 0.05);
         noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
         noise.connect(noiseFilter);
         noiseFilter.connect(noiseGain);

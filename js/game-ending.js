@@ -286,12 +286,15 @@ function getEndingModalData(ending) {
     const portrait = generateCivilizationPortrait();
     const state = MemorySanctuary.state;
     const ngData = getNGPlusData();
+    const denomEnd = (typeof getArchiveDenominator === 'function')
+        ? getArchiveDenominator()
+        : { nonNgPlus: MemorySanctuary.data.archives.length, regular: MemorySanctuary.data.archives.length, fragments: 0 };
 
     let modalContent = `你选择在此刻封印记忆圣所。\n\n`;
     modalContent += `【文明画像】\n${portrait.title}\n${portrait.description}\n\n`;
     modalContent += `最终统计：\n`;
     modalContent += `• 运行周数：${state.week} 周\n`;
-    modalContent += `• 归档条目：${state.completedArchives.length} / ${MemorySanctuary.data.archives.filter(a => !a.ngPlusExclusive).length}\n`;
+    modalContent += `• 归档条目：${state.completedArchives.length} / ${denomEnd.nonNgPlus}（常规 ${denomEnd.regular} · 地表碎片 ${denomEnd.fragments}）\n`;
     modalContent += `• 文明完整度：${portrait.totalPercent}%\n\n`;
 
     if (ending) {
@@ -819,6 +822,7 @@ function showEndingSummaryPage(ending, isGameOver = false) {
     // Stats section
     const state = MemorySanctuary.state;
     const totalArchives = MemorySanctuary.data.archives.filter(a => !a.ngPlusExclusive).length;
+    const denomStats = (typeof getArchiveDenominator === 'function') ? getArchiveDenominator() : null;
     statsEl.innerHTML = `
         <div class="ending-stat">
             <div class="ending-stat-value">${state.week}</div>
@@ -826,7 +830,7 @@ function showEndingSummaryPage(ending, isGameOver = false) {
         </div>
         <div class="ending-stat">
             <div class="ending-stat-value">${state.completedArchives.length}/${totalArchives}</div>
-            <div class="ending-stat-label">归档条目</div>
+            <div class="ending-stat-label">归档条目${denomStats && denomStats.fragments > 0 ? ` · 待勘探 ${denomStats.fragments}` : ''}</div>
         </div>
         <div class="ending-stat">
             <div class="ending-stat-value">${portrait.totalPercent}%</div>

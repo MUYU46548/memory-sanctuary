@@ -1228,11 +1228,11 @@ function triggerGameOver(reason) {
     let contentText = '能源、介质与环境稳定度全部归零。\n\n圣所的系统一个接一个地停止了运转。最后的灯光熄灭，空气变得沉默。\n\n你未能保存洛斯耶马的遗产。后世将永远不知道这里曾存在过一个文明。\n\n“我们曾存在，但没有人记得。”';
 
     const archivedCount = MemorySanctuary.state.completedArchives.length;
-    const totalCount = MemorySanctuary.data.archives.length;
+    const denom = (typeof getArchiveDenominator === 'function') ? getArchiveDenominator() : { nonNgPlus: MemorySanctuary.data.archives.length, regular: MemorySanctuary.data.archives.length, fragments: 0 };
     contentText += `\n\n最终统计：\n`;
     contentText += `• 运行周数：${MemorySanctuary.state.week} 周\n`;
-    contentText += `• 归档条目：${archivedCount} / ${totalCount}\n`;
-    contentText += `• 文明完整度：${Math.round((archivedCount / totalCount) * 100)}%\n`;
+    contentText += `• 归档条目：${archivedCount} / ${denom.nonNgPlus}（常规 ${denom.regular} · 地表碎片 ${denom.fragments}）\n`;
+    contentText += `• 文明完整度：${Math.round((archivedCount / MemorySanctuary.data.archives.length) * 100)}%（按全库 ${MemorySanctuary.data.archives.length} 条计）\n`;
 
     // ─── 崩溃结局：走 VN 演出 ───
     if (reason === 'collapse' || reason === 'starvation') {
@@ -2656,7 +2656,7 @@ const EMERGENCY_PROTOCOLS = [
         id: 'emergency_explore',
         name: '紧急勘探',
         icon: '🔭',
-        desc: '立即派遣勘探队（无视冷却、免食物消耗），守护者疲劳仅+1周',
+        desc: '立即派遣勘探队（无视冷却、免食物消耗），本次出发的守护者疲劳仅 1 周',
         cost: '腐败 +15',
         gain: '立即派遣 · 免食物 · 疲劳轻',
         cooldown: 4,
@@ -2670,19 +2670,12 @@ const EMERGENCY_PROTOCOLS = [
             state.emergencyExploreFoodFree = true;
         },
         extraEffect: (state) => {
-            // 遗留项修复（与 T1-3 统一疲劳语义）：疲劳表存「周数截止线」（返回周起 N 周不可再派），
-            // 与 game-exploration.js applyExplorationResult / balance-sim-v2.js 同口径。
-            // 紧急勘探「疲劳仅+1周」：本周立刻派遣，下一周不可再派，week+2 恢复；
-            // 已疲劳者在原截止线基础上再 +1 周。
-            // 旧实现用计数语义 `(old||0)+1`：对未疲劳守护者设 1，`1 > week` 恒 false，
-            // 实际不产生任何疲劳——纯计数与周数截止线混用，现改为真实截止线。
-            const exp = state.exploration;
-            if (!exp) return;
-            if (!exp.fatigue) exp.fatigue = {};
-            const deadline = state.week + 2;
-            MemorySanctuary.data.guardians.forEach(g => {
-                exp.fatigue[g.id] = Math.max((exp.fatigue[g.id] || 0) + 1, deadline);
-            });
+            // 2026-11-15 修复：旧实现在「激活协议」这一刻就给全体守护者上 2 周疲劳，
+            // 但玩家可能根本没派出（面板刚打开、全员已疲劳后无人可选），于是出现
+            // 「一次勘探都没派过，全员却都在疲劳」。
+            // 现在只记「本周内出发则疲劳仅 1 周」的标记，疲劳在真正结算时（applyExplorationResult）
+            // 只加给出发的成员；没出发就不产生任何疲劳，代价只有腐败度。
+            state.emergencyExploreWeek = state.week;
         }
     },
     {
@@ -2842,7 +2835,7 @@ function showHelpModal() {
             title: '✨ 归档仪式',
             content: `• 标准归档：正常消耗，有守护者反应与隐藏内容，推进 1 周
 • 深度归档：额外消耗 10 能源，解锁隐藏内容
-• ⚡速记：省 30% 资源、不推进时间的轻量归档；但牺牲隐藏内容与守护者注记、不触发线索链、士气收益减半，每回合限 1 次
+• ⚡速记：省 30% 资源、不推进时间的轻量归档（等于每周多一次归档机会）；代价是环境稳定度 -2、不揭示隐藏内容与线索链、士气收益减半，每回合限 1 次
 • 🤖 AI辅助：解锁档案AI助理后可用，费用减半、不推进时间，环境稳定度 -5`,
         },
         {

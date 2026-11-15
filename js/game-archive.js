@@ -7,6 +7,33 @@ function getArchiveById(id) {
     return MemorySanctuary.data.archives.find(a => a.id === id) || null;
 }
 
+/**
+ * 速记的环境代价（2026-11-15 作者定案）
+ * 速记原本标称代价是「浅层录入」，但 state.shallowArchives 全库只写不读，
+ * 玩家看不到任何后果；改成真实资源代价：每回合 1 次速记换 环境稳定度 -2。
+ * 这也给长期冗余的环境资源一个真实消耗端（旧存档环境常年 97-100）。
+ */
+const QUICK_ARCHIVE_ENV_COST = 2;
+
+/**
+ * 归档分母口径（2026-11-15）：把「必须勘探/机器人先发现」的碎片单独计数，
+ * 避免玩家看到 44/173 以为自己差得离谱，其实是 54 条要靠地表勘探才会出现。
+ * 注意：结局判定（checkEndingCondition 的 minPercent/maxPercent、文明画像）
+ * 仍按「非 NG+ 总数」计算，不要跟着改——那会改动结局门槛。
+ */
+function getArchiveDenominator() {
+    const all = MemorySanctuary.data.archives || [];
+    const ngPlus = all.filter(a => a.ngPlusExclusive).length;
+    const fragments = all.filter(a => !a.ngPlusExclusive && (a.fragmentFrom || a.botPassive)).length;
+    return {
+        total: all.length,
+        ngPlus: ngPlus,
+        nonNgPlus: all.length - ngPlus,
+        fragments: fragments,
+        regular: all.length - ngPlus - fragments
+    };
+}
+
 
 function getArchivesByVault(vaultId) {
     return MemorySanctuary.data.archives.filter(a => a.vault === vaultId);
@@ -30,20 +57,91 @@ function getAvailableArchives(state) {
 }
 
 /**
- * 统一归档可行性判断（供列表渲染 / 困局检测 / 推荐逻辑共用）
- * 紧急归档激活时：跳过介质与容量检查，只需能源 ≥ energyCost × 2
+ * 归档实际扣费（单一口径）
+ *
+ * 为什么必须有这个函数：门禁判断、按钮文案、确认弹窗、真实扣费此前各算各的，
+ * 主题契合/不合（±20%/30%）、饥荒惩罚（食物归零 +20% 能耗）、介质豁免（能耗翻倍）、
+ * 圣所衰竭（能耗翻倍）分别只接进了其中一处，于是出现「资源明明够却归档不了」
+ * 与「按钮可点，点了才报资源不足」——同一类问题反复复现的根因。
+ * 现在所有入口都从本函数取数，任何新修饰只改这里一处。
+ *
+ * 返回：rawEnergy/rawMedia 是要传给 consumeResources 的值（它内部会再乘衰竭倍数），
+ *       totalEnergy/totalMedia 是从资源池真实扣除的量（供门禁/UI/弹窗使用）。
  */
-function canArchiveEntry(entry) {
+function getArchiveCharge(entry, ritualType = 'standard') {
     const state = MemorySanctuary.state;
-    if (!state || !entry) return false;
-    if (isArchiveCompleted(entry.id)) return false;
-    if (entry.expired) return false;
-    // 紧急归档激活时跳过衰竭介质检查
-    if (!state.emergencyArchiveActive && state.deterioration && state.deterioration.media) return false;
-    if (state.emergencyArchiveActive) {
-        return state.resources.energy >= (entry.energyCost || 0) * 2;
+    const vault = (MemorySanctuary.data.vaults || []).find(v => v.id === entry.vault);
+    const effective = getEffectiveCost(entry, vault);
+
+    let baseEnergy = effective.energy || 0;
+    let baseMedia = effective.media || 0;
+    let extraEnergy = 0;
+    if (ritualType === 'deep') {
+        extraEnergy = 10;
+    } else if (ritualType === 'quick') {
+        // 速记：省 30% 资源
+        baseEnergy = Math.ceil(baseEnergy * 0.7);
+        baseMedia = Math.ceil(baseMedia * 0.7);
     }
-    return hasResources(entry.energyCost || 0, entry.dataCost || 0);
+
+    const mediaFree = !!state.emergencyArchiveActive;
+    let foodPenalty = 0;
+    if (!mediaFree && (state.resources.food || 0) <= 0) {
+        // 饥荒惩罚：食物归零时归档能耗 +20%（此前只在扣费处生效，门禁与界面都不知道）
+        foodPenalty = Math.ceil(baseEnergy * 0.2);
+    }
+
+    // 速记的环境代价（不占回合换来的第二条通道，2026-11-15）
+    const envCost = (ritualType === 'quick') ? QUICK_ARCHIVE_ENV_COST : 0;
+
+    const rawEnergy = mediaFree ? baseEnergy * 2 + extraEnergy : baseEnergy + foodPenalty + extraEnergy;
+    const rawMedia = mediaFree ? 0 : baseMedia;
+    const multiplier = (state.deterioration && state.deterioration.energy) ? 2 : 1;
+
+    return {
+        vault,
+        effective,
+        mediaFree,
+        foodPenalty,
+        envCost,
+        multiplier,
+        rawEnergy,
+        rawMedia,
+        totalEnergy: rawEnergy * multiplier,
+        totalMedia: rawMedia
+    };
+}
+
+/**
+ * 归档阻断原因（null = 可以归档）
+ * 与 getArchiveCharge 同源，UI 用返回的字符串直接决定按钮文案，
+ * 不再出现「按钮可点、点了才发现不行」。
+ */
+function getArchiveBlockReason(entry, ritualType = 'standard') {
+    const state = MemorySanctuary.state;
+    if (!state || !entry) return '不可用';
+    if (isArchiveCompleted(entry.id)) return '已归档';
+    if (entry.expired) return '已消失';
+    // 圣所衰竭：介质耗尽时无法录入（介质豁免除外）
+    if (!state.emergencyArchiveActive && state.deterioration && state.deterioration.media) return '介质耗尽';
+
+    const charge = getArchiveCharge(entry, ritualType);
+    if ((state.resources.energy || 0) < charge.totalEnergy) {
+        return charge.mediaFree ? '能源不足' : '资源不足';
+    }
+    if (!charge.mediaFree && (state.resources.media || 0) < charge.totalMedia) return '资源不足';
+    if (!charge.mediaFree && charge.vault) {
+        const usage = (state.vaultUsage && state.vaultUsage[charge.vault.id]) || 0;
+        if (usage + charge.totalMedia > charge.vault.capacity) return '容量不足';
+    }
+    return null;
+}
+
+/**
+ * 统一归档可行性判断（供列表渲染 / 困局检测 / 推荐逻辑共用）
+ */
+function canArchiveEntry(entry, ritualType = 'standard') {
+    return getArchiveBlockReason(entry, ritualType) === null;
 }
 
 
@@ -57,11 +155,11 @@ function getEffectiveCost(entry, vault) {
     const entryType = entry.type || '';
     const themeTags = vault.themeTags || [];
     
-    // v0.2.8 修正（问题：✓契合⚖互斥同现）：
-    // 三档语义，取代 P1-10 的「载体词任何存储室都算契合」过度修正——
-    // 旧逻辑让 95% 条目在任何存储室都显示 ✓契合，主题匹配机制被架空，
-    // 且互斥条目（多为 document/text 载体词）必然同时亮起 ✓契合 与 ⚖互斥 徽章。
-    // 现在：领域词命中 = 契合（-20%）；载体词 = 中性（1.0，不显示契合徽章也不标"主题不合"）；其他 = 不契合（+30%）。
+    // v0.2.8 修正（问题：✓契合⚖互斥同现）：载体词不再算契合，避免 95% 条目都亮 ✓。
+    // 2026-11-15：删掉「主题不合 +30%」——全库 200 条实测命中 0 条（168 条载体词中性、32 条契合，
+    // 没有一条领域词落进不匹配的存储室），这条惩罚自加入起就没生效过，属改造后遗留的死分支；
+    // 留着它只会让 getEffectiveCost 多一条永远不走的路径，并让 vaults.json 的 themePenalty 变成假参数。
+    // 现在两档：领域词命中 = 契合（-20%）；其余 = 原价。
     const CARRIER_TYPES = ['text', 'document', 'audio', 'image', 'record', 'data', 'letter', 'blueprint'];
     const isMatch = themeTags.includes(entryType);
     const isNeutral = CARRIER_TYPES.includes(entryType);
@@ -69,8 +167,6 @@ function getEffectiveCost(entry, vault) {
     let modifier = 1.0;
     if (isMatch) {
         modifier = 1.0 - (vault.themeBonus || 0);
-    } else if (!isNeutral) {
-        modifier = 1.0 + (vault.themePenalty || 0);
     }
 
     // 科技树「速录学派」（archiveCostReduce）：项目系统不碰归档成本，此处为唯一接入点
@@ -175,75 +271,42 @@ function archiveEntry(archiveId, ritualType = 'standard') {
     
     const isEmergencyArchive = state.emergencyArchiveActive;
     const isBatchMode = state.batchArchiveMode;
-    
-    // 计算实际消耗（含主题加成/惩罚）
-    const vault = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
-    const effectiveCost = getEffectiveCost(entry, vault);
-    
-    // 根据仪式类型调整消耗
-    let energyCost = effectiveCost.energy;
-    let mediaCost = effectiveCost.media;
-    let extraEnergyCost = 0;
-    
-    if (ritualType === 'deep') {
-        extraEnergyCost = 10;
-    } else if (ritualType === 'quick') {
-        // 速记：仅省 30% 资源，但牺牲叙事深度（见下方限制）
-        energyCost = Math.ceil(energyCost * 0.7);
-        mediaCost = Math.ceil(mediaCost * 0.7);
+
+    // 计算实际消耗（主题修饰 / 仪式 / 饥荒 / 介质豁免 / 衰竭 全部由 getArchiveCharge 统一给出）
+    const charge = getArchiveCharge(entry, ritualType);
+    const vault = charge.vault;
+
+    if (!vault) {
+        addLog(`错误：找不到存储室 ${entry.vault}`, 'system');
+        return false;
     }
-    
-    // 紧急归档协议：跳过介质检查
+
+    const currentUsage = state.vaultUsage[vault.id] || 0;
+
+    // 门禁与扣费同源：不再各自复算主题/饥荒/容量
     if (isEmergencyArchive) {
-        if (state.resources.energy < energyCost * 2 + extraEnergyCost) {
+        if (state.resources.energy < charge.totalEnergy) {
             addLog(`能源不足，无法紧急归档 “${entry.title}”。`, 'system');
             state.emergencyArchiveActive = false;
             return false;
         }
     } else {
-        const totalEnergy = energyCost + extraEnergyCost;
-        const totalMedia = mediaCost;
-        if (ritualType === 'quick') {
-            // 快速归档只需50%资源
-            if (!hasResources(totalEnergy, totalMedia)) {
-                addLog(`资源不足，无法归档 “${entry.title}”。`, 'system');
-                return false;
-            }
-        } else {
-            if (!hasResources(totalEnergy, totalMedia)) {
-                addLog(`资源不足，无法归档 “${entry.title}”。`, 'system');
-                return false;
-            }
+        if (state.resources.energy < charge.totalEnergy || state.resources.media < charge.totalMedia) {
+            addLog(`资源不足，无法归档 “${entry.title}”。`, 'system');
+            return false;
+        }
+        if (currentUsage + charge.totalMedia > vault.capacity) {
+            addLog(`存储室 “${vault.name}” 容量不足。`, 'system');
+            return false;
         }
     }
-    
-    if (!vault) {
-        addLog(`错误：找不到存储室 ${entry.vault}`, 'system');
-        return false;
+
+    if (!consumeResources(charge.rawEnergy, charge.rawMedia)) return false;
+    if (charge.foodPenalty > 0) {
+        addLog(`🍂 饥荒惩罚：归档能耗 +${charge.foodPenalty}（食物耗尽）`, 'warning');
     }
-    
-    const currentUsage = state.vaultUsage[vault.id] || 0;
-    
-    // 紧急归档协议：跳过容量检查（不消耗介质）
-    if (!isEmergencyArchive && currentUsage + mediaCost > vault.capacity) {
-        addLog(`存储室 “${vault.name}” 容量不足。`, 'system');
-        return false;
-    }
-    
-    // 紧急归档协议：本回合归档不消耗介质（能源消耗加倍）
-    if (isEmergencyArchive) {
-        if (!consumeResources(energyCost * 2 + extraEnergyCost, 0)) return false;
-    } else {
-        // 食物归零惩罚：归档能源消耗 +20%
-        let foodPenalty = 0;
-        if (state.resources.food <= 0) {
-            foodPenalty = Math.ceil(energyCost * 0.2);
-        }
-        if (!consumeResources(energyCost + foodPenalty + extraEnergyCost, mediaCost)) return false;
-        if (foodPenalty > 0) {
-            addLog(`🍂 饥荒惩罚：归档能耗 +${foodPenalty}（食物耗尽）`, 'warning');
-        }
-    }
+
+    const mediaCost = charge.totalMedia;
     
     // 介质豁免协议激活后立即关闭
     if (state.emergencyArchiveActive) {
@@ -303,7 +366,7 @@ function archiveEntry(archiveId, ritualType = 'standard') {
         addLog(`✨ 深度归档：“${entry.title}”（额外消耗10能源解锁隐藏内容）`, 'success');
         state.deepArchiveCount = (state.deepArchiveCount || 0) + 1;
     } else if (ritualType === 'quick') {
-        addLog(`⚡ 快速归档：“${entry.title}”（省30%资源）`, 'success');
+        addLog(`⚡ 快速归档：“${entry.title}”（省 30% 资源 · 环境 -${charge.envCost}）`, 'success');
     } else {
         addLog(`已完成归档：“${entry.title}”`, 'success');
     }
@@ -321,11 +384,15 @@ function archiveEntry(archiveId, ritualType = 'standard') {
             showGuardianDialogue(guardianId, 'archive');
         }
     } else {
-        // 速记：标记浅层录入（牺牲隐藏叙事与线索链），并记录本回合已用
+        // 速记（2026-11-15 改口径）：不占回合换来的第二条通道，代价改为真实资源——
+        // 环境稳定度 -2。原「浅层录入」标签只写了 state.shallowArchives，全库无读取端，
+        // 玩家看不到任何后果，等于名不副实的假罚，已删除。
         state.quickArchiveWeek = state.week;
-        if (!state.shallowArchives) state.shallowArchives = [];
-        if (!state.shallowArchives.includes(archiveId)) state.shallowArchives.push(archiveId);
-        addLog(`⚡ 速记：仅保留核心数据，省略细节与守护者注记。`, 'system');
+        if (charge.envCost > 0) {
+            state.resources.environment = Math.max(0, (state.resources.environment || 0) - charge.envCost);
+            addLog(`🏚️ 速记的环境代价：环境稳定度 -${charge.envCost}（当前 ${Math.round(state.resources.environment)}）`, 'system');
+        }
+        addLog(`⚡ 速记：不推进时间，但不会揭示该条的隐藏内容与线索链。`, 'system');
     }
     
     // 归档后展示内容（根据设置决定是否显示）
@@ -504,9 +571,18 @@ function confirmArchive(archiveId) {
     
     title.textContent = '确认归档';
     
+    // 弹窗数字与真实扣费同源（此前显示基础消耗、实际按主题/饥荒修饰扣，玩家对不上账）
+    const chargePreview = getArchiveCharge(entry, 'standard');
     let contentText = `确定要归档“${entry.title}”吗？\n\n`;
-    contentText += `消耗：◈ ${entry.energyCost} 能源，◇ ${entry.dataCost} 介质\n`;
-    contentText += `存储室：${MemorySanctuary.data.vaults.find(v => v.id === entry.vault)?.name || ''}\n`;
+    contentText += `消耗：◈ ${chargePreview.totalEnergy} 能源，◇ ${chargePreview.totalMedia} 介质\n`;
+    if (chargePreview.foodPenalty > 0) {
+        contentText += `🍂 饥荒惩罚：食物归零，本次能耗 +${chargePreview.foodPenalty}\n`;
+    }
+    if (chargePreview.effective && chargePreview.effective.modifier < 1) {
+        const pct = Math.round((1 - chargePreview.effective.modifier) * 100);
+        contentText += `主题契合：此条目与存储室主题匹配，消耗 -${pct}%\n`;
+    }
+    contentText += `存储室：${chargePreview.vault ? chargePreview.vault.name : ''}\n`;
     
     if (entry.relatedArchives && entry.relatedArchives.length > 0) {
         const relatedNames = entry.relatedArchives
@@ -602,11 +678,10 @@ function confirmArchive(archiveId) {
     deepBtn.style.marginLeft = '8px';
     deepBtn.title = '额外消耗10能源，解锁隐藏内容与线索';
 
-    // 深度归档资源预检：能源 ≥ 基础能耗+10 且介质足够
-    const vaultForCost = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
-    const deepCost = getEffectiveCost(entry, vaultForCost);
-    const deepEnergyNeed = deepCost.energy + 10;
-    const deepMediaNeed = deepCost.media;
+    // 深度归档资源预检：与扣费同源（含主题修饰 / 饥荒 / 衰竭）
+    const deepCharge = getArchiveCharge(entry, 'deep');
+    const deepEnergyNeed = deepCharge.totalEnergy;
+    const deepMediaNeed = deepCharge.totalMedia;
     const canDeepArchive = MemorySanctuary.state.resources.energy >= deepEnergyNeed &&
         MemorySanctuary.state.resources.media >= deepMediaNeed;
     if (!canDeepArchive) {
@@ -702,23 +777,22 @@ function confirmQuickArchive(archiveId) {
         return;
     }
 
-    // 计算速记后实际消耗（与 archiveEntry 同口径）
-    const vault = MemorySanctuary.data.vaults.find(v => v.id === entry.vault);
-    const effectiveCost = getEffectiveCost(entry, vault);
-    const energyCost = Math.ceil((effectiveCost.energy || 0) * 0.7);
-    const mediaCost = Math.ceil((effectiveCost.media || 0) * 0.7);
+    // 计算速记后实际消耗（与 archiveEntry 同口径：统一由 getArchiveCharge 给出）
+    const qCharge = getArchiveCharge(entry, 'quick');
+    const energyCost = qCharge.totalEnergy;
+    const mediaCost = qCharge.totalMedia;
 
     title.textContent = '确认速记';
 
     let contentText = `要以【⚡速记】归档“${entry.title}”吗？\n\n`;
     contentText += `【速记收益】\n`;
     contentText += `· 资源消耗 -30%：◈ ${energyCost} 能源，◇ ${mediaCost} 介质\n`;
-    contentText += `· 不推进时间（本回合仍可继续其他行动）\n\n`;
+    contentText += `· 不推进时间（本回合仍可继续其他行动，等于每周多一次归档机会）\n\n`;
     contentText += `【速记代价】\n`;
-    contentText += `· 牺牲隐藏内容与守护者注记（条目被标记为浅层录入）\n`;
-    contentText += `· 可能错过线索链\n`;
+    contentText += `· 环境稳定度 -${qCharge.envCost}（当前 ${Math.round(state.resources.environment)}）\n`;
+    contentText += `· 不揭示该条的隐藏内容与线索链\n`;
     contentText += `· 士气收益减半\n`;
-    contentText += `· 每回合限用1次`;
+    contentText += `· 每回合限用 1 次`;
 
     content.innerHTML = esc(contentText, true);
     overlay.classList.remove('hidden');
@@ -1017,6 +1091,9 @@ function showArchiveCompleteModal(entry, ritualType = 'standard') {
     if (revealHidden && entry.hiddenContent) {
         modalContent += `━━ 隐藏内容 ━━\n`;
         modalContent += `${entry.hiddenContent}\n\n`;
+    }
+    if (ritualType === 'quick') {
+        modalContent += `（速记归档：未揭示隐藏内容，士气收益减半，环境稳定度 -${typeof QUICK_ARCHIVE_ENV_COST !== 'undefined' ? QUICK_ARCHIVE_ENV_COST : 2}）\n\n`;
     }
     
     if (entry.guardianReactions) {

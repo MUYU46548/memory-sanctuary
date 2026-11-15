@@ -1078,6 +1078,28 @@ function renderArchiveEntries() {
         return;
     }
     
+    // ─── 本周不占回合的通道 + 本室分母拆分（2026-11-15 方案A）───
+    // 目的：① 让玩家知道「标准归档之外，本周还有速记/AI 辅助两条不占回合的路」；
+    //       ② 把「本室有多少条要先勘探才会出现」摆明，避免 44/173 这种数字让人误判进度。
+    const stateForHint = MemorySanctuary.state;
+    const quickUsedThisWeek = stateForHint.quickArchiveWeek === stateForHint.week;
+    const aiBuilt = !!stateForHint.aiAssistantActive;
+    const aiUsedThisWeek = !!stateForHint.aiAssistUsedThisWeek;
+    const vaultEntries = entries;
+    const vaultFragPending = vaultEntries.filter(a =>
+        !isArchiveCompleted(a.id) && !a.expired && (a.fragmentFrom || a.botPassive)).length;
+    const vaultRegular = vaultEntries.filter(a => !(a.fragmentFrom || a.botPassive)).length;
+
+    const hintDiv = document.createElement('div');
+    hintDiv.className = 'archive-week-hint';
+    const aiText = aiBuilt ? (aiUsedThisWeek ? 'AI 辅助已用' : 'AI 辅助可用 1 次') : 'AI 辅助未搭建';
+    hintDiv.innerHTML =
+        `<span class="hint-channel">本周通道：标准归档 1 次（推进 1 周） · ` +
+        `速记 ${quickUsedThisWeek ? '已用' : '可用 1 次（环境 -2）'} · ${aiText}</span>` +
+        `<span class="hint-split">本室 ${vaultRegular} 条常规` +
+        `${vaultFragPending > 0 ? ` · ${vaultFragPending} 条地表碎片（需勘探/机器人发现）` : ''}</span>`;
+    container.appendChild(hintDiv);
+
     // 筛选和排序控件
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'entry-controls';
@@ -1192,21 +1214,15 @@ function renderArchiveEntries() {
             const vault = MemorySanctuary.data.vaults.find(v => v.id === vaultId);
             const effectiveCost = (typeof getEffectiveCost === 'function') ? getEffectiveCost(entry, vault) : null;
             const isThemeMatch = effectiveCost ? effectiveCost.isMatch : null;
-            const themeModifier = effectiveCost ? effectiveCost.modifier : 1;
             
-            // 根据主题匹配添加边框颜色（载体词为中性，不加任何边框）
-            const isNeutralMatch = effectiveCost && effectiveCost.isNeutral;
+            // 根据主题匹配添加边框颜色（2026-11-15：只剩「契合」一档，不再有「主题不合」）
             if (isThemeMatch === true) {
                 item.classList.add('theme-match-border');
-            } else if (isThemeMatch === false && !isNeutralMatch) {
-                item.classList.add('theme-mismatch-border');
             }
             
             const themeIndicator = isThemeMatch === true
                 ? '<span class="theme-match" title="主题契合：此条目与当前存储室主题匹配，归档消耗 -20%">✓契合</span>'
-                : (isThemeMatch === false && effectiveCost && !effectiveCost.isNeutral
-                    ? '<span class="theme-mismatch" title="主题不合：此条目与当前存储室主题不符，归档消耗 +30%。改存到匹配主题的存储室可降低消耗">主题不合</span>'
-                    : '');
+                : '';
 
             // 冲突警告（v0.2.4：具体互斥条目名由科技「互斥洞察」(conflictInsight) 开启；
             // 未解锁时仅显示 ⚖ 徽章与通用提示，由玩家阅读简介自行推断）
@@ -1221,34 +1237,39 @@ function renderArchiveEntries() {
             // 隐藏内容标记
             const hiddenMarker = entry.hiddenContent ? '<span title="包含隐藏内容">✨</span>' : '';
             
+            // 界面数字 = 真实扣费（getArchiveCharge 单一口径）：含主题修正、饥荒惩罚、介质豁免、衰竭翻倍
+            const chargeUi = (typeof getArchiveCharge === 'function') ? getArchiveCharge(entry) : null;
             const costHtml = `
                 <div class="entry-cost">
-                    <span class="cost-energy">◈ ${effectiveCost ? effectiveCost.energy : entry.energyCost}</span>
-                    <span class="cost-data">◇ ${effectiveCost ? effectiveCost.media : entry.dataCost}</span>
+                    <span class="cost-energy">◈ ${chargeUi ? chargeUi.totalEnergy : entry.energyCost}</span>
+                    <span class="cost-data">◇ ${chargeUi ? chargeUi.totalMedia : entry.dataCost}</span>
+                    ${chargeUi && chargeUi.foodPenalty > 0 ? `<span class="cost-penalty" title="食物归零：本次能耗已含 +${chargeUi.foodPenalty}">🍂+${chargeUi.foodPenalty}</span>` : ''}
                     ${remaining !== null ? `<span style="color: ${isExpiringSoon ? 'var(--danger)' : 'var(--text-dim)'}">⏱ ${remaining}周</span>` : ''}
                 </div>
             `;
             
             let mainBtnHtml = '';
+            const blockReason = (typeof getArchiveBlockReason === 'function') ? getArchiveBlockReason(entry) : null;
             if (isCompleted) {
                 mainBtnHtml = `<button class="archive-btn" disabled>已归档</button>`;
             } else if (isExpired) {
                 mainBtnHtml = `<button class="archive-btn" disabled>已消失</button>`;
-            } else if (!canArchive) {
-                const disabledLabel = (MemorySanctuary.state.emergencyArchiveActive) ? '能源不足' : '资源不足';
-                mainBtnHtml = `<button class="archive-btn" disabled>${disabledLabel}</button>`;
+            } else if (blockReason) {
+                // 用阻断原因直接当按钮文案：资源/容量/介质耗尽 各自可辨，不再一律「资源不足」
+                mainBtnHtml = `<button class="archive-btn" disabled title="${blockReason === '容量不足' ? '此存储室已满：先归档到别的室，或完成“扩建存储室”项目' : ''}">${blockReason}</button>`;
             } else {
                 mainBtnHtml = `<button class="archive-btn" data-archive-id="${entry.id}">录入归档</button>`;
             }
 
             // 快速归档按钮（每回合限 1 次：本回合已用时置灰，避免"看着能点点了才说不能用"）
+            // 速记比标准归档便宜 30%，门禁也要按速记口径判，否则"够付速记却不显示按钮"
             let quickBtnHtml = '';
-            if (!isCompleted && !isExpired && canArchive) {
+            if (!isCompleted && !isExpired && canArchiveEntry(entry, 'quick')) {
                 const quickUsedThisWeek = MemorySanctuary.state.quickArchiveWeek === MemorySanctuary.state.week;
                 if (quickUsedThisWeek) {
                     quickBtnHtml = `<button class="archive-btn quick-archive-btn" disabled title="本回合已使用过速记（每回合限 1 次），下回合恢复">⚡已速记</button>`;
                 } else {
-                    quickBtnHtml = `<button class="archive-btn quick-archive-btn" data-archive-id="${entry.id}" title="速记：省 30% 资源、不推进时间，但牺牲隐藏内容与守护者注记，每回合限 1 次">⚡速记</button>`;
+                    quickBtnHtml = `<button class="archive-btn quick-archive-btn" data-archive-id="${entry.id}" title="速记：省 30% 资源、不推进时间（每周多一次归档机会），代价是环境稳定度 -2、不揭示隐藏内容与线索链、士气收益减半，每回合限 1 次">⚡速记</button>`;
                 }
             }
             
