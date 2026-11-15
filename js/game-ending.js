@@ -948,7 +948,10 @@ function renderSealButton() {
 
 
 function generateCivilizationPortrait() {
-    const archives = MemorySanctuary.data.archives;
+    // 2026-11-15：分母改为「本周目可归档」= 非 NG+ 条目（173），与此前用全库 200 条的错误口径分开。
+    // 旧口径下 44 条 = 22%，永远掉进 ≥10% 档：「文明守护者」与 7 种组合画像（≥40%=80 条）
+    // 在单周目数学上不可达，等于整段画像文本从没被玩家看到过。
+    const archives = MemorySanctuary.data.archives.filter(a => !a.ngPlusExclusive);
     const completed = MemorySanctuary.state.completedArchives;
     const vaults = MemorySanctuary.data.vaults;
     
@@ -984,54 +987,63 @@ function generateCivilizationPortrait() {
     let description = '你选择了沉默。后世将永远不知道洛斯耶马曾存在过。';
     
     const totalPercent = completed.length / archives.length;
-    
-    if (totalPercent >= 1) {
+    // 档位判定与界面显示用同一个数（四舍五入后的百分比），否则会出现
+    // 「显示 25%、实际按 24.86% 判成低一档」这种玩家一眼就看出来的矛盾。
+    const percentShown = Math.round(totalPercent * 100);
+
+    // 阈值按「本周目实际可及」重标（173 条为分母）：
+    //   100% = 173 条（理论档）· ≥55% = 95 条（速记/AI 辅助用满的天花板）
+    //   ≥25% = 44 条（认真玩一局的常规水平）· ≥10% = 18 条
+    // 旧阈值是 1 / 0.7 / 0.4 / 0.1，但分母是 200 条，等于要求 200 / 140 / 80 条——后三档全部不可达。
+    if (percentShown >= 100) {
         title = '永恒记忆';
         description = '你保存了洛斯耶马文明的全部碎片。后世将看到一个完整的文明——它的语言、历史、灾难、艺术、信仰、科学、生态、法律、生活、建筑、医学与星空。这是你对时间的反抗。';
-    } else if (totalPercent >= 0.7) {
+    } else if (percentShown >= 55) {
         title = '文明守护者';
         description = '你保存了大部分文明碎片。后世将看到一个虽不完整但足够真实的洛斯耶马——它的歌声、它的挣扎、它的智慧、它的爱。';
-    } else if (totalPercent >= 0.4) {
-        // Check for specific combinations
-        const hasLanguage = vaultCounts[1] >= 3;
-        const hasHistory = vaultCounts[2] >= 3;
-        const hasDisaster = vaultCounts[3] >= 3;
-        const hasArt = vaultCounts[4] >= 3;
-        const hasPhilosophy = vaultCounts[5] >= 3;
-        const hasScience = vaultCounts[6] >= 3;
-        const hasEcology = vaultCounts[7] >= 3;
-        const hasLaw = vaultCounts[8] >= 3;
-        const hasDaily = vaultCounts[9] >= 3;
-        const hasArchitecture = vaultCounts[10] >= 3;
-        const hasMedicine = vaultCounts[11] >= 3;
-        const hasAstronomy = vaultCounts[12] >= 3;
-        
-        if (hasLanguage && hasArt) {
-            title = '歌与诗之声';
-            description = '你保存了洛斯耶马的语言与艺术。后世将听到它的歌声、看到它的色彩、感受它的舞蹈。这是一个用美回应末日的文明。';
-        } else if (hasHistory && hasLaw) {
-            title = '律法与秩序';
-            description = '你保存了洛斯耶马的历史与法律。后世将看到它的兴衰、它的制度、它的抉择。这是一个在混乱中坚守秩序的文明。';
-        } else if (hasScience && hasAstronomy) {
-            title = '追光者';
-            description = '你保存了洛斯耶马的科学与星象。后世将看到它的智慧、它的好奇、它的仰望。这是一个试图理解宇宙的文明。';
-        } else if (hasEcology && hasMedicine) {
-            title = '生命回响';
-            description = '你保存了洛斯耶马的生态与医学。后世将看到它的生命、它的脆弱、它的顽强。这是一个与星球共生的文明。';
-        } else if (hasDisaster && hasHistory) {
-            title = '灾难见证者';
-            description = '你保存了洛斯耶马的灾难与历史。后世将看到它的终结、它的痛苦、它的反抗。这是一个在末日面前记录一切的文明。';
-        } else if (hasDaily && hasPhilosophy) {
-            title = '爱与记忆';
-            description = '你保存了洛斯耶马的日常生活与哲学。后世将看到它的平凡、它的思考、它的温暖。这是一个用日常抵抗遗忘的文明。';
-        } else if (hasPhilosophy && hasArt) {
-            title = '星空之梦';
-            description = '你保存了洛斯耶马的哲学与艺术。后世将看到它的梦想、它的追问、它的美。这是一个仰望星空的文明。';
+    } else if (percentShown >= 25) {
+        // 组合画像：挑「两个存储室都真的攒起来了」的那一组，而不是按书写顺序取第一个命中。
+        // 旧写法是 if/else 链，而「语言(9 条) + 艺术(12 条)」几乎每局都能各凑 3 条，
+        // 结果所有对局都显示同一张画像——换了分母仍然是换一种方式锁死。
+        const COMBOS = [
+            { name: '歌与诗之声', a: 1, b: 4 },
+            { name: '律法与秩序', a: 2, b: 8 },
+            { name: '追光者', a: 6, b: 12 },
+            { name: '生命回响', a: 7, b: 11 },
+            { name: '灾难见证者', a: 3, b: 2 },
+            { name: '爱与记忆', a: 9, b: 5 },
+            { name: '星空之梦', a: 5, b: 4 }
+        ];
+        let best = null;
+        COMBOS.forEach(c => {
+            const ca = vaultCounts[c.a] || 0;
+            const cb = vaultCounts[c.b] || 0;
+            if (ca < 3 || cb < 3) return;                 // 两边都得有最低量的条目
+            const score = Math.min(ca / Math.max(1, vaultTotals[c.a] || 1),
+                                   cb / Math.max(1, vaultTotals[c.b] || 1));
+            if (!best || score > best.score || (score === best.score && ca + cb > best.sum)) {
+                best = { name: c.name, score, sum: ca + cb };
+            }
+        });
+
+        const COMBO_TEXT = {
+            '歌与诗之声': '你保存了洛斯耶马的语言与艺术。后世将听到它的歌声、看到它的色彩、感受它的舞蹈。这是一个用美回应末日的文明。',
+            '律法与秩序': '你保存了洛斯耶马的历史与法律。后世将看到它的兴衰、它的制度、它的抉择。这是一个在混乱中坚守秩序的文明。',
+            '追光者': '你保存了洛斯耶马的科学与星象。后世将看到它的智慧、它的好奇、它的仰望。这是一个试图理解宇宙的文明。',
+            '生命回响': '你保存了洛斯耶马的生态与医学。后世将看到它的生命、它的脆弱、它的顽强。这是一个与星球共生的文明。',
+            '灾难见证者': '你保存了洛斯耶马的灾难与历史。后世将看到它的终结、它的痛苦、它的反抗。这是一个在末日面前记录一切的文明。',
+            '爱与记忆': '你保存了洛斯耶马的日常生活与哲学。后世将看到它的平凡、它的思考、它的温暖。这是一个用日常抵抗遗忘的文明。',
+            '星空之梦': '你保存了洛斯耶马的哲学与艺术。后世将看到它的梦想、它的追问、它的美。这是一个仰望星空的文明。'
+        };
+
+        if (best && COMBO_TEXT[best.name]) {
+            title = best.name;
+            description = COMBO_TEXT[best.name];
         } else {
             title = '碎片收集者';
             description = `你保存了洛斯耶马的 ${completed.length} 条记忆碎片。虽然后世看到的只是冰山一角，但每一片都是真实的。${vaultNames.slice(0, 2).join('、')}——这些是你在黑暗中选择守护的。`;
         }
-    } else if (totalPercent >= 0.1) {
+    } else if (percentShown >= 10) {
         title = '微光守护者';
         description = `你保存了 ${completed.length} 条记忆碎片。虽然后世只能看到洛斯耶马的零星片段，但至少——他们知道这里曾经存在过一个文明。${vaultNames.length > 0 ? '你特别守护了' + vaultNames[0] + '。' : ''}`;
     } else {
@@ -1039,7 +1051,7 @@ function generateCivilizationPortrait() {
         description = '你选择了沉默。圣所中空空如也，后世将永远不知道洛斯耶马曾存在过。也许……遗忘也是一种选择。';
     }
     
-    return { title, description, totalPercent: Math.round(totalPercent * 100) };
+    return { title, description, totalPercent: percentShown };
 }
 
 
