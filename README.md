@@ -54,7 +54,7 @@
 - **士气联动**：士气高低左右随机事件走向，极端士气触发仪式事件
 - **NG+ 多周目**：继承解锁内容，发现新条目与新结局
 - **无障碍支持**：键盘导航、减少动画偏好、主题切换
-- **零外部依赖**：纯原生 HTML5 + CSS3 + Vanilla JS
+- **零外部依赖**：游戏本体为纯原生 HTML5 + CSS3 + Vanilla JS，不引入任何框架（3D DLC 层另行随包使用 three.js，未随本版发布）
 
 ## 快速开始
 
@@ -88,8 +88,8 @@ http://localhost:8099
 |------|------|
 | `index.html` + `js/` + `css/` + `data/` + `assets/` + `fonts/` | 游戏本体 |
 | `desktop-build/` | 桌面玩家包与安装包工程（Neutralino + Inno Setup）：`build.sh` 出 exe/resources.neu，`build-installer.sh` 出安装包；`dist/`、`installer-dist/` 产物不入库 |
-| `scripts/` | 开发辅助脚本（v0.2.8 起历史一次性脚本已清理，均不入库） |
-| `立项契约.md`、`开发日志*.md`、`游戏章节拓展.md` | 开发文档（立项约定、开发历史、章节拓展规划），玩家无需关心 |
+| `scripts/` | 开发辅助脚本（只保留两条稳定流程：`pack_release.py` 发版打包、`check_ascension_room.js` 房间数据校验；其余历史一次性脚本不入库） |
+| `AGENTS.md` | 开发约定（架构分层、编码规范、数据驱动原则），玩家无需关心。立项契约、开发日志、章节拓展、DLC 设计稿等内部文档均不随仓库公开 |
 
 ### 游戏流程
 
