@@ -138,6 +138,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 | ChineseSimplified.isl | Inno Setup 简体中文语言包 | MIT（kira-96/Inno-Setup-Chinese-Simplified-Translation） |
 
 本作代码本身仍为上文 MIT 许可；上述组件的许可只约束组件自身，不改变本作许可。
+仓库中的 Neutralinojs 运行时二进制（`desktop-build/bin/neutralino-win_x64.exe`，v6.9.0）随附其完整许可与内置第三方组件声明：`desktop-build/bin/LICENSE-neutralino.txt`。
 
 ## 网页版 / 开发版额外组件
 
